@@ -1,0 +1,93 @@
+version: "2"
+run:
+  concurrency: 4
+  tests: true
+output:
+  formats:
+    text:
+      path: stdout
+      print-linter-name: true
+      print-issued-lines: true
+linters:
+  default: none
+  enable:
+    - bodyclose
+    - copyloopvar
+    - forbidigo
+    - ginkgolinter
+    - importas
+    - ineffassign
+    - misspell
+    - nakedret
+    - predeclared
+    - unused
+    - usestdlibvars
+    - whitespace
+    - staticcheck
+  settings:
+    forbidigo:
+      forbid:
+        - pattern: anypb.New
+          msg: Do not use anypb.New; Use utils.MessageToAny instead.
+    importas:
+      alias:
+        - pkg: k8s.io/api/apps/v1
+          alias: appsv1
+        - pkg: k8s.io/api/core/v1
+          alias: corev1
+        - pkg: k8s.io/apimachinery/pkg/apis/meta/v1
+          alias: metav1
+        - pkg: k8s.io/api/batch/v1
+          alias: batchv1
+    misspell:
+      ignore-rules:
+        - kgateway
+    nakedret:
+      # The team consensus is that naked returns hinder the readability of the code.
+      # However, named return values can still be useful as documentation for certain scenarios.
+      # By setting this to 0 in lieu of the default 30, we will effectively allow named return
+      # values as long as they are included in the return statement(s) e.g.
+      # func foo() (a, b int) {
+      #     a = 1
+      #     b = 2
+      #     c := 3
+      #     d := 4
+      #     // These are allowed
+      #     return a, b
+      #     return c, d
+      #     return d, c
+      #     // This is NOT allowed
+      #     return
+      #     // This is allowed but really, really bad. DO NOT do this.
+      #     return b, a
+      max-func-lines: 0
+    staticcheck:
+      checks:
+        - ST1019 # duplicate imports
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - test/rules
+      - gomock_reflect_\d*
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-same-issues: 0
+  uniq-by-line: true
+formatters:
+  enable:
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - test/rules
+      - gomock_reflect_\d*
+      - third_party$
+      - builtin$
+      - examples$
