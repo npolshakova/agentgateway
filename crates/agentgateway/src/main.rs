@@ -11,7 +11,8 @@ use tracing_subscriber::{self, EnvFilter};
 use agentgateway::admin;
 use agentgateway::mtrcs;
 use agentgateway::proto::agentgateway::dev::listener::Listener as XdsListener;
-use agentgateway::proto::agentgateway::dev::mcp::target::Target as XdsTarget;
+use agentgateway::proto::agentgateway::dev::mcp::target::Target as XdsMCPTarget;
+use agentgateway::proto::agentgateway::dev::a2a::target::Target as XdsA2ATarget;
 use agentgateway::relay;
 use agentgateway::signal;
 use agentgateway::trcng;
@@ -272,7 +273,8 @@ async fn main() -> Result<()> {
 			let cfg_clone = dynamic.clone();
 			let xds_config = xds::client::Config::new(Arc::new(cfg_clone));
 			let ads_client = xds_config
-				.with_watched_handler::<XdsTarget>(xds::MCP_TARGET_TYPE, updater.clone())
+				.with_watched_handler::<XdsMCPTarget>(xds::MCP_TARGET_TYPE, updater.clone())
+				.with_watched_handler::<XdsA2ATarget>(xds::A2A_TARGET_TYPE, updater.clone())
 				.with_watched_handler::<XdsListener>(xds::LISTENER_TYPE, updater)
 				.build(metrics, awaiting_ready);
 
