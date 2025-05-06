@@ -10,9 +10,9 @@ use tracing_subscriber::{self, EnvFilter};
 
 use agentgateway::admin;
 use agentgateway::mtrcs;
+use agentgateway::proto::agentgateway::dev::a2a::target::Target as XdsA2ATarget;
 use agentgateway::proto::agentgateway::dev::listener::Listener as XdsListener;
 use agentgateway::proto::agentgateway::dev::mcp::target::Target as XdsMCPTarget;
-use agentgateway::proto::agentgateway::dev::a2a::target::Target as XdsA2ATarget;
 use agentgateway::relay;
 use agentgateway::signal;
 use agentgateway::trcng;
