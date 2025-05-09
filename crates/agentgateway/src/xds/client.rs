@@ -290,11 +290,7 @@ impl Config {
 		let node_name = std::env::var(NODE_NAME);
 		let node_name = node_name.as_deref().unwrap_or(EMPTY_STR);
 
-		let role = format!(
-			"mcp-kgateway-kube-gateway-api~{ns}~{name}",
-			ns = ns,
-			name = gw_name
-		);
+		let role = format!("agentgateway-api~{ns}~{name}", ns = ns, name = gw_name);
 
 		let mut metadata = Self::build_struct([
 			(NAME, pod_name),
