@@ -60,11 +60,11 @@ generate-apis:
     		--go_opt=paths=source_relative \
     		./crates/agentgateway/proto/rbac.proto
 	protoc --proto_path=./crates/agentgateway/proto/ \
-		--go_out=./go/api/a2a \
+		--go_out=./go/api \
 		--go_opt=paths=source_relative \
 		./crates/agentgateway/proto/a2a/target.proto
 	protoc --proto_path=./crates/agentgateway/proto/ \
-		--go_out=./go/api/mcp \
+		--go_out=./go/api \
 		--go_opt=paths=source_relative \
 		--go_opt=Mcommon.proto=github.com/agentgateway/agentgateway/go/api/common \
 		./crates/agentgateway/proto/mcp/target.proto
