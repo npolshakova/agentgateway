@@ -7,7 +7,7 @@
 package a2a
 
 import (
-	common "github.com/agentgateway/go/api/common"
+	common "github.com/agentgateway/agentgateway/go/api/common"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
