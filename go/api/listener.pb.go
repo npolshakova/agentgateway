@@ -8,6 +8,7 @@ package api
 
 import (
 	common "github.com/agentgateway/agentgateway/go/api/common"
+	rbac "github.com/agentgateway/agentgateway/go/api/rbac"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -175,7 +176,7 @@ type SseListener struct {
 	Port  uint32                 `protobuf:"varint,2,opt,name=port,proto3" json:"port,omitempty"`
 	Tls   *SseListener_TlsConfig `protobuf:"bytes,3,opt,name=tls,proto3" json:"tls,omitempty"`
 	Authn *SseListener_Authn     `protobuf:"bytes,4,opt,name=authn,proto3" json:"authn,omitempty"`
-	Rbac  []*RuleSet             `protobuf:"bytes,5,rep,name=rbac,proto3" json:"rbac,omitempty"`
+	Rbac  []*rbac.RuleSet        `protobuf:"bytes,5,rep,name=rbac,proto3" json:"rbac,omitempty"`
 }
 
 func (x *SseListener) Reset() {
@@ -238,7 +239,7 @@ func (x *SseListener) GetAuthn() *SseListener_Authn {
 	return nil
 }
 
-func (x *SseListener) GetRbac() []*RuleSet {
+func (x *SseListener) GetRbac() []*rbac.RuleSet {
 	if x != nil {
 		return x.Rbac
 	}
@@ -580,7 +581,7 @@ var file_listener_proto_goTypes = []interface{}{
 	(*SseListener_TlsConfig)(nil),       // 4: agentgateway.dev.listener.SseListener.TlsConfig
 	(*SseListener_Authn)(nil),           // 5: agentgateway.dev.listener.SseListener.Authn
 	(*SseListener_Authn_JwtConfig)(nil), // 6: agentgateway.dev.listener.SseListener.Authn.JwtConfig
-	(*RuleSet)(nil),                     // 7: agentgateway.dev.rbac.RuleSet
+	(*rbac.RuleSet)(nil),                // 7: agentgateway.dev.rbac.RuleSet
 	(*common.LocalDataSource)(nil),      // 8: agentgateway.dev.common.LocalDataSource
 	(*common.RemoteDataSource)(nil),     // 9: agentgateway.dev.common.RemoteDataSource
 }
@@ -608,7 +609,6 @@ func file_listener_proto_init() {
 	if File_listener_proto != nil {
 		return
 	}
-	file_rbac_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_listener_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Listener); i {
