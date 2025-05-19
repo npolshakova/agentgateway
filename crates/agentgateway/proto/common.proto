@@ -4,7 +4,7 @@ import "google/protobuf/duration.proto";
 import "google/protobuf/empty.proto";
 package agentgateway.dev.common;
 
-option go_package = "github.com/agentgateway/agentgateway/go/api;api";
+option go_package = "github.com/agentgateway/agentgateway/go/api/common;common";
 
 message LocalDataSource {
   oneof source {
