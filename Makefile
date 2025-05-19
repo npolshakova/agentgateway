@@ -48,9 +48,13 @@ validate: $(objects)
 %/config.json:
 	cargo run -- --mode=validate -f $*/config.json
 
+.PHONY: install-go-tools
+install-go-tools:
+	go install github.com/golang/protobuf/protoc-gen-go
+
 # Code generation for xds apis
 .PHONY: generate-apis
-generate-apis:
+generate-apis: install-go-tools
 	protoc --proto_path=./crates/agentgateway/proto/ \
 		--go_out=./go/api/common \
 		--go_opt=paths=source_relative \
