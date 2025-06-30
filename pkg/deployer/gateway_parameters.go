@@ -8,17 +8,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/kgateway-dev/kgateway/v2/api/v1alpha1"
-	"github.com/kgateway-dev/kgateway/v2/internal/kgateway/wellknown"
 	common "github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/collections"
 )
 
 // Inputs is the set of options used to configure gateway/ineference pool deployment.
 type Inputs struct {
-	Dev                  bool
-	IstioAutoMtlsEnabled bool
-	ControlPlane         ControlPlaneInfo
-	ImageInfo            *ImageInfo
-	CommonCollections    *common.CommonCollections
+	Dev                      bool
+	IstioAutoMtlsEnabled     bool
+	ControlPlane             ControlPlaneInfo
+	ImageInfo                *ImageInfo
+	CommonCollections        *common.CommonCollections
+	GatewayClassName         string
+	WaypointGatewayClassName string
+	AgentGatewayClassName    string
 }
 
 type ExtraGatewayParameters struct {
@@ -57,13 +59,13 @@ func ApplyFloatingUserId(dstKube *v1alpha1.KubernetesProxyConfig) {
 }
 
 // GetInMemoryGatewayParameters returns an in-memory GatewayParameters based on the name of the gateway class.
-func GetInMemoryGatewayParameters(name string, imageInfo *ImageInfo) *v1alpha1.GatewayParameters {
+func GetInMemoryGatewayParameters(name string, imageInfo *ImageInfo, gatewayClassName, waypointClassName, agentGatewayClassName string) *v1alpha1.GatewayParameters {
 	switch name {
-	case wellknown.WaypointClassName:
+	case waypointClassName:
 		return defaultWaypointGatewayParameters(imageInfo)
-	case wellknown.GatewayClassName:
+	case gatewayClassName:
 		return defaultGatewayParameters(imageInfo)
-	case wellknown.AgentGatewayClassName:
+	case agentGatewayClassName:
 		return defaultAgentGatewayParameters(imageInfo)
 	default:
 		return defaultGatewayParameters(imageInfo)
