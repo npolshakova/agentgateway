@@ -37,20 +37,6 @@ use crate::types::proto;
 use crate::types::proto::ProtoError;
 use crate::*;
 
-fn resolve_backend_reference(backend_key: &str) -> Result<Backend, ProtoError> {
-	// Resolve backend reference to MCP backend
-	// In XDS, backend_key should correspond to an MCP backend definition
-	// For now, we create a Backend::MCP with the key as the name
-	// TODO: In a complete implementation, this should:
-	// 1. Look up the actual backend definition from XDS configuration
-	// 2. Extract the MCP backend configuration (name, targets, etc.)
-	// 3. Convert using the existing Backend::try_from logic
-	Ok(Backend::MCP(McpBackend {
-		name: strng::new(backend_key),
-		targets: Vec::new(), // Will be populated when full backend resolution is implemented
-	}))
-}
-
 impl TryFrom<&proto::agent::TlsConfig> for TLSConfig {
 	type Error = anyhow::Error;
 
@@ -193,11 +179,8 @@ impl TryFrom<&proto::agent::RouteBackend> for RouteBackend {
 					port: s.port as u16,
 				}
 			},
-			Some(proto::agent::route_backend::Kind::Backend(backend_key)) => {
-				// Resolve backend_key to backend definition and convert to Backend
-				// Since we don't have access to backend definitions in this TryFrom context,
-				// we need to implement this at a higher level where backend definitions are available
-				resolve_backend_reference(backend_key)?
+			Some(proto::agent::route_backend::Kind::Backend(backend)) => {
+				Backend::try_from(backend)?
 			},
 		};
 		let filters = s

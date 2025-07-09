@@ -165,7 +165,7 @@ message Header {
 message RouteBackend {
   oneof kind {
     string service = 1;
-    string backend = 5;
+    Backend backend = 5;
   }
   int32 weight = 2;
   int32 port = 3;
