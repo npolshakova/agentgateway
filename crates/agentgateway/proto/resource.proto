@@ -63,6 +63,15 @@ message Route {
   TrafficPolicy traffic_policy = 9;
 }
 
+message TcpRoute {
+  string key = 1;
+  string listener_key = 2;
+  string rule_name = 3;
+  string route_name = 4;
+  repeated string hostnames = 5; // for TLS only
+  repeated RouteBackend backends = 8;
+}
+
 message TrafficPolicy {
   google.protobuf.Duration backend_request_timeout = 1;
   google.protobuf.Duration request_timeout = 2;
@@ -156,8 +165,43 @@ message Header {
 message RouteBackend {
   oneof kind {
     string service = 1;
+    string backend = 5;
   }
   int32 weight = 2;
   int32 port = 3;
   repeated RouteFilter filters = 4;
+}
+
+message Backend {
+  oneof kind {
+    MCPBackend mcp = 1;
+  }
+}
+
+message MCPBackend {
+  string name = 1;
+  repeated MCPTarget targets = 2;
+}
+
+message MCPTarget {
+  string name = 1;
+  string host = 2;
+  int32 port = 3;
+  bool enable_tls = 4;
+  repeated MCPFilter filters = 5;
+}
+
+message MCPFilter {
+  string type = 1; 
+  FilterMatcher match = 2;
+}
+
+message FilterMatcher {
+  oneof kind {
+    string exact = 1;
+    string prefix = 2;
+    string suffix = 3;
+    string contains = 4;
+    string regex = 5;
+  }
 }

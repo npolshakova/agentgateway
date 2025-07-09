@@ -30,11 +30,26 @@ use crate::http::jwt::Jwt;
 use crate::http::localratelimit::RateLimit;
 use crate::http::{HeaderName, HeaderValue, StatusCode, filters, retry, status, timeout, uri};
 use crate::mcp::rbac::RuleSet;
+use crate::mcp::relay::upstream;
 use crate::transport::tls;
 use crate::types::discovery::NamespacedHostname;
 use crate::types::proto;
 use crate::types::proto::ProtoError;
 use crate::*;
+
+fn resolve_backend_reference(backend_key: &str) -> Result<Backend, ProtoError> {
+	// Resolve backend reference to MCP backend
+	// In XDS, backend_key should correspond to an MCP backend definition
+	// For now, we create a Backend::MCP with the key as the name
+	// TODO: In a complete implementation, this should:
+	// 1. Look up the actual backend definition from XDS configuration
+	// 2. Extract the MCP backend configuration (name, targets, etc.)
+	// 3. Convert using the existing Backend::try_from logic
+	Ok(Backend::MCP(McpBackend {
+		name: strng::new(backend_key),
+		targets: Vec::new(), // Will be populated when full backend resolution is implemented
+	}))
+}
 
 impl TryFrom<&proto::agent::TlsConfig> for TLSConfig {
 	type Error = anyhow::Error;
@@ -51,6 +66,110 @@ impl TryFrom<&proto::agent::TlsConfig> for TLSConfig {
 		sc.alpn_protocols = vec![b"http/1.1".into()];
 		Ok(TLSConfig {
 			config: Arc::new(sc),
+		})
+	}
+}
+
+impl TryFrom<&proto::agent::McpTarget> for McpTarget {
+	type Error = ProtoError;
+
+	fn try_from(s: &proto::agent::McpTarget) -> Result<Self, Self::Error> {
+		let spec = McpTargetSpec::Mcp(StreamableHTTPTargetSpec {
+			host: s.host.clone(),
+			port: s.port as u32,
+			path: "/".to_string(), // use a default path?
+		});
+		
+		let filters = s
+			.filters
+			.iter()
+			.map(upstream::Filter::try_from)
+			.collect::<Result<Vec<_>, _>>()?;
+
+		Ok(McpTarget {
+			name: strng::new(&s.name),
+			spec,
+			filters,
+		})
+	}
+}
+
+impl TryFrom<&proto::agent::McpFilter> for upstream::Filter {
+	type Error = ProtoError;
+
+	fn try_from(s: &proto::agent::McpFilter) -> Result<Self, Self::Error> {
+		let matcher = match &s.r#match {
+			None => return Err(ProtoError::Generic("McpFilter missing match".to_string())),
+			Some(m) => match &m.kind {
+				None => return Err(ProtoError::Generic("FilterMatcher missing kind".to_string())),
+				Some(proto::agent::filter_matcher::Kind::Exact(v)) => {
+					upstream::FilterMatcher::Equals(v.clone())
+				},
+				Some(proto::agent::filter_matcher::Kind::Prefix(v)) => {
+					upstream::FilterMatcher::Prefix(v.clone())
+				},
+				Some(proto::agent::filter_matcher::Kind::Suffix(v)) => {
+					upstream::FilterMatcher::Suffix(v.clone())
+				},
+				Some(proto::agent::filter_matcher::Kind::Contains(v)) => {
+					upstream::FilterMatcher::Contains(v.clone())
+				},
+				Some(proto::agent::filter_matcher::Kind::Regex(v)) => {
+					upstream::FilterMatcher::Regex(regex::Regex::new(v)?)
+				},
+			},
+		};
+
+		Ok(upstream::Filter::new(matcher, s.r#type.clone()))
+	}
+}
+
+impl TryFrom<&proto::agent::TcpRoute> for (TCPRoute, ListenerKey) {
+	type Error = ProtoError;
+
+	fn try_from(s: &proto::agent::TcpRoute) -> Result<Self, Self::Error> {
+		let r = TCPRoute {
+			key: strng::new(&s.key),
+			route_name: strng::new(&s.route_name),
+			rule_name: default_as_none(s.rule_name.as_str()).map(strng::new),
+			hostnames: s.hostnames.iter().map(strng::new).collect(),
+			backends: s
+				.backends
+				.iter()
+				.map(TCPRouteBackend::try_from)
+				.collect::<Result<Vec<_>, _>>()?,
+		};
+		Ok((r, strng::new(&s.listener_key)))
+	}
+}
+
+impl TryFrom<&proto::agent::RouteBackend> for TCPRouteBackend {
+	type Error = ProtoError;
+
+	fn try_from(s: &proto::agent::RouteBackend) -> Result<Self, Self::Error> {
+		let backend = match &s.kind {
+			None => SimpleBackend::Invalid,
+			Some(proto::agent::route_backend::Kind::Service(svc_key)) => {
+				let ns = match svc_key.split_once('/') {
+					Some((namespace, hostname)) => Ok(NamespacedHostname {
+						namespace: namespace.into(),
+						hostname: hostname.into(),
+					}),
+					None => Err(ProtoError::NamespacedHostnameParse(svc_key.clone())),
+				}?;
+				SimpleBackend::Service {
+					name: ns,
+					port: s.port as u16,
+				}
+			},
+			Some(proto::agent::route_backend::Kind::Backend(_)) => {
+				// Backend references are not supported for TCP routes (only Service backends)
+				return Err(ProtoError::Generic("Backend references are not supported for TCP routes".to_string()));
+			},
+		};
+		Ok(Self {
+			weight: s.weight as usize,
+			backend,
 		})
 	}
 }
@@ -74,6 +193,12 @@ impl TryFrom<&proto::agent::RouteBackend> for RouteBackend {
 					port: s.port as u16,
 				}
 			},
+			Some(proto::agent::route_backend::Kind::Backend(backend_key)) => {
+				// Resolve backend_key to backend definition and convert to Backend
+				// Since we don't have access to backend definitions in this TryFrom context,
+				// we need to implement this at a higher level where backend definitions are available
+				resolve_backend_reference(backend_key)?
+			},
 		};
 		let filters = s
 			.filters
@@ -85,6 +210,22 @@ impl TryFrom<&proto::agent::RouteBackend> for RouteBackend {
 			backend: kind,
 			filters,
 		})
+	}
+}
+
+impl TryFrom<&proto::agent::Backend> for Backend {
+	type Error = ProtoError;
+
+	fn try_from(s: &proto::agent::Backend) -> Result<Self, Self::Error> {
+		match &s.kind {
+			None => Ok(Backend::Invalid),
+			Some(proto::agent::backend::Kind::Mcp(mcp)) => {
+				Ok(Backend::MCP(McpBackend {
+					name: strng::new(&mcp.name),
+					targets: mcp.targets.iter().map(|t| McpTarget::try_from(t).map(Arc::new)).collect::<Result<Vec<_>, _>>()?,
+				}))
+			},
+		}
 	}
 }
 
