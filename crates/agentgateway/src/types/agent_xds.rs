@@ -82,6 +82,20 @@ impl TryFrom<&proto::agent::RouteBackend> for RouteBackendReference {
 	}
 }
 
+impl TryFrom<proto::agent::BackendAuthPolicy> for BackendAuth {
+	type Error = ProtoError;
+
+	fn try_from(s: proto::agent::BackendAuthPolicy) -> Result<Self, Self::Error> {
+		Ok(match s.kind {
+			Some(proto::agent::backend_auth_policy::Kind::Passthrough(p)) => BackendAuth::Passthrough {},
+			Some(proto::agent::backend_auth_policy::Kind::Key(k)) => BackendAuth::Key(k.secret.into()),
+			Some(proto::agent::backend_auth_policy::Kind::Gcp(g)) => BackendAuth::Gcp {},
+			Some(proto::agent::backend_auth_policy::Kind::Aws(a)) => BackendAuth::Aws {},
+			None => return Err(ProtoError::MissingRequiredField),
+		})
+	}
+}
+
 impl TryFrom<proto::agent::TrafficPolicy> for TrafficPolicy {
 	type Error = ProtoError;
 
