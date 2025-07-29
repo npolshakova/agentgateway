@@ -239,19 +239,19 @@ impl TryFrom<&proto::agent::Route> for (Route, ListenerKey) {
 	}
 }
 
-impl TryFrom<&proto::agent::Backend> for Backend {
+impl TryFrom<&proto::agent::Backend> for (Backend, Option<TargetedPolicy>) {
 	type Error = ProtoError;
 
 	fn try_from(s: &proto::agent::Backend) -> Result<Self, Self::Error> {
 		let name = BackendName::from(&s.name);
-		Ok(match &s.kind {
+		let backend = match &s.kind {
 			Some(proto::agent::backend::Kind::Static(s)) => Backend::Opaque(
-				name,
+				name.clone(),
 				Target::try_from((s.host.as_str(), s.port as u16))
 					.map_err(|e| ProtoError::Generic(e.to_string()))?,
 			),
 			Some(proto::agent::backend::Kind::Ai(a)) => Backend::AI(
-				name,
+				name.clone(),
 				AIBackend {
 					host_override: a
 						.r#override
@@ -304,7 +304,7 @@ impl TryFrom<&proto::agent::Backend> for Backend {
 				},
 			),
 			Some(proto::agent::backend::Kind::Mcp(m)) => Backend::MCP(
-				name,
+				name.clone(),
 				McpBackend {
 					targets: m
 						.targets
@@ -316,7 +316,22 @@ impl TryFrom<&proto::agent::Backend> for Backend {
 			_ => {
 				return Err(ProtoError::Generic("unknown backend".to_string()));
 			},
-		})
+		};
+
+		// Convert auth policy if present
+		let auth_policy = match &s.auth {
+			Some(auth) => {
+				let backend_auth = BackendAuth::try_from(auth.clone())?;
+				Some(TargetedPolicy {
+					name: strng::format!("{}/auth", name),
+					target: PolicyTarget::Backend(name),
+					policy: Policy::BackendAuth(backend_auth),
+				})
+			},
+			None => None,
+		};
+
+		Ok((backend, auth_policy))
 	}
 }
 
