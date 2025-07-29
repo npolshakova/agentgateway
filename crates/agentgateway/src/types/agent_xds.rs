@@ -239,7 +239,7 @@ impl TryFrom<&proto::agent::Route> for (Route, ListenerKey) {
 	}
 }
 
-impl TryFrom<&proto::agent::Backend> for (Backend, Option<TargetedPolicy>) {
+impl TryFrom<&proto::agent::Backend> for Backend {
 	type Error = ProtoError;
 
 	fn try_from(s: &proto::agent::Backend) -> Result<Self, Self::Error> {
@@ -317,21 +317,7 @@ impl TryFrom<&proto::agent::Backend> for (Backend, Option<TargetedPolicy>) {
 				return Err(ProtoError::Generic("unknown backend".to_string()));
 			},
 		};
-
-		// Convert auth policy if present
-		let auth_policy = match &s.auth {
-			Some(auth) => {
-				let backend_auth = BackendAuth::try_from(auth.clone())?;
-				Some(TargetedPolicy {
-					name: strng::format!("{}/auth", name),
-					target: PolicyTarget::Backend(name),
-					policy: Policy::BackendAuth(backend_auth),
-				})
-			},
-			None => None,
-		};
-
-		Ok((backend, auth_policy))
+		Ok(backend)
 	}
 }
 
@@ -581,6 +567,9 @@ impl TryFrom<&proto::agent::Policy> for TargetedPolicy {
 				Policy::InferenceRouting(ext_proc::InferenceRouting {
 					target: Arc::new(resolve_simple_reference(ir.endpoint_picker.as_ref())?),
 				})
+			},
+			Some(proto::agent::policy_spec::Kind::Auth(auth)) => {
+				Policy::BackendAuth(BackendAuth::try_from(auth.clone())?)
 			},
 			_ => return Err(ProtoError::EnumParse("unknown spec kind".to_string())),
 		};

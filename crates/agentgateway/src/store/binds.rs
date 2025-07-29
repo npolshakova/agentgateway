@@ -526,11 +526,8 @@ impl Store {
 		Ok(())
 	}
 	fn insert_xds_backend(&mut self, raw: XdsBackend) -> anyhow::Result<()> {
-		let (backend, auth_policy): (Backend, Option<TargetedPolicy>) = (&raw).try_into()?;
+		let backend: Backend = (&raw).try_into()?;
 		self.insert_backend(backend);
-		if let Some(policy) = auth_policy {
-			self.insert_policy(policy);
-		}
 		Ok(())
 	}
 	fn insert_xds_policy(&mut self, raw: XdsPolicy) -> anyhow::Result<()> {

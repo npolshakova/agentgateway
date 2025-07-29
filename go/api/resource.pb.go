@@ -2268,6 +2268,7 @@ type PolicySpec struct {
 	//	*PolicySpec_ExtAuthz
 	//	*PolicySpec_A2A_
 	//	*PolicySpec_InferenceRouting_
+	//	*PolicySpec_Auth
 	Kind          isPolicySpec_Kind `protobuf_oneof:"kind"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2346,6 +2347,15 @@ func (x *PolicySpec) GetInferenceRouting() *PolicySpec_InferenceRouting {
 	return nil
 }
 
+func (x *PolicySpec) GetAuth() *BackendAuthPolicy {
+	if x != nil {
+		if x, ok := x.Kind.(*PolicySpec_Auth); ok {
+			return x.Auth
+		}
+	}
+	return nil
+}
+
 type isPolicySpec_Kind interface {
 	isPolicySpec_Kind()
 }
@@ -2366,6 +2376,10 @@ type PolicySpec_InferenceRouting_ struct {
 	InferenceRouting *PolicySpec_InferenceRouting `protobuf:"bytes,4,opt,name=inference_routing,json=inferenceRouting,proto3,oneof"`
 }
 
+type PolicySpec_Auth struct {
+	Auth *BackendAuthPolicy `protobuf:"bytes,5,opt,name=auth,proto3,oneof"`
+}
+
 func (*PolicySpec_LocalRateLimit_) isPolicySpec_Kind() {}
 
 func (*PolicySpec_ExtAuthz) isPolicySpec_Kind() {}
@@ -2373,6 +2387,8 @@ func (*PolicySpec_ExtAuthz) isPolicySpec_Kind() {}
 func (*PolicySpec_A2A_) isPolicySpec_Kind() {}
 
 func (*PolicySpec_InferenceRouting_) isPolicySpec_Kind() {}
+
+func (*PolicySpec_Auth) isPolicySpec_Kind() {}
 
 type Policy struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -2444,8 +2460,7 @@ type Backend struct {
 	//	*Backend_Static
 	//	*Backend_Ai
 	//	*Backend_Mcp
-	Kind          isBackend_Kind     `protobuf_oneof:"kind"`
-	Auth          *BackendAuthPolicy `protobuf:"bytes,5,opt,name=auth,proto3" json:"auth,omitempty"`
+	Kind          isBackend_Kind `protobuf_oneof:"kind"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2517,13 +2532,6 @@ func (x *Backend) GetMcp() *MCPBackend {
 		if x, ok := x.Kind.(*Backend_Mcp); ok {
 			return x.Mcp
 		}
-	}
-	return nil
-}
-
-func (x *Backend) GetAuth() *BackendAuthPolicy {
-	if x != nil {
-		return x.Auth
 	}
 	return nil
 }
@@ -3575,13 +3583,14 @@ const file_resource_proto_rawDesc = "" +
 	"\n" +
 	"route_rule\x18\x04 \x01(\tH\x00R\trouteRule\x12\x1a\n" +
 	"\abackend\x18\x05 \x01(\tH\x00R\abackendB\x06\n" +
-	"\x04kind\"\xd6\a\n" +
+	"\x04kind\"\x9a\b\n" +
 	"\n" +
 	"PolicySpec\x12`\n" +
 	"\x10local_rate_limit\x18\x01 \x01(\v24.agentgateway.dev.resource.PolicySpec.LocalRateLimitH\x00R\x0elocalRateLimit\x12Q\n" +
 	"\text_authz\x18\x02 \x01(\v22.agentgateway.dev.resource.PolicySpec.ExternalAuthH\x00R\bextAuthz\x12=\n" +
 	"\x03a2a\x18\x03 \x01(\v2).agentgateway.dev.resource.PolicySpec.A2aH\x00R\x03a2a\x12e\n" +
-	"\x11inference_routing\x18\x04 \x01(\v26.agentgateway.dev.resource.PolicySpec.InferenceRoutingH\x00R\x10inferenceRouting\x1a\x86\x02\n" +
+	"\x11inference_routing\x18\x04 \x01(\v26.agentgateway.dev.resource.PolicySpec.InferenceRoutingH\x00R\x10inferenceRouting\x12B\n" +
+	"\x04auth\x18\x05 \x01(\v2,.agentgateway.dev.resource.BackendAuthPolicyH\x00R\x04auth\x1a\x86\x02\n" +
 	"\x0eLocalRateLimit\x12\x1d\n" +
 	"\n" +
 	"max_tokens\x18\x01 \x01(\x04R\tmaxTokens\x12&\n" +
@@ -3604,13 +3613,12 @@ const file_resource_proto_rawDesc = "" +
 	"\x06Policy\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12?\n" +
 	"\x06target\x18\x02 \x01(\v2'.agentgateway.dev.resource.PolicyTargetR\x06target\x129\n" +
-	"\x04spec\x18\x03 \x01(\v2%.agentgateway.dev.resource.PolicySpecR\x04spec\"\x9e\x02\n" +
+	"\x04spec\x18\x03 \x01(\v2%.agentgateway.dev.resource.PolicySpecR\x04spec\"\xdc\x01\n" +
 	"\aBackend\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12B\n" +
 	"\x06static\x18\x02 \x01(\v2(.agentgateway.dev.resource.StaticBackendH\x00R\x06static\x126\n" +
 	"\x02ai\x18\x03 \x01(\v2$.agentgateway.dev.resource.AIBackendH\x00R\x02ai\x129\n" +
-	"\x03mcp\x18\x04 \x01(\v2%.agentgateway.dev.resource.MCPBackendH\x00R\x03mcp\x12@\n" +
-	"\x04auth\x18\x05 \x01(\v2,.agentgateway.dev.resource.BackendAuthPolicyR\x04authB\x06\n" +
+	"\x03mcp\x18\x04 \x01(\v2%.agentgateway.dev.resource.MCPBackendH\x00R\x03mcpB\x06\n" +
 	"\x04kind\"7\n" +
 	"\rStaticBackend\x12\x12\n" +
 	"\x04host\x18\x01 \x01(\tR\x04host\x12\x12\n" +
@@ -3773,12 +3781,12 @@ var file_resource_proto_depIdxs = []int32{
 	39, // 37: agentgateway.dev.resource.PolicySpec.ext_authz:type_name -> agentgateway.dev.resource.PolicySpec.ExternalAuth
 	40, // 38: agentgateway.dev.resource.PolicySpec.a2a:type_name -> agentgateway.dev.resource.PolicySpec.A2a
 	41, // 39: agentgateway.dev.resource.PolicySpec.inference_routing:type_name -> agentgateway.dev.resource.PolicySpec.InferenceRouting
-	29, // 40: agentgateway.dev.resource.Policy.target:type_name -> agentgateway.dev.resource.PolicyTarget
-	30, // 41: agentgateway.dev.resource.Policy.spec:type_name -> agentgateway.dev.resource.PolicySpec
-	33, // 42: agentgateway.dev.resource.Backend.static:type_name -> agentgateway.dev.resource.StaticBackend
-	34, // 43: agentgateway.dev.resource.Backend.ai:type_name -> agentgateway.dev.resource.AIBackend
-	35, // 44: agentgateway.dev.resource.Backend.mcp:type_name -> agentgateway.dev.resource.MCPBackend
-	10, // 45: agentgateway.dev.resource.Backend.auth:type_name -> agentgateway.dev.resource.BackendAuthPolicy
+	10, // 40: agentgateway.dev.resource.PolicySpec.auth:type_name -> agentgateway.dev.resource.BackendAuthPolicy
+	29, // 41: agentgateway.dev.resource.Policy.target:type_name -> agentgateway.dev.resource.PolicyTarget
+	30, // 42: agentgateway.dev.resource.Policy.spec:type_name -> agentgateway.dev.resource.PolicySpec
+	33, // 43: agentgateway.dev.resource.Backend.static:type_name -> agentgateway.dev.resource.StaticBackend
+	34, // 44: agentgateway.dev.resource.Backend.ai:type_name -> agentgateway.dev.resource.AIBackend
+	35, // 45: agentgateway.dev.resource.Backend.mcp:type_name -> agentgateway.dev.resource.MCPBackend
 	43, // 46: agentgateway.dev.resource.AIBackend.override:type_name -> agentgateway.dev.resource.AIBackend.Override
 	44, // 47: agentgateway.dev.resource.AIBackend.openai:type_name -> agentgateway.dev.resource.AIBackend.OpenAI
 	45, // 48: agentgateway.dev.resource.AIBackend.gemini:type_name -> agentgateway.dev.resource.AIBackend.Gemini
@@ -3865,6 +3873,7 @@ func file_resource_proto_init() {
 		(*PolicySpec_ExtAuthz)(nil),
 		(*PolicySpec_A2A_)(nil),
 		(*PolicySpec_InferenceRouting_)(nil),
+		(*PolicySpec_Auth)(nil),
 	}
 	file_resource_proto_msgTypes[29].OneofWrappers = []any{
 		(*Backend_Static)(nil),

@@ -243,6 +243,7 @@ message PolicySpec {
     ExternalAuth ext_authz = 2;
     A2a a2a = 3;
     InferenceRouting inference_routing = 4;
+    BackendAuthPolicy auth = 5;
   }
 }
 
@@ -260,7 +261,6 @@ message Backend {
     AIBackend ai = 3;
     MCPBackend mcp = 4;
   }
-  BackendAuthPolicy auth = 5;
 }
 
 message StaticBackend {
