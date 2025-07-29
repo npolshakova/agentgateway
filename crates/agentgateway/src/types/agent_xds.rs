@@ -92,13 +92,23 @@ impl TryFrom<proto::agent::TrafficPolicy> for TrafficPolicy {
 			.map(|v| v.try_into())
 			.transpose()?;
 
+		let retry = s.retry.map(|retry_proto| -> Result<crate::http::retry::Policy, ProtoError> {
+			let codes: Result<Vec<http::StatusCode>, _> = retry_proto.retry_status_codes.iter()
+				.map(|&v| http::StatusCode::from_u16(v as u16).map_err(|_| ProtoError::Generic(format!("invalid status code: {}", v))))
+				.collect();
+			Ok(crate::http::retry::Policy {
+				codes: codes?.into_boxed_slice(),
+				attempts: std::num::NonZeroU8::new(retry_proto.attempts as u8).unwrap_or_else(|| std::num::NonZeroU8::new(1).unwrap()),
+				backoff: retry_proto.backoff.map(|v| v.try_into()).transpose()?,
+			})
+		}).transpose()?;
+
 		Ok(Self {
 			timeout: crate::http::timeout::Policy {
 				request_timeout: req,
 				backend_request_timeout: backend,
 			},
-			// TODO: pass in XDS
-			retry: None,
+			retry,
 		})
 	}
 }
@@ -194,7 +204,7 @@ impl TryFrom<&proto::agent::Route> for (Route, ListenerKey) {
 				.iter()
 				.map(RouteBackendReference::try_from)
 				.collect::<Result<Vec<_>, _>>()?,
-			policies: s.traffic_policy.map(TrafficPolicy::try_from).transpose()?,
+			policies: s.traffic_policy.clone().map(TrafficPolicy::try_from).transpose()?,
 		};
 		Ok((r, strng::new(&s.listener_key)))
 	}

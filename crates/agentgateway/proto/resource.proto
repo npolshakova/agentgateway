@@ -66,6 +66,13 @@ message Route {
 message TrafficPolicy {
   google.protobuf.Duration backend_request_timeout = 1;
   google.protobuf.Duration request_timeout = 2;
+  Retry retry = 3;
+}
+
+message Retry {
+  repeated int32 retry_status_codes = 1;
+  int32 attempts = 2;
+  google.protobuf.Duration backoff = 3;
 }
 
 message RouteMatch {
