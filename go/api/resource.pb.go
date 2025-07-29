@@ -2069,7 +2069,6 @@ type RouteBackend struct {
 	Backend       *BackendReference      `protobuf:"bytes,1,opt,name=backend,proto3" json:"backend,omitempty"`
 	Weight        int32                  `protobuf:"varint,2,opt,name=weight,proto3" json:"weight,omitempty"`
 	Filters       []*RouteFilter         `protobuf:"bytes,4,rep,name=filters,proto3" json:"filters,omitempty"`
-	Auth          *BackendAuthPolicy     `protobuf:"bytes,6,opt,name=auth,proto3" json:"auth,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2121,13 +2120,6 @@ func (x *RouteBackend) GetWeight() int32 {
 func (x *RouteBackend) GetFilters() []*RouteFilter {
 	if x != nil {
 		return x.Filters
-	}
-	return nil
-}
-
-func (x *RouteBackend) GetAuth() *BackendAuthPolicy {
-	if x != nil {
-		return x.Auth
 	}
 	return nil
 }
@@ -2452,7 +2444,8 @@ type Backend struct {
 	//	*Backend_Static
 	//	*Backend_Ai
 	//	*Backend_Mcp
-	Kind          isBackend_Kind `protobuf_oneof:"kind"`
+	Kind          isBackend_Kind     `protobuf_oneof:"kind"`
+	Auth          *BackendAuthPolicy `protobuf:"bytes,5,opt,name=auth,proto3" json:"auth,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -2524,6 +2517,13 @@ func (x *Backend) GetMcp() *MCPBackend {
 		if x, ok := x.Kind.(*Backend_Mcp); ok {
 			return x.Mcp
 		}
+	}
+	return nil
+}
+
+func (x *Backend) GetAuth() *BackendAuthPolicy {
+	if x != nil {
+		return x.Auth
 	}
 	return nil
 }
@@ -3563,12 +3563,11 @@ const file_resource_proto_rawDesc = "" +
 	"\x04path\"2\n" +
 	"\x06Header\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value\"\xf1\x01\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value\"\xaf\x01\n" +
 	"\fRouteBackend\x12E\n" +
 	"\abackend\x18\x01 \x01(\v2+.agentgateway.dev.resource.BackendReferenceR\abackend\x12\x16\n" +
 	"\x06weight\x18\x02 \x01(\x05R\x06weight\x12@\n" +
-	"\afilters\x18\x04 \x03(\v2&.agentgateway.dev.resource.RouteFilterR\afilters\x12@\n" +
-	"\x04auth\x18\x06 \x01(\v2,.agentgateway.dev.resource.BackendAuthPolicyR\x04auth\"\xa5\x01\n" +
+	"\afilters\x18\x04 \x03(\v2&.agentgateway.dev.resource.RouteFilterR\afilters\"\xa5\x01\n" +
 	"\fPolicyTarget\x12\x1a\n" +
 	"\agateway\x18\x01 \x01(\tH\x00R\agateway\x12\x1c\n" +
 	"\blistener\x18\x02 \x01(\tH\x00R\blistener\x12\x16\n" +
@@ -3605,12 +3604,13 @@ const file_resource_proto_rawDesc = "" +
 	"\x06Policy\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12?\n" +
 	"\x06target\x18\x02 \x01(\v2'.agentgateway.dev.resource.PolicyTargetR\x06target\x129\n" +
-	"\x04spec\x18\x03 \x01(\v2%.agentgateway.dev.resource.PolicySpecR\x04spec\"\xdc\x01\n" +
+	"\x04spec\x18\x03 \x01(\v2%.agentgateway.dev.resource.PolicySpecR\x04spec\"\x9e\x02\n" +
 	"\aBackend\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12B\n" +
 	"\x06static\x18\x02 \x01(\v2(.agentgateway.dev.resource.StaticBackendH\x00R\x06static\x126\n" +
 	"\x02ai\x18\x03 \x01(\v2$.agentgateway.dev.resource.AIBackendH\x00R\x02ai\x129\n" +
-	"\x03mcp\x18\x04 \x01(\v2%.agentgateway.dev.resource.MCPBackendH\x00R\x03mcpB\x06\n" +
+	"\x03mcp\x18\x04 \x01(\v2%.agentgateway.dev.resource.MCPBackendH\x00R\x03mcp\x12@\n" +
+	"\x04auth\x18\x05 \x01(\v2,.agentgateway.dev.resource.BackendAuthPolicyR\x04authB\x06\n" +
 	"\x04kind\"7\n" +
 	"\rStaticBackend\x12\x12\n" +
 	"\x04host\x18\x01 \x01(\tR\x04host\x12\x12\n" +
@@ -3769,16 +3769,16 @@ var file_resource_proto_depIdxs = []int32{
 	37, // 33: agentgateway.dev.resource.RequestMirror.backend:type_name -> agentgateway.dev.resource.BackendReference
 	37, // 34: agentgateway.dev.resource.RouteBackend.backend:type_name -> agentgateway.dev.resource.BackendReference
 	20, // 35: agentgateway.dev.resource.RouteBackend.filters:type_name -> agentgateway.dev.resource.RouteFilter
-	10, // 36: agentgateway.dev.resource.RouteBackend.auth:type_name -> agentgateway.dev.resource.BackendAuthPolicy
-	38, // 37: agentgateway.dev.resource.PolicySpec.local_rate_limit:type_name -> agentgateway.dev.resource.PolicySpec.LocalRateLimit
-	39, // 38: agentgateway.dev.resource.PolicySpec.ext_authz:type_name -> agentgateway.dev.resource.PolicySpec.ExternalAuth
-	40, // 39: agentgateway.dev.resource.PolicySpec.a2a:type_name -> agentgateway.dev.resource.PolicySpec.A2a
-	41, // 40: agentgateway.dev.resource.PolicySpec.inference_routing:type_name -> agentgateway.dev.resource.PolicySpec.InferenceRouting
-	29, // 41: agentgateway.dev.resource.Policy.target:type_name -> agentgateway.dev.resource.PolicyTarget
-	30, // 42: agentgateway.dev.resource.Policy.spec:type_name -> agentgateway.dev.resource.PolicySpec
-	33, // 43: agentgateway.dev.resource.Backend.static:type_name -> agentgateway.dev.resource.StaticBackend
-	34, // 44: agentgateway.dev.resource.Backend.ai:type_name -> agentgateway.dev.resource.AIBackend
-	35, // 45: agentgateway.dev.resource.Backend.mcp:type_name -> agentgateway.dev.resource.MCPBackend
+	38, // 36: agentgateway.dev.resource.PolicySpec.local_rate_limit:type_name -> agentgateway.dev.resource.PolicySpec.LocalRateLimit
+	39, // 37: agentgateway.dev.resource.PolicySpec.ext_authz:type_name -> agentgateway.dev.resource.PolicySpec.ExternalAuth
+	40, // 38: agentgateway.dev.resource.PolicySpec.a2a:type_name -> agentgateway.dev.resource.PolicySpec.A2a
+	41, // 39: agentgateway.dev.resource.PolicySpec.inference_routing:type_name -> agentgateway.dev.resource.PolicySpec.InferenceRouting
+	29, // 40: agentgateway.dev.resource.Policy.target:type_name -> agentgateway.dev.resource.PolicyTarget
+	30, // 41: agentgateway.dev.resource.Policy.spec:type_name -> agentgateway.dev.resource.PolicySpec
+	33, // 42: agentgateway.dev.resource.Backend.static:type_name -> agentgateway.dev.resource.StaticBackend
+	34, // 43: agentgateway.dev.resource.Backend.ai:type_name -> agentgateway.dev.resource.AIBackend
+	35, // 44: agentgateway.dev.resource.Backend.mcp:type_name -> agentgateway.dev.resource.MCPBackend
+	10, // 45: agentgateway.dev.resource.Backend.auth:type_name -> agentgateway.dev.resource.BackendAuthPolicy
 	43, // 46: agentgateway.dev.resource.AIBackend.override:type_name -> agentgateway.dev.resource.AIBackend.Override
 	44, // 47: agentgateway.dev.resource.AIBackend.openai:type_name -> agentgateway.dev.resource.AIBackend.OpenAI
 	45, // 48: agentgateway.dev.resource.AIBackend.gemini:type_name -> agentgateway.dev.resource.AIBackend.Gemini
