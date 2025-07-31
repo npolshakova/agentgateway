@@ -14,6 +14,7 @@ message Resource {
     Route route = 3;
     Backend backend = 4;
     Policy policy = 5;
+    TCPRoute tcp_route = 6;
   }
 }
 
@@ -61,6 +62,18 @@ message Route {
   repeated RouteFilter filters = 7;
   repeated RouteBackend backends = 8;
   TrafficPolicy traffic_policy = 9;
+}
+
+message TCPRoute {
+  // Unique key
+  string key = 1;
+  string listener_key = 2;
+  // User facing rule name. May not be unique.
+  string rule_name = 3;
+  // User facing route name May not be unique.
+  string route_name = 4;
+  repeated string hostnames = 5;
+  repeated RouteBackend backends = 6;
 }
 
 message TrafficPolicy {

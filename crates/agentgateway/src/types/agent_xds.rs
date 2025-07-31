@@ -205,6 +205,30 @@ impl TryFrom<&proto::agent::Listener> for (Listener, BindName) {
 	}
 }
 
+impl TryFrom<&proto::agent::TcpRoute> for (TCPRoute, ListenerKey) {
+	type Error = ProtoError;
+
+	fn try_from(s: &proto::agent::TcpRoute) -> Result<Self, Self::Error> {
+		let r = TCPRoute {
+			key: strng::new(&s.key),
+			route_name: strng::new(&s.route_name),
+			rule_name: default_as_none(s.rule_name.as_str()).map(strng::new),
+			hostnames: s.hostnames.iter().map(strng::new).collect(),
+			backends: s
+				.backends
+				.iter()
+				.map(|b| -> Result<TCPRouteBackendReference, ProtoError> {
+					Ok(TCPRouteBackendReference {
+						weight: b.weight as usize,
+						backend: resolve_simple_reference(b.backend.as_ref())?,
+					})
+				})
+				.collect::<Result<Vec<_>, _>>()?,
+		};
+		Ok((r, strng::new(&s.listener_key)))
+	}
+}
+
 impl TryFrom<&proto::agent::Route> for (Route, ListenerKey) {
 	type Error = ProtoError;
 
