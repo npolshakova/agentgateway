@@ -101,10 +101,28 @@ impl TCPProxy {
 		let selected_backend = resolve_backend(selected_backend, self.inputs.as_ref())?;
 
 		let (target, policy_key) = match &selected_backend.backend {
-			SimpleBackend::Service(_, _) => {
-				return Err(ProxyError::Processing(anyhow!(
-					"service is not currently supported for TCPRoute"
-				)));
+			SimpleBackend::Service(svc, port) => {
+				let port = *port;
+				let (ep, wl) = tcp_load_balance(inputs.clone(), svc.as_ref(), port)
+					.ok_or(ProxyError::NoHealthyEndpoints)?;
+				let svc_target_port = svc.ports.get(&port).copied().unwrap_or_default();
+				let target_port = if let Some(&ep_target_port) = ep.port.get(&port) {
+					// use endpoint port mapping
+					ep_target_port
+				} else if svc_target_port > 0 {
+					// otherwise, check if the service has the port
+					svc_target_port
+				} else {
+					return Err(ProxyError::NoHealthyEndpoints);
+				};
+				let Some(ip) = wl.workload_ips.first() else {
+					return Err(ProxyError::NoHealthyEndpoints);
+				};
+				let dest = std::net::SocketAddr::from((*ip, target_port));
+				(
+					Target::Address(dest),
+					PolicyTarget::Backend(selected_backend.backend.name()),
+				)
 			},
 			SimpleBackend::Opaque(name, target) => (target.clone(), PolicyTarget::Backend(name.clone())),
 			SimpleBackend::Invalid => return Err(ProxyError::BackendDoesNotExist),
@@ -170,4 +188,47 @@ fn resolve_backend(
 		weight: b.weight,
 		backend,
 	})
+}
+
+fn tcp_load_balance(
+	pi: Arc<ProxyInputs>,
+	svc: &crate::types::discovery::Service,
+	svc_port: u16,
+) -> Option<(
+	&crate::types::discovery::Endpoint,
+	Arc<crate::types::discovery::Workload>,
+)> {
+	let state = &pi.stores;
+	let workloads = &state.read_discovery().workloads;
+	let target_port = svc.ports.get(&svc_port).copied();
+
+	if target_port.is_none() {
+		// Port doesn't exist on the service at all, this is invalid
+		debug!("service {} does not have port {}", svc.hostname, svc_port);
+		return None;
+	};
+
+	let endpoints = svc.endpoints.iter().filter_map(|ep| {
+		let Some(wl) = workloads.find_uid(&ep.workload_uid) else {
+			debug!("failed to fetch workload for {}", ep.workload_uid);
+			return None;
+		};
+		if target_port.unwrap_or_default() == 0 && !ep.port.contains_key(&svc_port) {
+			// Filter workload out, it doesn't have a matching port
+			trace!(
+				"filter endpoint {}, it does not have service port {}",
+				ep.workload_uid, svc_port
+			);
+			return None;
+		}
+		Some((ep, wl))
+	});
+
+	let options = endpoints.collect_vec();
+	options
+		.choose_weighted(&mut rand::rng(), |(_, wl)| wl.capacity as u64)
+		// This can fail if there are no weights, the sum is zero (not possible in our API), or if it overflows
+		// The API has u32 but we sum into an u64, so it would take ~4 billion entries of max weight to overflow
+		.ok()
+		.cloned()
 }
