@@ -116,10 +116,9 @@ message Aws {
   string secret_access_key = 2;
   // AWS Region (e.g., "us-west-2", "us-east-1")
   string region = 3;
-  // AWS Service name for SigV4 signing (e.g., "bedrock", "s3", "lambda")
-  string service = 4;
   // Optional session token for temporary credentials
-  optional string session_token = 5;
+  optional string session_token = 4;
+  // TODO: make service configurable
 }
 
 message RouteMatch {
