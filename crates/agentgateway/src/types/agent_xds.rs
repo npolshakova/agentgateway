@@ -91,7 +91,12 @@ impl TryFrom<proto::agent::BackendAuthPolicy> for BackendAuth {
 			Some(proto::agent::backend_auth_policy::Kind::Passthrough(p)) => BackendAuth::Passthrough {},
 			Some(proto::agent::backend_auth_policy::Kind::Key(k)) => BackendAuth::Key(k.secret.into()),
 			Some(proto::agent::backend_auth_policy::Kind::Gcp(g)) => BackendAuth::Gcp {},
-			Some(proto::agent::backend_auth_policy::Kind::Aws(a)) => BackendAuth::Aws {},
+			Some(proto::agent::backend_auth_policy::Kind::Aws(a)) => BackendAuth::Aws {
+				access_key_id: a.access_key_id.into(),
+				secret_access_key: a.secret_access_key.into(),
+				region: a.region,
+				session_token: a.session_token.map(|token| token.into()),
+			},
 			None => return Err(ProtoError::MissingRequiredField),
 		})
 	}

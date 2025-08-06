@@ -24,7 +24,16 @@ pub enum BackendAuth {
 	#[serde(rename = "gcp")]
 	Gcp {},
 	#[serde(rename = "aws")]
-	Aws {},
+	Aws {
+		#[serde(serialize_with = "ser_redact")]
+		access_key_id: SecretString,
+		#[serde(serialize_with = "ser_redact")]
+		secret_access_key: SecretString,
+		region: String,
+		#[serde(serialize_with = "ser_redact", skip_serializing_if = "Option::is_none")]
+		session_token: Option<SecretString>,
+		// TODO: make service configurable (only bedrock for now)
+	},
 }
 
 pub async fn apply_backend_auth(
@@ -59,7 +68,7 @@ pub async fn apply_backend_auth(
 				.map_err(ProxyError::BackendAuthenticationFailed)?;
 			req.headers_mut().insert(http::header::AUTHORIZATION, token);
 		},
-		BackendAuth::Aws {} => {
+		BackendAuth::Aws { .. } => {
 			// We handle this in 'apply_late_backend_auth' since it must come at the end!
 		},
 	}
@@ -77,7 +86,7 @@ pub async fn apply_late_backend_auth(
 		BackendAuth::Passthrough {} => {},
 		BackendAuth::Key(k) => {},
 		BackendAuth::Gcp {} => {},
-		BackendAuth::Aws {} => {
+		BackendAuth::Aws { .. } => {
 			aws::sign_request(req)
 				.await
 				.map_err(ProxyError::BackendAuthenticationFailed)?;

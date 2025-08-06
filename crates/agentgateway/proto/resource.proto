@@ -109,7 +109,18 @@ message Key {
 message Gcp {}
 
 // AWS-specific backend authentication.
-message Aws {}
+message Aws {
+  // AWS Access Key ID for authentication
+  string access_key_id = 1;
+  // AWS Secret Access Key for authentication  
+  string secret_access_key = 2;
+  // AWS Region (e.g., "us-west-2", "us-east-1")
+  string region = 3;
+  // AWS Service name for SigV4 signing (e.g., "bedrock", "s3", "lambda")
+  string service = 4;
+  // Optional session token for temporary credentials
+  optional string session_token = 5;
+}
 
 message RouteMatch {
   PathMatch path = 1;

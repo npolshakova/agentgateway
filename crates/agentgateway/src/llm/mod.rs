@@ -121,7 +121,12 @@ impl AIProvider {
 			AIProvider::Bedrock(p) => {
 				let bp = BackendPolicies {
 					backend_tls: Some(http::backendtls::SYSTEM_TRUST.clone()),
-					backend_auth: Some(BackendAuth::Aws {}),
+					backend_auth: Some(BackendAuth::Aws {
+						access_key_id: "".into(), // Use environment/IAM credentials if not set?
+						secret_access_key: "".into(), // Use environment/IAM credentials if not set?
+						region: p.region.to_string(),
+						session_token: None,
+					}),
 					a2a: None,
 					llm: None,
 					inference_routing: None,
