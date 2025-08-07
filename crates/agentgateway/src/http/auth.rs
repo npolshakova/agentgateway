@@ -252,7 +252,8 @@ mod aws {
 				// Use explicit credentials
 				let mut builder = Credentials::builder()
 					.access_key_id(access_key_id.expose_secret())
-					.secret_access_key(secret_access_key.expose_secret());
+					.secret_access_key(secret_access_key.expose_secret())
+					.provider_name("bedrock");
 				
 				if let Some(token) = session_token {
 					builder = builder.session_token(token.expose_secret());
