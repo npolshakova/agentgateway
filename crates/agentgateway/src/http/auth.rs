@@ -9,6 +9,28 @@ use crate::proxy::ProxyError;
 use crate::serdes::deser_key_from_file;
 use crate::*;
 
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+pub enum AwsAuth {
+	/// Use explicit AWS credentials
+	ExplicitConfig {
+		#[serde(serialize_with = "ser_redact")]
+		#[cfg_attr(feature = "schema", schemars(with = "String"))]
+		access_key_id: SecretString,
+		#[serde(serialize_with = "ser_redact")]
+		#[cfg_attr(feature = "schema", schemars(with = "String"))]
+		secret_access_key: SecretString,
+		region: String,
+		#[serde(serialize_with = "ser_redact", skip_serializing_if = "Option::is_none")]
+		#[cfg_attr(feature = "schema", schemars(with = "Option<String>"))]
+		session_token: Option<SecretString>,
+		// TODO: make service configurable (only bedrock for now)
+	},
+	/// Use implicit AWS authentication (environment variables, IAM roles, etc.)
+	Implicit {},
+}
+
 // TODO: xds support
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -26,16 +48,7 @@ pub enum BackendAuth {
 	#[serde(rename = "gcp")]
 	Gcp {},
 	#[serde(rename = "aws")]
-	Aws {
-		#[serde(serialize_with = "ser_redact")]
-		access_key_id: SecretString,
-		#[serde(serialize_with = "ser_redact")]
-		secret_access_key: SecretString,
-		region: String,
-		#[serde(serialize_with = "ser_redact", skip_serializing_if = "Option::is_none")]
-		session_token: Option<SecretString>,
-		// TODO: make service configurable (only bedrock for now)
-	},
+	Aws(AwsAuth),
 }
 
 pub async fn apply_backend_auth(
@@ -70,7 +83,7 @@ pub async fn apply_backend_auth(
 				.map_err(ProxyError::BackendAuthenticationFailed)?;
 			req.headers_mut().insert(http::header::AUTHORIZATION, token);
 		},
-		BackendAuth::Aws { .. } => {
+		BackendAuth::Aws(_) => {
 			// We handle this in 'apply_late_backend_auth' since it must come at the end!
 		},
 	}
@@ -88,8 +101,8 @@ pub async fn apply_late_backend_auth(
 		BackendAuth::Passthrough {} => {},
 		BackendAuth::Key(k) => {},
 		BackendAuth::Gcp {} => {},
-		BackendAuth::Aws { .. } => {
-			aws::sign_request(req)
+		BackendAuth::Aws(aws_auth) => {
+			aws::sign_request(req, aws_auth)
 				.await
 				.map_err(ProxyError::BackendAuthenticationFailed)?;
 		},
@@ -149,21 +162,33 @@ mod aws {
 	use aws_sigv4::sign::v4::SigningParams;
 	use http_body_util::BodyExt;
 	use tokio::sync::OnceCell;
+	use secrecy::ExposeSecret;
 
+	use crate::http::auth::AwsAuth;
 	use crate::llm::bedrock::AwsRegion;
 	use crate::*;
 
-	pub async fn sign_request(req: &mut http::Request) -> anyhow::Result<()> {
-		let creds = load_credentials().await?.into();
+	pub async fn sign_request(req: &mut http::Request, aws_auth: &AwsAuth) -> anyhow::Result<()> {
+		let creds = load_credentials(aws_auth).await?.into();
 
-		// Get the region from request extensions (set by setup_request) or fall back to AWS config
-		let region = req
-			.extensions()
-			.get::<AwsRegion>()
-			.map(|r| r.region.clone())
-			.ok_or_else(|| {
-				anyhow::anyhow!("Region not found in request extensions - bedrock provider should set this")
-			})?;
+		// Get the region based on auth mode
+		let region = match aws_auth {
+			AwsAuth::ExplicitConfig { region, .. } => region.clone(),
+			AwsAuth::Implicit {} => {
+				// Try to get region from request extensions first, then fall back to AWS config
+				if let Some(aws_region) = req.extensions().get::<AwsRegion>() {
+					aws_region.region.clone()
+				} else {
+					// Fall back to region from AWS config
+					let config = sdk_config().await;
+					config.region()
+						.map(|r| r.as_ref().to_string())
+						.ok_or_else(|| {
+							anyhow::anyhow!("No region found in AWS config or request extensions")
+						})?
+				}
+			}
+		};
 
 		trace!("AWS signing with region: {}, service: bedrock", region);
 
@@ -216,18 +241,39 @@ mod aws {
 			.await
 	}
 
-	async fn load_credentials() -> anyhow::Result<Credentials> {
-		// Load AWS configuration and credentials
-		let config = sdk_config().await;
+	async fn load_credentials(aws_auth: &AwsAuth) -> anyhow::Result<Credentials> {
+		match aws_auth {
+			AwsAuth::ExplicitConfig {
+				access_key_id,
+				secret_access_key,
+				session_token,
+				region: _,
+			} => {
+				// Use explicit credentials
+				let mut builder = Credentials::builder()
+					.access_key_id(access_key_id.expose_secret())
+					.secret_access_key(secret_access_key.expose_secret());
+				
+				if let Some(token) = session_token {
+					builder = builder.session_token(token.expose_secret());
+				}
+				
+				Ok(builder.build())
+			},
+			AwsAuth::Implicit {} => {
+				// Load AWS configuration and credentials from environment/IAM
+				let config = sdk_config().await;
 
-		// Get credentials from the config
-		// TODO this is not caching!!
-		Ok(
-			config
-				.credentials_provider()
-				.unwrap()
-				.provide_credentials()
-				.await?,
-		)
+				// Get credentials from the config
+				// TODO this is not caching!!
+				Ok(
+					config
+						.credentials_provider()
+						.unwrap()
+						.provide_credentials()
+						.await?,
+				)
+			}
+		}
 	}
 }

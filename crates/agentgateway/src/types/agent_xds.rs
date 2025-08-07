@@ -26,7 +26,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use thiserror::Error;
 
 use super::agent::*;
-use crate::http::auth::BackendAuth;
+use crate::http::auth::{AwsAuth, BackendAuth};
 use crate::http::jwt::Jwt;
 use crate::http::localratelimit::RateLimit;
 use crate::http::{
@@ -91,11 +91,18 @@ impl TryFrom<proto::agent::BackendAuthPolicy> for BackendAuth {
 			Some(proto::agent::backend_auth_policy::Kind::Passthrough(p)) => BackendAuth::Passthrough {},
 			Some(proto::agent::backend_auth_policy::Kind::Key(k)) => BackendAuth::Key(k.secret.into()),
 			Some(proto::agent::backend_auth_policy::Kind::Gcp(g)) => BackendAuth::Gcp {},
-			Some(proto::agent::backend_auth_policy::Kind::Aws(a)) => BackendAuth::Aws {
-				access_key_id: a.access_key_id.into(),
-				secret_access_key: a.secret_access_key.into(),
-				region: a.region,
-				session_token: a.session_token.map(|token| token.into()),
+			Some(proto::agent::backend_auth_policy::Kind::Aws(a)) => {
+				let aws_auth = match a.kind {
+					Some(proto::agent::aws::Kind::ExplicitConfig(config)) => AwsAuth::ExplicitConfig {
+						access_key_id: config.access_key_id.into(),
+						secret_access_key: config.secret_access_key.into(),
+						region: config.region,
+						session_token: config.session_token.map(|token| token.into()),
+					},
+					Some(proto::agent::aws::Kind::Implicit(_)) => AwsAuth::Implicit {},
+					None => return Err(ProtoError::MissingRequiredField),
+				};
+				BackendAuth::Aws(aws_auth)
 			},
 			None => return Err(ProtoError::MissingRequiredField),
 		})

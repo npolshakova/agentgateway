@@ -12,7 +12,7 @@ use serde_json::Value;
 use tiktoken_rs::CoreBPE;
 use tiktoken_rs::tokenizer::{Tokenizer, get_tokenizer};
 
-use crate::http::auth::BackendAuth;
+use crate::http::auth::{AwsAuth, BackendAuth};
 use crate::http::backendtls::BackendTLS;
 use crate::http::localratelimit::RateLimit;
 use crate::http::{Body, Request, Response};
@@ -146,12 +146,7 @@ impl AIProvider {
 			AIProvider::Bedrock(p) => {
 				let bp = BackendPolicies {
 					backend_tls: Some(http::backendtls::SYSTEM_TRUST.clone()),
-					backend_auth: Some(BackendAuth::Aws {
-						access_key_id: "".into(), // Use environment/IAM credentials if not set?
-						secret_access_key: "".into(), // Use environment/IAM credentials if not set?
-						region: p.region.to_string(),
-						session_token: None,
-					}),
+					backend_auth: Some(BackendAuth::Aws(AwsAuth::Implicit {})),
 					a2a: None,
 					llm: None,
 					inference_routing: None,

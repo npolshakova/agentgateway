@@ -110,6 +110,14 @@ message Gcp {}
 
 // AWS-specific backend authentication.
 message Aws {
+  oneof kind {
+    AwsExplicitConfig explicit_config = 1;
+    AwsImplicit implicit = 2;
+  }
+}
+
+// Explicit AWS credentials configuration
+message AwsExplicitConfig {
   // AWS Access Key ID for authentication
   string access_key_id = 1;
   // AWS Secret Access Key for authentication  
@@ -120,6 +128,9 @@ message Aws {
   optional string session_token = 4;
   // TODO: make service configurable
 }
+
+// Use implicit AWS authentication (environment variables, IAM roles, etc.)
+message AwsImplicit {}
 
 message RouteMatch {
   PathMatch path = 1;
