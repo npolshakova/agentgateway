@@ -23,14 +23,14 @@ default-members = [
 ]
 
 [workspace.package]
-version = "0.6.0"
+version = "0.7.0"
 edition = "2024"
 rust-version = "1.88"
 license = "Apache-2.0"
 publish = false
 
 [workspace.dependencies]
-a2a-sdk = { version = "0.6.1", path = "crates/a2a-sdk" }
+a2a-sdk = { version = "0.7.0", path = "crates/a2a-sdk" }
 agent-core = { path = "crates/core" }
 agent-hbone = { path = "crates/hbone" }
 agent-xds = { path = "crates/xds" }
@@ -41,6 +41,7 @@ arcstr = { version = "1.2", features = ["serde"] }
 assert_matches = "1.5.0"
 async-stream = "0.3"
 async-trait = "0.1"
+aws_event_stream_parser = "0.1"
 aws-config = "1.8"
 aws-credential-types = "1.2"
 aws-sigv4 = "1.3"
@@ -180,14 +181,13 @@ url = "2.5"
 wiremock = "0.6.3"
 x509-parser = "0.17"
 which = "8.0.0"
-cel-interpreter = { git = "https://github.com/clarkmcc/cel-rust", rev = "5b02b08" }
-cel-parser = { git = "https://github.com/clarkmcc/cel-rust", rev = "5b02b08" }
+cel = { git = "https://github.com/cel-rust/cel-rust", rev = "21add787d6e028b7c60cf1a9ca4ab3c0e100abc2", features = ["json", "regex", "chrono"] }
 crossbeam-channel = "0.5"
 http-serde = "2.1"
 itoa = "1.0"
 serde_urlencoded = "0.7"
 serde_with = { version = "3.14", features = ["schemars_1", "macros", "alloc"], default-features = false }
-value-bag = { version = "1.11", features = ["serde"] }
+value-bag = { version = "1.11", features = ["serde", "value-bag-serde1"] }
 time = "0.3"
 tikv-jemallocator = { version = "0.6", features = ["profiling", "unprefixed_malloc_on_supported_platforms"] }
 jemalloc_pprof = { version = "0.8"}

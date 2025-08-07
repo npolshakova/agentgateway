@@ -1,8 +1,10 @@
 use once_cell::sync::Lazy;
 use secrecy::{ExposeSecret, SecretString};
+use tracing::trace;
 
 use crate::http::Request;
 use crate::http::jwt::Claims;
+use crate::llm::bedrock::AwsRegion;
 use crate::proxy::ProxyError;
 use crate::serdes::deser_key_from_file;
 use crate::*;
@@ -148,15 +150,27 @@ mod aws {
 	use http_body_util::BodyExt;
 	use tokio::sync::OnceCell;
 
+	use crate::llm::bedrock::AwsRegion;
 	use crate::*;
 
 	pub async fn sign_request(req: &mut http::Request) -> anyhow::Result<()> {
 		let creds = load_credentials().await?.into();
 
+		// Get the region from request extensions (set by setup_request) or fall back to AWS config
+		let region = req
+			.extensions()
+			.get::<AwsRegion>()
+			.map(|r| r.region.clone())
+			.ok_or_else(|| {
+				anyhow::anyhow!("Region not found in request extensions - bedrock provider should set this")
+			})?;
+
+		trace!("AWS signing with region: {}, service: bedrock", region);
+
 		// Sign the request
 		let signing_params = SigningParams::builder()
 			.identity(&creds)
-			.region("us-west-2")
+			.region(&region)
 			.name("bedrock")
 			.time(SystemTime::now())
 			.settings(aws_sigv4::http_request::SigningSettings::default())

@@ -42,7 +42,10 @@ impl TCPProxy {
 			.ext::<TCPConnectionInfo>()
 			.expect("tcp connection must be set");
 		let mut log: DropOnLog = RequestLog::new(
-			log::CelLogging::new(self.inputs.cfg.logging.clone()),
+			log::CelLogging::new(
+				self.inputs.cfg.logging.clone(),
+				self.inputs.cfg.tracing.clone(),
+			),
 			self.inputs.metrics.clone(),
 			start,
 			tcp.clone(),

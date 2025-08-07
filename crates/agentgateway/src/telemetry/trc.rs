@@ -1,18 +1,21 @@
+use std::collections::HashMap;
 use std::ops::Sub;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
 use agent_core::telemetry::{OptionExt, ValueBag};
-use http::Version;
+use http::{HeaderMap, HeaderName, HeaderValue, Version};
 use itertools::Itertools;
 use opentelemetry::trace::{Span, SpanContext, SpanKind, TraceState, Tracer as _, TracerProvider};
 use opentelemetry::{Key, KeyValue, TraceFlags};
-use opentelemetry_otlp::WithExportConfig;
+use opentelemetry_otlp::{WithExportConfig, WithHttpConfig, WithTonicConfig};
 use opentelemetry_sdk::Resource;
 use opentelemetry_sdk::trace::SdkTracerProvider;
 use tokio::io::AsyncWriteExt;
+use tonic::metadata::MetadataMap;
 pub use traceparent::TraceParent;
 
+use crate::cel;
 use crate::http::Request;
 use crate::telemetry::log::{CelLoggingExecutor, LoggingFields, RequestLog};
 
@@ -35,8 +38,11 @@ pub enum Protocol {
 #[derive(serde::Serialize, Clone, Debug)]
 pub struct Config {
 	pub endpoint: Option<String>,
+	pub headers: HashMap<String, String>,
 	pub protocol: Protocol,
 	pub fields: Arc<LoggingFields>,
+	pub random_sampling: Option<Arc<cel::Expression>>,
+	pub client_sampling: Option<Arc<cel::Expression>>,
 }
 
 mod semconv {
@@ -81,16 +87,29 @@ impl Tracer {
 					))
 					.build(),
 			)
+			// TODO: this should be integrated with PolicyClient
 			.with_batch_exporter(if cfg.protocol == Protocol::Grpc {
+				// TODO: otel is using an old tonic version that mismatches with the one we have
+				// let metadata = MetadataMap::from_headers(HeaderMap::from_iter(
+				// 	cfg
+				// 		.headers
+				// 		.clone()
+				// 		.into_iter()
+				// 		.map(|(k, v)| Ok((HeaderName::try_from(k)?, HeaderValue::try_from(v)?)))
+				// 		.collect::<Result<_, _>>()?
+				// 		.iter(),
+				// ));
 				opentelemetry_otlp::SpanExporter::builder()
 					.with_tonic()
 					.with_endpoint(ep)
+					// .with_metadata(metadata)
 					.build()?
 			} else {
 				opentelemetry_otlp::SpanExporter::builder()
 					.with_http()
 					// For HTTP, we add the suffix ourselves
 					.with_endpoint(format!("{}/v1/traces", ep.strip_suffix("/").unwrap_or(ep)))
+					.with_headers(cfg.headers.clone())
 					.build()?
 			})
 			.build();
@@ -142,20 +161,25 @@ impl Tracer {
 		// To avoid lifetime issues need to store the expression before we give it to ValueBag reference.
 		// TODO: we could allow log() to take a list of borrows and then a list of OwnedValueBag
 		let raws = cel_exec.eval(&self.fields);
+		let mut span_name = None;
 		for (k, v) in &raws {
 			// TODO: convert directly instead of via json()
-			if let Some(eval) = v.as_ref().map(ValueBag::capture_serde1) {
+			if k == "span.name"
+				&& let Some(serde_json::Value::String(s)) = v
+			{
+				span_name = Some(s.clone());
+			} else if let Some(eval) = v.as_ref().map(ValueBag::capture_serde1) {
 				attributes.push(KeyValue::new(Key::new(k.to_string()), to_otel(&eval)));
 			}
 		}
 
-		let span_name = match (&request.method, &request.path) {
+		let span_name = span_name.unwrap_or_else(|| match (&request.method, &request.path) {
 			(Some(method), Some(path)) => {
 				// TODO: should be path match, not the path!
 				format!("{method} {path}")
 			},
 			_ => "unknown".to_string(),
-		};
+		});
 
 		let out_span = request.outgoing_span.as_ref().unwrap();
 		let mut sb = self
@@ -176,6 +200,11 @@ impl Tracer {
 				true,
 				TraceState::default(),
 			);
+			sb = sb.with_links(vec![opentelemetry::trace::Link::new(
+				parent.clone(),
+				vec![],
+				0,
+			)]);
 		}
 		sb.start(self.tracer.as_ref()).end()
 	}

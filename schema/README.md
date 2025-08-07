@@ -25,10 +25,19 @@ This folder contains JSON schemas for various parts of the project
 |`config.workerThreads`||
 |`config.tracing`||
 |`config.tracing.otlpEndpoint`||
+|`config.tracing.headers`||
 |`config.tracing.otlpProtocol`||
 |`config.tracing.fields`||
 |`config.tracing.fields.remove`||
 |`config.tracing.fields.add`||
+|`config.tracing.randomSampling`|Expression to determine the amount of *random sampling*.
+Random sampling will initiate a new trace span if the incoming request does not have a trace already.
+This should evaluate to either a float between 0.0-1.0 (0-100%) or true/false.
+This defaults to 'false'.|
+|`config.tracing.clientSampling`|Expression to determine the amount of *client sampling*.
+Client sampling determines whether to initiate a new trace span if the incoming request does have a trace already.
+This should evaluate to either a float between 0.0-1.0 (0-100%) or true/false.
+This defaults to 'true'.|
 |`config.logging`||
 |`config.logging.filter`||
 |`config.logging.fields`||
@@ -207,6 +216,7 @@ This folder contains JSON schemas for various parts of the project
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].(1)openapi.port`||
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].(1)openapi.path`||
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].(1)openapi.schema`||
+|`binds[].listeners[].routes[].backends[].(1)mcp.statefulMode`||
 |`binds[].listeners[].routes[].backends[].(1)ai`||
 |`binds[].listeners[].routes[].backends[].(1)ai.provider`||
 |`binds[].listeners[].routes[].backends[].(1)ai.provider.(1)openAI`||
@@ -222,7 +232,12 @@ This folder contains JSON schemas for various parts of the project
 |`binds[].listeners[].routes[].backends[].(1)ai.provider.(1)bedrock`||
 |`binds[].listeners[].routes[].backends[].(1)ai.provider.(1)bedrock.model`||
 |`binds[].listeners[].routes[].backends[].(1)ai.provider.(1)bedrock.region`||
+|`binds[].listeners[].routes[].backends[].(1)ai.provider.(1)bedrock.guardrailIdentifier`||
+|`binds[].listeners[].routes[].backends[].(1)ai.provider.(1)bedrock.guardrailVersion`||
 |`binds[].listeners[].routes[].backends[].(1)ai.hostOverride`||
+|`binds[].listeners[].routes[].backends[].(1)ai.tokenize`|Whether to tokenize on the request flow. This enables us to do more accurate rate limits,
+since we know (part of) the cost of the request upfront.
+This comes with the cost of an expensive operation.|
 |`binds[].listeners[].tcpRoutes`||
 |`binds[].listeners[].tcpRoutes[].name`||
 |`binds[].listeners[].tcpRoutes[].ruleName`||
@@ -271,6 +286,13 @@ This folder contains JSON schemas for various parts of the project
 |`llm.prompt[].role`||
 |`llm.prompt[].content`||
 |`llm.completion`||
+|`llm.params`||
+|`llm.params.temperature`||
+|`llm.params.top_p`||
+|`llm.params.frequency_penalty`||
+|`llm.params.presence_penalty`||
+|`llm.params.seed`||
+|`llm.params.max_tokens`||
 |`source`||
 |`source.address`||
 |`source.port`||

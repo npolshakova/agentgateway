@@ -42,6 +42,11 @@ pub mod vertex;
 pub struct AIBackend {
 	pub provider: AIProvider,
 	pub host_override: Option<Target>,
+	/// Whether to tokenize on the request flow. This enables us to do more accurate rate limits,
+	/// since we know (part of) the cost of the request upfront.
+	/// This comes with the cost of an expensive operation.
+	#[serde(default)]
+	pub tokenize: bool,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -61,10 +66,29 @@ trait Provider {
 
 #[derive(Debug, Clone)]
 pub struct LLMRequest {
-	pub input_tokens: u64,
+	/// Input tokens derived by tokenizing the request. Not always enabled
+	pub input_tokens: Option<u64>,
 	pub request_model: Strng,
 	pub provider: Strng,
 	pub streaming: bool,
+	pub params: llm::LLMRequestParams,
+}
+
+#[derive(Default, Clone, Debug, Serialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+pub struct LLMRequestParams {
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub temperature: Option<f64>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub top_p: Option<f64>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub frequency_penalty: Option<f64>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub presence_penalty: Option<f64>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub seed: Option<i64>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub max_tokens: Option<i64>,
 }
 
 #[derive(Debug, Clone)]
@@ -78,6 +102,7 @@ pub struct LLMResponse {
 }
 
 #[derive(Debug)]
+#[allow(clippy::large_enum_variant)]
 pub enum RequestResult {
 	Success(Request, LLMRequest),
 	Rejected(Response),
@@ -101,7 +126,7 @@ impl AIProvider {
 			a2a: None,
 			llm: None,
 			inference_routing: None,
-			llm_provider: Some((self.clone(), true)),
+			llm_provider: None,
 		};
 		match self {
 			AIProvider::OpenAI(_) => (Target::Hostname(openai::DEFAULT_HOST, 443), btls),
@@ -113,7 +138,7 @@ impl AIProvider {
 					a2a: None,
 					llm: None,
 					inference_routing: None,
-					llm_provider: Some((self.clone(), true)),
+					llm_provider: None,
 				};
 				(Target::Hostname(p.get_host(), 443), bp)
 			},
@@ -130,13 +155,13 @@ impl AIProvider {
 					a2a: None,
 					llm: None,
 					inference_routing: None,
-					llm_provider: Some((self.clone(), true)),
+					llm_provider: None,
 				};
 				(Target::Hostname(p.get_host(), 443), bp)
 			},
 		}
 	}
-	pub fn setup_request(&self, req: &mut Request) -> anyhow::Result<()> {
+	pub fn setup_request(&self, req: &mut Request, llm_request: &LLMRequest) -> anyhow::Result<()> {
 		match self {
 			AIProvider::OpenAI(_) => http::modify_req(req, |req| {
 				http::modify_uri(req, |uri| {
@@ -188,13 +213,18 @@ impl AIProvider {
 			},
 			AIProvider::Bedrock(provider) => {
 				// For Bedrock, use a default model path - the actual model will be specified in the request body
-				let path = provider.get_path_for_model();
+				let path =
+					provider.get_path_for_model(llm_request.streaming, llm_request.request_model.as_str());
 				http::modify_req(req, |req| {
 					http::modify_uri(req, |uri| {
 						uri.path_and_query = Some(PathAndQuery::from_str(&path)?);
 						uri.authority = Some(Authority::from_str(&provider.get_host())?);
 						Ok(())
 					})?;
+					// Store the region in request extensions so AWS signing can use it
+					req.extensions.insert(bedrock::AwsRegion {
+						region: provider.region.as_str().to_string(),
+					});
 					Ok(())
 				})
 			},
@@ -206,6 +236,7 @@ impl AIProvider {
 		client: client::Client,
 		policies: Option<&Policy>,
 		req: Request,
+		tokenize: bool,
 		mut log: &mut Option<&mut RequestLog>,
 	) -> (Result<RequestResult, AIError>) {
 		// Buffer the body, max 2mb
@@ -231,7 +262,7 @@ impl AIProvider {
 				return Ok(RequestResult::Rejected(dr));
 			}
 		}
-		let llm_info = self.to_llm_request(&req).await?;
+		let llm_info = self.to_llm_request(&req, tokenize).await?;
 		if let Some(log) = log {
 			let needs_prompt = log.cel.cel_context.with_llm_request(&llm_info);
 			if needs_prompt {
@@ -275,7 +306,7 @@ impl AIProvider {
 		};
 		// 3 cases: success, error properly handled, and unexpected error we need to synthesize
 		let openai_response = self
-			.process_response_status(parts.status, &bytes)
+			.process_response_status(&req, parts.status, &bytes)
 			.await
 			.unwrap_or_else(|err| {
 				Err(ChatCompletionErrorResponse {
@@ -341,6 +372,7 @@ impl AIProvider {
 
 	async fn process_response_status(
 		&self,
+		req: &LLMRequest,
 		status: StatusCode,
 		bytes: &Bytes,
 	) -> Result<Result<ChatCompletionResponse, ChatCompletionErrorResponse>, AIError> {
@@ -350,7 +382,10 @@ impl AIProvider {
 				AIProvider::Gemini(p) => p.process_response(bytes).await?,
 				AIProvider::Vertex(p) => p.process_response(bytes).await?,
 				AIProvider::Anthropic(p) => p.process_response(bytes).await?,
-				AIProvider::Bedrock(p) => p.process_response(bytes).await?,
+				AIProvider::Bedrock(p) => {
+					p.process_response(req.request_model.as_str(), bytes)
+						.await?
+				},
 			};
 			Ok(Ok(openai_response))
 		} else {
@@ -373,6 +408,7 @@ impl AIProvider {
 		include_completion_in_log: bool,
 		resp: Response,
 	) -> Result<Response, AIError> {
+		let model = req.request_model.clone();
 		// Store an empty response, as we stream in info we will parse into it
 		let mut llmresp = llm::LLMResponse {
 			request: req,
@@ -385,7 +421,7 @@ impl AIProvider {
 		log.store(Some(llmresp));
 		let resp = match self {
 			AIProvider::Anthropic(p) => p.process_streaming(log, resp).await,
-			AIProvider::Bedrock(p) => return Err(AIError::StreamingUnsupported),
+			AIProvider::Bedrock(p) => p.process_streaming(log, resp, model.as_str()).await,
 			_ => {
 				self
 					.default_process_streaming(log, include_completion_in_log, rate_limit, resp)
@@ -454,19 +490,35 @@ impl AIProvider {
 	pub async fn to_llm_request(
 		&self,
 		req: &universal::ChatCompletionRequest,
+		tokenize: bool,
 	) -> Result<LLMRequest, AIError> {
-		let req2 = req.clone(); // TODO: avoid clone, we need it for spawn_blocking though
-		let tokens = tokio::task::spawn_blocking(move || {
-			let res = num_tokens_from_messages(&req2.model, &req2.messages)?;
-			Ok::<_, AIError>(res)
-		})
-		.await??;
+		let input_tokens = if tokenize {
+			// TODO: avoid clone, we need it for spawn_blocking though
+			let msg = req.clone().messages.clone();
+			let model = req.clone().model.clone();
+			let tokens = tokio::task::spawn_blocking(move || {
+				let res = num_tokens_from_messages(&model, &msg)?;
+				Ok::<_, AIError>(res)
+			})
+			.await??;
+			Some(tokens)
+		} else {
+			None
+		};
 		// Pass the original body through
 		let llm = LLMRequest {
-			input_tokens: tokens,
+			input_tokens,
 			request_model: req.model.as_str().into(),
 			provider: self.provider(),
 			streaming: req.stream.unwrap_or_default(),
+			params: LLMRequestParams {
+				temperature: req.temperature,
+				top_p: req.top_p,
+				frequency_penalty: req.frequency_penalty,
+				presence_penalty: req.presence_penalty,
+				seed: req.seed,
+				max_tokens: req.max_tokens,
+			},
 		};
 		Ok(llm)
 	}
@@ -564,11 +616,17 @@ pub enum AIError {
 
 fn amend_tokens(rate_limit: &[RateLimit], llm_resp: &LLMResponse) {
 	for lrl in rate_limit {
-		let base = llm_resp.request.input_tokens;
-		let input_mismatch = llm_resp
-			.input_tokens_from_response
-			.map(|real| (real as i64) - (base as i64))
-			.unwrap_or_default();
+		let input_mismatch = match (
+			llm_resp.request.input_tokens,
+			llm_resp.input_tokens_from_response,
+		) {
+			// Already counted 'req'
+			(Some(req), Some(resp)) => (resp as i64) - (req as i64),
+			// No request or response count... this is probably an issue.
+			(_, None) => 0,
+			// No request counted, so count the full response
+			(_, Some(resp)) => resp as i64,
+		};
 		let response = llm_resp.output_tokens.unwrap_or_default();
 		let tokens_to_remove = input_mismatch + (response as i64);
 		lrl.amend_tokens(tokens_to_remove)
@@ -606,18 +664,22 @@ mod universal {
 	use std::collections::HashMap;
 	use std::fmt;
 
+	use crate::llm::universal;
 	use serde::de::{self, MapAccess, SeqAccess, Visitor};
 	use serde::ser::SerializeMap;
 	use serde::{Deserialize, Deserializer, Serialize, Serializer};
 	use serde_json::Value;
 
 	#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
-	#[serde(rename_all = "snake_case")]
+	#[serde(rename_all = "snake_case", untagged)]
 	pub enum ToolChoiceType {
 		None,
 		Auto,
 		Required,
-		ToolChoice { tool: Tool },
+		ToolChoice {
+			r#type: ToolType,
+			function: Function,
+		},
 	}
 
 	#[derive(Debug, Serialize, Deserialize, Clone)]
@@ -808,10 +870,6 @@ mod universal {
 		#[serde(skip_serializing_if = "Option::is_none")]
 		pub content: Option<String>,
 		#[serde(skip_serializing_if = "Option::is_none")]
-		pub reasoning_content: Option<String>,
-		#[serde(skip_serializing_if = "Option::is_none")]
-		pub name: Option<String>,
-		#[serde(skip_serializing_if = "Option::is_none")]
 		pub tool_calls: Option<Vec<ToolCall>>,
 	}
 
@@ -904,16 +962,14 @@ mod universal {
 	#[derive(Debug, Deserialize, Serialize, Clone)]
 	pub struct ToolCall {
 		pub id: String,
-		pub r#type: String,
+		pub r#type: ToolType,
 		pub function: ToolCallFunction,
 	}
 
 	#[derive(Debug, Deserialize, Serialize, Clone)]
 	pub struct ToolCallFunction {
-		#[serde(skip_serializing_if = "Option::is_none")]
-		pub name: Option<String>,
-		#[serde(skip_serializing_if = "Option::is_none")]
-		pub arguments: Option<String>,
+		pub name: String,
+		pub arguments: String,
 	}
 
 	fn serialize_tool_choice<S>(
@@ -927,10 +983,10 @@ mod universal {
 			Some(ToolChoiceType::None) => serializer.serialize_str("none"),
 			Some(ToolChoiceType::Auto) => serializer.serialize_str("auto"),
 			Some(ToolChoiceType::Required) => serializer.serialize_str("required"),
-			Some(ToolChoiceType::ToolChoice { tool }) => {
+			Some(ToolChoiceType::ToolChoice { r#type, function }) => {
 				let mut map = serializer.serialize_map(Some(2))?;
-				map.serialize_entry("type", &tool.r#type)?;
-				map.serialize_entry("function", &tool.function)?;
+				map.serialize_entry("type", &r#type)?;
+				map.serialize_entry("function", &function)?;
 				map.end()
 			},
 			None => serializer.serialize_none(),
@@ -961,17 +1017,8 @@ mod universal {
 		pub name: String,
 		#[serde(skip_serializing_if = "Option::is_none")]
 		pub description: Option<String>,
-		pub parameters: FunctionParameters,
-	}
-
-	#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
-	pub struct FunctionParameters {
-		#[serde(rename = "type")]
-		pub schema_type: JSONSchemaType,
 		#[serde(skip_serializing_if = "Option::is_none")]
-		pub properties: Option<HashMap<String, Box<JSONSchemaDefine>>>,
-		#[serde(skip_serializing_if = "Option::is_none")]
-		pub required: Option<Vec<String>>,
+		pub parameters: Option<serde_json::Value>,
 	}
 
 	#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]

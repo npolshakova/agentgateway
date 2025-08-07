@@ -14,21 +14,28 @@ KIND_CLUSTER_NAME ?= agentgateway
 docker:
 	$(DOCKER_BUILDER) build $(DOCKER_BUILD_ARGS) -t $(IMAGE_FULL_NAME) . --progress=plain
 
-.PHONY: docker-ext
-docker-ext:
-	$(DOCKER_BUILDER) build $(DOCKER_BUILD_ARGS) -t $(IMAGE_FULL_NAME)-ext -f Dockerfile.ext .
+.PHONY: docker-musl
+docker-musl:
+	$(DOCKER_BUILDER) build $(DOCKER_BUILD_ARGS) -t $(IMAGE_FULL_NAME)-musl --build-arg=BUILDER=musl . --progress=plain
 
 CARGO_BUILD_ARGS ?=
 # build
 .PHONY: build
 build:
 	cargo build --release --features ui $(CARGO_BUILD_ARGS)
+.PHONY: build-target
+build-target:
+	cargo build --release --features ui $(CARGO_BUILD_ARGS) --target $(TARGET)
 
 # lint
 .PHONY: lint
 lint:
 	cargo fmt --check
 	cargo clippy --all-targets -- -D warnings
+
+fix-lint:
+	cargo clippy --fix --allow-staged --allow-dirty --workspace
+	cargo fmt
 
 # test
 .PHONY: test
@@ -51,7 +58,7 @@ check-clean-repo:
 	@common/scripts/check_clean_repo.sh
 
 .PHONY: gen
-gen: generate-apis generate-schema
+gen: generate-apis generate-schema fix-lint
 	@:
 
 .PHONY: generate-schema

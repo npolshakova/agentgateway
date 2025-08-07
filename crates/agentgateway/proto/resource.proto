@@ -330,6 +330,8 @@ message AIBackend {
   message Bedrock {
     google.protobuf.StringValue model = 1;
     string region = 2;
+    google.protobuf.StringValue guardrail_identifier = 3;
+    google.protobuf.StringValue guardrail_version = 4;
   }
   oneof provider {
     OpenAI openai = 2;
@@ -341,7 +343,15 @@ message AIBackend {
 }
 
 message MCPBackend {
+  enum StatefulMode {
+    STATEFUL = 0;
+    STATELESS = 1;
+  }
   repeated MCPTarget targets = 2;
+  // Whether or not this backend should serve stateful MCP connections.
+  // We set this at the backend level because it would be illegal/nonsensical
+  // to mix stateful and stateless targets in the same backend.
+  StatefulMode stateful_mode = 3;
 }
 
 message MCPTarget {

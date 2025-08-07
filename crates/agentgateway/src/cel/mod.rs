@@ -9,10 +9,14 @@ use std::sync::Arc;
 use agent_core::strng::Strng;
 use axum_core::body::Body;
 use bytes::Bytes;
-use cel_interpreter::extractors::{Arguments, This};
-use cel_interpreter::objects::{Key, Map, TryIntoValue, ValueType};
-use cel_interpreter::{Context, ExecutionError, FunctionContext, Program, ResolveResult, Value};
-use cel_parser::{Expression as CelExpression, ParseError};
+pub use cel::Value;
+use cel::common::ast::Expr;
+use cel::extractors::{Arguments, This};
+use cel::objects::{Key, Map, TryIntoValue, ValueType};
+use cel::{
+	Context, ExecutionError, FunctionContext, ParseError, ParseErrors, Program, ResolveResult,
+};
+pub use functions::{FLATTEN_LIST, FLATTEN_LIST_RECURSIVE, FLATTEN_MAP, FLATTEN_MAP_RECURSIVE};
 use http::Request;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize, Serializer};
@@ -26,12 +30,17 @@ use crate::telemetry::log::CelLogging;
 use crate::transport::stream::{TCPConnectionInfo, TLSConnectionInfo};
 use crate::{json, llm};
 
+mod functions;
+mod strings;
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
 	#[error("execution: {0}")]
 	Resolve(#[from] ExecutionError),
 	#[error("parse: {0}")]
 	Parse(#[from] ParseError),
+	#[error("parse: {0}")]
+	Parses(#[from] ParseErrors),
 	#[error("variable: {0}")]
 	Variable(String),
 }
@@ -51,10 +60,21 @@ pub const LLM_COMPLETION_ATTRIBUTE: &str = "llm.completion";
 pub const RESPONSE_ATTRIBUTE: &str = "response";
 pub const JWT_ATTRIBUTE: &str = "jwt";
 pub const MCP_ATTRIBUTE: &str = "mcp";
+pub const ALL_ATTRIBUTES: &[&str] = &[
+	SOURCE_ATTRIBUTE,
+	REQUEST_ATTRIBUTE,
+	REQUEST_BODY_ATTRIBUTE,
+	LLM_ATTRIBUTE,
+	LLM_PROMPT_ATTRIBUTE,
+	LLM_COMPLETION_ATTRIBUTE,
+	RESPONSE_ATTRIBUTE,
+	JWT_ATTRIBUTE,
+	MCP_ATTRIBUTE,
+];
 
 pub struct Expression {
 	attributes: HashSet<String>,
-	expression: CelExpression,
+	expression: Program,
 	original_expression: String,
 }
 
@@ -77,8 +97,7 @@ impl Debug for Expression {
 
 fn root_context() -> Arc<Context<'static>> {
 	let mut ctx = Context::default();
-	ctx.add_function("json", fns::json_parse);
-	ctx.add_function("with", fns::with);
+	functions::insert_all(&mut ctx);
 	Arc::new(ctx)
 }
 
@@ -166,6 +185,7 @@ impl ContextBuilder {
 			request_model: info.request_model.clone(),
 			provider: info.provider.clone(),
 			input_tokens: info.input_tokens,
+			params: info.params.clone(),
 
 			response_model: None,
 			output_tokens: None,
@@ -192,7 +212,7 @@ impl ContextBuilder {
 			o.total_tokens = info.total_tokens;
 			if let Some(pt) = info.input_tokens_from_response {
 				// Better info, override
-				o.input_tokens = pt;
+				o.input_tokens = Some(pt);
 			}
 			o.response_model = info.provider_model.clone();
 			// Not always set
@@ -235,7 +255,7 @@ impl ContextBuilder {
 
 impl Executor<'_> {
 	pub fn eval(&self, expr: &Expression) -> Result<Value, Error> {
-		Ok(Value::resolve(&expr.expression, &self.ctx)?)
+		Ok(expr.expression.execute(&self.ctx)?)
 	}
 	pub fn eval_bool(&self, expr: &Expression) -> bool {
 		match self.eval(expr) {
@@ -251,11 +271,16 @@ pub struct Executor<'a> {
 impl Expression {
 	pub fn new(original_expression: impl Into<String>) -> Result<Self, Error> {
 		let original_expression = original_expression.into();
-		let expression = cel_parser::parse(&original_expression)?;
+		let expression = Program::compile(&original_expression)?;
 
-		let mut props = Vec::with_capacity(5);
-		properties(&expression, &mut props, &mut Vec::default());
+		let mut props: Vec<Vec<&str>> = Vec::with_capacity(5);
+		properties(
+			&expression.expression().expr,
+			&mut props,
+			&mut Vec::default(),
+		);
 
+		let include_all = expression.references().functions().contains(&"variables");
 		// For now we only look at the first level. We could be more precise
 		let mut attributes: HashSet<String> = props
 			.into_iter()
@@ -267,6 +292,11 @@ impl Expression {
 				_ => None,
 			})
 			.collect();
+		if include_all {
+			ALL_ATTRIBUTES.iter().for_each(|attr| {
+				attributes.insert(attr.to_string());
+			});
+		}
 
 		Ok(Self {
 			attributes,
@@ -332,7 +362,8 @@ pub struct LLMContext {
 	#[serde(skip_serializing_if = "Option::is_none")]
 	response_model: Option<Strng>,
 	provider: Strng,
-	input_tokens: u64,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	input_tokens: Option<u64>,
 	#[serde(skip_serializing_if = "Option::is_none")]
 	output_tokens: Option<u64>,
 	#[serde(skip_serializing_if = "Option::is_none")]
@@ -341,57 +372,82 @@ pub struct LLMContext {
 	prompt: Option<Vec<llm::SimpleChatCompletionMessage>>,
 	#[serde(skip_serializing_if = "Option::is_none")]
 	completion: Option<Vec<String>>,
+	params: llm::LLMRequestParams,
 }
 
 fn create_context<'a>() -> Context<'a> {
 	Context::default()
 }
 
-fn properties<'e>(exp: &'e CelExpression, all: &mut Vec<Vec<&'e str>>, path: &mut Vec<&'e str>) {
+fn properties<'e>(
+	exp: &'e cel::common::ast::Expr,
+	all: &mut Vec<Vec<&'e str>>,
+	path: &mut Vec<&'e str>,
+) {
+	use cel::common::ast::Expr::*;
 	match exp {
-		CelExpression::Arithmetic(e1, _, e2)
-		| CelExpression::Relation(e1, _, e2)
-		| CelExpression::Ternary(e1, _, e2)
-		| CelExpression::Or(e1, e2)
-		| CelExpression::And(e1, e2) => {
-			properties(e1, all, path);
-			properties(e2, all, path);
-		},
-		CelExpression::Unary(_, e) => {
-			properties(e, all, path);
-		},
-		CelExpression::Member(e, a) => {
-			if let cel_parser::Member::Attribute(attr) = &**a {
-				path.insert(0, attr.as_str())
+		Unspecified => {},
+		Call(call) => {
+			if let Some(t) = &call.target {
+				properties(&t.expr, all, path)
 			}
-			properties(e, all, path);
-		},
-		CelExpression::FunctionCall(_, target, args) => {
-			// The attributes of the values returned by functions are skipped.
-			path.clear();
-			if let Some(target) = target {
-				properties(target, all, path);
-			}
-			for e in args {
-				properties(e, all, path);
+			for arg in &call.args {
+				properties(&arg.expr, all, path)
 			}
 		},
-		CelExpression::List(e) => {
-			for e in e {
-				properties(e, all, path);
+		Struct(e) => {},
+		Select(e) => {
+			path.insert(0, e.field.as_str());
+			properties(&e.operand.expr, all, path);
+		},
+		Comprehension(call) => {
+			properties(&call.iter_range.expr, all, path);
+			{
+				let v = &call.iter_var;
+				if !v.starts_with("@") {
+					path.insert(0, v.as_str());
+					all.push(path.clone());
+					path.clear();
+				}
+			}
+			properties(&call.loop_step.expr, all, path);
+		},
+		List(e) => {
+			for elem in &e.elements {
+				properties(&elem.expr, all, path);
 			}
 		},
-		CelExpression::Map(v) => {
-			for (e1, e2) in v {
-				properties(e1, all, path);
-				properties(e2, all, path);
+		Map(v) => {
+			for entry in &v.entries {
+				match &entry.expr {
+					cel::common::ast::EntryExpr::StructField(field) => {
+						properties(&field.value.expr, all, path);
+					},
+					cel::common::ast::EntryExpr::MapEntry(map_entry) => {
+						properties(&map_entry.value.expr, all, path);
+					},
+				}
 			}
 		},
-		CelExpression::Atom(_) => {},
-		CelExpression::Ident(v) => {
-			path.insert(0, v.as_str());
-			all.push(path.clone());
-			path.clear();
+		Struct(v) => {
+			for entry in &v.entries {
+				match &entry.expr {
+					cel::common::ast::EntryExpr::StructField(field) => {
+						properties(&field.value.expr, all, path);
+					},
+					cel::common::ast::EntryExpr::MapEntry(map_entry) => {
+						properties(&map_entry.value.expr, all, path);
+					},
+				}
+			}
+		},
+		Literal(_) => {},
+		Ident(v) => {
+			if !v.starts_with("@") {
+				path.insert(0, v.as_str());
+				all.push(path.clone());
+				path.clear();
+			}
 		},
 	}
 }
@@ -474,39 +530,7 @@ fn opt_to_value<S: Serialize>(v: &Option<S>) -> Result<Value, Error> {
 }
 
 fn to_value(v: impl Serialize) -> Result<Value, Error> {
-	cel_interpreter::to_value(v).map_err(|e| Error::Variable(e.to_string()))
-}
-
-mod fns {
-	use std::sync::Arc;
-
-	use cel_interpreter::extractors::{Identifier, This};
-	use cel_interpreter::objects::ValueType;
-	use cel_interpreter::{ExecutionError, FunctionContext, ResolveResult, Value};
-	use cel_parser::Expression;
-
-	use crate::cel::to_value;
-
-	pub fn with(
-		ftx: &FunctionContext,
-		This(this): This<Value>,
-		ident: Identifier,
-		expr: Expression,
-	) -> ResolveResult {
-		let mut ptx = ftx.ptx.new_inner_scope();
-		ptx.add_variable_from_value(&ident, this);
-		ptx.resolve(&expr)
-	}
-
-	pub fn json_parse(ftx: &FunctionContext, v: Value) -> ResolveResult {
-		let sv = match v {
-			Value::String(b) => serde_json::from_str(b.as_str()),
-			Value::Bytes(b) => serde_json::from_slice(b.as_ref()),
-			_ => return Err(ftx.error("invalid type")),
-		};
-		let sv: serde_json::Value = sv.map_err(|e| ftx.error(e))?;
-		to_value(sv).map_err(|e| ftx.error(e))
-	}
+	cel::to_value(v).map_err(|e| Error::Variable(e.to_string()))
 }
 
 #[cfg(any(test, feature = "internal_benches"))]

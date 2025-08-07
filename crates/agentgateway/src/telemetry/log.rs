@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+use std::cmp;
 use std::collections::{BTreeMap, HashSet};
 use std::fmt::Debug;
 use std::hash::BuildHasher;
@@ -18,9 +20,10 @@ use serde_json::Value;
 use tracing::log::Log;
 use tracing::{Level, event, log, trace};
 
-use crate::cel::{ContextBuilder, Expression};
+use crate::cel::{ContextBuilder, Error, Expression};
 use crate::telemetry::metrics::{HTTPLabels, Metrics};
 use crate::telemetry::trc;
+use crate::telemetry::trc::TraceParent;
 use crate::transport::stream::{TCPConnectionInfo, TLSConnectionInfo};
 use crate::types::agent::{
 	BackendName, BindName, GatewayName, ListenerName, RouteName, RouteRuleName, Target,
@@ -150,10 +153,17 @@ impl LoggingFields {
 }
 
 #[derive(Debug)]
+pub struct TraceSampler {
+	pub random_sampling: Option<Arc<cel::Expression>>,
+	pub client_sampling: Option<Arc<cel::Expression>>,
+}
+
+#[derive(Debug)]
 pub struct CelLogging {
 	pub cel_context: cel::ContextBuilder,
 	pub filter: Option<Arc<cel::Expression>>,
 	pub fields: Arc<LoggingFields>,
+	pub tracing_sampler: TraceSampler,
 }
 
 pub struct CelLoggingExecutor<'a> {
@@ -170,30 +180,106 @@ impl<'a> CelLoggingExecutor<'a> {
 		}
 	}
 
-	pub fn eval(&self, fields: &'a Arc<LoggingFields>) -> Vec<(&str, Option<Value>)> {
+	/// eval_rng evaluates a float (0.0-1.0) or a bool and evaluates to a bool. If a float is returned,
+	/// it represents the likelihood true is returned.
+	fn eval_rng(&self, x: &Expression) -> bool {
+		match self.executor.eval(x) {
+			Ok(cel::Value::Bool(b)) => b,
+			Ok(cel::Value::Float(f)) => {
+				// Clamp this down to 0-1 rang; random_bool can panic
+				let f = f.clamp(0.0, 1.0);
+				rand::random_bool(f)
+			},
+			Ok(cel::Value::Int(f)) => {
+				// Clamp this down to 0-1 rang; random_bool can panic
+				let f = f.clamp(0, 1);
+				rand::random_bool(f as f64)
+			},
+			_ => false,
+		}
+	}
+
+	pub fn eval(&self, fields: &'a Arc<LoggingFields>) -> Vec<(Cow<str>, Option<Value>)> {
 		let mut raws = Vec::with_capacity(fields.add.len());
 		for (k, v) in fields.add.iter() {
 			let field = self.executor.eval(v.as_ref());
 			if let Err(err) = &field {
 				trace!(target: "cel", ?err, expression=?v, "expression failed");
 			}
-			let celv = field
-				.ok()
-				.filter(|v| !matches!(v, cel_interpreter::Value::Null))
-				.and_then(|v| v.json().ok());
+			let celv = field.ok().filter(|v| !matches!(v, cel::Value::Null));
 
-			raws.push((k.as_ref(), celv));
+			// We return Option here to match the schema but don't bother adding None values since they
+			// will be dropped anyways
+			if let Some(celv) = celv {
+				Self::resolve_value(&mut raws, Cow::Borrowed(k.as_ref()), &celv, false);
+			}
 		}
 		raws
 	}
 
-	fn eval_additions(&self) -> Vec<(&str, Option<Value>)> {
+	fn resolve_value(
+		raws: &mut Vec<(Cow<'a, str>, Option<Value>)>,
+		k: Cow<'a, str>,
+		celv: &cel::Value,
+		always_flatten: bool,
+	) {
+		if let cel::Value::Map(m) = celv {
+			if let Some(cel::Value::List(li)) = m.map.get(&cel::FLATTEN_LIST) {
+				raws.reserve(li.len());
+				for (idx, v) in li.as_ref().iter().enumerate() {
+					Self::resolve_value(raws, Cow::Owned(format!("{k}.{idx}")), v, false);
+				}
+				return;
+			} else if let Some(cel::Value::List(li)) = m.map.get(&cel::FLATTEN_LIST_RECURSIVE) {
+				raws.reserve(li.len());
+				for (idx, v) in li.as_ref().iter().enumerate() {
+					Self::resolve_value(raws, Cow::Owned(format!("{k}.{idx}")), v, true);
+				}
+				return;
+			} else if let Some(cel::Value::Map(m)) = m.map.get(&cel::FLATTEN_MAP) {
+				raws.reserve(m.map.len());
+				for (mk, mv) in m.map.as_ref() {
+					Self::resolve_value(raws, Cow::Owned(format!("{k}.{mk}")), mv, false);
+				}
+				return;
+			} else if let Some(v @ cel::Value::Map(m)) = m.map.get(&cel::FLATTEN_MAP_RECURSIVE) {
+				raws.reserve(m.map.len());
+				for (mk, mv) in m.map.as_ref() {
+					Self::resolve_value(raws, Cow::Owned(format!("{k}.{mk}")), mv, true);
+				}
+				return;
+			}
+		}
+		if always_flatten {
+			match celv {
+				cel::Value::List(li) => {
+					raws.reserve(li.len());
+					for (idx, v) in li.as_ref().iter().enumerate() {
+						let nk = Cow::Owned(format!("{k}.{idx}"));
+						Self::resolve_value(raws, nk, v, true);
+					}
+				},
+				cel::Value::Map(m) => {
+					raws.reserve(m.map.len());
+					for (mk, mv) in m.map.as_ref() {
+						let nk = Cow::Owned(format!("{k}.{mk}"));
+						Self::resolve_value(raws, nk, mv, true);
+					}
+				},
+				_ => raws.push((k, celv.json().ok())),
+			}
+		} else {
+			raws.push((k, celv.json().ok()));
+		}
+	}
+
+	fn eval_additions(&self) -> Vec<(Cow<str>, Option<Value>)> {
 		self.eval(self.fields)
 	}
 }
 
 impl CelLogging {
-	pub fn new(cfg: Config) -> Self {
+	pub fn new(cfg: Config, tracing_config: trc::Config) -> Self {
 		let mut cel_context = cel::ContextBuilder::new();
 		if let Some(f) = &cfg.filter {
 			cel_context.register_expression(f.as_ref());
@@ -201,10 +287,15 @@ impl CelLogging {
 		for v in cfg.fields.add.values_unordered() {
 			cel_context.register_expression(v.as_ref());
 		}
+
 		Self {
 			cel_context,
 			filter: cfg.filter,
 			fields: cfg.fields,
+			tracing_sampler: TraceSampler {
+				random_sampling: tracing_config.random_sampling,
+				client_sampling: tracing_config.client_sampling,
+			},
 		}
 	}
 
@@ -223,6 +314,7 @@ impl CelLogging {
 			cel_context,
 			filter,
 			fields,
+			tracing_sampler: _,
 		} = self;
 		let executor = cel_context.build()?;
 		Ok(CelLoggingExecutor {
@@ -342,6 +434,32 @@ pub struct RequestLog {
 	pub inference_pool: Option<SocketAddr>,
 }
 
+impl RequestLog {
+	pub fn trace_sampled(&self, tp: Option<&TraceParent>) -> bool {
+		let TraceSampler {
+			random_sampling,
+			client_sampling,
+		} = &self.cel.tracing_sampler;
+		let expr = if tp.is_some() {
+			let Some(cs) = client_sampling else {
+				// If client_sampling is not set, default to include it
+				return true;
+			};
+			cs
+		} else {
+			let Some(rs) = random_sampling else {
+				// If random_sampling is not set, default to NOT include it
+				return false;
+			};
+			rs
+		};
+		let Ok(exec) = self.cel.build() else {
+			return false;
+		};
+		exec.eval_rng(expr.as_ref())
+	}
+}
+
 impl Drop for DropOnLog {
 	fn drop(&mut self) {
 		let Some(mut log) = self.log.take() else {
@@ -388,16 +506,10 @@ impl Drop for DropOnLog {
 		let dur = format!("{}ms", log.start.elapsed().as_millis());
 		let grpc = log.grpc_status.load();
 
-		if let (Some(req), Some(resp)) = (log.llm_request.as_ref(), llm_response.as_ref()) {
-			if Some(req.input_tokens) != resp.input_tokens_from_response {
-				// TODO: remove this, just for dev
-				tracing::warn!("maybe bug: mismatch in tokens {req:?}, {resp:?}");
-			}
-		}
 		let input_tokens = llm_response
 			.as_ref()
 			.and_then(|t| t.input_tokens_from_response)
-			.or_else(|| log.llm_request.as_ref().map(|req| req.input_tokens));
+			.or_else(|| log.llm_request.as_ref().and_then(|req| req.input_tokens));
 
 		let mcp = log.mcp_status.take();
 

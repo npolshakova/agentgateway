@@ -35,6 +35,15 @@ use tower_serve_static::private::mime;
 
 use crate::proxy::ProxyError;
 
+pub mod x_headers {
+	use http::HeaderName;
+
+	pub const X_RATELIMIT_LIMIT: HeaderName = HeaderName::from_static("x-ratelimit-limit");
+	pub const X_RATELIMIT_REMAINING: HeaderName = HeaderName::from_static("x-ratelimit-remaining");
+	pub const X_RATELIMIT_RESET: HeaderName = HeaderName::from_static("x-ratelimit-reset");
+	pub const X_AMZN_REQUESTID: HeaderName = HeaderName::from_static("x-amzn-requestid");
+}
+
 pub fn modify_req(
 	req: &mut Request,
 	f: impl FnOnce(&mut ::http::request::Parts) -> anyhow::Result<()>,

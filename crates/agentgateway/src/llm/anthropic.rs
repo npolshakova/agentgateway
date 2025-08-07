@@ -8,7 +8,8 @@ use serde_json::Value;
 
 use crate::http::Response;
 use crate::llm::anthropic::types::{
-	ContentBlockDelta, MessagesErrorResponse, MessagesRequest, MessagesResponse, MessagesStreamEvent,
+	ContentBlock, ContentBlockDelta, MessagesErrorResponse, MessagesRequest, MessagesResponse,
+	MessagesStreamEvent, StopReason,
 };
 use crate::llm::universal::{ChatCompletionChoiceStream, ChatCompletionRequest, Usage};
 use crate::llm::{AIError, LLMRequest, LLMResponse, universal};
@@ -55,7 +56,6 @@ impl Provider {
 			let mut message_id = None;
 			let mut model = String::new();
 			let mut created = chrono::Utc::now().timestamp();
-			let mut current_content = String::new();
 			let mut finish_reason = None;
 			let mut input_tokens = 0;
 			// https://docs.anthropic.com/en/docs/build-with-claude/streaming
@@ -112,9 +112,11 @@ impl Provider {
 						},
 						MessagesStreamEvent::MessageDelta { usage, delta } => {
 							finish_reason = delta.stop_reason.map(|reason| match reason {
-								types::StopReason::EndTurn => universal::FinishReason::stop,
-								types::StopReason::MaxTokens => universal::FinishReason::length,
-								types::StopReason::StopSequence => universal::FinishReason::stop,
+								StopReason::EndTurn => universal::FinishReason::stop,
+								StopReason::MaxTokens => universal::FinishReason::length,
+								StopReason::StopSequence => universal::FinishReason::stop,
+								StopReason::ToolUse => universal::FinishReason::tool_calls,
+								StopReason::Refusal => universal::FinishReason::content_filter,
 							});
 							log.non_atomic_mutate(|r| {
 								r.output_tokens = Some(usage.output_tokens as u64);
@@ -167,37 +169,56 @@ pub(super) fn translate_error(
 
 pub(super) fn translate_response(resp: MessagesResponse) -> universal::ChatCompletionResponse {
 	// Convert Anthropic content blocks to OpenAI message content
-	let choices = resp
-		.content
-		.iter()
-		.filter_map(|block| {
-			let text = match block {
-				types::ContentBlock::Text { text } => Some(text.clone()),
-				types::ContentBlock::Image { .. } => return None, // Skip images in response for now
-			};
-			let message = universal::ChatCompletionMessageForResponse {
-				role: universal::MessageRole::assistant,
-				content: text,
-				reasoning_content: None,
-				name: None,
-				tool_calls: None,
-			};
-			let finish_reason = resp.stop_reason.map(|reason| match reason {
-				types::StopReason::EndTurn => universal::FinishReason::stop,
-				types::StopReason::MaxTokens => universal::FinishReason::length,
-				types::StopReason::StopSequence => universal::FinishReason::stop,
-			});
-			// Only one choice for anthropic
-			let choice = universal::ChatCompletionChoice {
-				index: 0,
-				message,
-				finish_reason,
-				finish_details: None,
-			};
-			Some(choice)
-		})
-		.collect::<Vec<_>>();
+	let mut tool_calls: Vec<universal::ToolCall> = Vec::new();
+	let mut content = None;
+	for block in resp.content {
+		match block {
+			types::ContentBlock::Text { text } => content = Some(text.clone()),
+			types::ContentBlock::Image { .. } => continue, // Skip images in response for now
+			ContentBlock::ToolUse { id, name, input } => {
+				let Some(args) = serde_json::to_string(&input).ok() else {
+					continue;
+				};
+				tool_calls.push(universal::ToolCall {
+					id: id.clone(),
+					r#type: universal::ToolType::Function,
+					function: universal::ToolCallFunction {
+						name: name.clone(),
+						arguments: args,
+					},
+				});
+			},
+			ContentBlock::ToolResult { .. } => {
+				// Should be on the request path, not the response path
+				continue;
+			},
+		}
+	}
+	let message = universal::ChatCompletionMessageForResponse {
+		role: universal::MessageRole::assistant,
+		content,
+		tool_calls: if tool_calls.is_empty() {
+			None
+		} else {
+			Some(tool_calls)
+		},
+	};
+	let finish_reason = resp.stop_reason.map(|reason| match reason {
+		StopReason::EndTurn => universal::FinishReason::stop,
+		StopReason::MaxTokens => universal::FinishReason::length,
+		StopReason::StopSequence => universal::FinishReason::stop,
+		StopReason::ToolUse => universal::FinishReason::tool_calls,
+		StopReason::Refusal => universal::FinishReason::content_filter,
+	});
+	// Only one choice for anthropic
+	let choice = universal::ChatCompletionChoice {
+		index: 0,
+		message,
+		finish_reason,
+		finish_details: None,
+	};
 
+	let choices = vec![choice];
 	// Convert usage from Anthropic format to OpenAI format
 	let usage = universal::Usage {
 		prompt_tokens: resp.usage.input_tokens as i32,
@@ -275,6 +296,34 @@ pub(super) fn translate_request(req: ChatCompletionRequest) -> types::MessagesRe
 		})
 		.collect();
 
+	let tools = if let Some(tools) = req.tools {
+		let mapped_tools: Vec<_> = tools
+			.iter()
+			.map(|tool| types::Tool {
+				name: tool.function.name.clone(),
+				description: tool.function.description.clone(),
+				input_schema: tool.function.parameters.clone().unwrap_or_default(),
+			})
+			.collect();
+		Some(mapped_tools)
+	} else {
+		None
+	};
+	let metadata = req.user.map(|user| types::Metadata {
+		fields: HashMap::from([("user_id".to_string(), user)]),
+	});
+
+	let tool_choice = match req.tool_choice {
+		Some(universal::ToolChoiceType::ToolChoice { r#type, function }) => {
+			Some(types::ToolChoice::Tool {
+				name: function.name,
+			})
+		},
+		Some(universal::ToolChoiceType::Auto) => Some(types::ToolChoice::Auto),
+		Some(universal::ToolChoiceType::Required) => Some(types::ToolChoice::Any),
+		Some(universal::ToolChoiceType::None) => Some(types::ToolChoice::None),
+		None => None,
+	};
 	types::MessagesRequest {
 		messages,
 		system,
@@ -285,6 +334,9 @@ pub(super) fn translate_request(req: ChatCompletionRequest) -> types::MessagesRe
 		temperature: req.temperature,
 		top_p: req.top_p,
 		top_k: None, // OpenAI doesn't have top_k
+		tools,
+		tool_choice,
+		metadata,
 	}
 }
 
@@ -312,6 +364,19 @@ pub(super) mod types {
 			media_type: String,
 			data: String,
 		},
+		/// Tool use content
+		#[serde(rename = "tool_use")]
+		ToolUse {
+			id: String,
+			name: String,
+			input: serde_json::Value,
+		},
+		/// Tool result content
+		#[serde(rename = "tool_result")]
+		ToolResult {
+			tool_use_id: String,
+			content: String,
+		},
 	}
 
 	#[derive(Clone, Serialize, Debug, PartialEq, Eq)]
@@ -321,7 +386,7 @@ pub(super) mod types {
 		pub content: Vec<ContentBlock>,
 	}
 
-	#[derive(Clone, Serialize, Default, Debug, PartialEq)]
+	#[derive(Serialize, Default, Debug)]
 	pub struct MessagesRequest {
 		/// The User/Assistent prompts.
 		pub messages: Vec<Message>,
@@ -358,6 +423,15 @@ pub(super) mod types {
 		/// Recommended for advanced use cases only. You usually only need to use temperature.
 		#[serde(skip_serializing_if = "Option::is_none")]
 		pub top_k: Option<usize>,
+		/// Tools that the model may use
+		#[serde(skip_serializing_if = "Option::is_none")]
+		pub tools: Option<Vec<Tool>>,
+		/// How the model should use tools
+		#[serde(skip_serializing_if = "Option::is_none")]
+		pub tool_choice: Option<ToolChoice>,
+		/// Request metadata
+		#[serde(skip_serializing_if = "Option::is_none")]
+		pub metadata: Option<Metadata>,
 	}
 
 	/// Response body for the Messages API.
@@ -498,6 +572,8 @@ pub(super) mod types {
 		MaxTokens,
 		/// One of the provided custom stop_sequences was generated.
 		StopSequence,
+		ToolUse,
+		Refusal,
 	}
 
 	/// Billing and rate-limit usage.
@@ -508,5 +584,57 @@ pub(super) mod types {
 
 		/// The number of output tokens which were used.
 		pub output_tokens: usize,
+	}
+
+	/// Tool definition
+	#[derive(Debug, Serialize, Deserialize)]
+	pub struct Tool {
+		/// Name of the tool
+		pub name: String,
+		/// Description of the tool
+		#[serde(skip_serializing_if = "Option::is_none")]
+		pub description: Option<String>,
+		/// JSON schema for tool input
+		pub input_schema: serde_json::Value,
+	}
+
+	/// Tool choice configuration
+	#[derive(Debug, Serialize, Deserialize)]
+	#[serde(tag = "type")]
+	pub enum ToolChoice {
+		/// Let model choose whether to use tools
+		#[serde(rename = "auto")]
+		Auto,
+		/// Model must use one of the provided tools
+		#[serde(rename = "any")]
+		Any,
+		/// Model must use a specific tool
+		#[serde(rename = "tool")]
+		Tool { name: String },
+		/// Model must not use any tools
+		#[serde(rename = "none")]
+		None,
+	}
+
+	/// Configuration for extended thinking
+	#[derive(Debug, Deserialize, Serialize)]
+	pub struct Thinking {
+		/// Must be at least 1024 tokens
+		pub budget_tokens: usize,
+		#[serde(rename = "type")]
+		pub type_: ThinkingType,
+	}
+
+	#[derive(Debug, Deserialize, Serialize)]
+	pub enum ThinkingType {
+		#[serde(rename = "enabled")]
+		Enabled,
+	}
+	/// Message metadata
+	#[derive(Debug, Serialize, Deserialize, Default)]
+	pub struct Metadata {
+		/// Custom metadata fields
+		#[serde(flatten)]
+		pub fields: std::collections::HashMap<String, String>,
 	}
 }
