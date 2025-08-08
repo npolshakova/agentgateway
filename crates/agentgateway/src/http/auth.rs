@@ -1,3 +1,4 @@
+use macro_rules_attribute::apply;
 use once_cell::sync::Lazy;
 use secrecy::{ExposeSecret, SecretString};
 use tracing::trace;
@@ -31,7 +32,6 @@ pub enum AwsAuth {
 	Implicit {},
 }
 
-// TODO: xds support
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields, untagged)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
