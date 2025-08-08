@@ -33,7 +33,7 @@ pub enum AwsAuth {
 
 // TODO: xds support
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "camelCase", deny_unknown_fields, untagged)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum BackendAuth {
 	Passthrough {},
@@ -161,8 +161,8 @@ mod aws {
 	use aws_sigv4::http_request::{SignableBody, sign};
 	use aws_sigv4::sign::v4::SigningParams;
 	use http_body_util::BodyExt;
-	use tokio::sync::OnceCell;
 	use secrecy::ExposeSecret;
+	use tokio::sync::OnceCell;
 
 	use crate::http::auth::AwsAuth;
 	use crate::llm::bedrock::AwsRegion;
@@ -181,13 +181,12 @@ mod aws {
 				} else {
 					// Fall back to region from AWS config
 					let config = sdk_config().await;
-					config.region()
+					config
+						.region()
 						.map(|r| r.as_ref().to_string())
-						.ok_or_else(|| {
-							anyhow::anyhow!("No region found in AWS config or request extensions")
-						})?
+						.ok_or_else(|| anyhow::anyhow!("No region found in AWS config or request extensions"))?
 				}
-			}
+			},
 		};
 
 		trace!("AWS signing with region: {}, service: bedrock", region);
@@ -254,11 +253,11 @@ mod aws {
 					.access_key_id(access_key_id.expose_secret())
 					.secret_access_key(secret_access_key.expose_secret())
 					.provider_name("bedrock");
-				
+
 				if let Some(token) = session_token {
 					builder = builder.session_token(token.expose_secret());
 				}
-				
+
 				Ok(builder.build())
 			},
 			AwsAuth::Implicit {} => {
@@ -274,7 +273,7 @@ mod aws {
 						.provide_credentials()
 						.await?,
 				)
-			}
+			},
 		}
 	}
 }

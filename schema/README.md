@@ -144,11 +144,13 @@ This defaults to 'true'.|
 |`binds[].listeners[].routes[].policies.backendTLS.insecure`||
 |`binds[].listeners[].routes[].policies.backendTLS.insecureHost`||
 |`binds[].listeners[].routes[].policies.backendAuth`|Authenticate to the backend.|
-|`binds[].listeners[].routes[].policies.backendAuth.(any)(1)passthrough`||
-|`binds[].listeners[].routes[].policies.backendAuth.(any)(1)key`||
-|`binds[].listeners[].routes[].policies.backendAuth.(any)(1)key.(any)file`||
-|`binds[].listeners[].routes[].policies.backendAuth.(any)(1)gcp`||
-|`binds[].listeners[].routes[].policies.backendAuth.(any)(1)aws`||
+|`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(any)file`||
+|`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(1)explicitConfig`||
+|`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(1)explicitConfig.access_key_id`||
+|`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(1)explicitConfig.secret_access_key`||
+|`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(1)explicitConfig.region`||
+|`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(1)explicitConfig.session_token`||
+|`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(1)implicit`||
 |`binds[].listeners[].routes[].policies.localRateLimit`|Rate limit incoming requests. State is kept local.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit`|Rate limit incoming requests. State is managed by a remote server.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.(any)(1)service`||

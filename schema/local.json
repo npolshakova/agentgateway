@@ -1108,69 +1108,84 @@
                             "description": "Authenticate to the backend.",
                             "anyOf": [
                               {
-                                "oneOf": [
+                                "anyOf": [
                                   {
                                     "type": "object",
-                                    "properties": {
-                                      "passthrough": {
-                                        "type": "object"
-                                      }
-                                    },
-                                    "required": [
-                                      "passthrough"
-                                    ],
                                     "additionalProperties": false
                                   },
                                   {
+                                    "anyOf": [
+                                      {
+                                        "type": "object",
+                                        "properties": {
+                                          "file": {
+                                            "type": "string"
+                                          }
+                                        },
+                                        "required": [
+                                          "file"
+                                        ]
+                                      },
+                                      {
+                                        "type": "string"
+                                      }
+                                    ]
+                                  },
+                                  {
                                     "type": "object",
-                                    "properties": {
-                                      "key": {
-                                        "anyOf": [
-                                          {
+                                    "additionalProperties": false
+                                  },
+                                  {
+                                    "oneOf": [
+                                      {
+                                        "description": "Use explicit AWS credentials",
+                                        "type": "object",
+                                        "properties": {
+                                          "explicitConfig": {
                                             "type": "object",
                                             "properties": {
-                                              "file": {
+                                              "access_key_id": {
                                                 "type": "string"
+                                              },
+                                              "secret_access_key": {
+                                                "type": "string"
+                                              },
+                                              "region": {
+                                                "type": "string"
+                                              },
+                                              "session_token": {
+                                                "type": [
+                                                  "string",
+                                                  "null"
+                                                ]
                                               }
                                             },
                                             "required": [
-                                              "file"
+                                              "access_key_id",
+                                              "secret_access_key",
+                                              "region"
                                             ]
-                                          },
-                                          {
-                                            "type": "string"
                                           }
-                                        ]
+                                        },
+                                        "required": [
+                                          "explicitConfig"
+                                        ],
+                                        "additionalProperties": false
+                                      },
+                                      {
+                                        "description": "Use implicit AWS authentication (environment variables, IAM roles, etc.)",
+                                        "type": "object",
+                                        "properties": {
+                                          "implicit": {
+                                            "type": "object"
+                                          }
+                                        },
+                                        "required": [
+                                          "implicit"
+                                        ],
+                                        "additionalProperties": false
                                       }
-                                    },
-                                    "required": [
-                                      "key"
-                                    ],
-                                    "additionalProperties": false
-                                  },
-                                  {
-                                    "type": "object",
-                                    "properties": {
-                                      "gcp": {
-                                        "type": "object"
-                                      }
-                                    },
-                                    "required": [
-                                      "gcp"
-                                    ],
-                                    "additionalProperties": false
-                                  },
-                                  {
-                                    "type": "object",
-                                    "properties": {
-                                      "aws": {
-                                        "type": "object"
-                                      }
-                                    },
-                                    "required": [
-                                      "aws"
-                                    ],
-                                    "additionalProperties": false
+                                    ]
                                   }
                                 ]
                               },
