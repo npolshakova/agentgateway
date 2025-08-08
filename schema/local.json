@@ -1361,16 +1361,16 @@
                                           "explicitConfig": {
                                             "type": "object",
                                             "properties": {
-                                              "access_key_id": {
+                                              "accessKeyId": {
                                                 "type": "string"
                                               },
-                                              "secret_access_key": {
+                                              "secretAccessKey": {
                                                 "type": "string"
                                               },
                                               "region": {
                                                 "type": "string"
                                               },
-                                              "session_token": {
+                                              "sessionToken": {
                                                 "type": [
                                                   "string",
                                                   "null"
@@ -1378,8 +1378,8 @@
                                               }
                                             },
                                             "required": [
-                                              "access_key_id",
-                                              "secret_access_key",
+                                              "accessKeyId",
+                                              "secretAccessKey",
                                               "region"
                                             ]
                                           }

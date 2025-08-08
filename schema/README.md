@@ -159,10 +159,10 @@ This defaults to 'true'.|
 |`binds[].listeners[].routes[].policies.backendAuth`|Authenticate to the backend.|
 |`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(any)file`||
 |`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(1)explicitConfig`||
-|`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(1)explicitConfig.access_key_id`||
-|`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(1)explicitConfig.secret_access_key`||
+|`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(1)explicitConfig.accessKeyId`||
+|`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(1)explicitConfig.secretAccessKey`||
 |`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(1)explicitConfig.region`||
-|`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(1)explicitConfig.session_token`||
+|`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(1)explicitConfig.sessionToken`||
 |`binds[].listeners[].routes[].policies.backendAuth.(any)(any)(1)implicit`||
 |`binds[].listeners[].routes[].policies.localRateLimit`|Rate limit incoming requests. State is kept local.|
 |`binds[].listeners[].routes[].policies.localRateLimit[].maxTokens`||

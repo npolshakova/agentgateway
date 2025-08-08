@@ -15,6 +15,7 @@ use crate::*;
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum AwsAuth {
 	/// Use explicit AWS credentials
+	#[serde(rename_all = "camelCase")]
 	ExplicitConfig {
 		#[serde(serialize_with = "ser_redact")]
 		#[cfg_attr(feature = "schema", schemars(with = "String"))]
