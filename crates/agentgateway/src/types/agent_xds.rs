@@ -8,6 +8,7 @@ use super::agent::*;
 use crate::http::auth::{AwsAuth, BackendAuth};
 use crate::http::{StatusCode, authorization, backendtls, ext_proc, filters, localratelimit, uri};
 use crate::llm::{AIBackend, AIProvider};
+use crate::mcp::rbac::McpAuthorization;
 use crate::types::discovery::NamespacedHostname;
 use crate::types::proto;
 use crate::types::proto::ProtoError;
@@ -558,10 +559,7 @@ impl TryFrom<&proto::agent::policy_spec::Rbac> for Authorization {
 		}
 
 		// Create PolicySet using the same pattern as in de_policies function
-		let policy_set = authorization::PolicySet {
-			allow: allow_exprs,
-			deny: deny_exprs,
-		};
+		let policy_set = authorization::PolicySet::new(allow_exprs, deny_exprs);
 		Ok(Authorization(authorization::RuleSet::new(policy_set)))
 	}
 }
@@ -587,11 +585,10 @@ impl TryFrom<&proto::agent::policy_spec::Rbac> for McpAuthorization {
 		}
 
 		// Create PolicySet using the same pattern as in de_policies function
-		let policy_set = authorization::PolicySet {
-			allow: allow_exprs,
-			deny: deny_exprs,
-		};
-		Ok(McpAuthorization(authorization::RuleSet::new(policy_set)))
+		let policy_set = authorization::PolicySet::new(allow_exprs, deny_exprs);
+		Ok(McpAuthorization::new(authorization::RuleSet::new(
+			policy_set,
+		)))
 	}
 }
 

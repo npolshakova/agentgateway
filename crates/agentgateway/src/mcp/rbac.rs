@@ -9,6 +9,10 @@ use crate::*;
 pub struct McpAuthorization(RuleSet);
 
 impl McpAuthorization {
+	pub fn new(rule_set: RuleSet) -> Self {
+		Self(rule_set)
+	}
+
 	pub fn into_inner(self) -> RuleSet {
 		self.0
 	}
