@@ -2624,7 +2624,8 @@ type PolicySpec struct {
 	//	*PolicySpec_InferenceRouting_
 	//	*PolicySpec_BackendTls
 	//	*PolicySpec_Auth
-	//	*PolicySpec_Rbac
+	//	*PolicySpec_Authorization
+	//	*PolicySpec_McpAuthorization
 	Kind          isPolicySpec_Kind `protobuf_oneof:"kind"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -2721,10 +2722,19 @@ func (x *PolicySpec) GetAuth() *BackendAuthPolicy {
 	return nil
 }
 
-func (x *PolicySpec) GetRbac() *PolicySpec_RBAC {
+func (x *PolicySpec) GetAuthorization() *PolicySpec_RBAC {
 	if x != nil {
-		if x, ok := x.Kind.(*PolicySpec_Rbac); ok {
-			return x.Rbac
+		if x, ok := x.Kind.(*PolicySpec_Authorization); ok {
+			return x.Authorization
+		}
+	}
+	return nil
+}
+
+func (x *PolicySpec) GetMcpAuthorization() *PolicySpec_RBAC {
+	if x != nil {
+		if x, ok := x.Kind.(*PolicySpec_McpAuthorization); ok {
+			return x.McpAuthorization
 		}
 	}
 	return nil
@@ -2758,8 +2768,12 @@ type PolicySpec_Auth struct {
 	Auth *BackendAuthPolicy `protobuf:"bytes,6,opt,name=auth,proto3,oneof"`
 }
 
-type PolicySpec_Rbac struct {
-	Rbac *PolicySpec_RBAC `protobuf:"bytes,7,opt,name=rbac,proto3,oneof"`
+type PolicySpec_Authorization struct {
+	Authorization *PolicySpec_RBAC `protobuf:"bytes,7,opt,name=authorization,proto3,oneof"`
+}
+
+type PolicySpec_McpAuthorization struct {
+	McpAuthorization *PolicySpec_RBAC `protobuf:"bytes,8,opt,name=mcp_authorization,json=mcpAuthorization,proto3,oneof"`
 }
 
 func (*PolicySpec_LocalRateLimit_) isPolicySpec_Kind() {}
@@ -2774,7 +2788,9 @@ func (*PolicySpec_BackendTls) isPolicySpec_Kind() {}
 
 func (*PolicySpec_Auth) isPolicySpec_Kind() {}
 
-func (*PolicySpec_Rbac) isPolicySpec_Kind() {}
+func (*PolicySpec_Authorization) isPolicySpec_Kind() {}
+
+func (*PolicySpec_McpAuthorization) isPolicySpec_Kind() {}
 
 type Policy struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
@@ -4154,7 +4170,7 @@ const file_resource_proto_rawDesc = "" +
 	"\n" +
 	"route_rule\x18\x04 \x01(\tH\x00R\trouteRule\x12\x1a\n" +
 	"\abackend\x18\x05 \x01(\tH\x00R\abackendB\x06\n" +
-	"\x04kind\"\xdf\f\n" +
+	"\x04kind\"\xcc\r\n" +
 	"\n" +
 	"PolicySpec\x12`\n" +
 	"\x10local_rate_limit\x18\x01 \x01(\v24.agentgateway.dev.resource.PolicySpec.LocalRateLimitH\x00R\x0elocalRateLimit\x12Q\n" +
@@ -4163,8 +4179,9 @@ const file_resource_proto_rawDesc = "" +
 	"\x11inference_routing\x18\x04 \x01(\v26.agentgateway.dev.resource.PolicySpec.InferenceRoutingH\x00R\x10inferenceRouting\x12S\n" +
 	"\vbackend_tls\x18\x05 \x01(\v20.agentgateway.dev.resource.PolicySpec.BackendTLSH\x00R\n" +
 	"backendTls\x12B\n" +
-	"\x04auth\x18\x06 \x01(\v2,.agentgateway.dev.resource.BackendAuthPolicyH\x00R\x04auth\x12@\n" +
-	"\x04rbac\x18\a \x01(\v2*.agentgateway.dev.resource.PolicySpec.RBACH\x00R\x04rbac\x1a\x86\x02\n" +
+	"\x04auth\x18\x06 \x01(\v2,.agentgateway.dev.resource.BackendAuthPolicyH\x00R\x04auth\x12R\n" +
+	"\rauthorization\x18\a \x01(\v2*.agentgateway.dev.resource.PolicySpec.RBACH\x00R\rauthorization\x12Y\n" +
+	"\x11mcp_authorization\x18\b \x01(\v2*.agentgateway.dev.resource.PolicySpec.RBACH\x00R\x10mcpAuthorization\x1a\x86\x02\n" +
 	"\x0eLocalRateLimit\x12\x1d\n" +
 	"\n" +
 	"max_tokens\x18\x01 \x01(\x04R\tmaxTokens\x12&\n" +
@@ -4391,44 +4408,45 @@ var file_resource_proto_depIdxs = []int32{
 	46, // 43: agentgateway.dev.resource.PolicySpec.inference_routing:type_name -> agentgateway.dev.resource.PolicySpec.InferenceRouting
 	47, // 44: agentgateway.dev.resource.PolicySpec.backend_tls:type_name -> agentgateway.dev.resource.PolicySpec.BackendTLS
 	13, // 45: agentgateway.dev.resource.PolicySpec.auth:type_name -> agentgateway.dev.resource.BackendAuthPolicy
-	48, // 46: agentgateway.dev.resource.PolicySpec.rbac:type_name -> agentgateway.dev.resource.PolicySpec.RBAC
-	34, // 47: agentgateway.dev.resource.Policy.target:type_name -> agentgateway.dev.resource.PolicyTarget
-	35, // 48: agentgateway.dev.resource.Policy.spec:type_name -> agentgateway.dev.resource.PolicySpec
-	38, // 49: agentgateway.dev.resource.Backend.static:type_name -> agentgateway.dev.resource.StaticBackend
-	39, // 50: agentgateway.dev.resource.Backend.ai:type_name -> agentgateway.dev.resource.AIBackend
-	40, // 51: agentgateway.dev.resource.Backend.mcp:type_name -> agentgateway.dev.resource.MCPBackend
-	50, // 52: agentgateway.dev.resource.AIBackend.override:type_name -> agentgateway.dev.resource.AIBackend.Override
-	51, // 53: agentgateway.dev.resource.AIBackend.openai:type_name -> agentgateway.dev.resource.AIBackend.OpenAI
-	52, // 54: agentgateway.dev.resource.AIBackend.gemini:type_name -> agentgateway.dev.resource.AIBackend.Gemini
-	53, // 55: agentgateway.dev.resource.AIBackend.vertex:type_name -> agentgateway.dev.resource.AIBackend.Vertex
-	54, // 56: agentgateway.dev.resource.AIBackend.anthropic:type_name -> agentgateway.dev.resource.AIBackend.Anthropic
-	55, // 57: agentgateway.dev.resource.AIBackend.bedrock:type_name -> agentgateway.dev.resource.AIBackend.Bedrock
-	41, // 58: agentgateway.dev.resource.MCPBackend.targets:type_name -> agentgateway.dev.resource.MCPTarget
-	3,  // 59: agentgateway.dev.resource.MCPBackend.stateful_mode:type_name -> agentgateway.dev.resource.MCPBackend.StatefulMode
-	42, // 60: agentgateway.dev.resource.MCPTarget.backend:type_name -> agentgateway.dev.resource.BackendReference
-	4,  // 61: agentgateway.dev.resource.MCPTarget.protocol:type_name -> agentgateway.dev.resource.MCPTarget.Protocol
-	56, // 62: agentgateway.dev.resource.PolicySpec.LocalRateLimit.fill_interval:type_name -> google.protobuf.Duration
-	1,  // 63: agentgateway.dev.resource.PolicySpec.LocalRateLimit.type:type_name -> agentgateway.dev.resource.PolicySpec.LocalRateLimit.Type
-	42, // 64: agentgateway.dev.resource.PolicySpec.ExternalAuth.target:type_name -> agentgateway.dev.resource.BackendReference
-	49, // 65: agentgateway.dev.resource.PolicySpec.ExternalAuth.context:type_name -> agentgateway.dev.resource.PolicySpec.ExternalAuth.ContextEntry
-	42, // 66: agentgateway.dev.resource.PolicySpec.InferenceRouting.endpoint_picker:type_name -> agentgateway.dev.resource.BackendReference
-	2,  // 67: agentgateway.dev.resource.PolicySpec.InferenceRouting.failure_mode:type_name -> agentgateway.dev.resource.PolicySpec.InferenceRouting.FailureMode
-	57, // 68: agentgateway.dev.resource.PolicySpec.BackendTLS.cert:type_name -> google.protobuf.BytesValue
-	57, // 69: agentgateway.dev.resource.PolicySpec.BackendTLS.key:type_name -> google.protobuf.BytesValue
-	57, // 70: agentgateway.dev.resource.PolicySpec.BackendTLS.root:type_name -> google.protobuf.BytesValue
-	58, // 71: agentgateway.dev.resource.PolicySpec.BackendTLS.insecure:type_name -> google.protobuf.BoolValue
-	59, // 72: agentgateway.dev.resource.AIBackend.OpenAI.model:type_name -> google.protobuf.StringValue
-	59, // 73: agentgateway.dev.resource.AIBackend.Gemini.model:type_name -> google.protobuf.StringValue
-	59, // 74: agentgateway.dev.resource.AIBackend.Vertex.model:type_name -> google.protobuf.StringValue
-	59, // 75: agentgateway.dev.resource.AIBackend.Anthropic.model:type_name -> google.protobuf.StringValue
-	59, // 76: agentgateway.dev.resource.AIBackend.Bedrock.model:type_name -> google.protobuf.StringValue
-	59, // 77: agentgateway.dev.resource.AIBackend.Bedrock.guardrail_identifier:type_name -> google.protobuf.StringValue
-	59, // 78: agentgateway.dev.resource.AIBackend.Bedrock.guardrail_version:type_name -> google.protobuf.StringValue
-	79, // [79:79] is the sub-list for method output_type
-	79, // [79:79] is the sub-list for method input_type
-	79, // [79:79] is the sub-list for extension type_name
-	79, // [79:79] is the sub-list for extension extendee
-	0,  // [0:79] is the sub-list for field type_name
+	48, // 46: agentgateway.dev.resource.PolicySpec.authorization:type_name -> agentgateway.dev.resource.PolicySpec.RBAC
+	48, // 47: agentgateway.dev.resource.PolicySpec.mcp_authorization:type_name -> agentgateway.dev.resource.PolicySpec.RBAC
+	34, // 48: agentgateway.dev.resource.Policy.target:type_name -> agentgateway.dev.resource.PolicyTarget
+	35, // 49: agentgateway.dev.resource.Policy.spec:type_name -> agentgateway.dev.resource.PolicySpec
+	38, // 50: agentgateway.dev.resource.Backend.static:type_name -> agentgateway.dev.resource.StaticBackend
+	39, // 51: agentgateway.dev.resource.Backend.ai:type_name -> agentgateway.dev.resource.AIBackend
+	40, // 52: agentgateway.dev.resource.Backend.mcp:type_name -> agentgateway.dev.resource.MCPBackend
+	50, // 53: agentgateway.dev.resource.AIBackend.override:type_name -> agentgateway.dev.resource.AIBackend.Override
+	51, // 54: agentgateway.dev.resource.AIBackend.openai:type_name -> agentgateway.dev.resource.AIBackend.OpenAI
+	52, // 55: agentgateway.dev.resource.AIBackend.gemini:type_name -> agentgateway.dev.resource.AIBackend.Gemini
+	53, // 56: agentgateway.dev.resource.AIBackend.vertex:type_name -> agentgateway.dev.resource.AIBackend.Vertex
+	54, // 57: agentgateway.dev.resource.AIBackend.anthropic:type_name -> agentgateway.dev.resource.AIBackend.Anthropic
+	55, // 58: agentgateway.dev.resource.AIBackend.bedrock:type_name -> agentgateway.dev.resource.AIBackend.Bedrock
+	41, // 59: agentgateway.dev.resource.MCPBackend.targets:type_name -> agentgateway.dev.resource.MCPTarget
+	3,  // 60: agentgateway.dev.resource.MCPBackend.stateful_mode:type_name -> agentgateway.dev.resource.MCPBackend.StatefulMode
+	42, // 61: agentgateway.dev.resource.MCPTarget.backend:type_name -> agentgateway.dev.resource.BackendReference
+	4,  // 62: agentgateway.dev.resource.MCPTarget.protocol:type_name -> agentgateway.dev.resource.MCPTarget.Protocol
+	56, // 63: agentgateway.dev.resource.PolicySpec.LocalRateLimit.fill_interval:type_name -> google.protobuf.Duration
+	1,  // 64: agentgateway.dev.resource.PolicySpec.LocalRateLimit.type:type_name -> agentgateway.dev.resource.PolicySpec.LocalRateLimit.Type
+	42, // 65: agentgateway.dev.resource.PolicySpec.ExternalAuth.target:type_name -> agentgateway.dev.resource.BackendReference
+	49, // 66: agentgateway.dev.resource.PolicySpec.ExternalAuth.context:type_name -> agentgateway.dev.resource.PolicySpec.ExternalAuth.ContextEntry
+	42, // 67: agentgateway.dev.resource.PolicySpec.InferenceRouting.endpoint_picker:type_name -> agentgateway.dev.resource.BackendReference
+	2,  // 68: agentgateway.dev.resource.PolicySpec.InferenceRouting.failure_mode:type_name -> agentgateway.dev.resource.PolicySpec.InferenceRouting.FailureMode
+	57, // 69: agentgateway.dev.resource.PolicySpec.BackendTLS.cert:type_name -> google.protobuf.BytesValue
+	57, // 70: agentgateway.dev.resource.PolicySpec.BackendTLS.key:type_name -> google.protobuf.BytesValue
+	57, // 71: agentgateway.dev.resource.PolicySpec.BackendTLS.root:type_name -> google.protobuf.BytesValue
+	58, // 72: agentgateway.dev.resource.PolicySpec.BackendTLS.insecure:type_name -> google.protobuf.BoolValue
+	59, // 73: agentgateway.dev.resource.AIBackend.OpenAI.model:type_name -> google.protobuf.StringValue
+	59, // 74: agentgateway.dev.resource.AIBackend.Gemini.model:type_name -> google.protobuf.StringValue
+	59, // 75: agentgateway.dev.resource.AIBackend.Vertex.model:type_name -> google.protobuf.StringValue
+	59, // 76: agentgateway.dev.resource.AIBackend.Anthropic.model:type_name -> google.protobuf.StringValue
+	59, // 77: agentgateway.dev.resource.AIBackend.Bedrock.model:type_name -> google.protobuf.StringValue
+	59, // 78: agentgateway.dev.resource.AIBackend.Bedrock.guardrail_identifier:type_name -> google.protobuf.StringValue
+	59, // 79: agentgateway.dev.resource.AIBackend.Bedrock.guardrail_version:type_name -> google.protobuf.StringValue
+	80, // [80:80] is the sub-list for method output_type
+	80, // [80:80] is the sub-list for method input_type
+	80, // [80:80] is the sub-list for extension type_name
+	80, // [80:80] is the sub-list for extension extendee
+	0,  // [0:80] is the sub-list for field type_name
 }
 
 func init() { file_resource_proto_init() }
@@ -4499,7 +4517,8 @@ func file_resource_proto_init() {
 		(*PolicySpec_InferenceRouting_)(nil),
 		(*PolicySpec_BackendTls)(nil),
 		(*PolicySpec_Auth)(nil),
-		(*PolicySpec_Rbac)(nil),
+		(*PolicySpec_Authorization)(nil),
+		(*PolicySpec_McpAuthorization)(nil),
 	}
 	file_resource_proto_msgTypes[32].OneofWrappers = []any{
 		(*Backend_Static)(nil),

@@ -298,7 +298,8 @@ message PolicySpec {
     InferenceRouting inference_routing = 4;
     BackendTLS backend_tls = 5;
     BackendAuthPolicy auth = 6;
-    RBAC rbac = 7;
+    RBAC authorization = 7;
+    RBAC mcp_authorization = 8;
   }
 }
 
