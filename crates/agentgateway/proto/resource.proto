@@ -287,6 +287,10 @@ message PolicySpec {
     // Disable all verification
     google.protobuf.BoolValue insecure = 4;
   }
+  message RBAC {
+    repeated string allow = 1;
+    repeated string deny = 2;
+  }
   oneof kind {
     LocalRateLimit local_rate_limit = 1;
     ExternalAuth ext_authz = 2;
@@ -294,6 +298,7 @@ message PolicySpec {
     InferenceRouting inference_routing = 4;
     BackendTLS backend_tls = 5;
     BackendAuthPolicy auth = 6;
+    RBAC rbac = 7;
   }
 }
 
