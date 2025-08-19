@@ -549,22 +549,49 @@ impl TryFrom<&proto::agent::policy_spec::Rbac> for Authorization {
 				.map_err(|e| ProtoError::Generic(format!("invalid CEL expression in allow rule: {e}")))?;
 			allow_exprs.push(Arc::new(expr));
 		}
-		
-		// Convert deny rules  
+		// Convert deny rules
 		let mut deny_exprs = Vec::new();
 		for deny_rule in &rbac.deny {
 			let expr = cel::Expression::new(deny_rule)
 				.map_err(|e| ProtoError::Generic(format!("invalid CEL expression in deny rule: {e}")))?;
 			deny_exprs.push(Arc::new(expr));
 		}
-		
+
 		// Create PolicySet using the same pattern as in de_policies function
 		let policy_set = authorization::PolicySet {
 			allow: allow_exprs,
 			deny: deny_exprs,
 		};
-		
 		Ok(Authorization(authorization::RuleSet::new(policy_set)))
+	}
+}
+
+impl TryFrom<&proto::agent::policy_spec::Rbac> for McpAuthorization {
+	type Error = ProtoError;
+
+	fn try_from(rbac: &proto::agent::policy_spec::Rbac) -> Result<Self, Self::Error> {
+		// Convert allow rules
+		let mut allow_exprs = Vec::new();
+		for allow_rule in &rbac.allow {
+			let expr = cel::Expression::new(allow_rule)
+				.map_err(|e| ProtoError::Generic(format!("invalid CEL expression in allow rule: {e}")))?;
+			allow_exprs.push(Arc::new(expr));
+		}
+
+		// Convert deny rules
+		let mut deny_exprs = Vec::new();
+		for deny_rule in &rbac.deny {
+			let expr = cel::Expression::new(deny_rule)
+				.map_err(|e| ProtoError::Generic(format!("invalid CEL expression in deny rule: {e}")))?;
+			deny_exprs.push(Arc::new(expr));
+		}
+
+		// Create PolicySet using the same pattern as in de_policies function
+		let policy_set = authorization::PolicySet {
+			allow: allow_exprs,
+			deny: deny_exprs,
+		};
+		Ok(McpAuthorization(authorization::RuleSet::new(policy_set)))
 	}
 }
 
@@ -637,8 +664,11 @@ impl TryFrom<&proto::agent::Policy> for TargetedPolicy {
 			Some(proto::agent::policy_spec::Kind::Auth(auth)) => {
 				Policy::BackendAuth(BackendAuth::try_from(auth.clone())?)
 			},
-			Some(proto::agent::policy_spec::Kind::Rbac(rbac)) => {
+			Some(proto::agent::policy_spec::Kind::Authorization(rbac)) => {
 				Policy::Authorization(Authorization::try_from(rbac)?)
+			},
+			Some(proto::agent::policy_spec::Kind::McpAuthorization(rbac)) => {
+				Policy::McpAuthorization(McpAuthorization::try_from(rbac)?)
 			},
 			_ => return Err(ProtoError::EnumParse("unknown spec kind".to_string())),
 		};
