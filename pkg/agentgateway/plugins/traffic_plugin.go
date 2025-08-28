@@ -34,7 +34,7 @@ func NewTrafficPlugin(agw *AgwCollections) AgentgatewayPlugin {
 		kclient.Filter{ObjectFilter: agw.Client.ObjectFilter()},
 	), agw.KrtOpts.ToOptions("TrafficPolicy")...)
 	policyCol := krt.NewManyCollection(col, func(krtctx krt.HandlerContext, policyCR *v1alpha1.TrafficPolicy) []ADPPolicy {
-		return translateTrafficPolicy(krtctx, agw.GatewayExtensions, agw.Backends, policyCR)
+		return TranslateTrafficPolicy(krtctx, agw.GatewayExtensions, agw.Backends, policyCR)
 	})
 
 	return AgentgatewayPlugin{
@@ -49,8 +49,8 @@ func NewTrafficPlugin(agw *AgwCollections) AgentgatewayPlugin {
 	}
 }
 
-// translateTrafficPolicy generates policies for a single traffic policy
-func translateTrafficPolicy(
+// TranslateTrafficPolicy generates policies for a single traffic policy
+func TranslateTrafficPolicy(
 	ctx krt.HandlerContext,
 	gatewayExtensions krt.Collection[*v1alpha1.GatewayExtension],
 	backends krt.Collection[*v1alpha1.Backend],
