@@ -26,6 +26,7 @@ func allEnvVarsSet() map[string]string {
 		"KGW_XDS_SERVICE_HOST":               "my-xds-host",
 		"KGW_XDS_SERVICE_NAME":               "custom-svc",
 		"KGW_XDS_SERVICE_PORT":               "1234",
+		"KGW_AGENTGATEWAY_XDS_SERVICE_PORT":  "5678",
 		"KGW_USE_RUST_FORMATIONS":            "true",
 		"KGW_ENABLE_INFER_EXT":               "true",
 		"KGW_INFER_EXT_AUTO_PROVISION":       "true",
@@ -74,6 +75,7 @@ func TestSettings(t *testing.T) {
 				XdsServiceHost:              "",
 				XdsServiceName:              wellknown.DefaultXdsService,
 				XdsServicePort:              wellknown.DefaultXdsPort,
+				AgentgatewayXdsServicePort:  wellknown.DefaultAgwXdsPort,
 				UseRustFormations:           false,
 				EnableInferExt:              false,
 				InferExtAutoProvision:       false,
@@ -107,6 +109,7 @@ func TestSettings(t *testing.T) {
 				XdsServiceHost:              "my-xds-host",
 				XdsServiceName:              "custom-svc",
 				XdsServicePort:              1234,
+				AgentgatewayXdsServicePort:  5678,
 				UseRustFormations:           true,
 				EnableInferExt:              true,
 				InferExtAutoProvision:       true,
@@ -141,6 +144,13 @@ func TestSettings(t *testing.T) {
 			expectedErrorStr: "invalid syntax",
 		},
 		{
+			name: "errors on invalid port",
+			envVars: map[string]string{
+				"KGW_AGENTGATEWAY_XDS_SERVICE_PORT": "a123",
+			},
+			expectedErrorStr: "invalid syntax",
+		},
+		{
 			name: "errors on invalid dns lookup family",
 			envVars: map[string]string{
 				"KGW_DNS_LOOKUP_FAMILY": "invalid",
@@ -168,6 +178,7 @@ func TestSettings(t *testing.T) {
 				IstioNamespace:              "istio-system",
 				XdsServiceName:              wellknown.DefaultXdsService,
 				XdsServicePort:              wellknown.DefaultXdsPort,
+				AgentgatewayXdsServicePort:  wellknown.DefaultAgwXdsPort,
 				DefaultImageRegistry:        "cr.kgateway.dev",
 				DefaultImageTag:             "",
 				DefaultImagePullPolicy:      "IfNotPresent",
