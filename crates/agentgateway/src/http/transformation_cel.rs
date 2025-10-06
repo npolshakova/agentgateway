@@ -1,7 +1,7 @@
-use crate::cel::{Executor, Expression};
+use crate::cel::{ContextBuilder, Executor, Executor, Expression};
+use crate::http::HeaderOrPseudo;
 use crate::{cel, *};
 use ::http::StatusCode;
-use ::http::header::InvalidHeaderName;
 use ::http::uri::{Authority, PathAndQuery, Scheme};
 use ::http::{HeaderName, HeaderValue, header};
 use agent_core::prelude::Strng;
@@ -111,47 +111,6 @@ impl Transformation {
 			.chain(self.response.add.iter().map(|v| &v.1))
 			.chain(self.response.set.iter().map(|v| &v.1))
 			.chain(self.response.body.as_ref())
-	}
-}
-
-#[derive(Debug)]
-pub enum HeaderOrPseudo {
-	Header(HeaderName),
-	Method,
-	Scheme,
-	Authority,
-	Path,
-	Status,
-}
-
-impl TryFrom<&str> for HeaderOrPseudo {
-	type Error = InvalidHeaderName;
-
-	fn try_from(value: &str) -> Result<Self, Self::Error> {
-		match value {
-			":method" => Ok(HeaderOrPseudo::Method),
-			":scheme" => Ok(HeaderOrPseudo::Scheme),
-			":authority" => Ok(HeaderOrPseudo::Authority),
-			":path" => Ok(HeaderOrPseudo::Path),
-			":status" => Ok(HeaderOrPseudo::Status),
-			_ => HeaderName::try_from(value).map(HeaderOrPseudo::Header),
-		}
-	}
-}
-
-impl Serialize for HeaderOrPseudo {
-	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-	where
-		S: Serializer,
-	{
-		match self {
-			HeaderOrPseudo::Header(h) => h.as_str().serialize(serializer),
-			HeaderOrPseudo::Method => ":method".serialize(serializer),
-			HeaderOrPseudo::Scheme => ":scheme".serialize(serializer),
-			HeaderOrPseudo::Authority => ":authority".serialize(serializer),
-			HeaderOrPseudo::Path => ":path".serialize(serializer),
-			HeaderOrPseudo::Status => ":status".serialize(serializer),
-		}
 	}
 }
 

@@ -1,4 +1,4 @@
-use ::http::Method;
+use ::http::{Method, Request};
 use hyper_util::client::legacy::Client;
 use tokio::sync::mpsc;
 use tokio::sync::mpsc::Sender;
@@ -413,4 +413,18 @@ impl Handler for FailureExtProcResponse {
 	) -> Result<(), Status> {
 		Err(Status::failed_precondition("injected test error"))
 	}
+}
+
+#[tokio::test]
+async fn test_req_to_header_map() {
+	let req = Request::builder()
+		.header("host", "foo.com")
+		.header("content-type", "application/json")
+		.uri("/path?query=param")
+		.method("GET")
+		.body(http::Body::empty())
+		.unwrap();
+	let headers = super::req_to_header_map(&req).unwrap();
+	// 2 regular headers, 4 pseudo headers
+	assert_eq!(headers.headers.len(), 6);
 }

@@ -1,6 +1,7 @@
 use std::convert::Infallible;
 use std::sync::atomic::{AtomicBool, Ordering};
 
+use crate::http::HeaderOrPseudo;
 use ::http::HeaderMap;
 use anyhow::anyhow;
 use bytes::Bytes;
@@ -668,17 +669,42 @@ async fn handle_response_for_response_mutation(
 	Ok((res, false))
 }
 
+/// Extract the value for a pseudo header from the request
+fn get_pseudo_header_value(pseudo: &HeaderOrPseudo, req: &http::Request) -> Option<String> {
+	match pseudo {
+		HeaderOrPseudo::Method => Some(req.method().to_string()),
+		HeaderOrPseudo::Scheme => req.uri().scheme().map(|s| s.to_string()),
+		HeaderOrPseudo::Authority => req.uri().authority().map(|a| a.to_string()).or_else(|| {
+			req
+				.headers()
+				.get("host")
+				.and_then(|h| h.to_str().ok().map(|s| s.to_string()))
+		}),
+		HeaderOrPseudo::Path => req
+			.uri()
+			.path_and_query()
+			.map(|pq| pq.to_string())
+			.or_else(|| Some(req.uri().path().to_string())),
+		HeaderOrPseudo::Status => None,    // no status for requests
+		HeaderOrPseudo::Header(_) => None, // skip regular headers
+	}
+}
+
 fn req_to_header_map(req: &http::Request) -> Option<proto::HeaderMap> {
+	// Get pseudo header values with proper fallback logic
+	let method = get_pseudo_header_value(&HeaderOrPseudo::Method, req).unwrap_or_default();
+	let scheme =
+		get_pseudo_header_value(&HeaderOrPseudo::Scheme, req).unwrap_or_else(|| "http".to_string());
+	let authority = get_pseudo_header_value(&HeaderOrPseudo::Authority, req).unwrap_or_default();
+	let path = get_pseudo_header_value(&HeaderOrPseudo::Path, req).unwrap_or_else(|| "/".to_string());
+
 	to_header_map_extra(
 		req.headers(),
 		&[
-			(":path", req.uri().path()),
-			(":method", req.method().as_str()),
-			(":scheme", req.uri().scheme_str().unwrap_or("http")),
-			(
-				":authority",
-				req.uri().authority().map(|a| a.as_str()).unwrap_or(""),
-			),
+			(":method", &method),
+			(":scheme", &scheme),
+			(":authority", &authority),
+			(":path", &path),
 		],
 	)
 }

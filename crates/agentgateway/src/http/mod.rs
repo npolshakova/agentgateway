@@ -43,6 +43,50 @@ use url::Url;
 use crate::proxy::{ProxyError, ProxyResponse};
 use crate::transport::BufferLimit;
 
+use serde::{Serialize, Serializer};
+
+/// Represents either an HTTP header or an HTTP/2 pseudo-header
+#[derive(Debug)]
+pub enum HeaderOrPseudo {
+	Header(HeaderName),
+	Method,
+	Scheme,
+	Authority,
+	Path,
+	Status,
+}
+
+impl TryFrom<&str> for HeaderOrPseudo {
+	type Error = ::http::header::InvalidHeaderName;
+
+	fn try_from(value: &str) -> Result<Self, Self::Error> {
+		match value {
+			":method" => Ok(HeaderOrPseudo::Method),
+			":scheme" => Ok(HeaderOrPseudo::Scheme),
+			":authority" => Ok(HeaderOrPseudo::Authority),
+			":path" => Ok(HeaderOrPseudo::Path),
+			":status" => Ok(HeaderOrPseudo::Status),
+			_ => HeaderName::try_from(value).map(HeaderOrPseudo::Header),
+		}
+	}
+}
+
+impl Serialize for HeaderOrPseudo {
+	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+	where
+		S: Serializer,
+	{
+		match self {
+			HeaderOrPseudo::Header(h) => h.as_str().serialize(serializer),
+			HeaderOrPseudo::Method => ":method".serialize(serializer),
+			HeaderOrPseudo::Scheme => ":scheme".serialize(serializer),
+			HeaderOrPseudo::Authority => ":authority".serialize(serializer),
+			HeaderOrPseudo::Path => ":path".serialize(serializer),
+			HeaderOrPseudo::Status => ":status".serialize(serializer),
+		}
+	}
+}
+
 pub mod x_headers {
 	use http::HeaderName;
 
