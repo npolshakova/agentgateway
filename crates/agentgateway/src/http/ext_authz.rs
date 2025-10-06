@@ -168,38 +168,28 @@ impl ExtAuthz {
 		// https://github.com/envoyproxy/envoy/blob/d9e0412bd471a80e0938102c0c8cbff1caedd4cf/source/common/http/header_map_impl.cc#L28-L33
 		let mut headers = std::collections::HashMap::new();
 
-		let header_allowlist: std::collections::HashSet<&str> = self
-			.include_request_headers
-			.iter()
-			.map(|s| s.as_str())
-			.collect();
-
-		for name in req.headers().keys() {
-			if !self.include_request_headers.is_empty() && !header_allowlist.contains(name.as_str()) {
-				continue;
-			}
-
-			if self.include_request_headers.is_empty() {
+		if self.include_request_headers.is_empty() {
+			for name in req.headers().keys() {
 				self.get_header_values(req, name, &mut headers);
-			} else {
-				// Only include requested headers (both regular and pseudo headers)
-				for header_spec in &self.include_request_headers {
-					match HeaderOrPseudo::try_from(header_spec.as_str()) {
-						Ok(HeaderOrPseudo::Header(header_name)) => {
-							self.get_header_values(req, &header_name, &mut headers);
-						},
-						Ok(pseudo_header) => {
-							if let Some(value) = crate::http::get_pseudo_header_value(&pseudo_header, req) {
-								headers.insert(header_spec.clone(), value);
-							}
-						},
-						Err(_) => {
-							warn!(
-								"Invalid header name in include_request_headers: {}",
-								header_spec
-							);
-						},
-					}
+			}
+		} else {
+			// Only include requested headers (both regular and pseudo headers)
+			for header_spec in &self.include_request_headers {
+				match HeaderOrPseudo::try_from(header_spec.as_str()) {
+					Ok(HeaderOrPseudo::Header(header_name)) => {
+						self.get_header_values(req, &header_name, &mut headers);
+					},
+					Ok(pseudo_header) => {
+						if let Some(value) = crate::http::get_pseudo_header_value(&pseudo_header, req) {
+							headers.insert(header_spec.clone(), value);
+						}
+					},
+					Err(_) => {
+						warn!(
+							"Invalid header name in include_request_headers: {}",
+							header_spec
+						);
+					},
 				}
 			}
 		}

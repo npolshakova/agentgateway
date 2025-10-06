@@ -307,6 +307,46 @@ fn test_mixed_regular_and_pseudo_headers() {
 			Err(_) => panic!("Invalid header spec: {}", header_spec),
 		}
 	}
+
+	// Ensure non-listed headers are excluded
+	assert!(!expected_headers.contains_key("authorization"));
+}
+
+#[test]
+fn test_include_request_headers_empty_includes_all() {
+	use ::http::Request;
+
+	let req = Request::builder()
+		.header("content-type", "application/json")
+		.header("x-custom", "v1")
+		.header("x-custom", "v2")
+		.header("cookie", "a=1")
+		.header("cookie", "b=2")
+		.body(http::Body::empty())
+		.unwrap();
+
+	let mut headers = std::collections::HashMap::new();
+	for name in req.headers().keys() {
+		let values: Vec<String> = req
+			.headers()
+			.get_all(name)
+			.iter()
+			.filter_map(|v| v.to_str().ok())
+			.map(|s| s.to_string())
+			.collect();
+		if !values.is_empty() {
+			let joined = if name.as_str() == "cookie" {
+				values.join("; ")
+			} else {
+				values.join(", ")
+			};
+			headers.insert(name.as_str().to_string(), joined);
+		}
+	}
+
+	assert_eq!(headers.get("content-type").unwrap(), "application/json");
+	assert_eq!(headers.get("x-custom").unwrap(), "v1, v2");
+	assert_eq!(headers.get("cookie").unwrap(), "a=1; b=2");
 }
 
 #[test]
