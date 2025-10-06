@@ -3,6 +3,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use crate::http::HeaderOrPseudo;
 use ::http::HeaderMap;
+use ::http::uri::{Authority, PathAndQuery, Scheme};
 use anyhow::anyhow;
 use bytes::Bytes;
 use http_body::{Body, Frame};
@@ -565,7 +566,7 @@ async fn handle_response_for_request_mutation(
 		},
 	};
 	if let Some(req) = req {
-		apply_header_mutations(req.headers_mut(), cr.header_mutation.as_ref())?;
+		apply_header_mutations_request(req, cr.header_mutation.as_ref())?;
 	}
 	if let Some(BodyMutation { mutation: Some(b) }) = cr.body_mutation {
 		match b {
@@ -617,6 +618,66 @@ fn apply_header_mutations(
 	Ok(())
 }
 
+fn apply_header_mutations_request(
+	req: &mut http::Request,
+	h: Option<&HeaderMutation>,
+) -> Result<(), Error> {
+	if let Some(hm) = h {
+		for rm in &hm.remove_headers {
+			req.headers_mut().remove(rm);
+		}
+		for set in &hm.set_headers {
+			let Some(h) = &set.header else { continue };
+			match crate::http::HeaderOrPseudo::try_from(h.key.as_str()) {
+				Ok(crate::http::HeaderOrPseudo::Header(hk)) => {
+					if hk == http::header::CONTENT_LENGTH {
+						debug!("skipping invalid content-length");
+						continue;
+					}
+					req
+						.headers_mut()
+						.insert(hk, HeaderValue::from_bytes(h.raw_value.as_slice())?);
+				},
+				Ok(pseudo) => {
+					let _ = crate::http::apply_pseudo_to_request(req, &pseudo, &h.raw_value);
+				},
+				Err(_) => {},
+			}
+		}
+	}
+	Ok(())
+}
+
+fn apply_header_mutations_response(
+	resp: &mut http::Response,
+	h: Option<&HeaderMutation>,
+) -> Result<(), Error> {
+	if let Some(hm) = h {
+		for rm in &hm.remove_headers {
+			resp.headers_mut().remove(rm);
+		}
+		for set in &hm.set_headers {
+			let Some(h) = &set.header else { continue };
+			match crate::http::HeaderOrPseudo::try_from(h.key.as_str()) {
+				Ok(crate::http::HeaderOrPseudo::Header(hk)) => {
+					if hk == http::header::CONTENT_LENGTH {
+						debug!("skipping invalid content-length");
+						continue;
+					}
+					resp
+						.headers_mut()
+						.insert(hk, HeaderValue::from_bytes(h.raw_value.as_slice())?);
+				},
+				Ok(pseudo) => {
+					let _ = crate::http::apply_pseudo_to_response(resp, &pseudo, &h.raw_value);
+				},
+				Err(_) => {},
+			}
+		}
+	}
+	Ok(())
+}
+
 // handle_response_for_response_mutation handles a single ext_proc response. If it returns 'true' we are done processing.
 async fn handle_response_for_response_mutation(
 	had_body: bool,
@@ -643,7 +704,7 @@ async fn handle_response_for_response_mutation(
 		},
 	};
 	if let Some(resp) = resp {
-		apply_header_mutations(resp.headers_mut(), cr.header_mutation.as_ref())?;
+		apply_header_mutations_response(resp, cr.header_mutation.as_ref())?;
 	}
 	if let Some(BodyMutation { mutation: Some(b) }) = cr.body_mutation {
 		match b {

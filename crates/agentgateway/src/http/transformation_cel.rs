@@ -209,37 +209,8 @@ impl<'a> RequestOrResponse<'a> {
 				if let RequestOrResponse::Request(r) = self
 					&& let Some(b) = cel::value_as_bytes(&v)
 				{
-					match k {
-						HeaderOrPseudo::Method => {
-							if let Ok(m) = http::Method::from_bytes(b) {
-								*r.method_mut() = m;
-							}
-						},
-						HeaderOrPseudo::Scheme => {
-							if let Ok(s) = Scheme::try_from(b) {
-								let _ = http::modify_req_uri(r, |uri| {
-									uri.scheme = Some(s);
-									Ok(())
-								});
-							}
-						},
-						HeaderOrPseudo::Authority => {
-							if let Ok(s) = Authority::try_from(b) {
-								let _ = http::modify_req_uri(r, |uri| {
-									uri.authority = Some(s);
-									Ok(())
-								});
-							}
-						},
-						HeaderOrPseudo::Path => {
-							if let Ok(s) = PathAndQuery::try_from(b) {
-								let _ = http::modify_req_uri(r, |uri| {
-									uri.path_and_query = Some(s);
-									Ok(())
-								});
-							}
-						},
-						_ => {},
+					if !crate::http::apply_pseudo_to_request(r, k, b) {
+						// do nothing if not a pseudo header
 					}
 				}
 			},

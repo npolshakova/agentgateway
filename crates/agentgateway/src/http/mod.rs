@@ -87,6 +87,86 @@ impl Serialize for HeaderOrPseudo {
 	}
 }
 
+/// Extract the value for a pseudo header from the request
+pub fn get_pseudo_header_value(pseudo: &HeaderOrPseudo, req: &Request) -> Option<String> {
+	match pseudo {
+		HeaderOrPseudo::Method => Some(req.method().to_string()),
+		HeaderOrPseudo::Scheme => req.uri().scheme().map(|s| s.to_string()),
+		HeaderOrPseudo::Authority => req.uri().authority().map(|a| a.to_string()).or_else(|| {
+			req
+				.headers()
+				.get("host")
+				.and_then(|h| h.to_str().ok().map(|s| s.to_string()))
+		}),
+		HeaderOrPseudo::Path => req
+			.uri()
+			.path_and_query()
+			.map(|pq| pq.to_string())
+			.or_else(|| Some(req.uri().path().to_string())),
+		HeaderOrPseudo::Status => None,    // no status for requests
+		HeaderOrPseudo::Header(_) => None, // skip regular headers
+	}
+}
+
+/// Apply a pseudo header mutation to a request. Returns true if applied.
+pub fn apply_pseudo_to_request(req: &mut Request, pseudo: &HeaderOrPseudo, raw: &[u8]) -> bool {
+	match pseudo {
+		HeaderOrPseudo::Method => {
+			if let Ok(m) = ::http::Method::from_bytes(raw) {
+				*req.method_mut() = m;
+				return true;
+			}
+		},
+		HeaderOrPseudo::Scheme => {
+			if let Ok(s) = ::http::uri::Scheme::try_from(raw) {
+				let _ = modify_req_uri(req, |uri| {
+					uri.scheme = Some(s);
+					Ok(())
+				});
+				return true;
+			}
+		},
+		HeaderOrPseudo::Authority => {
+			if let Ok(a) = ::http::uri::Authority::try_from(raw) {
+				let _ = modify_req_uri(req, |uri| {
+					uri.authority = Some(a);
+					Ok(())
+				});
+				return true;
+			}
+		},
+		HeaderOrPseudo::Path => {
+			if let Ok(pq) = ::http::uri::PathAndQuery::try_from(raw) {
+				let _ = modify_req_uri(req, |uri| {
+					uri.path_and_query = Some(pq);
+					Ok(())
+				});
+				return true;
+			}
+		},
+		HeaderOrPseudo::Status | HeaderOrPseudo::Header(_) => {},
+	}
+	false
+}
+
+/// Apply a pseudo header mutation to a response. Returns true if applied.
+pub fn apply_pseudo_to_response(resp: &mut Response, pseudo: &HeaderOrPseudo, raw: &[u8]) -> bool {
+	match pseudo {
+		HeaderOrPseudo::Status => {
+			if let Some(code) = std::str::from_utf8(raw)
+				.ok()
+				.and_then(|s| s.parse::<u16>().ok())
+				.and_then(|c| ::http::StatusCode::from_u16(c).ok())
+			{
+				*resp.status_mut() = code;
+				return true;
+			}
+		},
+		_ => {},
+	}
+	false
+}
+
 pub mod x_headers {
 	use http::HeaderName;
 
