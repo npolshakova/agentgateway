@@ -425,6 +425,6 @@ async fn test_req_to_header_map() {
 		.body(http::Body::empty())
 		.unwrap();
 	let headers = super::req_to_header_map(&req).unwrap();
-	// 2 regular headers, 4 pseudo headers
+	// 2 regular headers, 4 pseudo headers (method, scheme, authority, path)
 	assert_eq!(headers.headers.len(), 6);
 }
