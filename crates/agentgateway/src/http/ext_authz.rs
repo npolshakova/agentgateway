@@ -118,10 +118,7 @@ impl ExtAuthz {
 		}
 	}
 
-	/// Extract the value for a pseudo header from the request
-	fn get_pseudo_header_value(&self, pseudo: &HeaderOrPseudo, req: &Request) -> Option<String> {
-		crate::http::get_pseudo_header_value(pseudo, req)
-	}
+	// (removed) get_pseudo_header_value was unused; use crate::http::get_pseudo_header_value directly where needed
 
 	fn get_header_values(
 		&self,

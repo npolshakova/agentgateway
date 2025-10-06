@@ -2,7 +2,6 @@ use crate::cel::{ContextBuilder, Executor, Executor, Expression};
 use crate::http::HeaderOrPseudo;
 use crate::{cel, *};
 use ::http::StatusCode;
-use ::http::uri::{Authority, PathAndQuery, Scheme};
 use ::http::{HeaderName, HeaderValue, header};
 use agent_core::prelude::Strng;
 use cel::Value;
@@ -208,10 +207,9 @@ impl<'a> RequestOrResponse<'a> {
 			(Some(v), _) => {
 				if let RequestOrResponse::Request(r) = self
 					&& let Some(b) = cel::value_as_bytes(&v)
+					&& !crate::http::apply_pseudo_to_request(r, k, b)
 				{
-					if !crate::http::apply_pseudo_to_request(r, k, b) {
-						// do nothing if not a pseudo header
-					}
+					// do nothing if not a pseudo header
 				}
 			},
 			_ => {},

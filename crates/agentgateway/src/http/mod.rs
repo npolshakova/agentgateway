@@ -151,18 +151,14 @@ pub fn apply_pseudo_to_request(req: &mut Request, pseudo: &HeaderOrPseudo, raw: 
 
 /// Apply a pseudo header mutation to a response. Returns true if applied.
 pub fn apply_pseudo_to_response(resp: &mut Response, pseudo: &HeaderOrPseudo, raw: &[u8]) -> bool {
-	match pseudo {
-		HeaderOrPseudo::Status => {
-			if let Some(code) = std::str::from_utf8(raw)
-				.ok()
-				.and_then(|s| s.parse::<u16>().ok())
-				.and_then(|c| ::http::StatusCode::from_u16(c).ok())
-			{
-				*resp.status_mut() = code;
-				return true;
-			}
-		},
-		_ => {},
+	if let HeaderOrPseudo::Status = pseudo
+		&& let Some(code) = std::str::from_utf8(raw)
+			.ok()
+			.and_then(|s| s.parse::<u16>().ok())
+			.and_then(|c| ::http::StatusCode::from_u16(c).ok())
+	{
+		*resp.status_mut() = code;
+		return true;
 	}
 	false
 }

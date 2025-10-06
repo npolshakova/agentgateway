@@ -3,7 +3,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 use crate::http::HeaderOrPseudo;
 use ::http::HeaderMap;
-use ::http::uri::{Authority, PathAndQuery, Scheme};
 use anyhow::anyhow;
 use bytes::Bytes;
 use http_body::{Body, Frame};

@@ -211,21 +211,19 @@ fn test_pseudo_header_value_extraction() {
 		.body(http::Body::empty())
 		.unwrap();
 
-	let extauthz: ExtAuthz = Default::default();
-
-	let method_value = extauthz.get_pseudo_header_value(&HeaderOrPseudo::Method, &req);
+	let method_value = crate::http::get_pseudo_header_value(&HeaderOrPseudo::Method, &req);
 	assert_eq!(method_value, Some("POST".to_string()));
 
-	let scheme_value = extauthz.get_pseudo_header_value(&HeaderOrPseudo::Scheme, &req);
+	let scheme_value = crate::http::get_pseudo_header_value(&HeaderOrPseudo::Scheme, &req);
 	assert_eq!(scheme_value, Some("https".to_string()));
 
-	let authority_value = extauthz.get_pseudo_header_value(&HeaderOrPseudo::Authority, &req);
+	let authority_value = crate::http::get_pseudo_header_value(&HeaderOrPseudo::Authority, &req);
 	assert_eq!(authority_value, Some("example.com:8080".to_string()));
 
-	let path_value = extauthz.get_pseudo_header_value(&HeaderOrPseudo::Path, &req);
+	let path_value = crate::http::get_pseudo_header_value(&HeaderOrPseudo::Path, &req);
 	assert_eq!(path_value, Some("/api/v1/test?param=value".to_string()));
 
-	let status_value = extauthz.get_pseudo_header_value(&HeaderOrPseudo::Status, &req);
+	let status_value = crate::http::get_pseudo_header_value(&HeaderOrPseudo::Status, &req);
 	assert_eq!(status_value, None);
 }
 
@@ -241,8 +239,7 @@ fn test_pseudo_header_authority_fallback() {
 		.body(http::Body::empty())
 		.unwrap();
 
-	let extauthz: ExtAuthz = Default::default();
-	let authority_value = extauthz.get_pseudo_header_value(&HeaderOrPseudo::Authority, &req);
+	let authority_value = crate::http::get_pseudo_header_value(&HeaderOrPseudo::Authority, &req);
 	assert_eq!(authority_value, Some("fallback.example.com".to_string()));
 }
 
@@ -256,8 +253,7 @@ fn test_pseudo_header_path_fallback() {
 		.body(http::Body::empty())
 		.unwrap();
 
-	let extauthz: ExtAuthz = Default::default();
-	let path_value = extauthz.get_pseudo_header_value(&HeaderOrPseudo::Path, &req);
+	let path_value = crate::http::get_pseudo_header_value(&HeaderOrPseudo::Path, &req);
 	assert_eq!(path_value, Some("/simple/path".to_string()));
 }
 
@@ -303,7 +299,7 @@ fn test_mixed_regular_and_pseudo_headers() {
 				}
 			},
 			Ok(pseudo_header) => {
-				let value = extauthz.get_pseudo_header_value(&pseudo_header, &req);
+				let value = crate::http::get_pseudo_header_value(&pseudo_header, &req);
 				if let Some(v) = value {
 					assert_eq!(expected_headers.get(header_spec), Some(&v));
 				}
