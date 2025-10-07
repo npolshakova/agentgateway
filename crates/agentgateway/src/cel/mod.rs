@@ -327,6 +327,20 @@ pub fn value_as_int(v: &Value) -> Option<i64> {
 	}
 }
 
+pub fn value_as_string(v: &Value) -> Option<String> {
+	match v {
+		Value::String(v) => Some(v.to_string()),
+		Value::Bool(v) => Some(v.to_string()),
+		Value::Int(v) => Some(v.to_string()),
+		Value::UInt(v) => Some(v.to_string()),
+		Value::Bytes(v) => {
+			use base64::Engine;
+			Some(base64::prelude::BASE64_STANDARD.encode(v.as_ref()))
+		},
+		_ => None,
+	}
+}
+
 pub struct Executor<'a> {
 	ctx: Context<'a>,
 }
