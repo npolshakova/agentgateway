@@ -815,7 +815,19 @@ impl TryFrom<&proto::agent::PolicySpec> for Policy {
 					target: Arc::new(target),
 					context: Some(ea.context.clone()),
 					failure_mode,
-					include_request_headers: ea.include_request_headers.clone(),
+					include_request_headers: ea
+						.include_request_headers
+						.iter()
+						.filter_map(
+							|s| match crate::http::HeaderOrPseudo::try_from(s.as_str()) {
+								Ok(h) => Some(h),
+								Err(_) => {
+									warn!(name = %s, "Invalid header in extauth include_request_headers; skipping");
+									None
+								},
+							},
+						)
+						.collect(),
 					include_request_body,
 					timeout,
 				})

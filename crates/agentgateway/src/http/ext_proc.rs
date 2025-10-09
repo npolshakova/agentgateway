@@ -627,8 +627,8 @@ fn apply_header_mutations_request(
 		}
 		for set in &hm.set_headers {
 			let Some(h) = &set.header else { continue };
-			match crate::http::HeaderOrPseudo::try_from(h.key.as_str()) {
-				Ok(crate::http::HeaderOrPseudo::Header(hk)) => {
+			match HeaderOrPseudo::try_from(h.key.as_str()) {
+				Ok(HeaderOrPseudo::Header(hk)) => {
 					if hk == http::header::CONTENT_LENGTH {
 						debug!("skipping invalid content-length");
 						continue;
@@ -638,7 +638,8 @@ fn apply_header_mutations_request(
 						.insert(hk, HeaderValue::from_bytes(h.raw_value.as_slice())?);
 				},
 				Ok(pseudo) => {
-					let _ = crate::http::apply_pseudo_to_request(req, &pseudo, &h.raw_value);
+					let mut rr = crate::http::RequestOrResponse::Request(req);
+					let _ = crate::http::apply_pseudo(&mut rr, &pseudo, &h.raw_value);
 				},
 				Err(_) => {},
 			}
@@ -668,7 +669,8 @@ fn apply_header_mutations_response(
 						.insert(hk, HeaderValue::from_bytes(h.raw_value.as_slice())?);
 				},
 				Ok(pseudo) => {
-					let _ = crate::http::apply_pseudo_to_response(resp, &pseudo, &h.raw_value);
+					let mut rr = crate::http::RequestOrResponse::Response(resp);
+					let _ = crate::http::apply_pseudo(&mut rr, &pseudo, &h.raw_value);
 				},
 				Err(_) => {},
 			}
@@ -730,24 +732,24 @@ async fn handle_response_for_response_mutation(
 }
 
 fn req_to_header_map(req: &http::Request) -> Option<proto::HeaderMap> {
-	// Get pseudo header values with fallback
-	let method =
-		crate::http::get_pseudo_header_value(&HeaderOrPseudo::Method, req).unwrap_or_default();
-	let scheme = crate::http::get_pseudo_header_value(&HeaderOrPseudo::Scheme, req)
-		.unwrap_or_else(|| "http".to_string());
-	let authority =
-		crate::http::get_pseudo_header_value(&HeaderOrPseudo::Authority, req).unwrap_or_default();
-	let path = crate::http::get_pseudo_header_value(&HeaderOrPseudo::Path, req)
-		.unwrap_or_else(|| "/".to_string());
-
+	let mut pseudo = crate::http::get_request_pseudo_headers(req);
+	let has_scheme = pseudo
+		.iter()
+		.any(|(p, _)| matches!(p, crate::http::HeaderOrPseudo::Scheme));
+	if !has_scheme {
+		// Default to http when scheme is not explicitly present on the request URI
+		pseudo.push((crate::http::HeaderOrPseudo::Scheme, "http".to_string()));
+	}
+	let pseudo_header_pairs: Vec<(String, String)> = pseudo
+		.into_iter()
+		.map(|(p, v)| (p.to_string(), v))
+		.collect();
 	to_header_map_extra(
 		req.headers(),
-		&[
-			(":method", &method),
-			(":scheme", &scheme),
-			(":authority", &authority),
-			(":path", &path),
-		],
+		&pseudo_header_pairs
+			.iter()
+			.map(|(k, v)| (k.as_str(), v.as_str()))
+			.collect::<Vec<_>>(),
 	)
 }
 
@@ -760,7 +762,7 @@ fn to_header_map(headers: &http::HeaderMap) -> Option<proto::HeaderMap> {
 }
 fn to_header_map_extra(
 	headers: &http::HeaderMap,
-	extra: &[(&str, &str)],
+	additional_headers: &[(&str, &str)],
 ) -> Option<proto::HeaderMap> {
 	let h = headers
 		.iter()
@@ -768,7 +770,7 @@ fn to_header_map_extra(
 			key: k.to_string(),
 			raw_value: v.as_bytes().to_vec(),
 		})
-		.chain(extra.iter().map(|(k, v)| proto::HeaderValue {
+		.chain(additional_headers.iter().map(|(k, v)| proto::HeaderValue {
 			key: k.to_string(),
 			raw_value: v.as_bytes().to_vec(),
 		}))

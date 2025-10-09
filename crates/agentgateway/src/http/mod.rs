@@ -27,6 +27,13 @@ pub type Body = axum_core::body::Body;
 pub type Request = ::http::Request<Body>;
 pub type Response = ::http::Response<Body>;
 
+/// A mutable handle that can represent either a request or a response
+#[derive(Debug)]
+pub enum RequestOrResponse<'a> {
+	Request(&'a mut Request),
+	Response(&'a mut Response),
+}
+
 use std::fmt::Debug;
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -46,7 +53,7 @@ use crate::transport::BufferLimit;
 use serde::{Serialize, Serializer};
 
 /// Represents either an HTTP header or an HTTP/2 pseudo-header
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum HeaderOrPseudo {
 	Header(HeaderName),
 	Method,
@@ -87,6 +94,19 @@ impl Serialize for HeaderOrPseudo {
 	}
 }
 
+impl std::fmt::Display for HeaderOrPseudo {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		match self {
+			HeaderOrPseudo::Header(h) => write!(f, "{}", h.as_str()),
+			HeaderOrPseudo::Method => write!(f, ":method"),
+			HeaderOrPseudo::Scheme => write!(f, ":scheme"),
+			HeaderOrPseudo::Authority => write!(f, ":authority"),
+			HeaderOrPseudo::Path => write!(f, ":path"),
+			HeaderOrPseudo::Status => write!(f, ":status"),
+		}
+	}
+}
+
 /// Extract the value for a pseudo header from the request
 pub fn get_pseudo_header_value(pseudo: &HeaderOrPseudo, req: &Request) -> Option<String> {
 	match pseudo {
@@ -108,16 +128,34 @@ pub fn get_pseudo_header_value(pseudo: &HeaderOrPseudo, req: &Request) -> Option
 	}
 }
 
-/// Apply a pseudo header mutation to a request. Returns true if applied.
-pub fn apply_pseudo_to_request(req: &mut Request, pseudo: &HeaderOrPseudo, raw: &[u8]) -> bool {
-	match pseudo {
-		HeaderOrPseudo::Method => {
+/// Return all present request pseudo headers without introducing defaults
+pub fn get_request_pseudo_headers(req: &Request) -> Vec<(HeaderOrPseudo, String)> {
+	let mut out = Vec::with_capacity(4);
+	if let Some(v) = get_pseudo_header_value(&HeaderOrPseudo::Method, req) {
+		out.push((HeaderOrPseudo::Method, v));
+	}
+	if let Some(v) = get_pseudo_header_value(&HeaderOrPseudo::Scheme, req) {
+		out.push((HeaderOrPseudo::Scheme, v));
+	}
+	if let Some(v) = get_pseudo_header_value(&HeaderOrPseudo::Authority, req) {
+		out.push((HeaderOrPseudo::Authority, v));
+	}
+	if let Some(v) = get_pseudo_header_value(&HeaderOrPseudo::Path, req) {
+		out.push((HeaderOrPseudo::Path, v));
+	}
+	out
+}
+
+/// Apply a pseudo header mutation to either a request or a response. Returns true if applied.
+pub fn apply_pseudo(rr: &mut RequestOrResponse, pseudo: &HeaderOrPseudo, raw: &[u8]) -> bool {
+	match (rr, pseudo) {
+		(RequestOrResponse::Request(req), HeaderOrPseudo::Method) => {
 			if let Ok(m) = ::http::Method::from_bytes(raw) {
 				*req.method_mut() = m;
 				return true;
 			}
 		},
-		HeaderOrPseudo::Scheme => {
+		(RequestOrResponse::Request(req), HeaderOrPseudo::Scheme) => {
 			if let Ok(s) = ::http::uri::Scheme::try_from(raw) {
 				let _ = modify_req_uri(req, |uri| {
 					uri.scheme = Some(s);
@@ -126,7 +164,7 @@ pub fn apply_pseudo_to_request(req: &mut Request, pseudo: &HeaderOrPseudo, raw: 
 				return true;
 			}
 		},
-		HeaderOrPseudo::Authority => {
+		(RequestOrResponse::Request(req), HeaderOrPseudo::Authority) => {
 			if let Ok(a) = ::http::uri::Authority::try_from(raw) {
 				let _ = modify_req_uri(req, |uri| {
 					uri.authority = Some(a);
@@ -135,7 +173,7 @@ pub fn apply_pseudo_to_request(req: &mut Request, pseudo: &HeaderOrPseudo, raw: 
 				return true;
 			}
 		},
-		HeaderOrPseudo::Path => {
+		(RequestOrResponse::Request(req), HeaderOrPseudo::Path) => {
 			if let Ok(pq) = ::http::uri::PathAndQuery::try_from(raw) {
 				let _ = modify_req_uri(req, |uri| {
 					uri.path_and_query = Some(pq);
@@ -144,21 +182,18 @@ pub fn apply_pseudo_to_request(req: &mut Request, pseudo: &HeaderOrPseudo, raw: 
 				return true;
 			}
 		},
-		HeaderOrPseudo::Status | HeaderOrPseudo::Header(_) => {},
-	}
-	false
-}
-
-/// Apply a pseudo header mutation to a response. Returns true if applied.
-pub fn apply_pseudo_to_response(resp: &mut Response, pseudo: &HeaderOrPseudo, raw: &[u8]) -> bool {
-	if let HeaderOrPseudo::Status = pseudo
-		&& let Some(code) = std::str::from_utf8(raw)
-			.ok()
-			.and_then(|s| s.parse::<u16>().ok())
-			.and_then(|c| ::http::StatusCode::from_u16(c).ok())
-	{
-		*resp.status_mut() = code;
-		return true;
+		(RequestOrResponse::Response(resp), HeaderOrPseudo::Status) => {
+			if let Some(code) = std::str::from_utf8(raw)
+				.ok()
+				.and_then(|s| s.parse::<u16>().ok())
+				.and_then(|c| ::http::StatusCode::from_u16(c).ok())
+			{
+				*resp.status_mut() = code;
+				return true;
+			}
+		},
+		// Non-applicable combinations or regular headers
+		_ => {},
 	}
 	false
 }

@@ -81,7 +81,7 @@ pub struct ExtAuthz {
 	pub failure_mode: FailureMode,
 	/// Specific headers to include in the authorization request (empty = all headers)
 	#[serde(default, skip_serializing_if = "Vec::is_empty")]
-	pub include_request_headers: Vec<String>,
+	pub include_request_headers: Vec<HeaderOrPseudo>,
 	/// Options for including the request body in the authorization request
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub include_request_body: Option<BodyOptions>,
@@ -174,21 +174,16 @@ impl ExtAuthz {
 			}
 		} else {
 			// Only include requested headers (both regular and pseudo headers)
+			let pseudo_headers = crate::http::get_request_pseudo_headers(req);
 			for header_spec in &self.include_request_headers {
-				match HeaderOrPseudo::try_from(header_spec.as_str()) {
-					Ok(HeaderOrPseudo::Header(header_name)) => {
-						self.get_header_values(req, &header_name, &mut headers);
+				match header_spec {
+					HeaderOrPseudo::Header(header_name) => {
+						self.get_header_values(req, header_name, &mut headers);
 					},
-					Ok(pseudo_header) => {
-						if let Some(value) = crate::http::get_pseudo_header_value(&pseudo_header, req) {
-							headers.insert(header_spec.clone(), value);
+					pseudo => {
+						if let Some((_, value)) = pseudo_headers.iter().find(|(p, _)| p == pseudo) {
+							headers.insert(header_spec.to_string(), value.clone());
 						}
-					},
-					Err(_) => {
-						warn!(
-							"Invalid header name in include_request_headers: {}",
-							header_spec
-						);
 					},
 				}
 			}
@@ -411,12 +406,19 @@ impl ExtAuthz {
 					}
 				}
 
+				// Apply pseudo-header mutations first
+				apply_pseudo_headers_to_request(req, &headers);
+
+				// Then process regular headers, excluding host and any pseudo-headers
 				let filtered_headers: Vec<_> = headers
 					.into_iter()
 					.filter(|h| {
 						h.header
 							.as_ref()
-							.map(|hdr| hdr.key.to_lowercase() != "host")
+							.map(|hdr| {
+								let k = hdr.key.as_str();
+								k.to_lowercase() != "host" && !k.starts_with(':')
+							})
 							.unwrap_or(true)
 					})
 					.collect();
@@ -445,6 +447,28 @@ impl ExtAuthz {
 
 fn convert_prost_value_to_json(value: &prost_wkt_types::Value) -> Result<JsonValue, ProxyError> {
 	serde_json::to_value(value).map_err(|e| ProxyError::Processing(e.into()))
+}
+
+/// Apply HTTP/2 pseudo-headers returned by the ext_authz server to the inbound request
+fn apply_pseudo_headers_to_request(req: &mut Request, headers: &[HeaderValueOption]) {
+	for header in headers {
+		let Some(h) = header.header.as_ref() else {
+			continue;
+		};
+		// Only consider pseudo-headers (start with ':') and ignore others
+		if !h.key.starts_with(':') {
+			continue;
+		}
+		if let Ok(pseudo) = HeaderOrPseudo::try_from(h.key.as_str()) {
+			let raw = if !h.raw_value.is_empty() {
+				h.raw_value.as_slice()
+			} else {
+				h.value.as_bytes()
+			};
+			let mut rr = crate::http::RequestOrResponse::Request(req);
+			let _ = crate::http::apply_pseudo(&mut rr, &pseudo, raw);
+		}
+	}
 }
 
 fn process_headers(

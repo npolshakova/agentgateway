@@ -207,9 +207,9 @@ impl<'a> RequestOrResponse<'a> {
 			(Some(v), _) => {
 				if let RequestOrResponse::Request(r) = self
 					&& let Some(b) = cel::value_as_bytes(&v)
-					&& !crate::http::apply_pseudo_to_request(r, k, b)
 				{
-					// do nothing if not a pseudo header
+					let mut rr = crate::http::RequestOrResponse::Request(r);
+					let _ = crate::http::apply_pseudo(&mut rr, k, b);
 				}
 			},
 			_ => {},

@@ -272,10 +272,10 @@ fn test_mixed_regular_and_pseudo_headers() {
 
 	let extauthz: ExtAuthz = ExtAuthz {
 		include_request_headers: vec![
-			":method".to_string(),
-			":authority".to_string(),
-			"content-type".to_string(),
-			"x-custom".to_string(),
+			HeaderOrPseudo::try_from(":method").unwrap(),
+			HeaderOrPseudo::try_from(":authority").unwrap(),
+			HeaderOrPseudo::try_from("content-type").unwrap(),
+			HeaderOrPseudo::try_from("x-custom").unwrap(),
 		],
 		..Default::default()
 	};
@@ -287,24 +287,23 @@ fn test_mixed_regular_and_pseudo_headers() {
 	expected_headers.insert("x-custom".to_string(), "custom-value".to_string());
 
 	for header_spec in &extauthz.include_request_headers {
-		match HeaderOrPseudo::try_from(header_spec.as_str()) {
-			Ok(HeaderOrPseudo::Header(header_name)) => {
+		match header_spec {
+			HeaderOrPseudo::Header(header_name) => {
 				let value = req
 					.headers()
-					.get(&header_name)
+					.get(header_name)
 					.and_then(|v| v.to_str().ok())
 					.map(|s| s.to_string());
 				if let Some(v) = value {
-					assert_eq!(expected_headers.get(header_spec), Some(&v));
+					assert_eq!(expected_headers.get(&header_spec.to_string()), Some(&v));
 				}
 			},
-			Ok(pseudo_header) => {
-				let value = crate::http::get_pseudo_header_value(&pseudo_header, &req);
+			pseudo_header => {
+				let value = crate::http::get_pseudo_header_value(pseudo_header, &req);
 				if let Some(v) = value {
-					assert_eq!(expected_headers.get(header_spec), Some(&v));
+					assert_eq!(expected_headers.get(&header_spec.to_string()), Some(&v));
 				}
 			},
-			Err(_) => panic!("Invalid header spec: {}", header_spec),
 		}
 	}
 
