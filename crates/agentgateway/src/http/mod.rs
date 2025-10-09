@@ -94,6 +94,20 @@ impl Serialize for HeaderOrPseudo {
 	}
 }
 
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for HeaderOrPseudo {
+	fn schema_name() -> String {
+		"HeaderOrPseudo".to_string()
+	}
+
+    fn json_schema(_gen: &mut schemars::r#gen::SchemaGenerator) -> schemars::schema::Schema {
+		use schemars::schema::{InstanceType, Schema, SchemaObject};
+		let mut obj = SchemaObject::default();
+		obj.instance_type = Some(InstanceType::String.into());
+		Schema::Object(obj)
+	}
+}
+
 impl std::fmt::Display for HeaderOrPseudo {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		match self {
