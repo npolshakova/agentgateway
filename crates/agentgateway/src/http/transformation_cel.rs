@@ -1,4 +1,4 @@
-use crate::cel::{ContextBuilder, Executor, Executor, Expression};
+use crate::cel::{Executor, Expression};
 use crate::http::HeaderOrPseudo;
 use crate::{cel, *};
 use ::http::StatusCode;
