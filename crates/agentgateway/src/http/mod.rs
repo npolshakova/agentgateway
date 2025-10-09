@@ -96,15 +96,12 @@ impl Serialize for HeaderOrPseudo {
 
 #[cfg(feature = "schema")]
 impl schemars::JsonSchema for HeaderOrPseudo {
-	fn schema_name() -> String {
-		"HeaderOrPseudo".to_string()
+	fn schema_name() -> std::borrow::Cow<'static, str> {
+		"HeaderOrPseudo".into()
 	}
 
-    fn json_schema(_gen: &mut schemars::r#gen::SchemaGenerator) -> schemars::schema::Schema {
-		use schemars::schema::{InstanceType, Schema, SchemaObject};
-		let mut obj = SchemaObject::default();
-		obj.instance_type = Some(InstanceType::String.into());
-		Schema::Object(obj)
+	fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+		schemars::json_schema!({ "type": "string" })
 	}
 }
 
