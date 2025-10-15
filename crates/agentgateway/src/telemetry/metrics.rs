@@ -227,7 +227,7 @@ impl Metrics {
 			},
 			tls_handshake_duration: {
 				let m = Family::<TCPLabels, _>::new_with_constructor(move || {
-					PromHistogram::new(REQUEST_DURATION_BUCKET)
+					PromHistogram::new(CONNECT_DURATION_BUCKET)
 				});
 				registry.register(
 					"tls_handshake_duration",
