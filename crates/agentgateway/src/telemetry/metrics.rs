@@ -216,7 +216,7 @@ impl Metrics {
 			},
 			upstream_connect_duration: {
 				let m = Family::<ConnectLabels, _>::new_with_constructor(move || {
-					PromHistogram::new(REQUEST_DURATION_BUCKET)
+					PromHistogram::new(CONNECT_DURATION_BUCKET)
 				});
 				registry.register(
 					"upstream_connect_duration",
@@ -258,6 +258,30 @@ const TOKEN_USAGE_BUCKET: [f64; 14] = [
 // https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-metrics/#metric-gen_aiserverrequestduration
 const REQUEST_DURATION_BUCKET: [f64; 14] = [
 	0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 40.96, 81.92,
+];
+// Finer-grained buckets for TCP/TLS connect where many observations are <10ms.
+// Keep in seconds to match Prometheus conventions.
+const CONNECT_DURATION_BUCKET: [f64; 20] = [
+	0.0005, // 0.5 ms
+	0.001,  // 1 ms
+	0.002,  // 2 ms
+	0.003,  // 3 ms
+	0.004,  // 4 ms
+	0.005,  // 5 ms
+	0.0075, // 7.5 ms
+	0.01,   // 10 ms
+	0.0125, // 12.5 ms
+	0.015,  // 15 ms
+	0.0175, // 17.5 ms
+	0.02,   // 20 ms
+	0.03,   // 30 ms
+	0.04,   // 40 ms
+	0.06,   // 60 ms
+	0.08,   // 80 ms
+	0.12,   // 120 ms
+	0.16,   // 160 ms
+	0.32,   // 320 ms
+	0.64,   // 640 ms
 ];
 // https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-metrics/#metric-gen_aiservertime_per_output_token
 // NOTE: the spec has SHOULD, but is not smart enough to handle the faster LLMs.
