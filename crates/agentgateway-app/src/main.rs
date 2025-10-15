@@ -126,7 +126,7 @@ fn copy_binary(copy_self: PathBuf) -> anyhow::Result<()> {
 
 async fn validate(contents: String, filename: Option<PathBuf>) -> anyhow::Result<()> {
 	let config = agentgateway::config::parse_config(contents, filename)?;
-	let client = client::Client::new(&config.dns, None, BackendConfig::default());
+	let client = client::Client::new(&config.dns, None, BackendConfig::default(), None);
 	if let Some(cfg) = config.xds.local_config {
 		let cs = cfg.read_to_string().await?;
 		agentgateway::types::local::NormalizedLocalConfig::from(client, cs.as_str()).await?;

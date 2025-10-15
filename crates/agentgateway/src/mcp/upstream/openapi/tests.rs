@@ -29,6 +29,7 @@ async fn setup() -> (MockServer, Handler) {
 		},
 		None,
 		BackendConfig::default(),
+		None,
 	);
 	let pi = Arc::new(ProxyInputs {
 		cfg: Arc::new(config),

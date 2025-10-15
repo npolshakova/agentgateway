@@ -477,12 +477,12 @@ impl Drop for Metrics {
 		{
 			ctx
 				.metrics
-				.tcp_tx_bytes
+				.tcp_downstream_tx_bytes
 				.get_or_create(&ctx.labels)
 				.inc_by(tx);
 			ctx
 				.metrics
-				.tcp_rx_bytes
+				.tcp_downstream_rx_bytes
 				.get_or_create(&ctx.labels)
 				.inc_by(rx);
 		}

@@ -135,7 +135,12 @@ impl Gateway {
 		let name = b.key.clone();
 		let (pi, listener) = if pi.cfg.threading_mode == crate::ThreadingMode::ThreadPerCore {
 			let mut pi = Arc::unwrap_or_clone(pi);
-			let client = client::Client::new(&pi.cfg.dns, None, pi.cfg.backend.clone());
+			let client = client::Client::new(
+				&pi.cfg.dns,
+				None,
+				pi.cfg.backend.clone(),
+				Some(pi.metrics.clone()),
+			);
 			pi.upstream = client;
 			let pi = Arc::new(pi);
 			let builder = if b.address.is_ipv4() {
@@ -412,6 +417,7 @@ impl Gateway {
 			let (ext, counter, inner) = raw_stream.into_parts();
 			let acceptor =
 				tokio_rustls::LazyConfigAcceptor::new(rustls::server::Acceptor::default(), Box::new(inner));
+			let tls_start = std::time::Instant::now();
 			let start = acceptor.await?;
 			let ch = start.client_hello();
 			let best = listeners
@@ -419,6 +425,23 @@ impl Gateway {
 				.ok_or(anyhow!("no TLS listener match"))?;
 			let cfg = best.protocol.tls().unwrap();
 			let tls = start.into_stream(cfg).await?;
+			let tls_dur = tls_start.elapsed();
+			// TLS handshake duration
+			let protocol = if matches!(best.protocol, ListenerProtocol::HTTPS(_)) {
+				BindProtocol::https
+			} else {
+				BindProtocol::tls
+			};
+			inp
+				.metrics
+				.tls_handshake_duration
+				.get_or_create(&TCPLabels {
+					bind: Some(&bind).into(),
+					gateway: Some(&best.gateway_name).into(),
+					listener: Some(&best.name).into(),
+					protocol,
+				})
+				.observe(tls_dur.as_secs_f64());
 			Ok((best, Socket::from_tls(ext, counter, tls.into())?))
 		};
 		tokio::time::timeout(to, handshake).await?

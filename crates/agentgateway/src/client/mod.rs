@@ -226,6 +226,7 @@ impl Transport {
 struct Connector {
 	hbone_pool: Option<agent_hbone::pool::WorkloadHBONEPool<hbone::WorkloadKey>>,
 	backend_config: Arc<crate::BackendConfig>,
+	metrics: Option<Arc<crate::metrics::Metrics>>,
 }
 
 impl Connector {
@@ -235,11 +236,22 @@ impl Connector {
 		ep: SocketAddr,
 		transport: Transport,
 	) -> Result<Socket, http::Error> {
+		let connect_start = std::time::Instant::now();
+		let transport_name = transport.name();
 		match transport {
 			Transport::Plaintext => {
 				let mut res = Socket::dial(ep, self.backend_config.clone())
 					.await
 					.map_err(crate::http::Error::new)?;
+				let connect_ms = connect_start.elapsed().as_millis();
+				if let Some(m) = &self.metrics {
+					let labels = crate::telemetry::metrics::ConnectLabels {
+						transport: agent_core::strng::RichStrng::from(transport_name).into(),
+					};
+					m.upstream_connect_duration
+						.get_or_create(&labels)
+						.observe((connect_ms as f64) / 1000.0);
+				}
 				res.with_logging(LoggingMode::Upstream);
 				Ok(res)
 			},
@@ -262,6 +274,15 @@ impl Connector {
 				};
 
 				let mut res = tls.call(ep).await.map_err(crate::http::Error::new)?;
+				let connect_ms = connect_start.elapsed().as_millis();
+				if let Some(m) = &self.metrics {
+					let labels = crate::telemetry::metrics::ConnectLabels {
+						transport: agent_core::strng::RichStrng::from(transport_name).into(),
+					};
+					m.upstream_connect_duration
+						.get_or_create(&labels)
+						.observe((connect_ms as f64) / 1000.0);
+				}
 				res.with_logging(LoggingMode::Upstream);
 				Ok(res)
 			},
@@ -302,6 +323,27 @@ impl Connector {
 					buf: Default::default(),
 				};
 				let mut socket = Socket::from_hbone(Arc::new(stream::Extension::new()), pool_key.dst, rw);
+				let connect_ms = connect_start.elapsed().as_millis();
+				if let Some(m) = &self.metrics {
+					let labels = crate::telemetry::metrics::ConnectLabels {
+						transport: agent_core::strng::RichStrng::from(transport_name).into(),
+					};
+					m.upstream_connect_duration
+						.get_or_create(&labels)
+						.observe((connect_ms as f64) / 1000.0);
+				}
+				event!(
+					target: "upstream tcp",
+					parent: None,
+					tracing::Level::DEBUG,
+
+					endpoint = %ep,
+					transport = %transport_name,
+
+					connect_ms = connect_ms,
+
+					"connected"
+				);
 				socket.with_logging(LoggingMode::Upstream);
 				Ok(socket)
 			},
@@ -342,11 +384,13 @@ impl Client {
 		cfg: &Config,
 		hbone_pool: Option<agent_hbone::pool::WorkloadHBONEPool<hbone::WorkloadKey>>,
 		backend_config: BackendConfig,
+		metrics: Option<Arc<crate::metrics::Metrics>>,
 	) -> Client {
 		let resolver = dns::CachedResolver::new(cfg.resolver_cfg.clone(), cfg.resolver_opts.clone());
 		let connector = Connector {
 			hbone_pool,
 			backend_config: Arc::new(backend_config),
+			metrics,
 		};
 		let client =
 			::hyper_util_fork::client::legacy::Client::builder(::hyper_util::rt::TokioExecutor::new())

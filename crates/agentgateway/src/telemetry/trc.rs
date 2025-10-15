@@ -138,20 +138,12 @@ impl Tracer {
 		// To avoid lifetime issues need to store the expression before we give it to ValueBag reference.
 		// TODO: we could allow log() to take a list of borrows and then a list of OwnedValueBag
 		let raws = cel_exec.eval(&self.fields.add);
-		// Evaluate span.name directly from CEL to avoid JSON round-tripping
-		let span_name = cel_exec
-			.fields
-			.add
-			.iter()
-			.find(|(kk, _)| kk.as_ref() == "span.name")
-			.and_then(|(_, expr)| cel_exec.executor.eval(expr.as_ref()).ok())
-			.and_then(|v| crate::cel::value_as_string(&v));
-		for (k, v) in &raws {
-			if k == "span.name" {
-				// Already evaluated directly above; skip JSON handling
-				continue;
-			} else if let Some(eval) = v.as_ref().map(ValueBag::capture_serde1) {
-				attributes.push(KeyValue::new(Key::new(k.to_string()), to_otel(&eval)));
+		let mut span_name = None;
+		for (k, v) in raws {
+			if k == "span.name"
+				&& let Some(serde_json::Value::String(s)) = v
+			{
+				span_name = Some(s);
 			}
 		}
 

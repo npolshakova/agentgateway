@@ -56,7 +56,7 @@ pub async fn run(config: Arc<Config>) -> anyhow::Result<Bound> {
 	// TODO: metric for version
 
 	// TODO: use for XDS
-	let control_client = client::Client::new(&config.dns, None, config.backend.clone());
+	let control_client = client::Client::new(&config.dns, None, config.backend.clone(), None);
 	let ca = if let Some(cfg) = &config.ca {
 		Some(Arc::new(caclient::CaClient::new(
 			control_client.clone(),
@@ -68,7 +68,16 @@ pub async fn run(config: Arc<Config>) -> anyhow::Result<Bound> {
 	let pool = ca
 		.clone()
 		.map(|ca| agent_hbone::pool::WorkloadHBONEPool::new(config.hbone.clone(), ca));
-	let client = client::Client::new(&config.dns, pool, config.backend.clone());
+	// Build metrics and then the upstream client with metrics wired in
+	let sub_registry = metrics::sub_registry(&mut registry);
+	let tracer = trc::Tracer::new(&config.tracing)?;
+	let metrics_handle = Arc::new(crate::metrics::Metrics::new(sub_registry));
+	let client = client::Client::new(
+		&config.dns,
+		pool,
+		config.backend.clone(),
+		Some(metrics_handle.clone()),
+	);
 
 	let (xds_tx, xds_rx) = tokio::sync::watch::channel(());
 	let state_mgr =
@@ -98,13 +107,11 @@ pub async fn run(config: Arc<Config>) -> anyhow::Result<Bound> {
 	#[cfg(feature = "ui")]
 	info!("serving UI at http://{}/ui", config.admin_addr);
 
-	let sub_registry = metrics::sub_registry(&mut registry);
-	let tracer = trc::Tracer::new(&config.tracing)?;
 	let pi = ProxyInputs {
 		cfg: config.clone(),
 		stores: stores.clone(),
 		tracer: tracer.clone(),
-		metrics: Arc::new(crate::metrics::Metrics::new(sub_registry)),
+		metrics: metrics_handle.clone(),
 		upstream: client.clone(),
 		ca,
 

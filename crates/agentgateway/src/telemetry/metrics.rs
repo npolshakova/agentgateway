@@ -83,6 +83,11 @@ pub struct TCPLabels {
 	pub protocol: BindProtocol,
 }
 
+#[derive(Clone, Hash, Debug, PartialEq, Eq, EncodeLabelSet)]
+pub struct ConnectLabels {
+	pub transport: DefaultedUnknown<RichStrng>,
+}
+
 type Counter = Family<HTTPLabels, counter::Counter>;
 type Histogram<T> = Family<T, prometheus_client::metrics::histogram::Histogram>;
 type TCPCounter = Family<TCPLabels, counter::Counter>;
@@ -106,8 +111,11 @@ pub struct Metrics {
 
 	pub response_bytes: Family<HTTPLabels, counter::Counter>,
 
-	pub tcp_rx_bytes: Family<TCPLabels, counter::Counter>,
-	pub tcp_tx_bytes: Family<TCPLabels, counter::Counter>,
+	pub tcp_downstream_rx_bytes: Family<TCPLabels, counter::Counter>,
+	pub tcp_downstream_tx_bytes: Family<TCPLabels, counter::Counter>,
+
+	pub upstream_connect_duration: Histogram<ConnectLabels>,
+	pub tls_handshake_duration: Histogram<TCPLabels>,
 }
 
 impl Metrics {
@@ -179,29 +187,51 @@ impl Metrics {
 			response_bytes: {
 				let m = Family::<HTTPLabels, _>::default();
 				registry.register_with_unit(
-					"response_bytes",
+					"response",
 					"Total HTTP response bytes sent",
 					Unit::Bytes,
 					m.clone(),
 				);
 				m
 			},
-			tcp_rx_bytes: {
+			tcp_downstream_rx_bytes: {
 				let m = Family::<TCPLabels, _>::default();
 				registry.register_with_unit(
-					"tcp_rx_bytes",
+					"downstream_received",
 					"Total TCP bytes received per connection labels",
 					Unit::Bytes,
 					m.clone(),
 				);
 				m
 			},
-			tcp_tx_bytes: {
+			tcp_downstream_tx_bytes: {
 				let m = Family::<TCPLabels, _>::default();
 				registry.register_with_unit(
-					"tcp_tx_bytes",
+					"downstream_transmitted",
 					"Total TCP bytes transmitted per connection labels",
 					Unit::Bytes,
+					m.clone(),
+				);
+				m
+			},
+			upstream_connect_duration: {
+				let m = Family::<ConnectLabels, _>::new_with_constructor(move || {
+					PromHistogram::new(REQUEST_DURATION_BUCKET)
+				});
+				registry.register(
+					"upstream_connect_duration",
+					"Duration to establish upstream connection (seconds)",
+					m.clone(),
+				);
+				m
+			},
+			tls_handshake_duration: {
+				let m = Family::<TCPLabels, _>::new_with_constructor(move || {
+					PromHistogram::new(REQUEST_DURATION_BUCKET)
+				});
+				registry.register(
+					"tls_handshake_duration",
+					"Duration to complete inbound TLS/HTTPS handshake (seconds)",
 					m.clone(),
 				);
 				m
