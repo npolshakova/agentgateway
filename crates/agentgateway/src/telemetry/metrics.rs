@@ -259,29 +259,26 @@ const TOKEN_USAGE_BUCKET: [f64; 14] = [
 const REQUEST_DURATION_BUCKET: [f64; 14] = [
 	0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 40.96, 81.92,
 ];
-// Finer-grained buckets for TCP/TLS connect where many observations are <10ms.
-// Keep in seconds to match Prometheus conventions.
-const CONNECT_DURATION_BUCKET: [f64; 20] = [
+// Finer-grained, exponentially growing buckets for TCP/TLS connect.
+// Keep in seconds (Prometheus convention). Use ~x2 growth to cover long tail.
+const CONNECT_DURATION_BUCKET: [f64; 17] = [
 	0.0005, // 0.5 ms
 	0.001,  // 1 ms
 	0.002,  // 2 ms
-	0.003,  // 3 ms
 	0.004,  // 4 ms
-	0.005,  // 5 ms
-	0.0075, // 7.5 ms
-	0.01,   // 10 ms
-	0.0125, // 12.5 ms
-	0.015,  // 15 ms
-	0.0175, // 17.5 ms
-	0.02,   // 20 ms
-	0.03,   // 30 ms
-	0.04,   // 40 ms
-	0.06,   // 60 ms
-	0.08,   // 80 ms
-	0.12,   // 120 ms
-	0.16,   // 160 ms
-	0.32,   // 320 ms
-	0.64,   // 640 ms
+	0.008,  // 8 ms
+	0.016,  // 16 ms
+	0.032,  // 32 ms
+	0.064,  // 64 ms
+	0.128,  // 128 ms
+	0.256,  // 256 ms
+	0.512,  // 512 ms
+	1.024,  // ~1.0 s
+	2.048,  // ~2.0 s
+	4.096,  // ~4.1 s
+	8.192,  // ~8.2 s
+	16.384, // ~16.4 s
+	32.768, // ~32.8 s
 ];
 // https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-metrics/#metric-gen_aiservertime_per_output_token
 // NOTE: the spec has SHOULD, but is not smart enough to handle the faster LLMs.
