@@ -218,9 +218,10 @@ impl Metrics {
 				let m = Family::<ConnectLabels, _>::new_with_constructor(move || {
 					PromHistogram::new(CONNECT_DURATION_BUCKET)
 				});
-				registry.register(
+				registry.register_with_unit(
 					"upstream_connect_duration",
 					"Duration to establish upstream connection (seconds)",
+					Unit::Seconds,
 					m.clone(),
 				);
 				m
@@ -229,9 +230,10 @@ impl Metrics {
 				let m = Family::<TCPLabels, _>::new_with_constructor(move || {
 					PromHistogram::new(CONNECT_DURATION_BUCKET)
 				});
-				registry.register(
+				registry.register_with_unit(
 					"tls_handshake_duration",
 					"Duration to complete inbound TLS/HTTPS handshake (seconds)",
+					Unit::Seconds,
 					m.clone(),
 				);
 				m
@@ -260,25 +262,26 @@ const REQUEST_DURATION_BUCKET: [f64; 14] = [
 	0.01, 0.02, 0.04, 0.08, 0.16, 0.32, 0.64, 1.28, 2.56, 5.12, 10.24, 20.48, 40.96, 81.92,
 ];
 // Finer-grained, exponentially growing buckets for TCP/TLS connect.
-// Keep in seconds (Prometheus convention). Use ~x2 growth to cover long tail.
-const CONNECT_DURATION_BUCKET: [f64; 17] = [
+// Keep in seconds (Prometheus convention). Prioritize sub-second resolution, with a few larger outlier buckets.
+const CONNECT_DURATION_BUCKET: [f64; 18] = [
 	0.0005, // 0.5 ms
 	0.001,  // 1 ms
-	0.002,  // 2 ms
-	0.004,  // 4 ms
-	0.008,  // 8 ms
-	0.016,  // 16 ms
-	0.032,  // 32 ms
-	0.064,  // 64 ms
-	0.128,  // 128 ms
-	0.256,  // 256 ms
-	0.512,  // 512 ms
-	1.024,  // ~1.0 s
-	2.048,  // ~2.0 s
-	4.096,  // ~4.1 s
-	8.192,  // ~8.2 s
-	16.384, // ~16.4 s
-	32.768, // ~32.8 s
+	0.0017, // 1.7 ms
+	0.003,  // 3 ms
+	0.005,  // 5 ms
+	0.0085, // 8.5 ms
+	0.015,  // 15 ms
+	0.025,  // 25 ms
+	0.042,  // 42 ms
+	0.07,   // 70 ms
+	0.12,   // 120 ms
+	0.2,    // 200 ms
+	0.34,   // 340 ms
+	0.57,   // 570 ms
+	1.0,    // 1 s
+	2.0,    // 2 s (outlier)
+	4.0,    // 4 s (outlier)
+	8.0,    // 8 s (outlier)
 ];
 // https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-metrics/#metric-gen_aiservertime_per_output_token
 // NOTE: the spec has SHOULD, but is not smart enough to handle the faster LLMs.

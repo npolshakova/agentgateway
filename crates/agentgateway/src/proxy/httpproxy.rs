@@ -538,6 +538,11 @@ impl HTTPProxy {
 		let selected_backend =
 			select_backend(selected_route.as_ref(), &req).ok_or(ProxyError::NoValidBackends)?;
 		let selected_backend = resolve_backend(selected_backend, self.inputs.as_ref())?;
+		// Set backend info as soon as we have resolved to add the metric labels
+		log.backend_info = Some(selected_backend.backend.backend_info());
+		if let Some(bp) = selected_backend.backend.backend_protocol() {
+			log.backend_protocol = Some(bp)
+		}
 		response_policies.backend_filters = selected_backend
 			.filters
 			.iter()
