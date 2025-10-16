@@ -432,16 +432,18 @@ impl Gateway {
 			} else {
 				BindProtocol::tls
 			};
-			inp
-				.metrics
-				.tls_handshake_duration
-				.get_or_create(&TCPLabels {
-					bind: Some(&bind).into(),
-					gateway: Some(&best.gateway_name).into(),
-					listener: Some(&best.name).into(),
-					protocol,
-				})
-				.observe(tls_dur.as_secs_f64());
+			if inp.metrics.enable_connect_duration_metrics {
+				inp
+					.metrics
+					.tls_handshake_duration
+					.get_or_create(&TCPLabels {
+						bind: Some(&bind).into(),
+						gateway: Some(&best.gateway_name).into(),
+						listener: Some(&best.name).into(),
+						protocol,
+					})
+					.observe(tls_dur.as_secs_f64());
+			}
 			Ok((best, Socket::from_tls(ext, counter, tls.into())?))
 		};
 		tokio::time::timeout(to, handshake).await?

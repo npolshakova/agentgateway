@@ -238,7 +238,6 @@ impl Connector {
 	) -> Result<Socket, http::Error> {
 		let connect_start = std::time::Instant::now();
 		let transport_name = transport.name();
-		let is_hbone = matches!(&transport, Transport::Hbone(_, _));
 		let mut socket = match transport {
 			Transport::Plaintext => Socket::dial(ep, self.backend_config.clone())
 				.await
@@ -304,7 +303,9 @@ impl Connector {
 		};
 
 		let connect_ms = connect_start.elapsed().as_millis();
-		if let Some(m) = &self.metrics {
+		if let Some(m) = &self.metrics
+			&& m.enable_connect_duration_metrics
+		{
 			let labels = crate::telemetry::metrics::ConnectLabels {
 				transport: agent_core::strng::RichStrng::from(transport_name).into(),
 			};
@@ -314,20 +315,18 @@ impl Connector {
 				.observe((connect_ms as f64) / 1000.0);
 		}
 
-		if is_hbone {
-			event!(
-				target: "upstream tcp",
-				parent: None,
-				tracing::Level::DEBUG,
+		event!(
+			target: "upstream tcp",
+			parent: None,
+			tracing::Level::DEBUG,
 
-				endpoint = %ep,
-				transport = %transport_name,
+			endpoint = %ep,
+			transport = %transport_name,
 
-				connect_ms = connect_ms,
+			connect_ms = connect_ms,
 
-				"connected"
-			);
-		}
+			"connected"
+		);
 
 		socket.with_logging(LoggingMode::Upstream);
 		Ok(socket)

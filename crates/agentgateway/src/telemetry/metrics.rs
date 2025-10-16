@@ -1,3 +1,4 @@
+use std::env;
 use std::fmt::Debug;
 
 use crate::mcp::MCPOperation;
@@ -116,6 +117,9 @@ pub struct Metrics {
 
 	pub upstream_connect_duration: Histogram<ConnectLabels>,
 	pub tls_handshake_duration: Histogram<TCPLabels>,
+
+	// Feature flag controlling emission of connect/tls duration histograms
+	pub enable_connect_duration_metrics: bool,
 }
 
 impl Metrics {
@@ -237,6 +241,10 @@ impl Metrics {
 					m.clone(),
 				);
 				m
+			},
+			enable_connect_duration_metrics: match env::var("ENABLE_CONNECT_DURATION_METRICS") {
+				Ok(v) => matches!(v.as_str(), "1" | "true" | "TRUE" | "True"),
+				Err(_) => false,
 			},
 		}
 	}
