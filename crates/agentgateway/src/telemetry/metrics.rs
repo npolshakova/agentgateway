@@ -188,7 +188,7 @@ impl Metrics {
 				let m = Family::<HTTPLabels, _>::default();
 				registry.register_with_unit(
 					"response",
-					"Total HTTP response bytes sent",
+					"Total HTTP response bytes received",
 					Unit::Bytes,
 					m.clone(),
 				);
@@ -207,7 +207,7 @@ impl Metrics {
 			tcp_downstream_tx_bytes: {
 				let m = Family::<TCPLabels, _>::default();
 				registry.register_with_unit(
-					"downstream_transmitted",
+					"downstream_sent",
 					"Total TCP bytes transmitted per connection labels",
 					Unit::Bytes,
 					m.clone(),
@@ -263,25 +263,17 @@ const REQUEST_DURATION_BUCKET: [f64; 14] = [
 ];
 // Finer-grained, exponentially growing buckets for TCP/TLS connect.
 // Keep in seconds (Prometheus convention). Prioritize sub-second resolution, with a few larger outlier buckets.
-const CONNECT_DURATION_BUCKET: [f64; 18] = [
+const CONNECT_DURATION_BUCKET: [f64; 10] = [
 	0.0005, // 0.5 ms
-	0.001,  // 1 ms
-	0.0017, // 1.7 ms
-	0.003,  // 3 ms
-	0.005,  // 5 ms
-	0.0085, // 8.5 ms
-	0.015,  // 15 ms
-	0.025,  // 25 ms
-	0.042,  // 42 ms
-	0.07,   // 70 ms
-	0.12,   // 120 ms
-	0.2,    // 200 ms
-	0.34,   // 340 ms
-	0.57,   // 570 ms
-	1.0,    // 1 s
-	2.0,    // 2 s (outlier)
-	4.0,    // 4 s (outlier)
-	8.0,    // 8 s (outlier)
+	0.0015, // 1.5 ms
+	0.0043, // 4.3 ms
+	0.0126, // 12.6 ms
+	0.0368, // 36.8 ms
+	0.108,  // 108 ms
+	0.316,  // 316 ms
+	0.924,  // 924 ms
+	2.71,   // 2.71 s
+	8.0,    // 8 s
 ];
 // https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-metrics/#metric-gen_aiservertime_per_output_token
 // NOTE: the spec has SHOULD, but is not smart enough to handle the faster LLMs.

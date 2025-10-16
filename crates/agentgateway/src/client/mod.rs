@@ -238,23 +238,11 @@ impl Connector {
 	) -> Result<Socket, http::Error> {
 		let connect_start = std::time::Instant::now();
 		let transport_name = transport.name();
-		match transport {
-			Transport::Plaintext => {
-				let mut res = Socket::dial(ep, self.backend_config.clone())
-					.await
-					.map_err(crate::http::Error::new)?;
-				let connect_ms = connect_start.elapsed().as_millis();
-				if let Some(m) = &self.metrics {
-					let labels = crate::telemetry::metrics::ConnectLabels {
-						transport: agent_core::strng::RichStrng::from(transport_name).into(),
-					};
-					m.upstream_connect_duration
-						.get_or_create(&labels)
-						.observe((connect_ms as f64) / 1000.0);
-				}
-				res.with_logging(LoggingMode::Upstream);
-				Ok(res)
-			},
+		let is_hbone = matches!(&transport, Transport::Hbone(_, _));
+		let mut socket = match transport {
+			Transport::Plaintext => Socket::dial(ep, self.backend_config.clone())
+				.await
+				.map_err(crate::http::Error::new)?,
 			Transport::Tls(tls) => {
 				let server_name = if let Some(h) = tls.hostname_override {
 					h
@@ -273,18 +261,7 @@ impl Connector {
 					backend_config: self.backend_config.clone(),
 				};
 
-				let mut res = tls.call(ep).await.map_err(crate::http::Error::new)?;
-				let connect_ms = connect_start.elapsed().as_millis();
-				if let Some(m) = &self.metrics {
-					let labels = crate::telemetry::metrics::ConnectLabels {
-						transport: agent_core::strng::RichStrng::from(transport_name).into(),
-					};
-					m.upstream_connect_duration
-						.get_or_create(&labels)
-						.observe((connect_ms as f64) / 1000.0);
-				}
-				res.with_logging(LoggingMode::Upstream);
-				Ok(res)
+				tls.call(ep).await.map_err(crate::http::Error::new)?
 			},
 			Transport::Hbone(inner, identity) => {
 				if inner.is_some() {
@@ -322,32 +299,38 @@ impl Connector {
 					stream: upgraded,
 					buf: Default::default(),
 				};
-				let mut socket = Socket::from_hbone(Arc::new(stream::Extension::new()), pool_key.dst, rw);
-				let connect_ms = connect_start.elapsed().as_millis();
-				if let Some(m) = &self.metrics {
-					let labels = crate::telemetry::metrics::ConnectLabels {
-						transport: agent_core::strng::RichStrng::from(transport_name).into(),
-					};
-					m.upstream_connect_duration
-						.get_or_create(&labels)
-						.observe((connect_ms as f64) / 1000.0);
-				}
-				event!(
-					target: "upstream tcp",
-					parent: None,
-					tracing::Level::DEBUG,
-
-					endpoint = %ep,
-					transport = %transport_name,
-
-					connect_ms = connect_ms,
-
-					"connected"
-				);
-				socket.with_logging(LoggingMode::Upstream);
-				Ok(socket)
+				Socket::from_hbone(Arc::new(stream::Extension::new()), pool_key.dst, rw)
 			},
+		};
+
+		let connect_ms = connect_start.elapsed().as_millis();
+		if let Some(m) = &self.metrics {
+			let labels = crate::telemetry::metrics::ConnectLabels {
+				transport: agent_core::strng::RichStrng::from(transport_name).into(),
+			};
+			// Note: convert from ms to seconds since Prometheus convention for histogram buckets is seconds.
+			m.upstream_connect_duration
+				.get_or_create(&labels)
+				.observe((connect_ms as f64) / 1000.0);
 		}
+
+		if is_hbone {
+			event!(
+				target: "upstream tcp",
+				parent: None,
+				tracing::Level::DEBUG,
+
+				endpoint = %ep,
+				transport = %transport_name,
+
+				connect_ms = connect_ms,
+
+				"connected"
+			);
+		}
+
+		socket.with_logging(LoggingMode::Upstream);
+		Ok(socket)
 	}
 }
 

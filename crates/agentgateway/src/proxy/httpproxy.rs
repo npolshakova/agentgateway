@@ -475,7 +475,7 @@ impl HTTPProxy {
 		// Record the matched path for tracing/logging span names
 		log.path_match = Some(match &path_match {
 			crate::types::agent::PathMatch::Exact(p) => p.to_string(),
-			crate::types::agent::PathMatch::PathPrefix(p) => format!("{}*", p),
+			crate::types::agent::PathMatch::PathPrefix(p) => format!("{}/*", p),
 			crate::types::agent::PathMatch::Regex(r, _) => r.as_str().to_string(),
 		});
 
