@@ -14,6 +14,8 @@ use prometheus_client::metrics::histogram::Histogram as PromHistogram;
 use prometheus_client::metrics::info::Info;
 use prometheus_client::registry::{Registry, Unit};
 
+const ENV_ENABLE_CONNECT_DURATION_METRICS: &str = "ENABLE_CONNECT_DURATION_METRICS";
+
 #[derive(Clone, Hash, Default, Debug, PartialEq, Eq, EncodeLabelSet)]
 pub struct RouteIdentifier {
 	pub bind: DefaultedUnknown<RichStrng>,
@@ -242,7 +244,7 @@ impl Metrics {
 				);
 				m
 			},
-			enable_connect_duration_metrics: match env::var("ENABLE_CONNECT_DURATION_METRICS") {
+			enable_connect_duration_metrics: match env::var(ENV_ENABLE_CONNECT_DURATION_METRICS) {
 				Ok(v) => matches!(v.as_str(), "1" | "true" | "TRUE" | "True"),
 				Err(_) => false,
 			},
