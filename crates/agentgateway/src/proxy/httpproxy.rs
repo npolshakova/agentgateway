@@ -1302,7 +1302,20 @@ fn upgrade_type(headers: &HeaderMap) -> Option<HeaderValue> {
 
 fn sensitive_headers(req: &mut Request) {
 	for (name, value) in req.headers_mut() {
-		if name == http::header::AUTHORIZATION {
+		// Mark common sensitive headers
+		let key = name.as_str();
+		let lower = key.to_ascii_lowercase();
+		if name == http::header::AUTHORIZATION
+			|| name == http::header::PROXY_AUTHORIZATION
+			|| name == http::header::COOKIE
+			|| name == http::header::SET_COOKIE
+			|| lower.ends_with("authorization")
+			|| lower.contains("token")
+			|| lower.contains("secret")
+			|| lower.contains("password")
+			|| lower.contains("api-key")
+			|| lower.contains("api_key")
+		{
 			value.set_sensitive(true)
 		}
 	}
