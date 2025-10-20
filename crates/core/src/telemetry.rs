@@ -40,6 +40,26 @@ static LOG_HANDLE: OnceCell<LogHandle> = OnceCell::new();
 static DEFAULT_LEVEL: OnceCell<String> = OnceCell::new();
 static NON_BLOCKING: OnceCell<(NonBlocking, bool)> = OnceCell::new();
 
+fn is_sensitive_field(name: &str) -> bool {
+	let n = name.to_ascii_lowercase();
+	match n.as_str() {
+        // Common auth headers and cookies
+        "authorization" | "proxy-authorization" | "cookie" | "set-cookie" |
+        // Common api key header names
+        "x-api-key" | "x_api_key" | "api-key" | "api_key" |
+        // Generic secret/password fields
+        "secret" | "client-secret" | "client_secret" | "password" |
+        // Token family
+        "token" | "access-token" | "access_token" | "refresh-token" | "refresh_token" | "id-token" | "id_token" |
+        // Sessions/signatures
+        "session" | "signature" => true,
+        _ => {
+            // Fallback heuristics for custom keys
+            n.contains("token") || n.contains("secret") || n.contains("password") || n.ends_with("authorization") || n.contains("api-key") || n.contains("api_key")
+        }
+    }
+}
+
 pub trait OptionExt<T>: Sized {
 	fn display(&self) -> Option<ValueBag>
 	where
@@ -133,7 +153,11 @@ pub fn log(level: &str, target: &str, kv: &[(&str, Option<ValueBag>)]) {
 				match v {
 					None => {},
 					Some(i) => {
-						s.serialize_entry(k, i)?;
+						if is_sensitive_field(k) {
+							s.serialize_entry(k, &"<redacted>")?;
+						} else {
+							s.serialize_entry(k, i)?;
+						}
 					},
 				}
 			}
@@ -145,7 +169,11 @@ pub fn log(level: &str, target: &str, kv: &[(&str, Option<ValueBag>)]) {
 				match v {
 					None => {},
 					Some(i) => {
-						write!(buf, " {k}={i}")?;
+						if is_sensitive_field(k) {
+							write!(buf, " {k}=<redacted>")?;
+						} else {
+							write!(buf, " {k}={i}")?;
+						}
 					},
 				}
 			}
@@ -319,7 +347,13 @@ impl field::Visit for Visitor<'_> {
 			// For the message, write out the message and a tab to separate the future fields
 			"message" => write!(self.writer, "{val:?}\t"),
 			// For the rest, k=v.
-			_ => self.write_padded(&format_args!("{}={:?}", field.name(), val)),
+			_ => {
+				if is_sensitive_field(field.name()) {
+					self.write_padded(&format_args!("{}={:?}", field.name(), &"<redacted>"))
+				} else {
+					self.write_padded(&format_args!("{}={:?}", field.name(), val))
+				}
+			},
 		}
 	}
 }
@@ -406,39 +440,63 @@ impl<S: SerializeMap> Visit for JsonVisitory<S> {
 		// If previous fields serialized successfully, continue serializing,
 		// otherwise, short-circuit and do nothing.
 		if self.state.is_ok() {
-			self.state = self.serializer.serialize_entry(field.name(), &value)
+			if is_sensitive_field(field.name()) {
+				self.state = self.serializer.serialize_entry(field.name(), &"<redacted>")
+			} else {
+				self.state = self.serializer.serialize_entry(field.name(), &value)
+			}
 		}
 	}
 
 	fn record_debug(&mut self, field: &Field, value: &dyn fmt::Debug) {
 		if self.state.is_ok() {
-			self.state = self
-				.serializer
-				.serialize_entry(field.name(), &format_args!("{value:?}"))
+			if is_sensitive_field(field.name()) {
+				self.state = self.serializer.serialize_entry(field.name(), &"<redacted>")
+			} else {
+				self.state = self
+					.serializer
+					.serialize_entry(field.name(), &format_args!("{value:?}"))
+			}
 		}
 	}
 
 	fn record_u64(&mut self, field: &Field, value: u64) {
 		if self.state.is_ok() {
-			self.state = self.serializer.serialize_entry(field.name(), &value)
+			if is_sensitive_field(field.name()) {
+				self.state = self.serializer.serialize_entry(field.name(), &"<redacted>")
+			} else {
+				self.state = self.serializer.serialize_entry(field.name(), &value)
+			}
 		}
 	}
 
 	fn record_i64(&mut self, field: &Field, value: i64) {
 		if self.state.is_ok() {
-			self.state = self.serializer.serialize_entry(field.name(), &value)
+			if is_sensitive_field(field.name()) {
+				self.state = self.serializer.serialize_entry(field.name(), &"<redacted>")
+			} else {
+				self.state = self.serializer.serialize_entry(field.name(), &value)
+			}
 		}
 	}
 
 	fn record_f64(&mut self, field: &Field, value: f64) {
 		if self.state.is_ok() {
-			self.state = self.serializer.serialize_entry(field.name(), &value)
+			if is_sensitive_field(field.name()) {
+				self.state = self.serializer.serialize_entry(field.name(), &"<redacted>")
+			} else {
+				self.state = self.serializer.serialize_entry(field.name(), &value)
+			}
 		}
 	}
 
 	fn record_str(&mut self, field: &Field, value: &str) {
 		if self.state.is_ok() {
-			self.state = self.serializer.serialize_entry(field.name(), &value)
+			if is_sensitive_field(field.name()) {
+				self.state = self.serializer.serialize_entry(field.name(), &"<redacted>")
+			} else {
+				self.state = self.serializer.serialize_entry(field.name(), &value)
+			}
 		}
 	}
 }
