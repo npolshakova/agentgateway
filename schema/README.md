@@ -61,6 +61,7 @@ This folder contains JSON schemas for various parts of the project
 |`config.listener.http2FrameSize`||
 |`config.listener.http2KeepaliveInterval`||
 |`config.listener.http2KeepaliveTimeout`||
+|`config.listener.sensitiveHeaders`|Case-insensitive list of header names to mark as sensitive (global default)|
 |`config.hbone`||
 |`config.hbone.windowSize`||
 |`config.hbone.connectionWindowSize`||

@@ -408,6 +408,14 @@
                 "null"
               ],
               "default": null
+            },
+            "sensitiveHeaders": {
+              "description": "Case-insensitive list of header names to mark as sensitive (global default)",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "default": []
             }
           },
           "additionalProperties": false,
@@ -420,7 +428,8 @@
             "http2ConnectionWindowSize": null,
             "http2FrameSize": null,
             "http2KeepaliveInterval": null,
-            "http2KeepaliveTimeout": null
+            "http2KeepaliveTimeout": null,
+            "sensitiveHeaders": []
           }
         },
         "hbone": {
