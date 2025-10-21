@@ -141,6 +141,10 @@ pub struct ListenerConfig {
 	#[cfg_attr(feature = "schema", schemars(with = "Option<String>"))]
 	#[serde(default)]
 	http2_keepalive_timeout: Option<Duration>,
+
+	#[serde(default)]
+	/// Case-insensitive list of header names to mark as sensitive (global default)
+	pub sensitive_headers: Vec<String>,
 }
 
 impl Default for ListenerConfig {
@@ -158,6 +162,8 @@ impl Default for ListenerConfig {
 
 			http2_keepalive_interval: None,
 			http2_keepalive_timeout: None,
+
+			sensitive_headers: Vec::new(),
 		}
 	}
 }

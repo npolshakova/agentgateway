@@ -43,11 +43,11 @@ mod header_map_sensitive {
 			let key = name.as_str();
 			let entry = joined.entry(key).or_default();
 			if value.is_sensitive() {
-				// Override to redacted and keep it redacted
-				*entry = "<redacted>".to_string();
+				// Override to redacted, don't join
+				*entry = "Sensitive".to_string();
 				continue;
 			}
-			if entry == "<redacted>" {
+			if entry == "Sensitive" {
 				// Already redacted, don't join
 				continue;
 			}
