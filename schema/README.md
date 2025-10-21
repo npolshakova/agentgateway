@@ -308,6 +308,7 @@ This folder contains JSON schemas for various parts of the project
 |`binds[].listeners[].routes[].policies.transformations.response.body`||
 |`binds[].listeners[].routes[].policies.csrf`|Handle CSRF protection by validating request origins against configured allowed origins.|
 |`binds[].listeners[].routes[].policies.csrf.additionalOrigins`||
+|`binds[].listeners[].routes[].policies.redactHeaders`|Redact headers in logs/tracing. Header names are case-insensitive.|
 |`binds[].listeners[].routes[].policies.timeout`|Timeout requests that exceed the configured duration.|
 |`binds[].listeners[].routes[].policies.timeout.requestTimeout`||
 |`binds[].listeners[].routes[].policies.timeout.backendRequestTimeout`||
@@ -806,6 +807,7 @@ This folder contains JSON schemas for various parts of the project
 |`policies[].policy.transformations.response.body`||
 |`policies[].policy.csrf`|Handle CSRF protection by validating request origins against configured allowed origins.|
 |`policies[].policy.csrf.additionalOrigins`||
+|`policies[].policy.redactHeaders`|Redact headers in logs/tracing. Header names are case-insensitive.|
 |`policies[].policy.timeout`|Timeout requests that exceed the configured duration.|
 |`policies[].policy.timeout.requestTimeout`||
 |`policies[].policy.timeout.backendRequestTimeout`||
@@ -857,6 +859,7 @@ This folder contains JSON schemas for various parts of the project
 |`gatewayPolicies[].policy.transformations.response.set`||
 |`gatewayPolicies[].policy.transformations.response.remove`||
 |`gatewayPolicies[].policy.transformations.response.body`||
+|`gatewayPolicies[].policy.redactHeaders`|Redact headers in logs/tracing. Header names are case-insensitive.|
 |`workloads`||
 |`services`||
 ## CEL context

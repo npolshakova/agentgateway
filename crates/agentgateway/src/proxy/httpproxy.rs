@@ -1309,17 +1309,12 @@ fn upgrade_type(headers: &HeaderMap) -> Option<HeaderValue> {
 	}
 }
 
-fn sensitive_headers(req: &mut Request, user_sensitive: &[String]) {
-	// Build a lowercase set for case-insensitive membership checks
-	let user_set: std::collections::HashSet<String> = user_sensitive
-		.iter()
-		.map(|s| s.to_ascii_lowercase())
-		.collect();
+fn sensitive_headers(req: &mut Request, user_sensitive: &std::collections::HashSet<String>) {
 	for (name, value) in req.headers_mut() {
 		// Mark common sensitive headers
 		let key = name.as_str();
 		let lower = key.to_ascii_lowercase();
-		let is_configured_sensitive = user_set.contains(lower.as_str());
+		let is_configured_sensitive = user_sensitive.contains(lower.as_str());
 
 		if is_configured_sensitive || name == http::header::AUTHORIZATION {
 			value.set_sensitive(true)

@@ -36,10 +36,9 @@ use tracing_subscriber::{Layer, Registry, filter, reload};
 pub use value_bag::ValueBag;
 
 pub static APPLICATION_START_TIME: Lazy<Instant> = Lazy::new(Instant::now);
+static LOG_HANDLE: OnceCell<LogHandle> = OnceCell::new();
 static DEFAULT_LEVEL: OnceCell<String> = OnceCell::new();
 static NON_BLOCKING: OnceCell<(NonBlocking, bool)> = OnceCell::new();
-
-static LOG_HANDLE: OnceCell<LogHandle> = OnceCell::new();
 
 pub trait OptionExt<T>: Sized {
 	fn display(&self) -> Option<ValueBag>

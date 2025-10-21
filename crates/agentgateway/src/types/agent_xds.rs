@@ -949,7 +949,7 @@ impl TryFrom<&proto::agent::PolicySpec> for Policy {
 				Policy::Csrf(csrf::Csrf::new(additional_origins))
 			},
 			Some(proto::agent::policy_spec::Kind::RedactHeaders(sh)) => {
-				Policy::LogRedaction(sh.headers.clone())
+				Policy::RedactHeaders(sh.headers.clone())
 			},
 			Some(proto::agent::policy_spec::Kind::Ai(ai)) => {
 				let prompt_guard = ai.prompt_guard.as_ref().and_then(|pg| {

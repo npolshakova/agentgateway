@@ -94,8 +94,8 @@ pub struct RoutePolicies {
 	pub transformation: Option<http::transformation_cel::Transformation>,
 	pub llm: Option<Arc<llm::Policy>>,
 	pub csrf: Option<http::csrf::Csrf>,
-	/// Case-insensitive list of header names to redact in logs (aggregated)
-	pub redacted_headers: Vec<String>,
+	/// Case-insensitive set of header names to redact in logs (aggregated)
+	pub redacted_headers: HashSet<String>,
 }
 
 #[derive(Debug, Default)]
@@ -104,8 +104,8 @@ pub struct GatewayPolicies {
 	pub jwt: Option<http::jwt::Jwt>,
 	pub ext_authz: Option<ext_authz::ExtAuthz>,
 	pub transformation: Option<http::transformation_cel::Transformation>,
-	/// Case-insensitive list of header names to redact in logs (aggregated)
-	pub redacted_headers: Vec<String>,
+	/// Case-insensitive set of header names to redact in logs (aggregated)
+	pub redacted_headers: HashSet<String>,
 }
 
 impl GatewayPolicies {
@@ -286,8 +286,10 @@ impl Store {
 				Policy::Csrf(p) => {
 					pol.csrf.get_or_insert_with(|| p.clone());
 				},
-				Policy::LogRedaction(h) => {
-					pol.redacted_headers.extend(h.iter().cloned());
+				Policy::RedactHeaders(h) => {
+					pol
+						.redacted_headers
+						.extend(h.iter().map(|s| s.to_ascii_lowercase()));
 				},
 				_ => {}, // others are not route policies
 			}
@@ -330,7 +332,9 @@ impl Store {
 					pol.transformation.get_or_insert_with(|| p.clone());
 				},
 				GatewayPolicy::RedactHeaders(h) => {
-					pol.redacted_headers.extend(h.iter().cloned());
+					pol
+						.redacted_headers
+						.extend(h.iter().map(|s| s.to_ascii_lowercase()));
 				},
 			}
 		}

@@ -1053,7 +1053,7 @@ impl TryFrom<Policy> for GatewayPolicy {
 			Policy::JwtAuth(p) => Ok(GatewayPolicy::JwtAuth(p)),
 			Policy::Transformation(p) => Ok(GatewayPolicy::Transformation(p)),
 			Policy::ExtProc(p) => Ok(GatewayPolicy::ExtProc(p)),
-			Policy::LogRedaction(h) => Ok(GatewayPolicy::RedactHeaders(h)),
+			Policy::RedactHeaders(h) => Ok(GatewayPolicy::RedactHeaders(h)),
 			_ => anyhow::bail!("invalid gateway_policy type"),
 		}
 	}
@@ -1095,7 +1095,7 @@ pub enum Policy {
 	// Supported targets: Gateway < Route < RouteRule; single policy allowed
 	Csrf(crate::http::csrf::Csrf),
 	// Supported targets: Gateway < Route < RouteRule; headers are merged
-	LogRedaction(Vec<String>),
+	RedactHeaders(Vec<String>),
 }
 
 #[apply(schema!)]

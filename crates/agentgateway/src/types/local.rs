@@ -1061,7 +1061,7 @@ async fn split_policies(
 	if let Some(h) = redact_headers
 		&& !h.is_empty()
 	{
-		route_policies.push(Policy::LogRedaction(h))
+		route_policies.push(Policy::RedactHeaders(h))
 	}
 	if let Some(p) = authorization {
 		route_policies.push(Policy::Authorization(p))
