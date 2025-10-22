@@ -564,7 +564,7 @@ message PolicySpec {
     // Metric names to exclude entirely
     repeated string excluded_metrics = 4;
 
-    // Comma separated levels or per-target level string. Empty uses default
+    // Comma separated levels or per-target level string. Empty uses default info level
     string level = 5;
 
     // Output format for logs

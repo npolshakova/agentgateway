@@ -295,12 +295,12 @@ impl ContextBuilder {
 		}
 	}
 
-	/// Set the preferred log format for this request
+	/// Set the preferred log format for this request (json or text)
 	pub fn set_log_format(&mut self, fmt: crate::LoggingFormat) {
 		self.log_format = Some(fmt);
 	}
 
-	/// Exclude a metric name for this request
+	/// Exclude a metric name for this request, skipping emitting the metric
 	pub fn exclude_metric(&mut self, metric: String) {
 		self.excluded_metrics.insert(metric);
 	}
