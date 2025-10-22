@@ -451,6 +451,56 @@ impl HTTPProxy {
 			.ext_proc
 			.take()
 			.map(|c| c.build(self.policy_client()));
+		// Apply logging at gateway
+		if let Some(lp) = &gateway_policies.logging {
+			// Update level if set (allow multiple comma-separated targets)
+			if !lp.level.is_empty() {
+				let _ = agent_core::telemetry::set_level(false, &lp.level);
+			}
+			// Merge filter/fields/metrics into config for this request
+			use crate::telemetry::log::{LoggingFields, MetricFields, OrderedStringMap};
+			let mut fields_add: Vec<(String, Arc<crate::cel::Expression>)> = Vec::new();
+			for (k, v) in lp.fields_add.iter() {
+				if let Ok(expr) = crate::cel::Expression::new(v.clone()) {
+					fields_add.push((k.clone(), Arc::new(expr)));
+				}
+			}
+			let fields_remove_set = lp
+				.fields_remove
+				.clone()
+				.into_iter()
+				.collect::<frozen_collections::FzHashSet<String>>();
+			let mut metric_add: Vec<(String, Arc<crate::cel::Expression>)> = Vec::new();
+			for (k, v) in lp.metric_fields_add.iter() {
+				if let Ok(expr) = crate::cel::Expression::new(v.clone()) {
+					metric_add.push((k.clone(), Arc::new(expr)));
+				}
+			}
+			let new_fields = LoggingFields {
+				remove: fields_remove_set,
+				add: fields_add.into_iter().collect::<OrderedStringMap<_>>(),
+			};
+			let new_metric_fields = MetricFields {
+				add: metric_add.into_iter().collect::<OrderedStringMap<_>>(),
+			};
+			log.cel.register(&new_fields);
+			for v in new_metric_fields.add.values_unordered() {
+				log.cel.ctx().register_expression(v.as_ref());
+			}
+			if let Some(f) = &lp.filter
+				&& let Ok(expr) = crate::cel::Expression::new(f.clone())
+			{
+				log.cel.filter = Some(Arc::new(expr));
+			}
+			log.cel.fields = Arc::new(new_fields);
+			log.cel.metric_fields = Arc::new(new_metric_fields);
+			if let Some(fmt) = lp.format.clone() {
+				log.cel.cel_context.set_log_format(fmt);
+			}
+			for m in &lp.excluded_metrics {
+				log.cel.cel_context.exclude_metric(m.clone());
+			}
+		}
 		apply_gateway_policies(
 			&gateway_policies,
 			self.policy_client(),
@@ -490,6 +540,63 @@ impl HTTPProxy {
 				&selected_route.inline_policies,
 			)
 		};
+
+		// If a per-target logging policy is present, merge it into the logger now.
+		if let Some(lp) = &route_policies.logging {
+			// Update level if set (allow multiple comma-separated targets)
+			if !lp.level.is_empty() {
+				let _ = agent_core::telemetry::set_level(false, &lp.level);
+			}
+			// Merge filter/fields/metrics into config
+			use crate::telemetry::log::{LoggingFields, MetricFields, OrderedStringMap};
+			let mut fields_add: Vec<(String, Arc<crate::cel::Expression>)> = Vec::new();
+			for (k, v) in lp.fields_add.iter() {
+				if let Ok(expr) = crate::cel::Expression::new(v.clone()) {
+					fields_add.push((k.clone(), Arc::new(expr)));
+				}
+			}
+			// fields_remove is a list of field names to drop, not expressions
+			let fields_remove_set = lp
+				.fields_remove
+				.clone()
+				.into_iter()
+				.collect::<frozen_collections::FzHashSet<String>>();
+			let mut metric_add: Vec<(String, Arc<crate::cel::Expression>)> = Vec::new();
+			for (k, v) in lp.metric_fields_add.iter() {
+				if let Ok(expr) = crate::cel::Expression::new(v.clone()) {
+					metric_add.push((k.clone(), Arc::new(expr)));
+				}
+			}
+			let new_fields = LoggingFields {
+				remove: fields_remove_set,
+				add: fields_add.into_iter().collect::<OrderedStringMap<_>>(),
+			};
+			let new_metric_fields = MetricFields {
+				add: metric_add.into_iter().collect::<OrderedStringMap<_>>(),
+			};
+
+			// Register expressions into CEL context
+			log.cel.register(&new_fields);
+			for v in new_metric_fields.add.values_unordered() {
+				log.cel.ctx().register_expression(v.as_ref());
+			}
+
+			// Replace config on logger for this request
+			if let Some(f) = &lp.filter
+				&& let Ok(expr) = crate::cel::Expression::new(f.clone())
+			{
+				log.cel.filter = Some(Arc::new(expr));
+			}
+			log.cel.fields = Arc::new(new_fields);
+			log.cel.metric_fields = Arc::new(new_metric_fields);
+			if let Some(fmt) = lp.format.clone() {
+				log.cel.cel_context.set_log_format(fmt);
+			}
+			// Excluded metrics: merge with existing
+			for m in &lp.excluded_metrics {
+				log.cel.cel_context.exclude_metric(m.clone());
+			}
+		}
 		// Register all expressions
 		route_policies.register_cel_expressions(log.cel.ctx());
 

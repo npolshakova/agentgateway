@@ -29,7 +29,6 @@ use crate::types::proto::agent::{
 	Resource as ADPResource, Route as XdsRoute, TcpRoute as XdsTcpRoute,
 };
 use crate::*;
-use agent_core::telemetry;
 
 #[derive(Debug)]
 pub struct Store {
@@ -95,6 +94,7 @@ pub struct RoutePolicies {
 	pub transformation: Option<http::transformation_cel::Transformation>,
 	pub llm: Option<Arc<llm::Policy>>,
 	pub csrf: Option<http::csrf::Csrf>,
+	pub logging: Option<crate::types::agent::LoggingPolicy>,
 }
 
 #[derive(Debug, Default)]
@@ -103,6 +103,7 @@ pub struct GatewayPolicies {
 	pub jwt: Option<http::jwt::Jwt>,
 	pub ext_authz: Option<ext_authz::ExtAuthz>,
 	pub transformation: Option<http::transformation_cel::Transformation>,
+	pub logging: Option<crate::types::agent::LoggingPolicy>,
 }
 
 impl GatewayPolicies {
@@ -112,6 +113,23 @@ impl GatewayPolicies {
 				ctx.register_expression(expr)
 			}
 		};
+		if let Some(lp) = &self.logging {
+			if let Some(f) = &lp.filter
+				&& let Ok(expr) = crate::cel::Expression::new(f.clone())
+			{
+				ctx.register_expression(&expr)
+			}
+			for v in lp.fields_add.values() {
+				if let Ok(expr) = crate::cel::Expression::new(v.clone()) {
+					ctx.register_expression(&expr)
+				}
+			}
+			for v in lp.metric_fields_add.values() {
+				if let Ok(expr) = crate::cel::Expression::new(v.clone()) {
+					ctx.register_expression(&expr)
+				}
+			}
+		}
 	}
 }
 
@@ -283,8 +301,8 @@ impl Store {
 				Policy::Csrf(p) => {
 					pol.csrf.get_or_insert_with(|| p.clone());
 				},
-				Policy::Logging(_p) => {
-					// TODO: currently ignoring configuring logging at per route level
+				Policy::Logging(p) => {
+					pol.logging.get_or_insert_with(|| p.clone());
 				},
 				_ => {}, // others are not route policies
 			}
@@ -297,17 +315,17 @@ impl Store {
 	}
 
 	pub fn gateway_policies(&self, listener: ListenerKey, gateway: GatewayName) -> GatewayPolicies {
-		let gateway = self
+		let gw_set = self
 			.gateway_policies_by_target
-			.get(&PolicyTarget::Gateway(gateway));
-		let listener = self
+			.get(&PolicyTarget::Gateway(gateway.clone()));
+		let ls_set = self
 			.gateway_policies_by_target
-			.get(&PolicyTarget::Listener(listener));
-		let rules = listener
+			.get(&PolicyTarget::Listener(listener.clone()));
+		let rules = ls_set
 			.iter()
 			.copied()
 			.flatten()
-			.chain(gateway.iter().copied().flatten())
+			.chain(gw_set.iter().copied().flatten())
 			.filter_map(|n| self.gateway_policies_by_name.get(n))
 			.map(|p| &p.policy);
 
@@ -326,6 +344,27 @@ impl Store {
 				GatewayPolicy::Transformation(p) => {
 					pol.transformation.get_or_insert_with(|| p.clone());
 				},
+			}
+		}
+
+		// Merge standard policies targeted at Listener/Gateway that include Logging
+		let gw_norm = self.policies_by_target.get(&PolicyTarget::Gateway(gateway));
+
+		let ls_norm = self
+			.policies_by_target
+			.get(&PolicyTarget::Listener(listener));
+
+		// Construct iterator for listener then gateway precedence
+		let norm_rules = ls_norm
+			.iter()
+			.copied()
+			.flatten()
+			.chain(gw_norm.iter().copied().flatten())
+			.filter_map(|n| self.policies_by_name.get(n))
+			.map(|p| &p.policy);
+		for rule in norm_rules {
+			if let Policy::Logging(p) = rule {
+				pol.logging.get_or_insert_with(|| p.clone());
 			}
 		}
 
@@ -583,10 +622,6 @@ impl Store {
     )]
 	pub fn insert_policy(&mut self, pol: TargetedPolicy) {
 		let pol = Arc::new(pol);
-		// Apply side effects for global policies
-		if let Some(eff) = self.apply_policy_side_effects(&pol.policy) {
-			warn!(%eff, "logging policy applied");
-		}
 		if let Some(old) = self.policies_by_name.insert(pol.name.clone(), pol.clone()) {
 			// Remove the old target. We may add it back, though.
 			if let Some(o) = self.policies_by_target.get_mut(&old.target) {
@@ -598,20 +633,6 @@ impl Store {
 			.entry(pol.target.clone())
 			.or_default()
 			.insert(pol.name.clone());
-	}
-
-	fn apply_policy_side_effects(&self, pol: &Policy) -> Option<&'static str> {
-		match pol {
-			Policy::Logging(lp) => {
-				if !lp.level.is_empty() {
-					// Reset to default and apply new filter string (supports comma-separated targets)
-					let _ = telemetry::set_level(true, &lp.level);
-					return Some("log level updated");
-				}
-				None
-			},
-			_ => None,
-		}
 	}
 	#[instrument(
         level = Level::INFO,

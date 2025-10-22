@@ -1094,7 +1094,6 @@ pub enum Policy {
 	// Supported targets: Gateway < Route < RouteRule; single policy allowed
 	Csrf(crate::http::csrf::Csrf),
 	// Supported targets: Gateway < Route < RouteRule; single policy allowed
-	// Represents dynamic logging configuration delivered via XDS
 	Logging(LoggingPolicy),
 }
 
@@ -1107,7 +1106,6 @@ pub struct Authorization(pub RuleSet);
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LoggingPolicy {
-	// Raw, pass-through representation; evaluated/applied elsewhere
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub filter: Option<String>,
 	#[serde(default, skip_serializing_if = "Vec::is_empty")]
