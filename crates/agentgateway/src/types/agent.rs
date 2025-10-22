@@ -28,6 +28,7 @@ use crate::http::{
 use crate::mcp::McpAuthorization;
 use crate::types::discovery::{NamespacedHostname, Service};
 use crate::*;
+use std::collections::HashMap as StdHashMap;
 
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -1092,6 +1093,9 @@ pub enum Policy {
 	Transformation(crate::http::transformation_cel::Transformation),
 	// Supported targets: Gateway < Route < RouteRule; single policy allowed
 	Csrf(crate::http::csrf::Csrf),
+	// Supported targets: Gateway < Route < RouteRule; single policy allowed
+	// Represents dynamic logging configuration delivered via XDS
+	Logging(LoggingPolicy),
 }
 
 #[apply(schema!)]
@@ -1099,6 +1103,26 @@ pub struct A2aPolicy {}
 
 #[apply(schema!)]
 pub struct Authorization(pub RuleSet);
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LoggingPolicy {
+	// Raw, pass-through representation; evaluated/applied elsewhere
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub filter: Option<String>,
+	#[serde(default, skip_serializing_if = "Vec::is_empty")]
+	pub excluded_metrics: Vec<String>,
+	#[serde(default)]
+	pub level: String,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub format: Option<crate::LoggingFormat>,
+	#[serde(default, skip_serializing_if = "StdHashMap::is_empty")]
+	pub fields_add: StdHashMap<String, String>,
+	#[serde(default, skip_serializing_if = "Vec::is_empty")]
+	pub fields_remove: Vec<String>,
+	#[serde(default, skip_serializing_if = "StdHashMap::is_empty")]
+	pub metric_fields_add: StdHashMap<String, String>,
+}
 
 // Do not use schema! as it will reject the `extra` field
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

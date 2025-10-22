@@ -29,6 +29,7 @@ use crate::types::proto::agent::{
 	Resource as ADPResource, Route as XdsRoute, TcpRoute as XdsTcpRoute,
 };
 use crate::*;
+use agent_core::telemetry;
 
 #[derive(Debug)]
 pub struct Store {
@@ -281,6 +282,9 @@ impl Store {
 				},
 				Policy::Csrf(p) => {
 					pol.csrf.get_or_insert_with(|| p.clone());
+				},
+				Policy::Logging(_p) => {
+					// TODO: currently ignoring configuring logging at per route level
 				},
 				_ => {}, // others are not route policies
 			}
@@ -579,6 +583,10 @@ impl Store {
     )]
 	pub fn insert_policy(&mut self, pol: TargetedPolicy) {
 		let pol = Arc::new(pol);
+		// Apply side effects for global policies
+		if let Some(eff) = self.apply_policy_side_effects(&pol.policy) {
+			warn!(%eff, "logging policy applied");
+		}
 		if let Some(old) = self.policies_by_name.insert(pol.name.clone(), pol.clone()) {
 			// Remove the old target. We may add it back, though.
 			if let Some(o) = self.policies_by_target.get_mut(&old.target) {
@@ -590,6 +598,20 @@ impl Store {
 			.entry(pol.target.clone())
 			.or_default()
 			.insert(pol.name.clone());
+	}
+
+	fn apply_policy_side_effects(&self, pol: &Policy) -> Option<&'static str> {
+		match pol {
+			Policy::Logging(lp) => {
+				if !lp.level.is_empty() {
+					// Reset to default and apply new filter string (supports comma-separated targets)
+					let _ = telemetry::set_level(true, &lp.level);
+					return Some("log level updated");
+				}
+				None
+			},
+			_ => None,
+		}
 	}
 	#[instrument(
         level = Level::INFO,
