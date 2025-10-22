@@ -5249,7 +5249,7 @@ type PolicySpec_Logging struct {
 	MetricFields *PolicySpec_Logging_MetricFields `protobuf:"bytes,3,opt,name=metric_fields,json=metricFields,proto3" json:"metric_fields,omitempty"`
 	// Metric names to exclude entirely
 	ExcludedMetrics []string `protobuf:"bytes,4,rep,name=excluded_metrics,json=excludedMetrics,proto3" json:"excluded_metrics,omitempty"`
-	// Comma separated levels or per-target level string. Empty uses default
+	// Comma separated levels or per-target level string. Empty uses default info level
 	Level         string                    `protobuf:"bytes,5,opt,name=level,proto3" json:"level,omitempty"`
 	Format        PolicySpec_Logging_Format `protobuf:"varint,6,opt,name=format,proto3,enum=agentgateway.dev.resource.PolicySpec_Logging_Format" json:"format,omitempty"`
 	unknownFields protoimpl.UnknownFields
