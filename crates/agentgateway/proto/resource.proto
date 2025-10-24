@@ -551,28 +551,8 @@ message PolicySpec {
       map<string, string> add = 2;
     }
 
-    // Additional metric fields configuration
-    message MetricFields {
-      // Field keys to add with CEL expressions
-      map<string, string> add = 1;
-    }
-
     // Fields applied to logs
     Fields fields = 2;
-    // Fields applied to metrics
-    MetricFields metric_fields = 3;
-    // Metric names to exclude entirely
-    repeated string excluded_metrics = 4;
-
-    // Comma separated levels or per-target level string. Empty uses default info level
-    string level = 5;
-
-    // Output format for logs
-    enum Format {
-      TEXT = 0;
-      JSON = 1;
-    }
-    Format format = 6;
   }
 
   oneof kind {

@@ -44,12 +44,8 @@ fn select_backend(route: &Route, _req: &Request) -> Option<RouteBackendReference
 }
 
 fn apply_logging_policy_to_log(log: &mut RequestLog, lp: &LoggingPolicy) {
-	// Update level if set (allow multiple comma-separated targets)
-	if !lp.level.is_empty() {
-		let _ = agent_core::telemetry::set_level(false, &lp.level);
-	}
-	// Merge filter/fields/metrics into config for this request
-	use crate::telemetry::log::{LoggingFields, MetricFields, OrderedStringMap};
+	// Merge filter/fields into config for this request
+	use crate::telemetry::log::{LoggingFields, OrderedStringMap};
 	let mut fields_add: Vec<(String, Arc<crate::cel::Expression>)> = Vec::new();
 	for (k, v) in lp.fields_add.iter() {
 		if let Ok(expr) = crate::cel::Expression::new(v.clone()) {
@@ -62,24 +58,10 @@ fn apply_logging_policy_to_log(log: &mut RequestLog, lp: &LoggingPolicy) {
 		.clone()
 		.into_iter()
 		.collect::<frozen_collections::FzHashSet<String>>();
-	let mut metric_add: Vec<(String, Arc<crate::cel::Expression>)> = Vec::new();
-	for (k, v) in lp.metric_fields_add.iter() {
-		if let Ok(expr) = crate::cel::Expression::new(v.clone()) {
-			metric_add.push((k.clone(), Arc::new(expr)));
-		}
-	}
 	let new_fields = LoggingFields {
 		remove: fields_remove_set,
 		add: fields_add.into_iter().collect::<OrderedStringMap<_>>(),
 	};
-	let new_metric_fields = MetricFields {
-		add: metric_add.into_iter().collect::<OrderedStringMap<_>>(),
-	};
-	// Register expressions into CEL context
-	log.cel.register(&new_fields);
-	for v in new_metric_fields.add.values_unordered() {
-		log.cel.ctx().register_expression(v.as_ref());
-	}
 	// Replace config on logger for this request
 	if let Some(f) = &lp.filter
 		&& let Ok(expr) = crate::cel::Expression::new(f.clone())
@@ -87,14 +69,6 @@ fn apply_logging_policy_to_log(log: &mut RequestLog, lp: &LoggingPolicy) {
 		log.cel.filter = Some(Arc::new(expr));
 	}
 	log.cel.fields = Arc::new(new_fields);
-	log.cel.metric_fields = Arc::new(new_metric_fields);
-	if let Some(fmt) = lp.format.clone() {
-		log.cel.cel_context.set_log_format(fmt);
-	}
-	// Excluded metrics: merge with existing
-	for m in &lp.excluded_metrics {
-		log.cel.cel_context.exclude_metric(m.clone());
-	}
 }
 
 async fn apply_request_policies(

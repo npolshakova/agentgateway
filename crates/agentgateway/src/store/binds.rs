@@ -124,11 +124,6 @@ impl GatewayPolicies {
 					ctx.register_expression(&expr)
 				}
 			}
-			for v in lp.metric_fields_add.values() {
-				if let Ok(expr) = crate::cel::Expression::new(v.clone()) {
-					ctx.register_expression(&expr)
-				}
-			}
 		}
 	}
 }

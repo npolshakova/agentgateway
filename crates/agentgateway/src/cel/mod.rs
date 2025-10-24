@@ -108,7 +108,6 @@ pub struct ContextBuilder {
 	pub attributes: HashSet<String>,
 	pub context: ExpressionContext,
 	pub log_format: Option<crate::LoggingFormat>,
-	pub excluded_metrics: HashSet<String>,
 }
 
 impl Default for ContextBuilder {
@@ -123,7 +122,6 @@ impl ContextBuilder {
 			attributes: Default::default(),
 			context: Default::default(),
 			log_format: None,
-			excluded_metrics: Default::default(),
 		}
 	}
 	/// register_expression registers the given expressions attributes as required attributes.
@@ -298,11 +296,6 @@ impl ContextBuilder {
 	/// Set the preferred log format for this request (json or text)
 	pub fn set_log_format(&mut self, fmt: crate::LoggingFormat) {
 		self.log_format = Some(fmt);
-	}
-
-	/// Exclude a metric name for this request, skipping emitting the metric
-	pub fn exclude_metric(&mut self, metric: String) {
-		self.excluded_metrics.insert(metric);
 	}
 
 	pub fn needs_llm_completion(&self) -> bool {

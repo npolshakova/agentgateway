@@ -1035,12 +1035,6 @@ impl TryFrom<&proto::agent::PolicySpec> for Policy {
 				}))
 			},
 			Some(proto::agent::policy_spec::Kind::Logging(lp)) => {
-				let format = match proto::agent::policy_spec::logging::Format::try_from(lp.format) {
-					Ok(proto::agent::policy_spec::logging::Format::Json) => Some(crate::LoggingFormat::Json),
-					Ok(proto::agent::policy_spec::logging::Format::Text) | Err(_) => {
-						Some(crate::LoggingFormat::Text)
-					},
-				};
 				let fields_add: std::collections::HashMap<String, String> = lp
 					.fields
 					.as_ref()
@@ -1051,19 +1045,10 @@ impl TryFrom<&proto::agent::PolicySpec> for Policy {
 					.as_ref()
 					.map(|f| f.remove.clone())
 					.unwrap_or_default();
-				let metric_fields_add: std::collections::HashMap<String, String> = lp
-					.metric_fields
-					.as_ref()
-					.map(|f| f.add.clone())
-					.unwrap_or_default();
 				Policy::Logging(LoggingPolicy {
 					filter: lp.filter.clone(),
-					excluded_metrics: lp.excluded_metrics.clone(),
-					level: lp.level.clone(),
-					format,
 					fields_add,
 					fields_remove,
-					metric_fields_add,
 				})
 			},
 			_ => return Err(ProtoError::EnumParse("unknown spec kind".to_string())),

@@ -1108,18 +1108,10 @@ pub struct Authorization(pub RuleSet);
 pub struct LoggingPolicy {
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub filter: Option<String>,
-	#[serde(default, skip_serializing_if = "Vec::is_empty")]
-	pub excluded_metrics: Vec<String>,
-	#[serde(default)]
-	pub level: String,
-	#[serde(default, skip_serializing_if = "Option::is_none")]
-	pub format: Option<crate::LoggingFormat>,
 	#[serde(default, skip_serializing_if = "StdHashMap::is_empty")]
 	pub fields_add: StdHashMap<String, String>,
 	#[serde(default, skip_serializing_if = "Vec::is_empty")]
 	pub fields_remove: Vec<String>,
-	#[serde(default, skip_serializing_if = "StdHashMap::is_empty")]
-	pub metric_fields_add: StdHashMap<String, String>,
 }
 
 // Do not use schema! as it will reject the `extra` field
