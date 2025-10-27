@@ -142,8 +142,8 @@ pub struct ListenerConfig {
 	#[serde(default)]
 	http2_keepalive_timeout: Option<Duration>,
 
+	/// Case-insensitive list of header names to mark as sensitive
 	#[serde(default, deserialize_with = "deserialize_lowercase_hashset")]
-	/// Case-insensitive list of header names to mark as sensitive (global default)
 	pub sensitive_headers: HashSet<String>,
 }
 

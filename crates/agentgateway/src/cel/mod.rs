@@ -27,7 +27,7 @@ use crate::types::discovery::Identity;
 mod functions;
 mod strings;
 
-// Serialize HeaderMap while redacting values marked sensitive via HeaderValue::set_sensitive(true)
+/// Serialize HeaderMap while redacting values marked sensitive via HeaderValue::set_sensitive(true)
 mod header_map_sensitive {
 	use serde::Serializer;
 	use serde::ser::SerializeMap;

@@ -424,7 +424,6 @@ impl HTTPProxy {
 		log.listener_name = Some(selected_listener.name.clone());
 
 		debug!(bind=%bind_name, listener=%selected_listener.key, "selected listener");
-		// Listener-level sensitive headers removed; now controlled via policies
 		let mut gateway_policies = inputs.stores.read_binds().gateway_policies(
 			selected_listener.key.clone(),
 			selected_listener.gateway_name.clone(),
