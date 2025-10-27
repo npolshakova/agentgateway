@@ -388,10 +388,6 @@ impl HTTPProxy {
 			.cel
 			.ctx()
 			.with_source(&log.tcp_info, log.tls_info.as_ref());
-		let needs_body = log.cel.ctx().with_request(&req, log.start_time.clone());
-		if needs_body && let Ok(body) = crate::http::inspect_body(&mut req).await {
-			log.cel.ctx().with_request_body(body);
-		}
 
 		let trace_parent = trc::TraceParent::from_request(&req);
 		let trace_sampled = log.trace_sampled(trace_parent.as_ref());
@@ -438,24 +434,19 @@ impl HTTPProxy {
 			.cel
 			.ctx()
 			.with_source(&log.tcp_info, log.tls_info.as_ref());
-		// This is unfortunate but we record the request twice possibly; we want to record it as early as possible
-		// so we can do logging, etc when we find no routes.
-		// But we may find new expressions that now need the request.
-		// it is zero-cost at runtime to do it twice so NBD.
-		let needs_body = log.cel.ctx().with_request(&req, log.start_time.clone());
-		if needs_body && let Ok(body) = crate::http::inspect_body(&mut req).await {
-			log.cel.ctx().with_request_body(body);
+		// Apply explicit RedactHeaders aggregated at gateway level BEFORE recording the request
+		// so the CEL request.headers capture respects HeaderValue::is_sensitive redactions.
+		if !gateway_policies.redacted_headers.is_empty() {
+			sensitive_headers(&mut req, &gateway_policies.redacted_headers);
 		}
+		// Defer capturing request into CEL until after route-level redactions,
+		// so logs reflect the final redacted header set.
 
 		let mut response_headers = HeaderMap::new();
 		let mut maybe_gateway_ext_proc = gateway_policies
 			.ext_proc
 			.take()
 			.map(|c| c.build(self.policy_client()));
-		// Apply explicit RedactHeaders aggregated at gateway level first
-		if !gateway_policies.redacted_headers.is_empty() {
-			sensitive_headers(&mut req, &gateway_policies.redacted_headers);
-		}
 		apply_gateway_policies(
 			&gateway_policies,
 			self.policy_client(),

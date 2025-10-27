@@ -189,10 +189,20 @@ impl ContextBuilder {
 		if let Some(r) = self.context.request.as_ref() {
 			return r.body.is_none() && self.attributes.contains(REQUEST_BODY_ATTRIBUTE);
 		}
+		// Build a header map that preserves the is_sensitive flag for values
+		let mut preserved_headers: ::http::HeaderMap =
+			::http::HeaderMap::with_capacity(req.headers().len());
+		for (name, value) in req.headers().iter() {
+			let mut cloned = value.clone();
+			if value.is_sensitive() {
+				cloned.set_sensitive(true);
+			}
+			preserved_headers.append(name.clone(), cloned);
+		}
 		self.context.request = Some(RequestContext {
 			method: req.method().clone(),
 			// TODO: split headers and the rest?
-			headers: req.headers().clone(),
+			headers: preserved_headers,
 			uri: req.uri().clone(),
 			host: req.uri().authority().cloned(),
 			scheme: req.uri().scheme().cloned(),
