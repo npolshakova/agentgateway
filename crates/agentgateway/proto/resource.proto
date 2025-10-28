@@ -60,12 +60,9 @@ message Route {
   string route_name = 4;
   repeated string hostnames = 5;
   repeated RouteMatch matches = 6;
-  // Deprecated: use backends.backend_policy_spec
-  repeated RouteFilter filters = 7 [deprecated=true];
   repeated RouteBackend backends = 8;
-  // Deprecated: use the traffic_policy_spec field
-  TrafficPolicy traffic_policy = 9 [deprecated=true];
-  repeated PolicySpec inline_policies = 10 [deprecated=true];
+  // Reserved tag numbers for removed fields: filters(7), traffic_policy(9), inline_policies(10)
+  reserved 7, 9, 10;
   repeated TrafficPolicySpec traffic_policies = 11; 
 }
 
@@ -287,8 +284,8 @@ message Header {
 message RouteBackend {
   BackendReference backend = 1;
   int32 weight = 2;
-  // Deprecated: Use backend_policies instead 
-  repeated RouteFilter filters = 4 [deprecated=true];
+  // Reserved tag number for removed field: filters(4)
+  reserved 4;
   repeated BackendPolicySpec backend_policies = 5;
 }
 
@@ -898,8 +895,8 @@ message Policy {
   // Format is "<ns>/<name>"
   string name = 1;
   PolicyTarget target = 2;
-  // Deprecated: use backend, frontend or traffic 
-  PolicySpec spec = 3 [deprecated=true];
+  // Reserved tag number for removed field: spec(3)
+  reserved 3;
    oneof kind {
     TrafficPolicySpec traffic = 4;
     BackendPolicySpec backend = 5;
