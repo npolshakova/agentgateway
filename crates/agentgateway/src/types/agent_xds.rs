@@ -1,11 +1,13 @@
 use std::net::{IpAddr, SocketAddr};
+use std::num::NonZeroU16;
 use std::sync::Arc;
 
+use crate::http::Scheme;
 use ::http::StatusCode;
 use rustls::ServerConfig;
 
 use super::agent::*;
-use crate::http::auth::{AwsAuth, BackendAuth};
+use crate::http::auth::{AwsAuth, BackendAuth, SimpleBackendAuth};
 use crate::http::authorization;
 use crate::http::transformation_cel::{LocalTransform, LocalTransformationConfig, Transformation};
 use crate::llm::{AIBackend, AIProvider, NamedAIProvider};
@@ -264,12 +266,12 @@ fn convert_backend_ai_policy(
 						model: m.model.as_deref().map(strng::new),
 						auth: match m.auth.as_ref().and_then(|a| a.kind.clone()) {
 							Some(crate::types::proto::agent::backend_auth_policy::Kind::Passthrough(_)) => {
-								SimpleBackend::Passthrough {}
+								SimpleBackendAuth::Passthrough {}
 							},
 							Some(crate::types::proto::agent::backend_auth_policy::Kind::Key(k)) => {
-								SimpleBackend::Key(k.secret.into())
+								SimpleBackendAuth::Key(k.secret.into())
 							},
-							_ => SimpleBackend::Passthrough {},
+							_ => SimpleBackendAuth::Passthrough {},
 						},
 					});
 
