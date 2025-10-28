@@ -860,7 +860,6 @@ async fn make_backend_call(
 			let (provider, handle) = ai.select_provider().ok_or(ProxyError::NoHealthyEndpoints)?;
 			log.add(move |l| l.request_handle = Some(handle));
 			let k = strng::format!("{}/{}", n, provider.name);
-			// todo: get sub-backend policies
 			let sub_backend_policies = inputs
 				.stores
 				.read_binds()
