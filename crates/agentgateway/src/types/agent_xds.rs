@@ -3,7 +3,6 @@ use std::net::{IpAddr, SocketAddr};
 use std::num::NonZeroU16;
 use std::sync::Arc;
 
-use proto::agent::policy_spec::remote_rate_limit::Type as RlType;
 use rustls::ServerConfig;
 
 use super::agent::*;
@@ -17,9 +16,10 @@ use crate::mcp::McpAuthorization;
 use crate::types::discovery::NamespacedHostname;
 use crate::types::proto;
 use crate::types::proto::ProtoError;
+use crate::types::proto::agent::backend_policy_spec::inference_routing::FailureMode;
 use crate::types::proto::agent::mcp_target::Protocol;
-use crate::types::proto::agent::policy_spec::inference_routing::FailureMode;
-use crate::types::proto::agent::policy_spec::local_rate_limit::Type;
+use crate::types::proto::agent::traffic_policy_spec::local_rate_limit::Type;
+use crate::types::proto::agent::traffic_policy_spec::remote_rate_limit::Type as RlType;
 use crate::*;
 
 impl TryFrom<&proto::agent::TlsConfig> for TLSConfig {
@@ -543,21 +543,6 @@ impl TryFrom<&proto::agent::RouteFilter> for RouteFilter {
 	fn try_from(s: &proto::agent::RouteFilter) -> Result<Self, Self::Error> {
 		Ok(match &s.kind {
 			None => return Err(ProtoError::Generic("invalid route filter".to_string())),
-			Some(proto::agent::route_filter::Kind::RequestHeaderModifier(rhm)) => {
-				RouteFilter::RequestHeaderModifier(filters::HeaderModifier {
-					add: rhm
-						.add
-						.iter()
-						.map(|h| (strng::new(&h.name), strng::new(&h.value)))
-						.collect(),
-					set: rhm
-						.set
-						.iter()
-						.map(|h| (strng::new(&h.name), strng::new(&h.value)))
-						.collect(),
-					remove: rhm.remove.iter().map(strng::new).collect(),
-				})
-			},
 			Some(proto::agent::route_filter::Kind::RequestRedirect(rd)) => {
 				RouteFilter::RequestRedirect(filters::RequestRedirect {
 					scheme: default_as_none(rd.scheme.as_str())
@@ -597,21 +582,6 @@ impl TryFrom<&proto::agent::RouteFilter> for RouteFilter {
 					},
 				})
 			},
-			Some(proto::agent::route_filter::Kind::ResponseHeaderModifier(rhm)) => {
-				RouteFilter::ResponseHeaderModifier(filters::HeaderModifier {
-					add: rhm
-						.add
-						.iter()
-						.map(|h| (strng::new(&h.name), strng::new(&h.value)))
-						.collect(),
-					set: rhm
-						.set
-						.iter()
-						.map(|h| (strng::new(&h.name), strng::new(&h.value)))
-						.collect(),
-					remove: rhm.remove.iter().map(strng::new).collect(),
-				})
-			},
 			Some(proto::agent::route_filter::Kind::RequestMirror(m)) => {
 				let backend = resolve_simple_reference(m.backend.as_ref())?;
 				RouteFilter::RequestMirror(filters::RequestMirror {
@@ -625,17 +595,6 @@ impl TryFrom<&proto::agent::RouteFilter> for RouteFilter {
 					status: StatusCode::from_u16(m.status as u16)?,
 				})
 			},
-			Some(proto::agent::route_filter::Kind::Cors(c)) => RouteFilter::CORS(
-				http::cors::Cors::try_from(http::cors::CorsSerde {
-					allow_credentials: c.allow_credentials,
-					allow_headers: c.allow_headers.clone(),
-					allow_methods: c.allow_methods.clone(),
-					allow_origins: c.allow_origins.clone(),
-					expose_headers: c.expose_headers.clone(),
-					max_age: c.max_age.map(|d| Duration::from_secs(d.seconds as u64)),
-				})
-				.map_err(|e| ProtoError::Generic(e.to_string()))?,
-			),
 		})
 	}
 }
@@ -648,10 +607,10 @@ fn default_as_none<T: Default + PartialEq>(i: T) -> Option<T> {
 	}
 }
 
-impl TryFrom<&proto::agent::policy_spec::Rbac> for Authorization {
+impl TryFrom<&proto::agent::Rbac> for Authorization {
 	type Error = ProtoError;
 
-	fn try_from(rbac: &proto::agent::policy_spec::Rbac) -> Result<Self, Self::Error> {
+	fn try_from(rbac: &proto::agent::Rbac) -> Result<Self, Self::Error> {
 		// Convert allow rules
 		let mut allow_exprs = Vec::new();
 		for allow_rule in &rbac.allow {
@@ -673,10 +632,10 @@ impl TryFrom<&proto::agent::policy_spec::Rbac> for Authorization {
 	}
 }
 
-impl TryFrom<&proto::agent::policy_spec::Rbac> for McpAuthorization {
+impl TryFrom<&proto::agent::Rbac> for McpAuthorization {
 	type Error = ProtoError;
 
-	fn try_from(rbac: &proto::agent::policy_spec::Rbac) -> Result<Self, Self::Error> {
+	fn try_from(rbac: &proto::agent::Rbac) -> Result<Self, Self::Error> {
 		// Convert allow rules
 		let mut allow_exprs = Vec::new();
 		for allow_rule in &rbac.allow {
@@ -701,12 +660,14 @@ impl TryFrom<&proto::agent::policy_spec::Rbac> for McpAuthorization {
 	}
 }
 
-impl TryFrom<&proto::agent::policy_spec::TransformationPolicy> for Transformation {
+impl TryFrom<&proto::agent::traffic_policy_spec::TransformationPolicy> for Transformation {
 	type Error = ProtoError;
 
-	fn try_from(spec: &proto::agent::policy_spec::TransformationPolicy) -> Result<Self, Self::Error> {
+	fn try_from(
+		spec: &proto::agent::traffic_policy_spec::TransformationPolicy,
+	) -> Result<Self, Self::Error> {
 		fn convert_transform(
-			t: &Option<proto::agent::policy_spec::transformation_policy::Transform>,
+			t: &Option<proto::agent::traffic_policy_spec::transformation_policy::Transform>,
 		) -> Result<LocalTransform, ProtoError> {
 			let mut add = Vec::new();
 			let mut set = Vec::new();
@@ -743,12 +704,12 @@ impl TryFrom<&proto::agent::policy_spec::TransformationPolicy> for Transformatio
 	}
 }
 
-impl TryFrom<&proto::agent::PolicySpec> for Policy {
+impl TryFrom<&proto::agent::TrafficPolicySpec> for Policy {
 	type Error = ProtoError;
-	fn try_from(spec: &proto::agent::PolicySpec) -> Result<Self, Self::Error> {
+	fn try_from(spec: &proto::agent::TrafficPolicySpec) -> Result<Self, Self::Error> {
 		Ok(match &spec.kind {
-			Some(proto::agent::policy_spec::Kind::LocalRateLimit(lrl)) => {
-				let t = proto::agent::policy_spec::local_rate_limit::Type::try_from(lrl.r#type)?;
+			Some(proto::agent::traffic_policy_spec::Kind::LocalRateLimit(lrl)) => {
+				let t = proto::agent::traffic_policy_spec::local_rate_limit::Type::try_from(lrl.r#type)?;
 				Policy::LocalRateLimit(vec![
 					localratelimit::RateLimitSpec {
 						max_tokens: lrl.max_tokens,
@@ -766,7 +727,7 @@ impl TryFrom<&proto::agent::PolicySpec> for Policy {
 					.map_err(|e| ProtoError::Generic(format!("invalid rate limit: {e}")))?,
 				])
 			},
-			Some(proto::agent::policy_spec::Kind::RemoteRateLimit(rrl)) => {
+			Some(proto::agent::traffic_policy_spec::Kind::RemoteRateLimit(rrl)) => {
 				// Build descriptors
 				let descriptors = rrl
 					.descriptors
@@ -808,14 +769,15 @@ impl TryFrom<&proto::agent::PolicySpec> for Policy {
 					descriptors: Arc::new(http::remoteratelimit::DescriptorSet(descriptors)),
 				})
 			},
-			Some(proto::agent::policy_spec::Kind::ExtProc(ep)) => {
+			Some(proto::agent::traffic_policy_spec::Kind::ExtProc(ep)) => {
 				let target = resolve_simple_reference(ep.target.as_ref())?;
 				let failure_mode =
-					match proto::agent::policy_spec::ext_proc::FailureMode::try_from(ep.failure_mode) {
-						Ok(proto::agent::policy_spec::ext_proc::FailureMode::FailOpen) => {
+					match proto::agent::traffic_policy_spec::ext_proc::FailureMode::try_from(ep.failure_mode)
+					{
+						Ok(proto::agent::traffic_policy_spec::ext_proc::FailureMode::FailOpen) => {
 							ext_proc::FailureMode::FailOpen
 						},
-						Ok(proto::agent::policy_spec::ext_proc::FailureMode::FailClosed) => {
+						Ok(proto::agent::traffic_policy_spec::ext_proc::FailureMode::FailClosed) => {
 							ext_proc::FailureMode::FailClosed
 						},
 						_ => http::ext_proc::FailureMode::FailClosed,
@@ -825,17 +787,19 @@ impl TryFrom<&proto::agent::PolicySpec> for Policy {
 					failure_mode,
 				})
 			},
-			Some(proto::agent::policy_spec::Kind::ExtAuthz(ea)) => {
+			Some(proto::agent::traffic_policy_spec::Kind::ExtAuthz(ea)) => {
 				let target = resolve_simple_reference(ea.target.as_ref())?;
 				let failure_mode =
-					match proto::agent::policy_spec::external_auth::FailureMode::try_from(ea.failure_mode) {
-						Ok(proto::agent::policy_spec::external_auth::FailureMode::Allow) => {
+					match proto::agent::traffic_policy_spec::external_auth::FailureMode::try_from(
+						ea.failure_mode,
+					) {
+						Ok(proto::agent::traffic_policy_spec::external_auth::FailureMode::Allow) => {
 							http::ext_authz::FailureMode::Allow
 						},
-						Ok(proto::agent::policy_spec::external_auth::FailureMode::Deny) => {
+						Ok(proto::agent::traffic_policy_spec::external_auth::FailureMode::Deny) => {
 							http::ext_authz::FailureMode::Deny
 						},
-						Ok(proto::agent::policy_spec::external_auth::FailureMode::DenyWithStatus) => {
+						Ok(proto::agent::traffic_policy_spec::external_auth::FailureMode::DenyWithStatus) => {
 							let status = ea.status_on_error.unwrap_or(403) as u16;
 							http::ext_authz::FailureMode::DenyWithStatus(status)
 						},
@@ -877,53 +841,25 @@ impl TryFrom<&proto::agent::PolicySpec> for Policy {
 					timeout,
 				})
 			},
-			Some(proto::agent::policy_spec::Kind::A2a(_)) => Policy::A2a(A2aPolicy {}),
-			Some(proto::agent::policy_spec::Kind::BackendTls(btls)) => {
-				let tls = backendtls::ResolvedBackendTLS {
-					cert: btls.cert.clone(),
-					key: btls.key.clone(),
-					root: btls.root.clone(),
-					insecure: btls.insecure.unwrap_or_default(),
-					insecure_host: false,
-					hostname: btls.hostname.clone(),
-					alpn: None,
-				}
-				.try_into()
-				.map_err(|e| ProtoError::Generic(e.to_string()))?;
-				Policy::BackendTLS(tls)
+			Some(proto::agent::traffic_policy_spec::Kind::Csrf(csrf_spec)) => {
+				let additional_origins: HashSet<String> =
+					csrf_spec.additional_origins.iter().cloned().collect();
+				Policy::Csrf(csrf::Csrf::new(additional_origins))
 			},
-			Some(proto::agent::policy_spec::Kind::InferenceRouting(ir)) => {
-				Policy::InferenceRouting(ext_proc::InferenceRouting {
-					target: Arc::new(resolve_simple_reference(ir.endpoint_picker.as_ref())?),
-					failure_mode: match proto::agent::policy_spec::inference_routing::FailureMode::try_from(
-						ir.failure_mode,
-					)? {
-						FailureMode::Unknown | FailureMode::FailClosed => ext_proc::FailureMode::FailClosed,
-						FailureMode::FailOpen => ext_proc::FailureMode::FailOpen,
-					},
-				})
-			},
-			Some(proto::agent::policy_spec::Kind::Auth(auth)) => {
-				Policy::BackendAuth(BackendAuth::try_from(auth.clone())?)
-			},
-			Some(proto::agent::policy_spec::Kind::Authorization(rbac)) => {
-				Policy::Authorization(Authorization::try_from(rbac)?)
-			},
-			Some(proto::agent::policy_spec::Kind::McpAuthorization(rbac)) => {
-				Policy::McpAuthorization(McpAuthorization::try_from(rbac)?)
-			},
-			Some(proto::agent::policy_spec::Kind::Jwt(jwt)) => {
-				let mode = match proto::agent::policy_spec::jwt::Mode::try_from(jwt.mode)
+			Some(proto::agent::traffic_policy_spec::Kind::Jwt(jwt)) => {
+				let mode = match proto::agent::traffic_policy_spec::jwt::Mode::try_from(jwt.mode)
 					.map_err(|_| ProtoError::EnumParse("invalid JWT mode".to_string()))?
 				{
-					proto::agent::policy_spec::jwt::Mode::Optional => http::jwt::Mode::Optional,
-					proto::agent::policy_spec::jwt::Mode::Strict => http::jwt::Mode::Strict,
-					proto::agent::policy_spec::jwt::Mode::Permissive => http::jwt::Mode::Permissive,
+					proto::agent::traffic_policy_spec::jwt::Mode::Optional => http::jwt::Mode::Optional,
+					proto::agent::traffic_policy_spec::jwt::Mode::Strict => http::jwt::Mode::Strict,
+					proto::agent::traffic_policy_spec::jwt::Mode::Permissive => http::jwt::Mode::Permissive,
 				};
 
 				// Parse JWKS based on source
 				let jwks_json = match &jwt.jwks_source {
-					Some(proto::agent::policy_spec::jwt::JwksSource::Inline(inline)) => inline.clone(),
+					Some(proto::agent::traffic_policy_spec::jwt::JwksSource::Inline(inline)) => {
+						inline.clone()
+					},
 					None => {
 						return Err(ProtoError::Generic(
 							"JWT policy missing JWKS source".to_string(),
@@ -940,15 +876,56 @@ impl TryFrom<&proto::agent::PolicySpec> for Policy {
 
 				Policy::JwtAuth(jwt_auth)
 			},
-			Some(proto::agent::policy_spec::Kind::Transformation(transformation)) => {
+			Some(proto::agent::traffic_policy_spec::Kind::Transformation(transformation)) => {
 				Policy::Transformation(Transformation::try_from(transformation)?)
 			},
-			Some(proto::agent::policy_spec::Kind::Csrf(csrf_spec)) => {
-				let additional_origins: HashSet<String> =
-					csrf_spec.additional_origins.iter().cloned().collect();
-				Policy::Csrf(csrf::Csrf::new(additional_origins))
+			Some(proto::agent::traffic_policy_spec::Kind::McpAuthorization(rbac)) => {
+				Policy::McpAuthorization(McpAuthorization::try_from(rbac)?)
 			},
-			Some(proto::agent::policy_spec::Kind::Ai(ai)) => {
+			// request/response header modifiers and CORS are not supported as Policy variants in the current engine
+			_ => return Err(ProtoError::EnumParse("unknown spec kind".to_string())),
+		})
+	}
+}
+
+impl TryFrom<&proto::agent::BackendPolicySpec> for Policy {
+	type Error = ProtoError;
+	fn try_from(spec: &proto::agent::BackendPolicySpec) -> Result<Self, Self::Error> {
+		Ok(match &spec.kind {
+			Some(proto::agent::backend_policy_spec::Kind::A2a(_)) => Policy::A2a(A2aPolicy {}),
+			Some(proto::agent::backend_policy_spec::Kind::BackendTls(btls)) => {
+				let tls = backendtls::ResolvedBackendTLS {
+					cert: btls.cert.clone(),
+					key: btls.key.clone(),
+					root: btls.root.clone(),
+					insecure: btls.insecure.unwrap_or_default(),
+					insecure_host: false,
+					hostname: btls.hostname.clone(),
+					alpn: None,
+				}
+				.try_into()
+				.map_err(|e| ProtoError::Generic(e.to_string()))?;
+				Policy::BackendTLS(tls)
+			},
+			Some(proto::agent::backend_policy_spec::Kind::InferenceRouting(ir)) => {
+				Policy::InferenceRouting(ext_proc::InferenceRouting {
+					target: Arc::new(resolve_simple_reference(ir.endpoint_picker.as_ref())?),
+					failure_mode:
+						match proto::agent::backend_policy_spec::inference_routing::FailureMode::try_from(
+							ir.failure_mode,
+						)? {
+							FailureMode::Unknown | FailureMode::FailClosed => ext_proc::FailureMode::FailClosed,
+							FailureMode::FailOpen => ext_proc::FailureMode::FailOpen,
+						},
+				})
+			},
+			Some(proto::agent::backend_policy_spec::Kind::Auth(auth)) => {
+				Policy::BackendAuth(BackendAuth::try_from(auth.clone())?)
+			},
+			Some(proto::agent::backend_policy_spec::Kind::McpAuthorization(rbac)) => {
+				Policy::McpAuthorization(McpAuthorization::try_from(rbac)?)
+			},
+			Some(proto::agent::backend_policy_spec::Kind::Ai(ai)) => {
 				let prompt_guard = ai.prompt_guard.as_ref().and_then(|pg| {
 					if pg.request.is_none() && pg.response.is_none() {
 						return None;
@@ -1044,7 +1021,6 @@ impl TryFrom<&proto::agent::Policy> for TargetedPolicy {
 	fn try_from(s: &proto::agent::Policy) -> Result<Self, Self::Error> {
 		let name = PolicyName::from(&s.name);
 		let target = s.target.as_ref().ok_or(ProtoError::MissingRequiredField)?;
-		let spec = s.spec.as_ref().ok_or(ProtoError::MissingRequiredField)?;
 		let target = match &target.kind {
 			Some(proto::agent::policy_target::Kind::Gateway(v)) => PolicyTarget::Gateway(v.into()),
 			Some(proto::agent::policy_target::Kind::Listener(v)) => PolicyTarget::Listener(v.into()),
@@ -1055,7 +1031,16 @@ impl TryFrom<&proto::agent::Policy> for TargetedPolicy {
 			Some(proto::agent::policy_target::Kind::SubBackend(v)) => PolicyTarget::SubBackend(v.into()),
 			_ => return Err(ProtoError::EnumParse("unknown target kind".to_string())),
 		};
-		let policy = spec.try_into()?;
+		let kind = s.kind.as_ref().ok_or(ProtoError::MissingRequiredField)?;
+		let policy = match kind {
+			proto::agent::policy::Kind::Traffic(p) => Policy::try_from(p)?,
+			proto::agent::policy::Kind::Backend(p) => Policy::try_from(p)?,
+			proto::agent::policy::Kind::Frontend(_p) => {
+				return Err(ProtoError::Generic(
+					"frontend policy not supported".to_string(),
+				));
+			},
+		};
 		Ok(TargetedPolicy {
 			name,
 			target,
@@ -1092,7 +1077,7 @@ fn resolve_simple_reference(
 }
 
 fn convert_message(
-	m: &proto::agent::policy_spec::ai::Message,
+	m: &proto::agent::backend_policy_spec::ai::Message,
 ) -> crate::llm::SimpleChatCompletionMessage {
 	llm::SimpleChatCompletionMessage {
 		role: strng::new(&m.role),
@@ -1101,7 +1086,7 @@ fn convert_message(
 }
 
 fn convert_prompt_enrichment(
-	prompts: &proto::agent::policy_spec::ai::PromptEnrichment,
+	prompts: &proto::agent::backend_policy_spec::ai::PromptEnrichment,
 ) -> crate::llm::policy::PromptEnrichment {
 	crate::llm::policy::PromptEnrichment {
 		append: prompts.append.iter().map(convert_message).collect(),
@@ -1110,7 +1095,7 @@ fn convert_prompt_enrichment(
 }
 
 fn convert_webhook(
-	w: &proto::agent::policy_spec::ai::Webhook,
+	w: &proto::agent::backend_policy_spec::ai::Webhook,
 ) -> Option<crate::llm::policy::Webhook> {
 	let port = match u16::try_from(w.port) {
 		Ok(port) => port,
@@ -1135,16 +1120,18 @@ fn convert_webhook(
 }
 
 fn convert_regex_rules(
-	rr: &proto::agent::policy_spec::ai::RegexRules,
+	rr: &proto::agent::backend_policy_spec::ai::RegexRules,
 	rejection: Option<crate::llm::policy::RequestRejection>,
 ) -> crate::llm::policy::RegexRules {
 	let action = match rr
 		.action
 		.as_ref()
-		.and_then(|a| proto::agent::policy_spec::ai::ActionKind::try_from(a.kind).ok())
+		.and_then(|a| proto::agent::backend_policy_spec::ai::ActionKind::try_from(a.kind).ok())
 	{
-		Some(proto::agent::policy_spec::ai::ActionKind::Reject) => crate::llm::policy::Action::Reject {
-			response: rejection.unwrap_or_default(),
+		Some(proto::agent::backend_policy_spec::ai::ActionKind::Reject) => {
+			crate::llm::policy::Action::Reject {
+				response: rejection.unwrap_or_default(),
+			}
 		},
 		_ => crate::llm::policy::Action::Mask,
 	};
@@ -1152,20 +1139,20 @@ fn convert_regex_rules(
 		.rules
 		.iter()
 		.filter_map(|r| match &r.kind {
-			Some(proto::agent::policy_spec::ai::regex_rule::Kind::Builtin(b)) => {
-				match proto::agent::policy_spec::ai::BuiltinRegexRule::try_from(*b) {
+			Some(proto::agent::backend_policy_spec::ai::regex_rule::Kind::Builtin(b)) => {
+				match proto::agent::backend_policy_spec::ai::BuiltinRegexRule::try_from(*b) {
 					Ok(builtin) => {
 						let builtin = match builtin {
-							proto::agent::policy_spec::ai::BuiltinRegexRule::Ssn => {
+							proto::agent::backend_policy_spec::ai::BuiltinRegexRule::Ssn => {
 								crate::llm::policy::Builtin::Ssn
 							},
-							proto::agent::policy_spec::ai::BuiltinRegexRule::CreditCard => {
+							proto::agent::backend_policy_spec::ai::BuiltinRegexRule::CreditCard => {
 								crate::llm::policy::Builtin::CreditCard
 							},
-							proto::agent::policy_spec::ai::BuiltinRegexRule::PhoneNumber => {
+							proto::agent::backend_policy_spec::ai::BuiltinRegexRule::PhoneNumber => {
 								crate::llm::policy::Builtin::PhoneNumber
 							},
-							proto::agent::policy_spec::ai::BuiltinRegexRule::Email => {
+							proto::agent::backend_policy_spec::ai::BuiltinRegexRule::Email => {
 								crate::llm::policy::Builtin::Email
 							},
 							_ => {
@@ -1181,7 +1168,7 @@ fn convert_regex_rules(
 					},
 				}
 			},
-			Some(proto::agent::policy_spec::ai::regex_rule::Kind::Regex(n)) => {
+			Some(proto::agent::backend_policy_spec::ai::regex_rule::Kind::Regex(n)) => {
 				match regex::Regex::new(&n.pattern) {
 					Ok(pattern) => Some(crate::llm::policy::RegexRule::Regex {
 						pattern,
@@ -1251,12 +1238,12 @@ mod tests {
 	use serde_json::json;
 
 	use super::*;
-	use crate::types::proto::agent::policy_spec::Ai;
+	use crate::types::proto::agent::backend_policy_spec::Ai;
 
 	#[test]
 	fn test_policy_spec_to_csrf_policy() -> Result<(), ProtoError> {
 		// Test CSRF policy conversion with deduplication
-		let csrf_spec = crate::types::proto::agent::policy_spec::Csrf {
+		let csrf_spec = crate::types::proto::agent::traffic_policy_spec::Csrf {
 			additional_origins: vec![
 				"https://trusted.com".to_string(),
 				"https://app.example.com".to_string(),
@@ -1265,8 +1252,8 @@ mod tests {
 			],
 		};
 
-		let spec = proto::agent::PolicySpec {
-			kind: Some(proto::agent::policy_spec::Kind::Csrf(csrf_spec)),
+		let spec = proto::agent::TrafficPolicySpec {
+			kind: Some(proto::agent::traffic_policy_spec::Kind::Csrf(csrf_spec)),
 		};
 
 		let policy = Policy::try_from(&spec)?;
@@ -1344,8 +1331,8 @@ mod tests {
 
 	#[test]
 	fn test_policy_spec_to_ai_policy() -> Result<(), ProtoError> {
-		let spec = proto::agent::PolicySpec {
-			kind: Some(proto::agent::policy_spec::Kind::Ai(Ai {
+		let spec = proto::agent::BackendPolicySpec {
+			kind: Some(proto::agent::backend_policy_spec::Kind::Ai(Ai {
 				defaults: vec![
 					("temperature".to_string(), "0.7".to_string()),
 					("max_tokens".to_string(), "2000".to_string()),

@@ -62,7 +62,7 @@ message Route {
   repeated RouteFilter filters = 7;
   repeated RouteBackend backends = 8;
   TrafficPolicy traffic_policy = 9;
-  repeated PolicySpec inline_policies = 10;
+  repeated TrafficPolicySpec inline_policies = 10;
 }
 
 message TCPRoute {
@@ -218,13 +218,10 @@ message HeaderMatch {
 
 message RouteFilter {
   oneof kind {
-    HeaderModifier request_header_modifier = 1;
-    HeaderModifier response_header_modifier = 2;
-    RequestRedirect request_redirect = 3;
-    UrlRewrite url_rewrite = 4;
-    RequestMirror request_mirror = 5;
-    DirectResponse direct_response = 6;
-    CORS cors = 7;
+    RequestMirror request_mirror = 1;
+    RequestRedirect request_redirect = 2;
+    UrlRewrite url_rewrite = 3;
+    DirectResponse direct_response = 4;
   }
 }
 
@@ -304,33 +301,14 @@ message PolicyTarget {
     string sub_backend = 7;
   }
 }
-message PolicySpec {
-  message RemoteRateLimit {
-    string domain = 1;
-    repeated Descriptor descriptors = 2;
-    BackendReference target = 3;
 
-    enum Type { REQUESTS = 0; TOKENS = 1; }
-    message Descriptor {
-      repeated Entry entries = 1;
-      Type type = 2;
-    }
-    message Entry {
-      string key = 1;
-      string value = 2; // CEL expr
-    }
-  }
-  message LocalRateLimit {
-    enum Type {
-      REQUEST = 0;
-      TOKEN = 1;
-    }
-    uint64 max_tokens = 1;
-    uint64 tokens_per_fill = 2;
-    google.protobuf.Duration fill_interval = 3;
-    Type type = 4;
-  }
-  message Ai {
+message RBAC {
+  repeated string allow = 1;
+  repeated string deny = 2;
+}
+
+message BackendPolicySpec {
+    message Ai {
     message Message {
       string role = 1;
       string content = 2;
@@ -427,6 +405,70 @@ message PolicySpec {
     // Model aliases - map from alias name to actual model name
     map<string, string> model_aliases = 5;
   }
+    message A2a {
+  }
+  message InferenceRouting {
+    enum FailureMode {
+      UNKNOWN = 0;
+      FAIL_CLOSED = 1;
+      FAIL_OPEN = 2;
+    }
+    BackendReference endpoint_picker = 1;
+    FailureMode failure_mode = 2;
+  }
+    message BackendTLS {
+    google.protobuf.BytesValue cert = 1;
+    google.protobuf.BytesValue key = 2;
+    // Root to verify. If not set, system certs will be used.
+    // If no verification is desired, use 'insecure'
+    google.protobuf.BytesValue root = 3;
+    // Disable all verification
+    google.protobuf.BoolValue insecure = 4;
+    // If set, override the SNI explicitly. Otherwise, it is auto-derived.
+    google.protobuf.StringValue hostname = 5;
+  }
+
+    oneof kind {
+    A2a a2a = 1;
+    InferenceRouting inference_routing = 2;
+    BackendTLS backend_tls = 3;
+    BackendAuthPolicy auth = 4;
+    RBAC mcp_authorization = 5;
+    Ai ai = 6;
+  }
+}
+
+message FrontendPolicySpec {
+  // TODO: support tracing, access logging, etc. here 
+}
+
+message TrafficPolicySpec {
+  message RemoteRateLimit {
+    string domain = 1;
+    repeated Descriptor descriptors = 2;
+    BackendReference target = 3;
+
+    enum Type { REQUESTS = 0; TOKENS = 1; }
+    message Descriptor {
+      repeated Entry entries = 1;
+      Type type = 2;
+    }
+    message Entry {
+      string key = 1;
+      string value = 2; // CEL expr
+    }
+  }
+  message LocalRateLimit {
+    enum Type {
+      REQUEST = 0;
+      TOKEN = 1;
+    }
+    uint64 max_tokens = 1;
+    uint64 tokens_per_fill = 2;
+    google.protobuf.Duration fill_interval = 3;
+    Type type = 4;
+  }
+
   message ExternalAuth {
     enum FailureMode {
       DENY = 0;
@@ -445,32 +487,6 @@ message PolicySpec {
     BodyOptions include_request_body = 5;
     google.protobuf.Duration timeout = 6;
     google.protobuf.UInt32Value status_on_error = 7;
-  }
-  message A2a {
-  }
-  message InferenceRouting {
-    enum FailureMode {
-      UNKNOWN = 0;
-      FAIL_CLOSED = 1;
-      FAIL_OPEN = 2;
-    }
-    BackendReference endpoint_picker = 1;
-    FailureMode failure_mode = 2;
-  }
-  message BackendTLS {
-    google.protobuf.BytesValue cert = 1;
-    google.protobuf.BytesValue key = 2;
-    // Root to verify. If not set, system certs will be used.
-    // If no verification is desired, use 'insecure'
-    google.protobuf.BytesValue root = 3;
-    // Disable all verification
-    google.protobuf.BoolValue insecure = 4;
-    // If set, override the SNI explicitly. Otherwise, it is auto-derived.
-    google.protobuf.StringValue hostname = 5;
-  }
-  message RBAC {
-    repeated string allow = 1;
-    repeated string deny = 2;
   }
 
   // JWT authentication configuration
@@ -541,18 +557,15 @@ message PolicySpec {
   oneof kind {
     LocalRateLimit local_rate_limit = 1;
     ExternalAuth ext_authz = 2;
-    A2a a2a = 3;
-    InferenceRouting inference_routing = 4;
-    BackendTLS backend_tls = 5;
-    BackendAuthPolicy auth = 6;
-    RBAC authorization = 7;
-    RBAC mcp_authorization = 8;
-    Ai ai = 9;
-    JWT jwt = 10;
-    TransformationPolicy transformation = 11;
-    RemoteRateLimit remote_rate_limit = 12;
-    CSRF csrf = 13;
-    ExtProc ext_proc = 14;
+    RBAC mcp_authorization = 3;
+    JWT jwt = 4;
+    TransformationPolicy transformation = 5;
+    RemoteRateLimit remote_rate_limit = 6;
+    CSRF csrf = 7;
+    ExtProc ext_proc = 8;
+    HeaderModifier request_header_modifier = 9;
+    HeaderModifier response_header_modifier = 10;
+    CORS cors = 11;
   }
 }
 
@@ -560,7 +573,11 @@ message Policy {
   // Format is "<ns>/<name>"
   string name = 1;
   PolicyTarget target = 2;
-  PolicySpec spec = 3;
+  oneof kind {
+    TrafficPolicySpec traffic = 3;
+    BackendPolicySpec backend = 4;
+    FrontendPolicySpec frontend = 5;
+  }
 }
 message Backend {
   // Format is "<ns>/<name>"
