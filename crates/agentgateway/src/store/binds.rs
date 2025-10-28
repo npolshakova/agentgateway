@@ -394,7 +394,7 @@ impl Store {
 				GatewayTrafficPolicy::Transformation(p) => {
 					pol.transformation.get_or_insert_with(|| p.clone());
 				},
-				GatewayPolicy::Logging(p) => {
+				GatewayTrafficPolicy::Logging(p) => {
 					pol.logging.get_or_insert_with(|| p.clone());
 				},
 			}

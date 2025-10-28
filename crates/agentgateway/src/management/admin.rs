@@ -238,14 +238,14 @@ async fn handle_server_shutdown(
 	}
 }
 
-#[cfg(all(tokio_unstable, target_os = "linux"))]
+#[cfg(target_os = "linux")]
 #[derive(serde::Serialize)]
 struct TaskDump {
-    admin: Vec<String>,
-    workload: Vec<String>,
+	admin: Vec<String>,
+	workload: Vec<String>,
 }
 
-#[cfg(all(tokio_unstable, target_os = "linux"))]
+#[cfg(target_os = "linux")]
 async fn handle_tokio_tasks(
 	_req: Request<Incoming>,
 	dataplane_handle: &Handle,
@@ -289,7 +289,7 @@ async fn handle_tokio_tasks(
 	)
 }
 
-#[cfg(not(all(tokio_unstable, target_os = "linux")))]
+#[cfg(not(target_os = "linux"))]
 async fn handle_tokio_tasks(
 	_req: Request<Incoming>,
 	_dataplane_handle: &Handle,

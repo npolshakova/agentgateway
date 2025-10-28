@@ -960,57 +960,80 @@ impl TryFrom<&proto::agent::TrafficPolicySpec> for TrafficPolicy {
 						.iter()
 						.map(|h| (strng::new(&h.name), strng::new(&h.value)))
 						.collect(),
-				}))
-			},
-			/* TODO: add gateway/frontend policies over xds
-			Some(proto::agent::policy_spec::Kind::Logging(lp)) => {
-				let fields_add: std::collections::HashMap<String, String> = lp
-					.fields
-					.as_ref()
-					.map(|f| f.add.clone())
-					.unwrap_or_default();
-				let fields_remove: Vec<String> = lp
-					.fields
-					.as_ref()
-					.map(|f| f.remove.clone())
-					.unwrap_or_default();
-				GatewayPolicy::Logging(LoggingPolicy {
-					filter: lp.filter.clone(),
-					fields_add,
-					fields_remove,
+					set: rhm
+						.set
+						.iter()
+						.map(|h| (strng::new(&h.name), strng::new(&h.value)))
+						.collect(),
+					remove: rhm.remove.iter().map(strng::new).collect(),
 				})
 			},
-			 */
-			_ => return Err(ProtoError::EnumParse("unknown spec kind".to_string())),
+			Some(tps::Kind::RequestRedirect(rr)) => {
+				TrafficPolicy::RequestRedirect(http::filters::RequestRedirect {
+					scheme: default_as_none(rr.scheme.as_str())
+						.map(Scheme::try_from)
+						.transpose()?,
+					authority: match (default_as_none(rr.host.as_str()), default_as_none(rr.port)) {
+						(Some(h), Some(p)) => Some(HostRedirect::Full(strng::format!("{h}:{p}"))),
+						(_, Some(p)) => Some(HostRedirect::Port(NonZeroU16::new(p as u16).unwrap())),
+						(Some(h), _) => Some(HostRedirect::Host(strng::new(h))),
+						(None, None) => None,
+					},
+					path: match &rr.path {
+						Some(proto::agent::request_redirect::Path::Full(f)) => {
+							Some(PathRedirect::Full(strng::new(f)))
+						},
+						Some(proto::agent::request_redirect::Path::Prefix(f)) => {
+							Some(PathRedirect::Prefix(strng::new(f)))
+						},
+						None => None,
+					},
+					status: default_as_none(rr.status)
+						.map(|i| StatusCode::from_u16(i as u16))
+						.transpose()?,
+				})
+			},
+			Some(tps::Kind::UrlRewrite(ur)) => {
+				let authority = if ur.host.is_empty() {
+					None
+				} else {
+					Some(HostRedirect::Host(strng::new(&ur.host)))
+				};
+				let path = match &ur.path {
+					Some(proto::agent::url_rewrite::Path::Full(f)) => Some(PathRedirect::Full(strng::new(f))),
+					Some(proto::agent::url_rewrite::Path::Prefix(p)) => {
+						Some(PathRedirect::Prefix(strng::new(p)))
+					},
+					None => None,
+				};
+				TrafficPolicy::UrlRewrite(http::filters::UrlRewrite { authority, path })
+			},
+			Some(tps::Kind::RequestMirror(m)) => {
+				let backend = resolve_simple_reference(m.backend.as_ref())?;
+				TrafficPolicy::RequestMirror(vec![http::filters::RequestMirror {
+					backend,
+					percentage: m.percentage / 100.0,
+				}])
+			},
+			Some(tps::Kind::DirectResponse(dr)) => {
+				TrafficPolicy::DirectResponse(http::filters::DirectResponse {
+					body: bytes::Bytes::copy_from_slice(&dr.body),
+					status: StatusCode::from_u16(dr.status as u16)?,
+				})
+			},
+			Some(tps::Kind::Cors(c)) => TrafficPolicy::CORS(
+				http::cors::Cors::try_from(http::cors::CorsSerde {
+					allow_credentials: c.allow_credentials,
+					allow_headers: c.allow_headers.clone(),
+					allow_methods: c.allow_methods.clone(),
+					allow_origins: c.allow_origins.clone(),
+					expose_headers: c.expose_headers.clone(),
+					max_age: c.max_age.as_ref().map(|d| (*d).try_into()).transpose()?,
+				})
+				.map_err(|e| ProtoError::Generic(e.to_string()))?,
+			),
+			None => return Err(ProtoError::MissingRequiredField),
 		})
-	}
-}
-*/
-
-impl TryFrom<&proto::agent::Policy> for TargetedPolicy {
-	type Error = ProtoError;
-
-	fn try_from(s: &proto::agent::Policy) -> Result<Self, Self::Error> {
-		todo!();
-		// let name = PolicyName::from(&s.name);
-		// let target = s.target.as_ref().ok_or(ProtoError::MissingRequiredField)?;
-		// let spec = s.spec.as_ref().ok_or(ProtoError::MissingRequiredField)?;
-		// let target = match &target.kind {
-		// 	Some(proto::agent::policy_target::Kind::Gateway(v)) => PolicyTarget::Gateway(v.into()),
-		// 	Some(proto::agent::policy_target::Kind::Listener(v)) => PolicyTarget::Listener(v.into()),
-		// 	Some(proto::agent::policy_target::Kind::Route(v)) => PolicyTarget::Route(v.into()),
-		// 	Some(proto::agent::policy_target::Kind::RouteRule(v)) => PolicyTarget::RouteRule(v.into()),
-		// 	Some(proto::agent::policy_target::Kind::Service(v)) => PolicyTarget::Service(v.into()),
-		// 	Some(proto::agent::policy_target::Kind::Backend(v)) => PolicyTarget::Backend(v.into()),
-		// 	Some(proto::agent::policy_target::Kind::SubBackend(v)) => PolicyTarget::SubBackend(v.into()),
-		// 	_ => return Err(ProtoError::EnumParse("unknown target kind".to_string())),
-		// };
-		// let policy = spec.try_into()?;
-		// Ok(TargetedPolicy {
-		// 	name,
-		// 	target,
-		// 	policy,
-		// })
 	}
 }
 
