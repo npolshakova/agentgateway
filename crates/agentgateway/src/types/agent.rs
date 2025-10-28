@@ -1107,6 +1107,11 @@ pub enum BackendPolicy {
 	BackendAuth(BackendAuth),
 	InferenceRouting(ext_proc::InferenceRouting),
 	AI(Arc<llm::Policy>),
+
+	RequestHeaderModifier(filters::HeaderModifier),
+	ResponseHeaderModifier(filters::HeaderModifier),
+	RequestRedirect(filters::RequestRedirect),
+	RequestMirror(Vec<filters::RequestMirror>),
 }
 
 #[apply(schema!)]

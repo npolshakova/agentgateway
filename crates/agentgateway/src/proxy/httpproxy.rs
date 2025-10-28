@@ -527,17 +527,18 @@ impl HTTPProxy {
 		let selected_backend =
 			select_backend(selected_route.as_ref(), &req).ok_or(ProxyError::NoValidBackends)?;
 		let selected_backend = resolve_backend(selected_backend, self.inputs.as_ref())?;
-		// Set backend info as soon as we have resolved to add the metric labels
+		let backend_policies = get_backend_policies(self.inputs.as_ref(), &selected_backend.backend);
 		log.backend_info = Some(selected_backend.backend.backend_info());
 		if let Some(bp) = selected_backend.backend.backend_protocol() {
 			log.backend_protocol = Some(bp)
 		}
 
-		let mirrors = route_policies.request_mirror.as_slice();
-		// TODO
-		// mirrors.extend(get_mirrors(selected_backend.filters.as_slice()));
 		let (head, body) = req.into_parts();
-		for mirror in mirrors {
+		for mirror in route_policies
+			.request_mirror
+			.iter()
+			.chain(backend_policies.request_mirror.iter())
+		{
 			if !rand::rng().random_bool(mirror.percentage) {
 				trace!(
 					"skipping mirror, percentage {} not triggered",
@@ -584,6 +585,7 @@ impl HTTPProxy {
 						&mut req_upgrade,
 						late_route_policies,
 						&selected_backend,
+						backend_policies,
 						response_policies,
 						req,
 					)
@@ -620,6 +622,7 @@ impl HTTPProxy {
 					&mut req_upgrade,
 					late_route_policies.clone(),
 					&selected_backend,
+					backend_policies.clone(),
 					response_policies,
 					req,
 				)
@@ -647,6 +650,7 @@ impl HTTPProxy {
 		req_upgrade: &mut Option<RequestUpgrade>,
 		route_policies: Arc<store::LLMRequestPolicies>,
 		selected_backend: &RouteBackend,
+		backend_policies: BackendPolicies,
 		response_policies: &mut ResponsePolicies,
 		req: Request,
 	) -> Result<Response, ProxyResponse> {
@@ -654,7 +658,7 @@ impl HTTPProxy {
 			self.inputs.clone(),
 			route_policies.clone(),
 			&selected_backend.backend,
-			None,
+			Some(backend_policies),
 			req,
 			Some(log),
 			&mut response_policies.response_headers,
@@ -787,6 +791,20 @@ pub async fn build_transport(
 	)
 }
 
+fn get_backend_policies(inputs: &ProxyInputs, backend: &Backend) -> BackendPolicies {
+	let service = match backend {
+		Backend::Service(svc, _) => Some(strng::format!("{}/{}", svc.namespace, svc.hostname)),
+		_ => None,
+	};
+	let policies = {
+		inputs
+			.stores
+			.read_binds()
+			.backend_policies(backend.name(), service, None)
+	};
+	policies
+}
+
 async fn make_backend_call(
 	inputs: Arc<ProxyInputs>,
 	route_policies: Arc<store::LLMRequestPolicies>,
@@ -799,22 +817,6 @@ async fn make_backend_call(
 	let client = inputs.upstream.clone();
 	let policy_client = PolicyClient {
 		inputs: inputs.clone(),
-	};
-
-	let mut ai_provider = None;
-	let (service, sub_backend) = match backend {
-		Backend::Service(svc, _) => (
-			Some(strng::format!("{}/{}", svc.namespace, svc.hostname)),
-			None,
-		),
-		Backend::AI(n, ai) => {
-			let (provider, handle) = ai.select_provider().ok_or(ProxyError::NoHealthyEndpoints)?;
-			log.add(move |l| l.request_handle = Some(handle));
-			let k = strng::format!("{}/{}", n, provider.name);
-			ai_provider = Some(provider);
-			(None, Some(k))
-		},
-		_ => (None, None),
 	};
 
 	// The MCP backend aggregates multiple backends into a single backend.
@@ -870,13 +872,9 @@ async fn make_backend_call(
 				Some(target) => (
 					target.clone(),
 					Some(BackendPolicies {
-						backend_tls: None,
-						backend_auth: None,
-						a2a: None,
-						inference_routing: None,
-						llm: None,
 						// Attach LLM provider, but don't use default setup
 						llm_provider: Some(provider.clone()),
+						..Default::default()
 					}),
 				),
 				None => {

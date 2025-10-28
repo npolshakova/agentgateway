@@ -59,6 +59,11 @@ pub struct BackendPolicies {
 	pub llm_provider: Option<Arc<llm::NamedAIProvider>>,
 	pub llm: Option<Arc<llm::Policy>>,
 	pub inference_routing: Option<InferenceRouting>,
+
+	pub request_header_modifier: Option<filters::HeaderModifier>,
+	pub response_header_modifier: Option<filters::HeaderModifier>,
+	pub request_redirect: Option<filters::RequestRedirect>,
+	pub request_mirror: Vec<filters::RequestMirror>,
 }
 
 impl BackendPolicies {
@@ -71,6 +76,18 @@ impl BackendPolicies {
 			llm_provider: other.llm_provider.or(self.llm_provider),
 			llm: other.llm.or(self.llm),
 			inference_routing: other.inference_routing.or(self.inference_routing),
+			request_header_modifier: other
+				.request_header_modifier
+				.or(self.request_header_modifier),
+			response_header_modifier: other
+				.response_header_modifier
+				.or(self.response_header_modifier),
+			request_redirect: other.request_redirect.or(self.request_redirect),
+			request_mirror: if other.request_mirror.is_empty() {
+				self.request_mirror
+			} else {
+				other.request_mirror
+			},
 		}
 	}
 	/// build the inference routing configuration. This may be a NO-OP config.
@@ -408,15 +425,7 @@ impl Store {
 			.filter_map(|n| self.policies_by_name.get(n))
 			.filter_map(|p| p.policy.as_backend());
 
-		let mut pol = BackendPolicies {
-			backend_tls: None,
-			backend_auth: None,
-			a2a: None,
-			inference_routing: None,
-			// These are not attached policies but are represented in this struct for code organization
-			llm_provider: None,
-			llm: None,
-		};
+		let mut pol = BackendPolicies::default();
 		for rule in rules {
 			match &rule {
 				BackendPolicy::A2a(p) => {
@@ -434,6 +443,24 @@ impl Store {
 				BackendPolicy::AI(p) => {
 					pol.llm.get_or_insert_with(|| p.clone());
 				},
+
+				BackendPolicy::RequestHeaderModifier(p) => {
+					pol.request_header_modifier.get_or_insert_with(|| p.clone());
+				},
+				BackendPolicy::ResponseHeaderModifier(p) => {
+					pol
+						.response_header_modifier
+						.get_or_insert_with(|| p.clone());
+				},
+				BackendPolicy::RequestRedirect(p) => {
+					pol.request_redirect.get_or_insert_with(|| p.clone());
+				},
+				BackendPolicy::RequestMirror(p) => {
+					if pol.request_mirror.is_empty() {
+						pol.request_mirror = p.clone();
+					}
+				},
+
 				// TODO??
 				BackendPolicy::McpAuthorization(_) => {},
 				BackendPolicy::McpAuthentication(_) => {},
