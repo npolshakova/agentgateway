@@ -1,25 +1,18 @@
-use std::collections::HashSet;
 use std::net::{IpAddr, SocketAddr};
-use std::num::NonZeroU16;
 use std::sync::Arc;
 
-use proto::agent::policy_spec::remote_rate_limit::Type as RlType;
 use rustls::ServerConfig;
 
 use super::agent::*;
-use crate::http::auth::{AwsAuth, BackendAuth, SimpleBackendAuth};
+use crate::http::auth::{AwsAuth, BackendAuth};
+use crate::http::authorization;
 use crate::http::transformation_cel::{LocalTransform, LocalTransformationConfig, Transformation};
-use crate::http::{
-	StatusCode, authorization, backendtls, csrf, ext_proc, filters, localratelimit, uri,
-};
 use crate::llm::{AIBackend, AIProvider, NamedAIProvider};
 use crate::mcp::McpAuthorization;
 use crate::types::discovery::NamespacedHostname;
 use crate::types::proto;
 use crate::types::proto::ProtoError;
 use crate::types::proto::agent::mcp_target::Protocol;
-use crate::types::proto::agent::policy_spec::inference_routing::FailureMode;
-use crate::types::proto::agent::policy_spec::local_rate_limit::Type;
 use crate::*;
 
 impl TryFrom<&proto::agent::TlsConfig> for TLSConfig {

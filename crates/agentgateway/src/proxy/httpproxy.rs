@@ -135,14 +135,23 @@ async fn apply_request_policies(
 		rhm.apply(req.headers_mut()).map_err(ProxyError::from)?;
 	}
 	if let Some(r) = &policies.url_rewrite {
-		r.apply(req, path_match)
-			.map_err(ProxyError::from)
-			.map_err(ProxyError::from)?;
+		r.apply(req, path_match).map_err(ProxyError::from)?;
 	}
-	// TODO!!
-	if let Some(c) = &policies.cors {}
-	if let Some(rr) = &policies.request_redirect {}
-	if let Some(dr) = &policies.direct_response {}
+	if let Some(c) = &policies.cors {
+		c.apply(req)
+			.map_err(ProxyError::from)?
+			.apply(response_policies.headers())?;
+	}
+	if let Some(rr) = &policies.request_redirect {
+		rr.apply(req, path_match)
+			.map_err(ProxyError::from)?
+			.apply(response_policies.headers())?;
+	}
+	if let Some(dr) = &policies.direct_response {
+		PolicyResponse::default()
+			.with_response(dr.apply().map_err(ProxyError::from)?)
+			.apply(response_policies.headers())?;
+	}
 
 	// Mirror, timeout, and retry are handled separately.
 
@@ -524,7 +533,7 @@ impl HTTPProxy {
 			log.backend_protocol = Some(bp)
 		}
 
-		let mut mirrors = route_policies.request_mirror.as_slice();
+		let mirrors = route_policies.request_mirror.as_slice();
 		// TODO
 		// mirrors.extend(get_mirrors(selected_backend.filters.as_slice()));
 		let (head, body) = req.into_parts();
@@ -575,7 +584,6 @@ impl HTTPProxy {
 						&mut req_upgrade,
 						late_route_policies,
 						&selected_backend,
-						&selected_route,
 						response_policies,
 						req,
 					)
@@ -612,7 +620,6 @@ impl HTTPProxy {
 					&mut req_upgrade,
 					late_route_policies.clone(),
 					&selected_backend,
-					&selected_route,
 					response_policies,
 					req,
 				)
@@ -640,7 +647,6 @@ impl HTTPProxy {
 		req_upgrade: &mut Option<RequestUpgrade>,
 		route_policies: Arc<store::LLMRequestPolicies>,
 		selected_backend: &RouteBackend,
-		selected_route: &Route,
 		response_policies: &mut ResponsePolicies,
 		req: Request,
 	) -> Result<Response, ProxyResponse> {
@@ -1344,10 +1350,10 @@ impl ResponsePolicies {
 		let exec = std::cell::LazyCell::new(|| log.cel.ctx().build());
 		let cel_err = |_| ProxyError::ProcessingString("failed to build cel context".to_string());
 
-		if let Some(rhm) = self.route_response_header {
+		if let Some(rhm) = &self.route_response_header {
 			rhm.apply(resp.headers_mut()).map_err(ProxyError::from)?;
 		}
-		if let Some(rhm) = self.backend_response_header {
+		if let Some(rhm) = &self.backend_response_header {
 			rhm.apply(resp.headers_mut()).map_err(ProxyError::from)?;
 		}
 		if let Some(j) = &self.transformation {

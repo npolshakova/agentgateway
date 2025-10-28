@@ -19,7 +19,15 @@ use crate::http::{filters, retry, timeout};
 use crate::llm::{AIBackend, AIProvider, NamedAIProvider, RouteType};
 use crate::mcp::McpAuthorization;
 use crate::store::LocalWorkload;
-use crate::types::agent::{A2aPolicy, Authorization, Backend, BackendName, BackendPolicy, BackendReference, Bind, BindName, GatewayName, GatewayTargetedPolicy, Listener, ListenerKey, ListenerProtocol, ListenerSet, McpAuthentication, McpBackend, McpTarget, McpTargetName, McpTargetSpec, OpenAPITarget, PathMatch, PolicyName, PolicyTarget, PolicyType, Route, RouteBackendReference, RouteMatch, RouteName, RouteRuleName, RouteSet, SimpleBackendReference, SseTargetSpec, StreamableHTTPTargetSpec, TCPRoute, TCPRouteBackendReference, TCPRouteSet, TLSConfig, Target, TargetedPolicy, TrafficPolicy};
+use crate::types::agent::{
+	A2aPolicy, Authorization, Backend, BackendName, BackendPolicy, BackendReference, Bind, BindName,
+	GatewayName, GatewayTargetedPolicy, Listener, ListenerKey, ListenerProtocol, ListenerSet,
+	McpAuthentication, McpBackend, McpTarget, McpTargetName, McpTargetSpec, OpenAPITarget, PathMatch,
+	PolicyName, PolicyTarget, PolicyType, Route, RouteBackendReference, RouteMatch, RouteName,
+	RouteRuleName, RouteSet, SimpleBackendReference, SseTargetSpec, StreamableHTTPTargetSpec,
+	TCPRoute, TCPRouteBackendReference, TCPRouteSet, TLSConfig, Target, TargetedPolicy,
+	TrafficPolicy,
+};
 use crate::types::discovery::{NamespacedHostname, Service};
 use crate::*;
 
@@ -714,9 +722,8 @@ async fn convert(client: client::Client, i: LocalConfig) -> anyhow::Result<Norma
 		let tp = res
 			.route_policies
 			.first()
-			.map(PolicyType::from)
-			.unwrap_or_else(|| res.backend_policies.first().unwrap().into())
-			.clone();
+			.map(|r| PolicyType::from(r.clone()))
+			.unwrap_or_else(|| res.backend_policies.first().unwrap().clone().into());
 		let tgt_policy = TargetedPolicy {
 			name: p.name,
 			target: p.target,

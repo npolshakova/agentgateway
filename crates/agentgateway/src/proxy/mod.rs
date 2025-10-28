@@ -142,8 +142,6 @@ pub enum ProxyError {
 	UpstreamTCPProxy(agent_core::copy::CopyError),
 	#[error("request timeout")]
 	RequestTimeout,
-	#[error("request filter: {0}")]
-	Filter(http::filters::Error),
 	#[error("processing failed: {0}")]
 	Processing(anyhow::Error),
 	#[error("ext_proc failed: {0}")]
