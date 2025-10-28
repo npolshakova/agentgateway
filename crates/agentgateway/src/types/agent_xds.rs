@@ -1034,6 +1034,7 @@ impl TryFrom<&proto::agent::PolicySpec> for Policy {
 						.collect(),
 				}))
 			},
+			/* TODO: add gateway/frontend policies over xds
 			Some(proto::agent::policy_spec::Kind::Logging(lp)) => {
 				let fields_add: std::collections::HashMap<String, String> = lp
 					.fields
@@ -1045,12 +1046,13 @@ impl TryFrom<&proto::agent::PolicySpec> for Policy {
 					.as_ref()
 					.map(|f| f.remove.clone())
 					.unwrap_or_default();
-				Policy::Logging(LoggingPolicy {
+				GatewayPolicy::Logging(LoggingPolicy {
 					filter: lp.filter.clone(),
 					fields_add,
 					fields_remove,
 				})
 			},
+			 */
 			_ => return Err(ProtoError::EnumParse("unknown spec kind".to_string())),
 		})
 	}

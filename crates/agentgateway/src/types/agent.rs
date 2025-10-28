@@ -1044,6 +1044,7 @@ pub enum GatewayPolicy {
 	ExtAuthz(ext_authz::ExtAuthz),
 	Transformation(crate::http::transformation_cel::Transformation),
 	ExtProc(ext_proc::ExtProc),
+	Logging(LoggingPolicy),
 }
 
 impl TryFrom<Policy> for GatewayPolicy {
@@ -1093,8 +1094,6 @@ pub enum Policy {
 	Transformation(crate::http::transformation_cel::Transformation),
 	// Supported targets: Gateway < Route < RouteRule; single policy allowed
 	Csrf(crate::http::csrf::Csrf),
-	// Supported targets: Gateway < Route < RouteRule; single policy allowed
-	Logging(LoggingPolicy),
 }
 
 #[apply(schema!)]

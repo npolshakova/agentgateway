@@ -293,11 +293,6 @@ impl ContextBuilder {
 		}
 	}
 
-	/// Set the preferred log format for this request (json or text)
-	pub fn set_log_format(&mut self, fmt: crate::LoggingFormat) {
-		self.log_format = Some(fmt);
-	}
-
 	pub fn needs_llm_completion(&self) -> bool {
 		self.attributes.contains(LLM_COMPLETION_ATTRIBUTE)
 	}

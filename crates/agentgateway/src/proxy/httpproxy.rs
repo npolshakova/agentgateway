@@ -522,11 +522,6 @@ impl HTTPProxy {
 				&selected_route.inline_policies,
 			)
 		};
-
-		// If a per-target logging policy is present, merge it into the logger now.
-		if let Some(lp) = &route_policies.logging {
-			apply_logging_policy_to_log(log, lp);
-		}
 		// Register all expressions
 		route_policies.register_cel_expressions(log.cel.ctx());
 
