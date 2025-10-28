@@ -78,13 +78,6 @@ message TCPRoute {
   repeated RouteBackend backends = 6;
 }
 
-// Deprecated: Use TrafficPolicySpec
-message TrafficPolicy {
-  google.protobuf.Duration backend_request_timeout = 1;
-  google.protobuf.Duration request_timeout = 2;
-  Retry retry = 3;
-}
-
 message Retry {
   repeated int32 retry_status_codes = 1;
   int32 attempts = 2;
@@ -215,18 +208,6 @@ message HeaderMatch {
   oneof value {
     string exact = 2;
     string regex = 3;
-  }
-}
-
-message RouteFilter {
-  oneof kind {
-    HeaderModifier request_header_modifier = 1;
-    HeaderModifier response_header_modifier = 2;
-    RequestRedirect request_redirect = 3;
-    UrlRewrite url_rewrite = 4;
-    RequestMirror request_mirror = 5;
-    DirectResponse direct_response = 6;
-    CORS cors = 7;
   }
 }
 

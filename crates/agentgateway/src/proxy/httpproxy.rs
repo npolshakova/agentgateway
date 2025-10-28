@@ -139,7 +139,7 @@ async fn apply_request_policies(
 	}
 	// TODO!!
 	if let Some(c) = &policies.cors {
-		let res=  c.apply(req).map_err(ProxyError::from)?;
+		let res = c.apply(req).map_err(ProxyError::from)?;
 		res.apply(response_policies.headers())?;
 	}
 	if let Some(rr) = &policies.request_redirect {}
