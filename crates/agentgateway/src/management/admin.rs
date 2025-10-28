@@ -238,12 +238,6 @@ async fn handle_server_shutdown(
 	}
 }
 
-#[derive(serde::Serialize)]
-struct TaskDump {
-	admin: Vec<String>,
-	workload: Vec<String>,
-}
-
 #[cfg(target_os = "linux")]
 async fn handle_tokio_tasks(
 	_req: Request<Incoming>,
@@ -291,7 +285,7 @@ async fn handle_tokio_tasks(
 #[cfg(not(target_os = "linux"))]
 async fn handle_tokio_tasks(
 	_req: Request<Incoming>,
-	dataplane_handle: &Handle,
+	_dataplane_handle: &Handle,
 ) -> anyhow::Result<Response> {
 	Ok(
 		::http::Response::builder()

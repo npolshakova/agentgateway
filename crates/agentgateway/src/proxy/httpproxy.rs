@@ -137,13 +137,21 @@ async fn apply_request_policies(
 	if let Some(r) = &policies.url_rewrite {
 		r.apply(req, path_match).map_err(ProxyError::from)?;
 	}
-	// TODO!!
 	if let Some(c) = &policies.cors {
-		let res = c.apply(req).map_err(ProxyError::from)?;
-		res.apply(response_policies.headers())?;
+		c.apply(req)
+			.map_err(ProxyError::from)?
+			.apply(response_policies.headers())?;
 	}
-	if let Some(rr) = &policies.request_redirect {}
-	if let Some(dr) = &policies.direct_response {}
+	if let Some(rr) = &policies.request_redirect {
+		rr.apply(req, path_match)
+			.map_err(ProxyError::from)?
+			.apply(response_policies.headers())?;
+	}
+	if let Some(dr) = &policies.direct_response {
+		PolicyResponse::default()
+			.with_response(dr.apply().map_err(ProxyError::from)?)
+			.apply(response_policies.headers())?;
+	}
 
 	// Mirror, timeout, and retry are handled separately.
 
@@ -525,9 +533,6 @@ impl HTTPProxy {
 			log.backend_protocol = Some(bp)
 		}
 
-		let mirrors = route_policies.request_mirror.as_slice();
-		// TODO
-		// mirrors.extend(get_mirrors(selected_backend.filters.as_slice()));
 		let (head, body) = req.into_parts();
 		for mirror in route_policies
 			.request_mirror
@@ -1357,10 +1362,8 @@ impl ResponsePolicies {
 		let cel_err = |_| ProxyError::ProcessingString("failed to build cel context".to_string());
 
 		if let Some(rhm) = &self.route_response_header {
-		if let Some(rhm) = &self.route_response_header {
 			rhm.apply(resp.headers_mut()).map_err(ProxyError::from)?;
 		}
-		if let Some(rhm) = &self.backend_response_header {
 		if let Some(rhm) = &self.backend_response_header {
 			rhm.apply(resp.headers_mut()).map_err(ProxyError::from)?;
 		}

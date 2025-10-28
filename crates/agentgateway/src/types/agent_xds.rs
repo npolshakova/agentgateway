@@ -110,124 +110,6 @@ impl TryFrom<&proto::agent::backend_policy_spec::McpAuthentication> for McpAuthe
 	}
 }
 
-fn convert_backend_ai_message(
-	m: &proto::agent::backend_policy_spec::ai::Message,
-) -> crate::llm::SimpleChatCompletionMessage {
-	llm::SimpleChatCompletionMessage {
-		role: strng::new(&m.role),
-		content: strng::new(&m.content),
-	}
-}
-
-fn convert_backend_ai_prompt_enrichment(
-	prompts: &proto::agent::backend_policy_spec::ai::PromptEnrichment,
-) -> crate::llm::policy::PromptEnrichment {
-	crate::llm::policy::PromptEnrichment {
-		append: prompts
-			.append
-			.iter()
-			.map(convert_backend_ai_message)
-			.collect(),
-		prepend: prompts
-			.prepend
-			.iter()
-			.map(convert_backend_ai_message)
-			.collect(),
-	}
-}
-
-fn convert_backend_ai_webhook(
-	w: &proto::agent::backend_policy_spec::ai::Webhook,
-) -> Option<crate::llm::policy::Webhook> {
-	let port = match u16::try_from(w.port) {
-		Ok(port) => port,
-		Err(_) => {
-			warn!(port = w.port, host = %w.host, "Webhook port out of range, ignoring webhook");
-			return None;
-		},
-	};
-
-	let forward_header_matches = match convert_header_match(&w.forward_header_matches) {
-		Ok(h) => h,
-		Err(e) => {
-			warn!(error = %e, "Invalid webhook header matchers, ignoring webhook");
-			return None;
-		},
-	};
-
-	Some(crate::llm::policy::Webhook {
-		target: Target::Hostname(w.host.clone().into(), port),
-		forward_header_matches,
-	})
-}
-
-fn convert_backend_ai_regex_rules(
-	rr: &proto::agent::backend_policy_spec::ai::RegexRules,
-	rejection: Option<crate::llm::policy::RequestRejection>,
-) -> crate::llm::policy::RegexRules {
-	let action = match rr
-		.action
-		.as_ref()
-		.and_then(|a| proto::agent::backend_policy_spec::ai::ActionKind::try_from(a.kind).ok())
-	{
-		Some(proto::agent::backend_policy_spec::ai::ActionKind::Reject) => {
-			crate::llm::policy::Action::Reject {
-				response: rejection.unwrap_or_default(),
-			}
-		},
-		_ => crate::llm::policy::Action::Mask,
-	};
-	let rules = rr
-		.rules
-		.iter()
-		.filter_map(|r| match &r.kind {
-			Some(proto::agent::backend_policy_spec::ai::regex_rule::Kind::Builtin(b)) => {
-				match proto::agent::backend_policy_spec::ai::BuiltinRegexRule::try_from(*b) {
-					Ok(builtin) => {
-						let builtin = match builtin {
-							proto::agent::backend_policy_spec::ai::BuiltinRegexRule::Ssn => {
-								crate::llm::policy::Builtin::Ssn
-							},
-							proto::agent::backend_policy_spec::ai::BuiltinRegexRule::CreditCard => {
-								crate::llm::policy::Builtin::CreditCard
-							},
-							proto::agent::backend_policy_spec::ai::BuiltinRegexRule::PhoneNumber => {
-								crate::llm::policy::Builtin::PhoneNumber
-							},
-							proto::agent::backend_policy_spec::ai::BuiltinRegexRule::Email => {
-								crate::llm::policy::Builtin::Email
-							},
-							_ => {
-								warn!(value = *b, "Unknown builtin regex rule, skipping");
-								return None;
-							},
-						};
-						Some(crate::llm::policy::RegexRule::Builtin { builtin })
-					},
-					Err(_) => {
-						warn!(value = *b, "Invalid builtin regex rule value, skipping");
-						None
-					},
-				}
-			},
-			Some(proto::agent::backend_policy_spec::ai::regex_rule::Kind::Regex(n)) => {
-				match regex::Regex::new(&n.pattern) {
-					Ok(pattern) => Some(crate::llm::policy::RegexRule::Regex {
-						pattern,
-						name: n.name.clone(),
-					}),
-					Err(err) => {
-						warn!(error = %err, name = %n.name, pattern = %n.pattern, "Invalid regex pattern");
-						None
-					},
-				}
-			},
-			None => None,
-		})
-		.collect();
-	crate::llm::policy::RegexRules { action, rules }
-}
-
 fn convert_backend_ai_policy(
 	ai: &proto::agent::backend_policy_spec::Ai,
 ) -> Result<llm::Policy, ProtoError> {
@@ -254,9 +136,9 @@ fn convert_backend_ai_policy(
 			let regex = reqp
 				.regex
 				.as_ref()
-				.map(|rr| convert_backend_ai_regex_rules(rr, Some(rejection.clone())));
+				.map(|rr| convert_regex_rules(rr, Some(rejection.clone())));
 
-			let webhook = reqp.webhook.as_ref().and_then(convert_backend_ai_webhook);
+			let webhook = reqp.webhook.as_ref().and_then(convert_webhook);
 
 			let openai_moderation =
 				reqp
@@ -289,11 +171,8 @@ fn convert_backend_ai_policy(
 				.response
 				.as_ref()
 				.map(|resp| crate::llm::policy::ResponseGuard {
-					regex: resp
-						.regex
-						.as_ref()
-						.map(|rr| convert_backend_ai_regex_rules(rr, None)),
-					webhook: resp.webhook.as_ref().and_then(convert_backend_ai_webhook),
+					regex: resp.regex.as_ref().map(|rr| convert_regex_rules(rr, None)),
+					webhook: resp.webhook.as_ref().and_then(convert_webhook),
 				}),
 		})
 	});
@@ -312,10 +191,7 @@ fn convert_backend_ai_policy(
 				.map(|(k, v)| serde_json::from_str(v).map(|v| (k.clone(), v)))
 				.collect::<Result<_, _>>()?,
 		),
-		prompts: ai
-			.prompts
-			.as_ref()
-			.map(convert_backend_ai_prompt_enrichment),
+		prompts: ai.prompts.as_ref().map(convert_prompt_enrichment),
 		model_aliases: ai
 			.model_aliases
 			.iter()
@@ -1135,6 +1011,57 @@ impl TryFrom<&proto::agent::Policy> for TargetedPolicy {
 		// 	target,
 		// 	policy,
 		// })
+	}
+}
+
+impl TryFrom<&proto::agent::PolicyTarget> for PolicyTarget {
+	type Error = ProtoError;
+
+	fn try_from(t: &proto::agent::PolicyTarget) -> Result<Self, Self::Error> {
+		use crate::types::proto::agent::policy_target as tgt;
+		match t.kind.as_ref() {
+			Some(tgt::Kind::Gateway(g)) => Ok(PolicyTarget::Gateway(strng::new(g))),
+			Some(tgt::Kind::Listener(l)) => Ok(PolicyTarget::Listener(strng::new(l))),
+			Some(tgt::Kind::Route(r)) => Ok(PolicyTarget::Route(strng::new(r))),
+			Some(tgt::Kind::RouteRule(r)) => Ok(PolicyTarget::RouteRule(strng::new(r))),
+			Some(tgt::Kind::Backend(b)) => Ok(PolicyTarget::Backend(strng::new(b))),
+			Some(tgt::Kind::Service(s)) => Ok(PolicyTarget::Service(strng::new(s))),
+			Some(tgt::Kind::SubBackend(sb)) => Ok(PolicyTarget::SubBackend(strng::new(sb))),
+			None => Err(ProtoError::MissingRequiredField),
+		}
+	}
+}
+
+impl TryFrom<&proto::agent::Policy> for TargetedPolicy {
+	type Error = ProtoError;
+
+	fn try_from(p: &proto::agent::Policy) -> Result<Self, Self::Error> {
+		use crate::types::proto::agent::policy as pol;
+
+		let name = strng::new(&p.name);
+		let target = p
+			.target
+			.as_ref()
+			.ok_or(ProtoError::MissingRequiredField)
+			.and_then(PolicyTarget::try_from)?;
+
+		let policy = match &p.kind {
+			Some(pol::Kind::Traffic(spec)) => PolicyType::Traffic(TrafficPolicy::try_from(spec)?),
+			Some(pol::Kind::Backend(spec)) => PolicyType::Backend(BackendPolicy::try_from(spec)?),
+			// Frontend policies are not represented by TargetedPolicy; reject here.
+			Some(pol::Kind::Frontend(_)) => {
+				return Err(ProtoError::Generic(
+					"frontend policies are not supported in TargetedPolicy".to_string(),
+				));
+			},
+			None => return Err(ProtoError::MissingRequiredField),
+		};
+
+		Ok(TargetedPolicy {
+			name,
+			target,
+			policy,
+		})
 	}
 }
 
