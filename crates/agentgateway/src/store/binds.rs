@@ -12,16 +12,16 @@ use crate::http::auth::BackendAuth;
 use crate::http::authorization::{HTTPAuthorizationSet, RuleSets};
 use crate::http::backendtls::BackendTLS;
 use crate::http::ext_proc::InferenceRouting;
-use crate::http::{ext_authz, ext_proc, remoteratelimit};
+use crate::http::{ext_authz, ext_proc, filters, remoteratelimit, retry, timeout};
 use crate::llm::policy::ResponseGuard;
 use crate::mcp::McpAuthorizationSet;
 use crate::proxy::httpproxy::PolicyClient;
 use crate::store::Event;
 use crate::types::agent::{
-	A2aPolicy, Backend, BackendName, Bind, BindName, GatewayName, GatewayPolicy,
-	GatewayTargetedPolicy, Listener, ListenerKey, ListenerSet, McpAuthentication, Policy, PolicyName,
-	PolicyTarget, Route, RouteKey, RouteName, RouteRuleName, ServiceName, SubBackendName, TCPRoute,
-	TargetedPolicy,
+	A2aPolicy, Backend, BackendName, BackendPolicy, Bind, BindName, GatewayName,
+	GatewayTargetedPolicy, GatewayTrafficPolicy, Listener, ListenerKey, ListenerSet,
+	McpAuthentication, PolicyName, PolicyTarget, Route, RouteKey, RouteName, RouteRuleName,
+	ServiceName, SubBackendName, TCPRoute, TargetedPolicy, TrafficPolicy,
 };
 use crate::types::proto::agent::resource::Kind as XdsKind;
 use crate::types::proto::agent::{
@@ -94,6 +94,16 @@ pub struct RoutePolicies {
 	pub transformation: Option<http::transformation_cel::Transformation>,
 	pub llm: Option<Arc<llm::Policy>>,
 	pub csrf: Option<http::csrf::Csrf>,
+
+	pub timeout: Option<timeout::Policy>,
+	pub retry: Option<retry::Policy>,
+	pub request_header_modifier: Option<filters::HeaderModifier>,
+	pub response_header_modifier: Option<filters::HeaderModifier>,
+	pub request_redirect: Option<filters::RequestRedirect>,
+	pub url_rewrite: Option<filters::UrlRewrite>,
+	pub request_mirror: Vec<filters::RequestMirror>,
+	pub direct_response: Option<filters::DirectResponse>,
+	pub cors: Option<http::cors::Cors>,
 }
 
 #[derive(Debug, Default)]
@@ -236,7 +246,7 @@ impl Store {
 		route: RouteName,
 		listener: ListenerKey,
 		gateway: GatewayName,
-		inline: &[Policy],
+		inline: &[TrafficPolicy],
 	) -> RoutePolicies {
 		// Changes we must do:
 		// * Index the store by the target
@@ -259,44 +269,75 @@ impl Store {
 			.chain(listener.iter().copied().flatten())
 			.chain(gateway.iter().copied().flatten())
 			.filter_map(|n| self.policies_by_name.get(n))
-			.map(|p| &p.policy);
+			.filter_map(|p| p.policy.as_traffic());
 		let rules = inline.iter().chain(rules);
 
 		let mut authz = Vec::new();
 		let mut pol = RoutePolicies::default();
 		for rule in rules {
 			match &rule {
-				Policy::LocalRateLimit(p) => {
+				TrafficPolicy::LocalRateLimit(p) => {
 					if pol.local_rate_limit.is_empty() {
 						pol.local_rate_limit = p.clone();
 					}
 				},
-				Policy::ExtAuthz(p) => {
+				TrafficPolicy::ExtAuthz(p) => {
 					pol.ext_authz.get_or_insert_with(|| p.clone());
 				},
-				Policy::ExtProc(p) => {
+				TrafficPolicy::ExtProc(p) => {
 					pol.ext_proc.get_or_insert_with(|| p.clone());
 				},
-				Policy::RemoteRateLimit(p) => {
+				TrafficPolicy::RemoteRateLimit(p) => {
 					pol.remote_rate_limit.get_or_insert_with(|| p.clone());
 				},
-				Policy::JwtAuth(p) => {
+				TrafficPolicy::JwtAuth(p) => {
 					pol.jwt.get_or_insert_with(|| p.clone());
 				},
-				Policy::Transformation(p) => {
+				TrafficPolicy::Transformation(p) => {
 					pol.transformation.get_or_insert_with(|| p.clone());
 				},
-				Policy::Authorization(p) => {
+				TrafficPolicy::Authorization(p) => {
 					// Authorization policies merge, unlike others
 					authz.push(p.clone().0);
 				},
-				Policy::AI(p) => {
+				TrafficPolicy::AI(p) => {
 					pol.llm.get_or_insert_with(|| p.clone());
 				},
-				Policy::Csrf(p) => {
+				TrafficPolicy::Csrf(p) => {
 					pol.csrf.get_or_insert_with(|| p.clone());
 				},
-				_ => {}, // others are not route policies
+
+				TrafficPolicy::Timeout(p) => {
+					pol.timeout.get_or_insert_with(|| p.clone());
+				},
+				TrafficPolicy::Retry(p) => {
+					pol.retry.get_or_insert_with(|| p.clone());
+				},
+				TrafficPolicy::RequestHeaderModifier(p) => {
+					pol.request_header_modifier.get_or_insert_with(|| p.clone());
+				},
+				TrafficPolicy::ResponseHeaderModifier(p) => {
+					pol
+						.response_header_modifier
+						.get_or_insert_with(|| p.clone());
+				},
+				TrafficPolicy::RequestRedirect(p) => {
+					pol.request_redirect.get_or_insert_with(|| p.clone());
+				},
+				TrafficPolicy::UrlRewrite(p) => {
+					pol.url_rewrite.get_or_insert_with(|| p.clone());
+				},
+				TrafficPolicy::RequestMirror(p) => {
+					if pol.request_mirror.is_empty() {
+						pol.request_mirror = p.clone();
+					}
+				},
+				TrafficPolicy::DirectResponse(p) => {
+					pol.direct_response.get_or_insert_with(|| p.clone());
+				},
+				TrafficPolicy::CORS(p) => {
+					pol.cors.get_or_insert_with(|| p.clone());
+				},
 			}
 		}
 		if !authz.is_empty() {
@@ -324,16 +365,16 @@ impl Store {
 		let mut pol = GatewayPolicies::default();
 		for rule in rules {
 			match &rule {
-				GatewayPolicy::ExtProc(p) => {
+				GatewayTrafficPolicy::ExtProc(p) => {
 					pol.ext_proc.get_or_insert_with(|| p.clone());
 				},
-				GatewayPolicy::JwtAuth(p) => {
+				GatewayTrafficPolicy::JwtAuth(p) => {
 					pol.jwt.get_or_insert_with(|| p.clone());
 				},
-				GatewayPolicy::ExtAuthz(p) => {
+				GatewayTrafficPolicy::ExtAuthz(p) => {
 					pol.ext_authz.get_or_insert_with(|| p.clone());
 				},
-				GatewayPolicy::Transformation(p) => {
+				GatewayTrafficPolicy::Transformation(p) => {
 					pol.transformation.get_or_insert_with(|| p.clone());
 				},
 				GatewayPolicy::Logging(p) => {
@@ -364,7 +405,8 @@ impl Store {
 			.flatten()
 			.chain(backend_rules.iter().copied().flatten())
 			.chain(service_rules.iter().copied().flatten())
-			.filter_map(|n| self.policies_by_name.get(n));
+			.filter_map(|n| self.policies_by_name.get(n))
+			.filter_map(|p| p.policy.as_backend());
 
 		let mut pol = BackendPolicies {
 			backend_tls: None,
@@ -376,23 +418,25 @@ impl Store {
 			llm: None,
 		};
 		for rule in rules {
-			match &rule.policy {
-				Policy::A2a(p) => {
+			match &rule {
+				BackendPolicy::A2a(p) => {
 					pol.a2a.get_or_insert_with(|| p.clone());
 				},
-				Policy::BackendTLS(p) => {
+				BackendPolicy::BackendTLS(p) => {
 					pol.backend_tls.get_or_insert_with(|| p.clone());
 				},
-				Policy::BackendAuth(p) => {
+				BackendPolicy::BackendAuth(p) => {
 					pol.backend_auth.get_or_insert_with(|| p.clone());
 				},
-				Policy::InferenceRouting(p) => {
+				BackendPolicy::InferenceRouting(p) => {
 					pol.inference_routing.get_or_insert_with(|| p.clone());
 				},
-				Policy::AI(p) => {
+				BackendPolicy::AI(p) => {
 					pol.llm.get_or_insert_with(|| p.clone());
 				},
-				_ => {},
+				// TODO??
+				BackendPolicy::McpAuthorization(_) => {},
+				BackendPolicy::McpAuthentication(_) => {},
 			}
 		}
 		pol
@@ -411,8 +455,8 @@ impl Store {
 					if p.target != t {
 						return None;
 					};
-					match &p.policy {
-						Policy::McpAuthorization(authz) => Some(authz.clone().into_inner()),
+					match p.policy.as_backend() {
+						Some(BackendPolicy::McpAuthorization(authz)) => Some(authz.clone().into_inner()),
 						_ => None,
 					}
 				})
@@ -426,8 +470,8 @@ impl Store {
 				if p.target != t {
 					return None;
 				};
-				match &p.policy {
-					Policy::McpAuthentication(ba) => Some(ba.clone()),
+				match p.policy.as_backend() {
+					Some(BackendPolicy::McpAuthentication(ba)) => Some(ba.clone()),
 					_ => None,
 				}
 			})

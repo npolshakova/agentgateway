@@ -76,6 +76,7 @@ async fn apply_request_policies(
 	client: PolicyClient,
 	log: &mut RequestLog,
 	req: &mut Request,
+	path_match: &PathMatch,
 	response_policies: &mut ResponsePolicies,
 ) -> Result<(), ProxyResponse> {
 	if let Some(j) = &policies.jwt {
@@ -130,6 +131,20 @@ async fn apply_request_policies(
 			.map_err(|_| ProxyError::CsrfValidationFailed)?
 			.apply(response_policies.headers())?;
 	}
+	if let Some(rhm) = &policies.request_header_modifier {
+		rhm.apply(req.headers_mut()).map_err(ProxyError::from)?;
+	}
+	if let Some(r) = &policies.url_rewrite {
+		r.apply(req, path_match)
+			.map_err(ProxyError::from)
+			.map_err(ProxyError::from)?;
+	}
+	// TODO!!
+	if let Some(c) = &policies.cors {}
+	if let Some(rr) = &policies.request_redirect {}
+	if let Some(dr) = &policies.direct_response {}
+
+	// Mirror, timeout, and retry are handled separately.
 
 	Ok(())
 }
@@ -213,65 +228,6 @@ async fn apply_llm_request_policies(
 			.and_then(|llm| llm.prompt_guard.as_ref())
 			.and_then(|g| g.response.clone()),
 	})
-}
-
-fn apply_request_filters(
-	filters: &[RouteFilter],
-	path_match: &PathMatch,
-	req: &mut Request,
-) -> Result<PolicyResponse, filters::Error> {
-	debug!("before request filters: {:?}", req);
-	let mut resp = PolicyResponse::default();
-	for filter in filters {
-		match filter {
-			RouteFilter::RequestHeaderModifier(hm) => hm.apply(req.headers_mut())?,
-			RouteFilter::UrlRewrite(rw) => rw.apply(req, path_match)?,
-			RouteFilter::RequestRedirect(red) => {
-				return Ok(resp.with_response(red.apply(req, path_match)?));
-			},
-			RouteFilter::DirectResponse(dr) => return Ok(resp.with_response(dr.apply()?)),
-			RouteFilter::CORS(c) => {
-				let res = c.apply(req)?;
-				resp = resp.merge(res);
-				if resp.should_short_circuit() {
-					return Ok(resp);
-				}
-			},
-			// Response only
-			RouteFilter::ResponseHeaderModifier { .. } => {},
-			// This is handled elsewhere
-			RouteFilter::RequestMirror(_) => {},
-		}
-	}
-	Ok(resp)
-}
-
-fn get_mirrors(filters: &[RouteFilter]) -> Vec<filters::RequestMirror> {
-	let mut res = vec![];
-	for filter in filters {
-		if let RouteFilter::RequestMirror(m) = filter {
-			res.push(m.clone())
-		}
-	}
-	res
-}
-
-fn apply_response_filters(
-	filters: &[RouteFilter],
-	resp: &mut Response,
-) -> Result<(), filters::Error> {
-	for filter in filters {
-		match filter {
-			RouteFilter::ResponseHeaderModifier(rh) => rh.apply(resp.headers_mut())?,
-			RouteFilter::RequestHeaderModifier { .. } => {},
-			RouteFilter::UrlRewrite { .. } => {},
-			RouteFilter::RequestRedirect { .. } => {},
-			RouteFilter::RequestMirror(_) => {},
-			RouteFilter::DirectResponse(_) => {},
-			RouteFilter::CORS(_) => {},
-		}
-	}
-	Ok(())
 }
 
 #[derive(Clone)]
@@ -542,12 +498,9 @@ impl HTTPProxy {
 			.ext_proc
 			.take()
 			.map(|c| c.build(self.policy_client()));
-		response_policies.route_filters = selected_route
-			.filters
-			.iter()
-			.filter(|f| matches!(f, RouteFilter::ResponseHeaderModifier(_)))
-			.cloned()
-			.collect();
+		response_policies.route_response_header = route_policies.response_header_modifier.clone();
+		// backend_response_header is set much later
+		response_policies.timeout = route_policies.timeout.clone();
 		response_policies.transformation = route_policies.transformation.clone();
 		response_policies.gateway_transformation = gateway_policies.transformation.clone();
 		response_policies.ext_proc = maybe_ext_proc;
@@ -557,17 +510,10 @@ impl HTTPProxy {
 			self.policy_client(),
 			log,
 			&mut req,
+			&path_match,
 			response_policies,
 		)
 		.await?;
-
-		apply_request_filters(
-			selected_route.as_ref().filters.as_slice(),
-			&path_match,
-			&mut req,
-		)
-		.map_err(ProxyError::from)?
-		.apply(response_policies.headers())?;
 
 		let selected_backend =
 			select_backend(selected_route.as_ref(), &req).ok_or(ProxyError::NoValidBackends)?;
@@ -577,19 +523,10 @@ impl HTTPProxy {
 		if let Some(bp) = selected_backend.backend.backend_protocol() {
 			log.backend_protocol = Some(bp)
 		}
-		response_policies.backend_filters = selected_backend
-			.filters
-			.iter()
-			.filter(|f| matches!(f, RouteFilter::ResponseHeaderModifier(_)))
-			.cloned()
-			.collect();
 
-		apply_request_filters(selected_backend.filters.as_slice(), &path_match, &mut req)
-			.map_err(ProxyError::from)?
-			.apply(response_policies.headers())?;
-
-		let mut mirrors = get_mirrors(selected_route.as_ref().filters.as_slice());
-		mirrors.extend(get_mirrors(selected_backend.filters.as_slice()));
+		let mut mirrors = route_policies.request_mirror.as_slice();
+		// TODO
+		// mirrors.extend(get_mirrors(selected_backend.filters.as_slice()));
 		let (head, body) = req.into_parts();
 		for mirror in mirrors {
 			if !rand::rng().random_bool(mirror.percentage) {
@@ -603,6 +540,7 @@ impl HTTPProxy {
 			let req = Request::from_parts(head.clone(), http::Body::empty());
 			let inputs = inputs.clone();
 			let policy_client = self.policy_client();
+			let mirror = mirror.clone();
 			tokio::task::spawn(async move {
 				if let Err(e) = send_mirror(inputs, policy_client, mirror, req).await {
 					warn!("error sending mirror request: {}", e);
@@ -611,10 +549,7 @@ impl HTTPProxy {
 		}
 
 		const MAX_BUFFERED_BYTES: usize = 64 * 1024;
-		let retries = match &selected_route.policies {
-			Some(TrafficPolicy { retry, .. }) => retry,
-			_ => &None,
-		};
+		let retries = route_policies.retry.clone();
 		let late_route_policies: Arc<LLMRequestPolicies> = Arc::new(route_policies.into());
 		// attempts is the total number of attempts, not the retries
 		let attempts = retries.as_ref().map(|r| r.attempts.get() + 1).unwrap_or(1);
@@ -720,10 +655,10 @@ impl HTTPProxy {
 		)
 		.await?;
 
-		let timeout = match &selected_route.policies {
-			Some(TrafficPolicy { timeout, .. }) => timeout.effective_timeout(),
-			_ => None,
-		};
+		let timeout = response_policies
+			.timeout
+			.as_ref()
+			.and_then(|t| t.effective_timeout());
 
 		// Setup timeout
 		let call_result = if let Some(timeout) = timeout {
@@ -766,7 +701,7 @@ fn resolve_backend(b: RouteBackendReference, pi: &ProxyInputs) -> Result<RouteBa
 	Ok(RouteBackend {
 		weight: b.weight,
 		backend,
-		filters: b.filters,
+		inline_policies: b.inline_policies,
 	})
 }
 
@@ -1385,8 +1320,9 @@ pub struct BackendCall {
 
 #[derive(Debug, Default)]
 struct ResponsePolicies {
-	route_filters: Vec<RouteFilter>,
-	backend_filters: Vec<RouteFilter>,
+	timeout: Option<http::timeout::Policy>,
+	route_response_header: Option<filters::HeaderModifier>,
+	backend_response_header: Option<filters::HeaderModifier>,
 	transformation: Option<Transformation>,
 	gateway_transformation: Option<Transformation>,
 	response_headers: HeaderMap,
@@ -1408,9 +1344,12 @@ impl ResponsePolicies {
 		let exec = std::cell::LazyCell::new(|| log.cel.ctx().build());
 		let cel_err = |_| ProxyError::ProcessingString("failed to build cel context".to_string());
 
-		apply_response_filters(self.route_filters.as_slice(), resp).map_err(ProxyError::from)?;
-		apply_response_filters(self.backend_filters.as_slice(), resp).map_err(ProxyError::from)?;
-
+		if let Some(rhm) = self.route_response_header {
+			rhm.apply(resp.headers_mut()).map_err(ProxyError::from)?;
+		}
+		if let Some(rhm) = self.backend_response_header {
+			rhm.apply(resp.headers_mut()).map_err(ProxyError::from)?;
+		}
 		if let Some(j) = &self.transformation {
 			j.apply_response(resp, exec.deref().as_ref().map_err(cel_err)?);
 		}

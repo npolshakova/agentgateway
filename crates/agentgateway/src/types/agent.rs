@@ -26,6 +26,7 @@ use crate::http::{
 	HeaderName, HeaderValue, ext_authz, ext_proc, filters, remoteratelimit, retry, timeout,
 };
 use crate::mcp::McpAuthorization;
+use crate::store::BackendPolicies;
 use crate::types::discovery::{NamespacedHostname, Service};
 use crate::*;
 use std::collections::HashMap as StdHashMap;
@@ -150,13 +151,9 @@ pub struct Route {
 	#[serde(default, skip_serializing_if = "Vec::is_empty")]
 	pub matches: Vec<RouteMatch>,
 	#[serde(default, skip_serializing_if = "Vec::is_empty")]
-	pub filters: Vec<RouteFilter>,
-	#[serde(default, skip_serializing_if = "Vec::is_empty")]
 	pub backends: Vec<RouteBackendReference>,
-	#[serde(default, skip_serializing_if = "Option::is_none")]
-	pub policies: Option<TrafficPolicy>,
 	#[serde(default, skip_serializing_if = "Vec::is_empty")]
-	pub inline_policies: Vec<Policy>,
+	pub inline_policies: Vec<TrafficPolicy>,
 }
 
 pub type RouteKey = Strng;
@@ -263,26 +260,6 @@ pub enum PathMatch {
 	),
 }
 
-#[derive(Debug, Clone, serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-pub enum RouteFilter {
-	RequestHeaderModifier(filters::HeaderModifier),
-	ResponseHeaderModifier(filters::HeaderModifier),
-	RequestRedirect(filters::RequestRedirect),
-	UrlRewrite(filters::UrlRewrite),
-	RequestMirror(filters::RequestMirror),
-	DirectResponse(filters::DirectResponse),
-	#[serde(rename = "cors")]
-	CORS(http::cors::Cors),
-}
-
-#[apply(schema!)]
-#[derive(Default, Eq, PartialEq)]
-pub struct TrafficPolicy {
-	pub timeout: timeout::Policy,
-	pub retry: Option<retry::Policy>,
-}
-
 #[apply(schema!)]
 #[derive(Eq, PartialEq)]
 pub enum HostRedirect {
@@ -307,7 +284,7 @@ pub struct RouteBackendReference {
 	#[serde(flatten)]
 	pub backend: BackendReference,
 	#[serde(default, skip_serializing_if = "Vec::is_empty")]
-	pub filters: Vec<RouteFilter>,
+	pub inline_policies: Vec<BackendPolicy>,
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -318,7 +295,7 @@ pub struct RouteBackend {
 	#[serde(flatten)]
 	pub backend: Backend,
 	#[serde(default, skip_serializing_if = "Vec::is_empty")]
-	pub filters: Vec<RouteFilter>,
+	pub inline_policies: Vec<BackendPolicy>,
 }
 
 #[allow(unused)]
@@ -1011,7 +988,41 @@ pub type PolicyName = Strng;
 pub struct TargetedPolicy {
 	pub name: PolicyName,
 	pub target: PolicyTarget,
-	pub policy: Policy,
+	pub policy: PolicyType,
+}
+
+impl From<BackendPolicy> for PolicyType {
+	fn from(value: BackendPolicy) -> Self {
+		Self::Backend(value)
+	}
+}
+
+impl From<TrafficPolicy> for PolicyType {
+	fn from(value: TrafficPolicy) -> Self {
+		Self::Traffic(value)
+	}
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum PolicyType {
+	Traffic(TrafficPolicy),
+	Backend(BackendPolicy),
+}
+
+impl PolicyType {
+	pub fn as_traffic(&self) -> Option<&TrafficPolicy> {
+		match self {
+			PolicyType::Traffic(t) => Some(t),
+			PolicyType::Backend(_) => None,
+		}
+	}
+	pub fn as_backend(&self) -> Option<&BackendPolicy> {
+		match self {
+			PolicyType::Backend(t) => Some(t),
+			PolicyType::Traffic(_) => None,
+		}
+	}
 }
 
 #[derive(Debug, Clone, serde::Serialize)]
@@ -1019,7 +1030,7 @@ pub struct TargetedPolicy {
 pub struct GatewayTargetedPolicy {
 	pub name: PolicyName,
 	pub target: PolicyTarget,
-	pub policy: GatewayPolicy,
+	pub policy: GatewayTrafficPolicy,
 }
 
 #[apply(schema!)]
@@ -1039,7 +1050,7 @@ pub enum PolicyTarget {
 
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
-pub enum GatewayPolicy {
+pub enum GatewayTrafficPolicy {
 	JwtAuth(crate::http::jwt::Jwt),
 	ExtAuthz(ext_authz::ExtAuthz),
 	Transformation(crate::http::transformation_cel::Transformation),
@@ -1047,53 +1058,56 @@ pub enum GatewayPolicy {
 	Logging(LoggingPolicy),
 }
 
-impl TryFrom<Policy> for GatewayPolicy {
+impl TryFrom<TrafficPolicy> for GatewayTrafficPolicy {
 	type Error = anyhow::Error;
-	fn try_from(value: Policy) -> Result<Self, Self::Error> {
+	fn try_from(value: TrafficPolicy) -> Result<Self, Self::Error> {
 		match value {
-			Policy::JwtAuth(p) => Ok(GatewayPolicy::JwtAuth(p)),
-			Policy::Transformation(p) => Ok(GatewayPolicy::Transformation(p)),
-			Policy::ExtProc(p) => Ok(GatewayPolicy::ExtProc(p)),
+			TrafficPolicy::JwtAuth(p) => Ok(GatewayTrafficPolicy::JwtAuth(p)),
+			TrafficPolicy::Transformation(p) => Ok(GatewayTrafficPolicy::Transformation(p)),
+			TrafficPolicy::ExtProc(p) => Ok(GatewayTrafficPolicy::ExtProc(p)),
+			TrafficPolicy::ExtAuthz(p) => Ok(GatewayTrafficPolicy::ExtAuthz(p)),
 			_ => anyhow::bail!("invalid gateway_policy type"),
 		}
 	}
 }
+
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
-pub enum Policy {
-	// Supported targets: Backend, only when Backend type is MCP
-	McpAuthorization(McpAuthorization),
-	// Supported targets: Backend, only when Backend type is MCP
-	McpAuthentication(McpAuthentication),
-	// Support targets: Backend; single policy allowed
-	A2a(A2aPolicy),
-	// Supported targets: Backend; single policy allowed
-	#[serde(rename = "backendTLS")]
-	BackendTLS(http::backendtls::BackendTLS),
-	// Supported targets: Backend; single policy allowed
-	BackendAuth(BackendAuth),
-	// Supported targets: Backend; single policy allowed
-	InferenceRouting(ext_proc::InferenceRouting),
-
-	// Supported targets: Gateway < Route < RouteRule; single policy allowed
+pub enum TrafficPolicy {
+	Timeout(timeout::Policy),
+	Retry(retry::Policy),
 	#[serde(rename = "ai")]
 	AI(Arc<llm::Policy>),
-	// Supported targets: Gateway < Route < RouteRule; single policy allowed
 	Authorization(Authorization),
-	// Supported targets: Gateway < Route < RouteRule; single policy allowed
 	LocalRateLimit(Vec<crate::http::localratelimit::RateLimit>),
-	// Supported targets: Gateway < Route < RouteRule; single policy allowed
 	RemoteRateLimit(remoteratelimit::RemoteRateLimit),
-	// Supported targets: Gateway < Route < RouteRule; single policy allowed
 	ExtAuthz(ext_authz::ExtAuthz),
-	// Supported targets: Gateway < Route < RouteRule; single policy allowed
 	ExtProc(ext_proc::ExtProc),
-	// Supported targets: Gateway < Route < RouteRule; single policy allowed
 	JwtAuth(crate::http::jwt::Jwt),
-	// Supported targets: Gateway < Route < RouteRule; single policy allowed
 	Transformation(crate::http::transformation_cel::Transformation),
-	// Supported targets: Gateway < Route < RouteRule; single policy allowed
 	Csrf(crate::http::csrf::Csrf),
+
+	RequestHeaderModifier(filters::HeaderModifier),
+	ResponseHeaderModifier(filters::HeaderModifier),
+	RequestRedirect(filters::RequestRedirect),
+	UrlRewrite(filters::UrlRewrite),
+	RequestMirror(Vec<filters::RequestMirror>),
+	DirectResponse(filters::DirectResponse),
+	#[serde(rename = "cors")]
+	CORS(http::cors::Cors),
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub enum BackendPolicy {
+	McpAuthorization(McpAuthorization),
+	McpAuthentication(McpAuthentication),
+	A2a(A2aPolicy),
+	#[serde(rename = "backendTLS")]
+	BackendTLS(http::backendtls::BackendTLS),
+	BackendAuth(BackendAuth),
+	InferenceRouting(ext_proc::InferenceRouting),
+	AI(Arc<llm::Policy>),
 }
 
 #[apply(schema!)]
