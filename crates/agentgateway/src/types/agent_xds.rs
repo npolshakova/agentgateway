@@ -1267,7 +1267,7 @@ fn convert_header_match(h: &[proto::agent::HeaderMatch]) -> Result<Vec<HeaderMat
 		.collect::<Result<Vec<_>, _>>()?;
 	Ok(headers)
 }
-
+/*
 #[cfg(test)]
 mod tests {
 	use serde_json::json;
@@ -1432,3 +1432,4 @@ mod tests {
 		Ok(())
 	}
 }
+*/

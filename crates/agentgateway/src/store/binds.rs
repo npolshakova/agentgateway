@@ -405,11 +405,12 @@ impl Store {
 
 	pub fn backend_policies(
 		&self,
-		backend: BackendName,
+		backend: Option<BackendName>,
 		service: Option<ServiceName>,
 		sub_backend: Option<SubBackendName>,
 	) -> BackendPolicies {
-		let backend_rules = self.policies_by_target.get(&PolicyTarget::Backend(backend));
+		let backend_rules =
+			backend.and_then(|t| self.policies_by_target.get(&PolicyTarget::Backend(t)));
 		let service_rules =
 			service.and_then(|t| self.policies_by_target.get(&PolicyTarget::Service(t)));
 		let sub_backend_rules =
