@@ -1271,7 +1271,7 @@ fn convert_header_match(h: &[proto::agent::HeaderMatch]) -> Result<Vec<HeaderMat
 		.collect::<Result<Vec<_>, _>>()?;
 	Ok(headers)
 }
-/*
+
 #[cfg(test)]
 mod tests {
 	use serde_json::json;
@@ -1291,13 +1291,13 @@ mod tests {
 			],
 		};
 
-		let spec = proto::agent::PolicySpec {
+		let spec = proto::agent::TrafficPolicySpec {
 			kind: Some(proto::agent::traffic_policy_spec::Kind::Csrf(csrf_spec)),
 		};
 
-		let policy = Policy::try_from(&spec)?;
+		let policy = TrafficPolicy::try_from(&spec)?;
 
-		if let Policy::Csrf(_csrf_policy) = policy {
+		if let TrafficPolicy::Csrf(_csrf_policy) = policy {
 			// We can't directly access the HashSet since it's private, but we can test
 			// the policy works by creating a test that would use the contains() method
 			// This verifies the conversion worked and the HashSet deduplication happened
@@ -1370,7 +1370,7 @@ mod tests {
 
 	#[test]
 	fn test_backend_policy_spec_to_ai_policy() -> Result<(), ProtoError> {
-		let spec = proto::agent::PolicySpec {
+		let spec = proto::agent::BackendPolicySpec {
 			kind: Some(proto::agent::backend_policy_spec::Kind::Ai(Ai {
 				defaults: vec![
 					("temperature".to_string(), "0.7".to_string()),
@@ -1395,9 +1395,9 @@ mod tests {
 			})),
 		};
 
-		let policy = Policy::try_from(&spec)?;
+		let policy = BackendPolicy::try_from(&spec)?;
 
-		if let Policy::AI(ai_policy) = policy {
+		if let BackendPolicy::AI(ai_policy) = policy {
 			let defaults = ai_policy.defaults.as_ref().expect("defaults should be set");
 			let overrides = ai_policy
 				.overrides
@@ -1436,4 +1436,4 @@ mod tests {
 		Ok(())
 	}
 }
-*/
+
