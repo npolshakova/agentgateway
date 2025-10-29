@@ -745,6 +745,68 @@ impl TryFrom<&proto::agent::BackendPolicySpec> for BackendPolicy {
 				BackendPolicy::McpAuthentication(McpAuthentication::try_from(ma)?)
 			},
 			Some(bps::Kind::Ai(ai)) => BackendPolicy::AI(Arc::new(convert_backend_ai_policy(ai)?)),
+			Some(bps::Kind::RequestHeaderModifier(rhm)) => {
+				BackendPolicy::RequestHeaderModifier(http::filters::HeaderModifier {
+					add: rhm
+						.add
+						.iter()
+						.map(|h| (strng::new(&h.name), strng::new(&h.value)))
+						.collect(),
+					set: rhm
+						.set
+						.iter()
+						.map(|h| (strng::new(&h.name), strng::new(&h.value)))
+						.collect(),
+					remove: rhm.remove.iter().map(strng::new).collect(),
+				})
+			},
+			Some(bps::Kind::ResponseHeaderModifier(rhm)) => {
+				BackendPolicy::ResponseHeaderModifier(http::filters::HeaderModifier {
+					add: rhm
+						.add
+						.iter()
+						.map(|h| (strng::new(&h.name), strng::new(&h.value)))
+						.collect(),
+					set: rhm
+						.set
+						.iter()
+						.map(|h| (strng::new(&h.name), strng::new(&h.value)))
+						.collect(),
+					remove: rhm.remove.iter().map(strng::new).collect(),
+				})
+			},
+			Some(bps::Kind::RequestRedirect(rr)) => {
+				BackendPolicy::RequestRedirect(http::filters::RequestRedirect {
+					scheme: default_as_none(rr.scheme.as_str())
+						.map(Scheme::try_from)
+						.transpose()?,
+					authority: match (default_as_none(rr.host.as_str()), default_as_none(rr.port)) {
+						(Some(h), Some(p)) => Some(HostRedirect::Full(strng::format!("{h}:{p}"))),
+						(_, Some(p)) => Some(HostRedirect::Port(NonZeroU16::new(p as u16).unwrap())),
+						(Some(h), _) => Some(HostRedirect::Host(strng::new(h))),
+						(None, None) => None,
+					},
+					path: match &rr.path {
+						Some(proto::agent::request_redirect::Path::Full(f)) => {
+							Some(PathRedirect::Full(strng::new(f)))
+						},
+						Some(proto::agent::request_redirect::Path::Prefix(f)) => {
+							Some(PathRedirect::Prefix(strng::new(f)))
+						},
+						None => None,
+					},
+					status: default_as_none(rr.status)
+						.map(|i| StatusCode::from_u16(i as u16))
+						.transpose()?,
+				})
+			},
+			Some(bps::Kind::RequestMirror(m)) => {
+				let backend = resolve_simple_reference(m.backend.as_ref())?;
+				BackendPolicy::RequestMirror(vec![http::filters::RequestMirror {
+					backend,
+					percentage: m.percentage / 100.0,
+				}])
+			},
 			None => return Err(ProtoError::MissingRequiredField),
 		})
 	}
@@ -756,13 +818,14 @@ impl TryFrom<&proto::agent::TrafficPolicySpec> for TrafficPolicy {
 	fn try_from(spec: &proto::agent::TrafficPolicySpec) -> Result<Self, Self::Error> {
 		use crate::types::proto::agent::traffic_policy_spec as tps;
 		Ok(match &spec.kind {
-			Some(tps::Kind::RequestTimeout(d)) => {
-				let dur = (*d).try_into()?;
-				TrafficPolicy::Timeout(http::timeout::Policy {
-					request_timeout: Some(dur),
-					backend_request_timeout: None,
-				})
-			},
+			Some(tps::Kind::Timeout(t)) => TrafficPolicy::Timeout(http::timeout::Policy {
+				request_timeout: t.request.as_ref().map(|d| (*d).try_into()).transpose()?,
+				backend_request_timeout: t
+					.backend_request
+					.as_ref()
+					.map(|d| (*d).try_into())
+					.transpose()?,
+			}),
 			Some(tps::Kind::Retry(r)) => {
 				let attempts = std::num::NonZeroU8::new(r.attempts as u8)
 					.unwrap_or_else(|| std::num::NonZeroU8::new(1).unwrap());

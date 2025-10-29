@@ -78,6 +78,11 @@ message TCPRoute {
   repeated RouteBackend backends = 6;
 }
 
+message Timeout {
+  google.protobuf.Duration request = 1;
+  google.protobuf.Duration backend_request = 2;
+}
+
 message Retry {
   repeated int32 retry_status_codes = 1;
   int32 attempts = 2;
@@ -428,7 +433,7 @@ message TrafficPolicySpec {
   }
 
   oneof kind {
-    google.protobuf.Duration request_timeout = 1;
+    Timeout timeout = 1;
     Retry retry = 2;
     LocalRateLimit local_rate_limit = 3;
     ExternalAuth ext_authz = 4;
@@ -598,6 +603,10 @@ message BackendPolicySpec {
     McpAuthorization mcp_authorization = 5;
     McpAuthentication mcp_authentication = 6;
     Ai ai = 7;
+    HeaderModifier request_header_modifier = 8;
+    HeaderModifier response_header_modifier = 9;
+    RequestRedirect request_redirect = 10;
+    RequestMirror request_mirror = 11;
   }
 }
 
