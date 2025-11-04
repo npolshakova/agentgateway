@@ -31,9 +31,9 @@ use crate::proxy::request_builder::RequestBuilder;
 use crate::store::Stores;
 use crate::transport::stream::{Socket, TCPConnectionInfo};
 use crate::types::agent::{
-	Backend, BackendReference, Bind, BindName, Listener, ListenerProtocol, ListenerSet, McpBackend,
-	McpTarget, McpTargetSpec, PathMatch, Route, RouteBackendReference, RouteMatch, RouteSet,
-	SimpleBackendReference, SseTargetSpec, StreamableHTTPTargetSpec, TCPRoute,
+	Backend, BackendReference, BackendWithPolicies, Bind, BindName, Listener, ListenerProtocol,
+	ListenerSet, McpBackend, McpTarget, McpTargetSpec, PathMatch, Route, RouteBackendReference,
+	RouteMatch, RouteSet, SimpleBackendReference, SseTargetSpec, StreamableHTTPTargetSpec, TCPRoute,
 	TCPRouteBackendReference, TCPRouteSet, Target, TargetedPolicy,
 };
 use crate::types::local::LocalNamedAIProvider;
@@ -129,21 +129,19 @@ pub fn setup_llm_mock(
 	config: &str,
 ) -> (MockServer, TestBind, Client<MemoryConnector, Body>) {
 	let t = setup_proxy_test(config).unwrap();
-	let (be, _) = crate::types::local::LocalAIBackend::Provider(LocalNamedAIProvider {
+	let be = crate::types::local::LocalAIBackend::Provider(LocalNamedAIProvider {
 		name: "default".into(),
 		provider,
 		host_override: Some(Target::Address(*mock.address())),
 		path_override: None,
 		tokenize,
-		backend_tls: None,
-		backend_auth: None,
 		policies: None,
 		routes: Default::default(),
 	})
-	.translate(strng::format!("{}", mock.address()))
+	.translate()
 	.unwrap();
 	let b = Backend::AI(strng::format!("{}", mock.address()), be);
-	t.pi.stores.binds.write().insert_backend(b);
+	t.pi.stores.binds.write().insert_backend(b.into());
 	let t = t.with_bind(simple_bind(basic_route(*mock.address())));
 	let io = t.serve_http(BIND_KEY);
 	(mock, t, io)
@@ -320,6 +318,11 @@ impl TestBind {
 
 	pub fn with_backend(self, b: SocketAddr) -> Self {
 		let b = Backend::Opaque(strng::format!("{}", b), Target::Address(b));
+		self.pi.stores.binds.write().insert_backend(b.into());
+		self
+	}
+
+	pub fn with_raw_backend(self, b: BackendWithPolicies) -> Self {
 		self.pi.stores.binds.write().insert_backend(b);
 		self
 	}
@@ -350,8 +353,8 @@ impl TestBind {
 		);
 		{
 			let mut bw = self.pi.stores.binds.write();
-			bw.insert_backend(opb);
-			bw.insert_backend(b);
+			bw.insert_backend(opb.into());
+			bw.insert_backend(b.into());
 		}
 		self
 	}
@@ -392,12 +395,9 @@ impl TestBind {
 		{
 			let mut bw = self.pi.stores.binds.write();
 			for (_, b, _) in servers {
-				bw.insert_backend(Backend::Opaque(
-					strng::format!("basic-{}", b),
-					Target::Address(b),
-				))
+				bw.insert_backend(Backend::Opaque(strng::format!("basic-{}", b), Target::Address(b)).into())
 			}
-			bw.insert_backend(b);
+			bw.insert_backend(b.into());
 		}
 		self
 	}
