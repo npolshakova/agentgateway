@@ -35,6 +35,7 @@ export const AI_PROVIDERS = [
   { value: "vertex", label: "Vertex" },
   { value: "anthropic", label: "Anthropic" },
   { value: "bedrock", label: "Bedrock" },
+  { value: "azureOpenAI", label: "Azure OpenAI" },
 ] as const;
 
 /**
@@ -381,6 +382,13 @@ export const createAiProviderConfig = (form: typeof DEFAULT_BACKEND_FORM) => {
         region: form.aiRegion,
       };
       break;
+    case "azureOpenAI":
+      provider.azureOpenAI = {
+        host: form.aiHost,
+        ...(form.aiModel && { model: form.aiModel }),
+        ...(form.aiApiVersion && { apiVersion: form.aiApiVersion }),
+      };
+      break;
   }
 
   return provider;
@@ -581,6 +589,10 @@ export const populateFormFromBackend = (
     aiProjectId: backend.ai?.provider ? Object.values(backend.ai.provider)[0]?.projectId || "" : "",
     aiHostOverride: backend.ai?.hostOverride || "",
     aiPathOverride: backend.ai?.pathOverride || "",
+    aiHost: backend.ai?.provider ? Object.values(backend.ai.provider)[0]?.host || "" : "",
+    aiApiVersion: backend.ai?.provider
+      ? Object.values(backend.ai.provider)[0]?.apiVersion || ""
+      : "",
   };
 };
 
