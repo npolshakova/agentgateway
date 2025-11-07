@@ -114,6 +114,10 @@ pub enum RouteType {
 	Models,
 	/// Send the request to the upstream LLM provider as-is
 	Passthrough,
+	/// OpenAI /responses
+	Responses,
+	/// Anthropic /v1/messages/count_tokens
+	AnthropicTokenCount,
 }
 
 #[apply(schema!)]
@@ -145,6 +149,7 @@ pub struct LLMRequest {
 pub enum InputFormat {
 	Completions,
 	Messages,
+	Responses,
 }
 
 #[derive(Default, Clone, Debug, Serialize)]
@@ -318,7 +323,8 @@ impl AIProvider {
 				http::modify_req(req, |req| {
 					http::modify_uri(req, |uri| {
 						if override_path && let Some(l) = llm_request {
-							let path = provider.get_path_for_model(l.streaming, l.request_model.as_str());
+							let path =
+								provider.get_path_for_route(route_type, l.streaming, l.request_model.as_str());
 							uri.path_and_query = Some(PathAndQuery::from_str(&path)?);
 						}
 						uri.authority = Some(Authority::from_str(&provider.get_host())?);
@@ -455,6 +461,110 @@ impl AIProvider {
 			.await
 	}
 
+	pub async fn process_responses_request(
+		&self,
+		backend_info: &crate::http::auth::BackendInfo,
+		policies: Option<&Policy>,
+		req: Request,
+		tokenize: bool,
+		log: &mut Option<&mut RequestLog>,
+	) -> Result<RequestResult, AIError> {
+		// Buffer the body, max 2mb
+		let buffer_limit = http::buffer_limit(&req);
+		let (mut parts, body) = req.into_parts();
+		let Ok(bytes) = http::read_body_with_limit(body, buffer_limit).await else {
+			return Err(AIError::RequestTooLarge);
+		};
+
+		// Strip client-specific headers that cause AWS signature mismatches for Bedrock
+		if matches!(self, AIProvider::Bedrock(_)) {
+			parts.headers.remove("conversation_id");
+			parts.headers.remove("session_id");
+		}
+
+		let mut req: openai::responses::passthrough::Request = if let Some(p) = policies {
+			p.unmarshal_request(&bytes)?
+		} else {
+			serde_json::from_slice(bytes.as_ref()).map_err(AIError::RequestParsing)?
+		};
+
+		if let Some(provider_model) = &self.override_model() {
+			req.model = Some(provider_model.to_string());
+		} else if req.model.is_none() {
+			return Err(AIError::MissingField("model not specified".into()));
+		}
+
+		self
+			.process_request(
+				backend_info,
+				policies,
+				InputFormat::Responses,
+				req,
+				parts,
+				tokenize,
+				log,
+			)
+			.await
+	}
+
+	pub async fn process_count_tokens_request(
+		&self,
+		req: Request,
+		policies: Option<&Policy>,
+	) -> Result<(Request, LLMRequest), AIError> {
+		use crate::http;
+
+		match self {
+			AIProvider::Bedrock(_) => {
+				// Buffer and parse request body
+				let buffer_limit = http::buffer_limit(&req);
+				let (parts, body) = req.into_parts();
+				let Ok(bytes) = http::read_body_with_limit(body, buffer_limit).await else {
+					return Err(AIError::RequestTooLarge);
+				};
+
+				let anthropic_version = parts
+					.headers
+					.get("anthropic-version")
+					.and_then(|v| v.to_str().ok())
+					.unwrap_or("2023-06-01");
+
+				let mut count_req: crate::llm::anthropic::types::CountTokensRequest =
+					serde_json::from_slice(bytes.as_ref()).map_err(AIError::RequestParsing)?;
+
+				// Apply model alias resolution (consistent with other routes)
+				if let Some(p) = policies
+					&& let Some(aliased) = p.model_aliases.get(count_req.model.as_str())
+				{
+					count_req.model = aliased.to_string();
+				}
+
+				let model = count_req.model.clone();
+
+				// Translate to Bedrock format
+				let new_body = bedrock::process_count_tokens_request(count_req, anthropic_version)?;
+
+				let req = Request::from_parts(parts, new_body.into());
+
+				// Create LLMRequest for logging and path setup
+				let llm_request = LLMRequest {
+					input_tokens: None,
+					input_format: InputFormat::Messages,
+					request_model: model.into(),
+					provider: self.provider(),
+					streaming: false,
+					params: LLMRequestParams::default(),
+				};
+
+				Ok((req, llm_request))
+			},
+			_ => Err(AIError::UnsupportedConversion(strng::format!(
+				"Provider {} does not support Anthropic count_tokens API",
+				self.provider()
+			))),
+		}
+	}
+
 	#[allow(clippy::too_many_arguments)]
 	async fn process_request(
 		&self,
@@ -475,6 +585,12 @@ impl AIProvider {
 			},
 			(InputFormat::Messages, AIProvider::Bedrock(_)) => {
 				// Bedrock supports messages input (Anthropic passthrough)
+			},
+			(InputFormat::Responses, AIProvider::OpenAI(_)) => {
+				// OpenAI supports responses input
+			},
+			(InputFormat::Responses, AIProvider::Bedrock(_)) => {
+				// Bedrock supports responses input via translation
 			},
 			(m, p) => {
 				// Messages with OpenAI compatible: currently only supports translating the request
@@ -518,7 +634,11 @@ impl AIProvider {
 			| AIProvider::Vertex(_)
 			| AIProvider::AzureOpenAI(_) => req.to_openai()?,
 			AIProvider::Anthropic(_) => req.to_anthropic()?,
-			AIProvider::Bedrock(p) => req.to_bedrock(p, Some(&parts.headers))?,
+			AIProvider::Bedrock(p) => req.to_bedrock(
+				p,
+				Some(&parts.headers),
+				policies.and_then(|p| p.prompt_caching.as_ref()),
+			)?,
 		};
 		let resp = Body::from(new_request);
 		parts.headers.remove(header::CONTENT_LENGTH);
@@ -827,6 +947,62 @@ fn num_tokens_from_anthropic_messages(
 				.len() as u64;
 		}
 	}
+	num_tokens += 3; // every reply is primed with <|start|>assistant<|message|>
+	Ok(num_tokens)
+}
+
+fn num_tokens_from_responses_input(
+	model: &str,
+	input: &openai::responses::Input,
+) -> Result<u64, AIError> {
+	use openai::responses::{ContentType, Input, InputContent, InputItem};
+	use tiktoken_rs::tokenizer::get_tokenizer;
+
+	let tokenizer = get_tokenizer(model).unwrap_or(Tokenizer::Cl100kBase);
+	if tokenizer != Tokenizer::Cl100kBase && tokenizer != Tokenizer::O200kBase {
+		// Responses API is only supported for chat models
+		return Err(AIError::UnsupportedModel);
+	}
+	let bpe = get_bpe_from_tokenizer(tokenizer);
+
+	let tokens_per_message = 3;
+
+	let mut num_tokens: u64 = 0;
+
+	match input {
+		Input::Text(text) => {
+			num_tokens += tokens_per_message;
+			num_tokens += 1; // role
+			num_tokens += bpe.encode_with_special_tokens(text).len() as u64;
+		},
+		Input::Items(items) => {
+			for item in items {
+				match item {
+					InputItem::Message(msg) => {
+						num_tokens += tokens_per_message;
+						num_tokens += 1; // role
+						match &msg.content {
+							InputContent::TextInput(text) => {
+								num_tokens += bpe.encode_with_special_tokens(text).len() as u64;
+							},
+							InputContent::InputItemContentList(parts) => {
+								for part in parts {
+									if let ContentType::InputText(input_text) = part {
+										num_tokens += bpe.encode_with_special_tokens(&input_text.text).len() as u64;
+									}
+								}
+							},
+						}
+					},
+					_ => {
+						// For other items (tool calls, etc.), just estimate
+						num_tokens += 10;
+					},
+				}
+			}
+		},
+	}
+
 	num_tokens += 3; // every reply is primed with <|start|>assistant<|message|>
 	Ok(num_tokens)
 }
