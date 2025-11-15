@@ -149,25 +149,25 @@ pub fn select_best_route(
 				return false;
 			}
 			for HeaderMatch { name, value } in &m.headers {
-				let Some(have) = request.headers().get(name.as_str()) else {
+				let Some(have) = http::get_pseudo_or_header_value(name, request) else {
 					return false;
 				};
 				match value {
 					HeaderValueMatch::Exact(want) => {
-						if have != want {
+						if have.as_ref() != *want {
 							return false;
 						}
 					},
 					HeaderValueMatch::Regex(want) => {
 						// Must be a valid string to do regex match
-						let Some(have) = have.to_str().ok() else {
+						let Some(have_str) = have.to_str().ok() else {
 							return false;
 						};
-						let Some(m) = want.find(have) else {
+						let Some(m) = want.find(have_str) else {
 							return false;
 						};
 						// Make sure we matched the entire thing
-						if !(m.start() == 0 && m.end() == have.len()) {
+						if !(m.start() == 0 && m.end() == have_str.len()) {
 							return false;
 						}
 					},
