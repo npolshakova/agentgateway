@@ -833,6 +833,45 @@ pub async fn build_transport(
 	backend_call: &BackendCall,
 	backend_tls: Option<BackendTLS>,
 ) -> Result<Transport, ProxyError> {
+	// Check if we need double hbone
+	if let (
+		Some((gw_addr, gw_identity)),
+		Some((InboundProtocol::HBONE, waypoint_identity)),
+		Some(ca),
+	) = (
+		&backend_call.network_gateway,
+		&backend_call.transport_override,
+		&inputs.ca,
+	) {
+		if ca.get_identity().await.is_ok() {
+			// Extract gateway IP from the gateway address
+			let gateway_ip = match &gw_addr.destination {
+				types::discovery::gatewayaddress::Destination::Address(net_addr) => net_addr.address,
+				types::discovery::gatewayaddress::Destination::Hostname(_) => {
+					warn!("hostname-based gateway addresses not yet supported");
+					return Ok(Transport::Plaintext);
+				},
+			};
+
+			let gateway_socket_addr = SocketAddr::new(gateway_ip, gw_addr.hbone_mtls_port);
+
+			tracing::debug!(
+				"using double hbone through gateway {:?} at {}",
+				gw_addr,
+				gateway_socket_addr
+			);
+			return Ok(Transport::DoubleHbone {
+				gateway_address: gateway_socket_addr,
+				gateway_identity: gw_identity.clone(),
+				waypoint_identity: waypoint_identity.clone(),
+				inner_tls: backend_tls,
+			});
+		} else {
+			warn!("wanted double hbone but CA is not available");
+			return Ok(Transport::Plaintext);
+		}
+	}
+
 	Ok(
 		match (&backend_call.transport_override, backend_tls, &inputs.ca) {
 			// Use legacy mTLS if they did not define a TLS policy. We could do double TLS but Istio doesn't,
@@ -981,6 +1020,7 @@ async fn make_backend_call(
 				backend_policies: effective_policies,
 				http_version_override: None,
 				transport_override: None,
+				network_gateway: None,
 			}
 		},
 		Backend::Service(svc, port) => {
@@ -990,6 +1030,7 @@ async fn make_backend_call(
 			target: target.clone(),
 			http_version_override: None,
 			transport_override: None,
+			network_gateway: None,
 			backend_policies: policies,
 		},
 		Backend::Dynamic {} => {
@@ -1004,6 +1045,7 @@ async fn make_backend_call(
 				target: target.clone(),
 				http_version_override: None,
 				transport_override: None,
+				network_gateway: None,
 				backend_policies: policies,
 			}
 		},
@@ -1292,15 +1334,74 @@ pub fn build_service_call(
 	} else {
 		None
 	};
-	let Some(ip) = wl.workload_ips.first() else {
-		return Err(ProxyError::NoHealthyEndpoints);
-	};
-	let dest = SocketAddr::from((*ip, target_port));
+
 	log.add(move |l| l.request_handle = Some(handle));
+
+	// Check if we need double hbone (workload on remote network with gateway)
+	let network_gateway = if wl.network != inputs.cfg.network {
+		if let Some(gw_addr) = &wl.network_gateway {
+			// Look up the gateway workload to get its identity
+			let gateway_workload = match &gw_addr.destination {
+				types::discovery::gatewayaddress::Destination::Address(net_addr) => {
+					workloads.find_address(net_addr)
+				},
+				types::discovery::gatewayaddress::Destination::Hostname(_hostname) => {
+					// TODO: Implement hostname resolution for gateway
+					// For now, we don't support hostname-based gateways
+					tracing::warn!("hostname-based network gateways not yet supported");
+					None
+				},
+			};
+
+			if let Some(gw_wl) = gateway_workload {
+				tracing::debug!(
+					source_network=%inputs.cfg.network,
+					dest_network=%wl.network,
+					gateway=?gw_addr,
+					"picked workload on remote network, using double hbone"
+				);
+				Some((gw_addr.clone(), gw_wl.identity()))
+			} else {
+				tracing::warn!(
+					"network gateway {:?} not found for remote workload",
+					gw_addr
+				);
+				None
+			}
+		} else {
+			tracing::warn!(
+				source_network=%inputs.cfg.network,
+				dest_network=%wl.network,
+				"workload on remote network but no gateway configured"
+			);
+			None
+		}
+	} else {
+		None
+	};
+
+	// For double HBONE, use hostname-based target so the gateway can resolve it
+	let target = if network_gateway.is_some() {
+		tracing::debug!(
+			hostname=%svc.hostname,
+			port=%port,
+			"using hostname-based target for double hbone"
+		);
+		Target::Hostname(svc.hostname.clone(), port)
+	} else {
+		// For direct connections, we need the workload IP
+		let Some(ip) = wl.workload_ips.first() else {
+			return Err(ProxyError::NoHealthyEndpoints);
+		};
+		let dest = SocketAddr::from((*ip, target_port));
+		Target::Address(dest)
+	};
+
 	Ok(BackendCall {
-		target: Target::Address(dest),
+		target,
 		http_version_override,
 		transport_override: Some((wl.protocol, wl.identity())),
+		network_gateway,
 		backend_policies,
 	})
 }
@@ -1449,6 +1550,7 @@ pub struct BackendCall {
 	pub target: Target,
 	pub http_version_override: Option<::http::Version>,
 	pub transport_override: Option<(InboundProtocol, Identity)>,
+	pub network_gateway: Option<(GatewayAddress, Identity)>, // For double hbone: (gateway_address, gateway_identity)
 	pub backend_policies: BackendPolicies,
 }
 
