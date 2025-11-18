@@ -36,7 +36,7 @@ use crate::telemetry::log;
 use crate::telemetry::log::{AsyncLog, DropOnLog, LogBody, RequestLog};
 use crate::telemetry::trc::TraceParent;
 use crate::transport::stream::{Extension, TCPConnectionInfo, TLSConnectionInfo};
-use crate::types::frontend;
+use crate::types::{backend, frontend};
 use crate::{ProxyInputs, store, *};
 
 fn select_backend(route: &Route, _req: &Request) -> Option<RouteBackendReference> {
@@ -179,7 +179,7 @@ async fn apply_request_policies(
 
 async fn apply_backend_policies(
 	backend_info: auth::BackendInfo,
-	policies: &store::BackendPolicies,
+	backend_call: &BackendCall,
 	req: &mut Request,
 	log: &mut Option<&mut RequestLog>,
 	response_policies: &mut ResponsePolicies,
@@ -188,6 +188,9 @@ async fn apply_backend_policies(
 		backend_tls: _,
 		backend_auth,
 		a2a,
+		http,
+		// Doesn't currently have any options to set, todo
+		tcp: _,
 		// Applied elsewhere
 		llm_provider: _,
 		// Applied elsewhere
@@ -199,8 +202,15 @@ async fn apply_backend_policies(
 		request_redirect,
 		// Applied elsewhere
 		request_mirror: _,
-	} = policies;
+	} = &backend_call.backend_policies;
 	response_policies.backend_response_header = response_header_modifier.clone();
+
+	let dh = backend::HTTP::default();
+	http
+		.as_ref()
+		.unwrap_or(&dh)
+		.apply(req, backend_call.http_version_override);
+
 	if let Some(auth) = backend_auth {
 		auth::apply_backend_auth(&backend_info, auth, req).await?;
 	}
@@ -842,7 +852,9 @@ pub async fn build_transport(
 	inputs: &ProxyInputs,
 	backend_call: &BackendCall,
 	backend_tls: Option<BackendTLS>,
+	backend_http_version_override: Option<::http::Version>,
 ) -> Result<Transport, ProxyError> {
+	let backend_tls = backend_tls.map(|btls| btls.config_for(backend_http_version_override));
 	// Check if we need double hbone
 	if let (
 		Some((gw_addr, gw_identity)),
@@ -1086,23 +1098,13 @@ async fn make_backend_call(
 	};
 	apply_backend_policies(
 		backend_info.clone(),
-		&backend_call.backend_policies,
+		&backend_call,
 		&mut req,
 		&mut log,
 		response_policies,
 	)
 	.await?;
 
-	match backend_call.http_version_override {
-		Some(::http::Version::HTTP_2) => {
-			req.headers_mut().remove(http::header::TRANSFER_ENCODING);
-			*req.version_mut() = ::http::Version::HTTP_2;
-		},
-		Some(::http::Version::HTTP_11) => {
-			*req.version_mut() = ::http::Version::HTTP_11;
-		},
-		_ => {},
-	};
 	log.add(|l| {
 		l.endpoint = Some(backend_call.target.clone());
 	});
@@ -1241,6 +1243,12 @@ async fn make_backend_call(
 		&inputs,
 		&backend_call,
 		backend_call.backend_policies.backend_tls.clone(),
+		backend_call
+			.backend_policies
+			.http
+			.as_ref()
+			.and_then(|h| h.version)
+			.or(backend_call.http_version_override),
 	)
 	.await?;
 	let call = client::Call {
