@@ -9,8 +9,8 @@ import (
 	"github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/testutils"
 )
 
-func TestBackendPolicies(t *testing.T) {
-	testutils.RunForDirectory(t, "testdata/backendpolicy", func(t *testing.T, ctx plugins.PolicyCtx) (*gwv1.PolicyStatus, []plugins.AgwPolicy) {
+func TestFrontendPolicies(t *testing.T) {
+	testutils.RunForDirectory(t, "testdata/frontendpolicy", func(t *testing.T, ctx plugins.PolicyCtx) (*gwv1.PolicyStatus, []plugins.AgwPolicy) {
 		pol := testutils.GetTestResource(t, ctx.Collections.AgentgatewayPolicies)
 		s, o := plugins.TranslateAgentgatewayPolicy(ctx.Krt, pol, ctx.Collections)
 		return s, o
