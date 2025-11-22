@@ -25,21 +25,28 @@ use crate::types::{agent, backend, proto};
 use crate::*;
 use llm::{AIBackend, AIProvider, NamedAIProvider};
 
-impl TryFrom<&proto::agent::TlsConfig> for ServerTLSConfig {
-	type Error = anyhow::Error;
-
-	fn try_from(value: &proto::agent::TlsConfig) -> Result<Self, Self::Error> {
-		let cert_chain = parse_cert(&value.cert)?;
-		let private_key = parse_key(&value.private_key)?;
-		let mut sc = ServerConfig::builder_with_provider(transport::tls::provider())
-			.with_protocol_versions(transport::tls::ALL_TLS_VERSIONS)
-			.expect("server config must be valid")
-			.with_no_client_auth()
-			.with_single_cert(cert_chain, private_key)?;
-		// Defaults set here. These can be overriden by Frontend policy
-		// TODO: this default only makes sense for HTTPS, distinguish from TLS
-		sc.alpn_protocols = vec![b"h2".into(), b"http/1.1".into()];
-		Ok(ServerTLSConfig::new(Arc::new(sc)))
+impl From<&proto::agent::TlsConfig> for ServerTLSConfig {
+	fn from(value: &proto::agent::TlsConfig) -> Self {
+		fn build(value: &proto::agent::TlsConfig) -> anyhow::Result<ServerConfig> {
+			let cert_chain = parse_cert(&value.cert)?;
+			let private_key = parse_key(&value.private_key)?;
+			let mut sc = ServerConfig::builder_with_provider(transport::tls::provider())
+				.with_protocol_versions(transport::tls::ALL_TLS_VERSIONS)
+				.expect("server config must be valid")
+				.with_no_client_auth()
+				.with_single_cert(cert_chain, private_key)?;
+			// Defaults set here. These can be overriden by Frontend policy
+			// TODO: this default only makes sense for HTTPS, distinguish from TLS
+			sc.alpn_protocols = vec![b"h2".into(), b"http/1.1".into()];
+			Ok(sc)
+		}
+		match build(value) {
+			Ok(sc) => ServerTLSConfig::new(Arc::new(sc)),
+			Err(e) => {
+				warn!("TLS certificate is invalid: {}", e);
+				ServerTLSConfig::new_invalid()
+			},
+		}
 	}
 }
 
@@ -296,17 +303,9 @@ impl TryFrom<(proto::agent::Protocol, Option<&proto::agent::TlsConfig>)> for Lis
 		match (value.0, value.1) {
 			(Protocol::Unknown, _) => Err(ProtoError::EnumParse("unknown protocol".into())),
 			(Protocol::Http, None) => Ok(ListenerProtocol::HTTP),
-			(Protocol::Https, Some(tls)) => Ok(ListenerProtocol::HTTPS(
-				tls
-					.try_into()
-					.map_err(|e| ProtoError::Generic(format!("{e}")))?,
-			)),
+			(Protocol::Https, Some(tls)) => Ok(ListenerProtocol::HTTPS(tls.into())),
 			// TLS termination
-			(Protocol::Tls, Some(tls)) => Ok(ListenerProtocol::TLS(Some(
-				tls
-					.try_into()
-					.map_err(|e| ProtoError::Generic(format!("{e}")))?,
-			))),
+			(Protocol::Tls, Some(tls)) => Ok(ListenerProtocol::TLS(Some(tls.into()))),
 			// TLS passthrough
 			(Protocol::Tls, None) => Ok(ListenerProtocol::TLS(None)),
 			(Protocol::Tcp, None) => Ok(ListenerProtocol::TCP),

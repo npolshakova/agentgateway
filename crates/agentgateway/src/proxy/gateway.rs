@@ -8,6 +8,7 @@ use agent_core::drain;
 use agent_core::drain::{DrainUpgrader, DrainWatcher};
 use anyhow::anyhow;
 use bytes::Bytes;
+use futures::pin_mut;
 use futures_util::FutureExt;
 use http::StatusCode;
 use hyper_util::rt::TokioIo;
@@ -292,20 +293,42 @@ impl Gateway {
 			},
 			BindProtocol::tcp => Self::proxy_tcp(bind_name, inputs, None, raw_stream, drain).await,
 			BindProtocol::tls => {
-				match Self::maybe_terminate_tls(inputs.clone(), raw_stream, &policies, bind_name.clone())
-					.await
+				match Self::maybe_terminate_tls(
+					inputs.clone(),
+					raw_stream,
+					&policies,
+					bind_name.clone(),
+					false,
+				)
+				.await
 				{
 					Ok((selected_listener, stream)) => {
 						Self::proxy_tcp(bind_name, inputs, Some(selected_listener), stream, drain).await
 					},
 					Err(e) => {
-						warn!("failed to terminate TLS: {e}");
+						event!(
+							target: "downstream connection",
+							parent: None,
+							tracing::Level::WARN,
+
+							src.addr = %peer_addr,
+							protocol = ?bind_protocol,
+							error = ?e.to_string(),
+
+							"failed to terminate TLS",
+						);
 					},
 				}
 			},
 			BindProtocol::https => {
-				match Self::maybe_terminate_tls(inputs.clone(), raw_stream, &policies, bind_name.clone())
-					.await
+				match Self::maybe_terminate_tls(
+					inputs.clone(),
+					raw_stream,
+					&policies,
+					bind_name.clone(),
+					true,
+				)
+				.await
 				{
 					Ok((selected_listener, stream)) => {
 						let _ = Self::proxy(
@@ -319,7 +342,17 @@ impl Gateway {
 						.await;
 					},
 					Err(e) => {
-						warn!("failed to terminate TLS: {e}");
+						event!(
+							target: "downstream connection",
+							parent: None,
+							tracing::Level::WARN,
+
+							src.addr = %peer_addr,
+							protocol = ?bind_protocol,
+							error = ?e.to_string(),
+
+							"failed to terminate TLS",
+						);
 					},
 				}
 			},
@@ -458,6 +491,7 @@ impl Gateway {
 		raw_stream: Socket,
 		policies: &FrontendPolices,
 		bind: BindName,
+		is_https: bool,
 	) -> anyhow::Result<(Arc<Listener>, Socket)> {
 		let def = frontend::TLS::default();
 		let to = policies.tls.as_ref().unwrap_or(&def).tls_handshake_timeout;
@@ -468,15 +502,35 @@ impl Gateway {
 			let inner = Socket::new_rewind(inner);
 			let acceptor =
 				tokio_rustls::LazyConfigAcceptor::new(rustls::server::Acceptor::default(), inner);
+			pin_mut!(acceptor);
 			let tls_start = std::time::Instant::now();
-			let mut start = acceptor.await?;
+			let mut start = match acceptor.as_mut().await {
+				Ok(start) => start,
+				Err(e) => {
+					if is_https
+						&& let Some(io) = acceptor.take_io()
+						&& let Some(data) = io.buffered()
+						&& tls_looks_like_http(data)
+					{
+						anyhow::bail!("client sent an HTTP request to an HTTPS listener: {e}");
+						// TODO(https://github.com/rustls/tokio-rustls/pull/147): write
+						// let _ = io.write_all(b"HTTP/1.0 400 Bad Request\r\n\r\nclient sent an HTTP request to an HTTPS listener\n").await;
+						// let _ = io.shutdown().await;
+					}
+					anyhow::bail!(e);
+				},
+			};
 			let ch = start.client_hello();
 			let sni = ch.server_name().unwrap_or_default();
 			let best = listeners
 				.best_match(sni)
 				.ok_or(anyhow!("no TLS listener match for {sni}"))?;
 			match best.protocol.tls(alpn) {
-				Some(cfg) => {
+				Some(Err(e)) => {
+					// There is a TLS config for this listener, but its invalid. Reject the connection
+					Err(e)
+				},
+				Some(Ok(cfg)) => {
 					let tokio_rustls::StartHandshake { accepted, io, .. } = start;
 					let start = tokio_rustls::StartHandshake::from_parts(accepted, Box::new(io.discard()));
 					let tls = start.into_stream(cfg).await?;
@@ -598,6 +652,15 @@ impl Gateway {
 		)
 		.await;
 	}
+}
+
+fn tls_looks_like_http(d: Bytes) -> bool {
+	d.starts_with(b"GET /")
+		|| d.starts_with(b"POST /")
+		|| d.starts_with(b"HEAD /")
+		|| d.starts_with(b"PUT /")
+		|| d.starts_with(b"OPTIONS /")
+		|| d.starts_with(b"DELETE /")
 }
 
 fn bind_protocol(inp: Arc<ProxyInputs>, bind: BindName) -> BindProtocol {
