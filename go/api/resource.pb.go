@@ -7164,8 +7164,8 @@ func (x *BackendPolicySpec_McpAuthorization) GetDeny() []string {
 type BackendPolicySpec_McpAuthentication struct {
 	state            protoimpl.MessageState                                `protogen:"open.v1"`
 	Issuer           string                                                `protobuf:"bytes,1,opt,name=issuer,proto3" json:"issuer,omitempty"`
-	Audience         string                                                `protobuf:"bytes,2,opt,name=audience,proto3" json:"audience,omitempty"`
-	JwksUrl          string                                                `protobuf:"bytes,3,opt,name=jwks_url,json=jwksUrl,proto3" json:"jwks_url,omitempty"`
+	Audiences        []string                                              `protobuf:"bytes,2,rep,name=audiences,proto3" json:"audiences,omitempty"`
+	JwksInline       string                                                `protobuf:"bytes,3,opt,name=jwks_inline,json=jwksInline,proto3" json:"jwks_inline,omitempty"`
 	Provider         BackendPolicySpec_McpAuthentication_McpIDP            `protobuf:"varint,4,opt,name=provider,proto3,enum=agentgateway.dev.resource.BackendPolicySpec_McpAuthentication_McpIDP" json:"provider,omitempty"`
 	ResourceMetadata *BackendPolicySpec_McpAuthentication_ResourceMetadata `protobuf:"bytes,5,opt,name=resource_metadata,json=resourceMetadata,proto3" json:"resource_metadata,omitempty"`
 	unknownFields    protoimpl.UnknownFields
@@ -7209,16 +7209,16 @@ func (x *BackendPolicySpec_McpAuthentication) GetIssuer() string {
 	return ""
 }
 
-func (x *BackendPolicySpec_McpAuthentication) GetAudience() string {
+func (x *BackendPolicySpec_McpAuthentication) GetAudiences() []string {
 	if x != nil {
-		return x.Audience
+		return x.Audiences
 	}
-	return ""
+	return nil
 }
 
-func (x *BackendPolicySpec_McpAuthentication) GetJwksUrl() string {
+func (x *BackendPolicySpec_McpAuthentication) GetJwksInline() string {
 	if x != nil {
-		return x.JwksUrl
+		return x.JwksInline
 	}
 	return ""
 }
@@ -8966,7 +8966,7 @@ const file_resource_proto_rawDesc = "" +
 	"\vPolicyPhase\x12\t\n" +
 	"\x05ROUTE\x10\x00\x12\v\n" +
 	"\aGATEWAY\x10\x01B\x06\n" +
-	"\x04kind\"\xa5.\n" +
+	"\x04kind\"\xad.\n" +
 	"\x11BackendPolicySpec\x12D\n" +
 	"\x03a2a\x18\x01 \x01(\v20.agentgateway.dev.resource.BackendPolicySpec.A2aH\x00R\x03a2a\x12l\n" +
 	"\x11inference_routing\x18\x02 \x01(\v2=.agentgateway.dev.resource.BackendPolicySpec.InferenceRoutingH\x00R\x10inferenceRouting\x12Z\n" +
@@ -9092,11 +9092,12 @@ const file_resource_proto_rawDesc = "" +
 	"\x0fconnect_timeout\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\x0econnectTimeout\x1a<\n" +
 	"\x10McpAuthorization\x12\x14\n" +
 	"\x05allow\x18\x01 \x03(\tR\x05allow\x12\x12\n" +
-	"\x04deny\x18\x02 \x03(\tR\x04deny\x1a\xbf\x04\n" +
+	"\x04deny\x18\x02 \x03(\tR\x04deny\x1a\xc7\x04\n" +
 	"\x11McpAuthentication\x12\x16\n" +
-	"\x06issuer\x18\x01 \x01(\tR\x06issuer\x12\x1a\n" +
-	"\baudience\x18\x02 \x01(\tR\baudience\x12\x19\n" +
-	"\bjwks_url\x18\x03 \x01(\tR\ajwksUrl\x12a\n" +
+	"\x06issuer\x18\x01 \x01(\tR\x06issuer\x12\x1c\n" +
+	"\taudiences\x18\x02 \x03(\tR\taudiences\x12\x1f\n" +
+	"\vjwks_inline\x18\x03 \x01(\tR\n" +
+	"jwksInline\x12a\n" +
 	"\bprovider\x18\x04 \x01(\x0e2E.agentgateway.dev.resource.BackendPolicySpec.McpAuthentication.McpIDPR\bprovider\x12|\n" +
 	"\x11resource_metadata\x18\x05 \x01(\v2O.agentgateway.dev.resource.BackendPolicySpec.McpAuthentication.ResourceMetadataR\x10resourceMetadata\x1a\xd6\x01\n" +
 	"\x10ResourceMetadata\x12p\n" +

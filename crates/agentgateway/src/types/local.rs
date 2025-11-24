@@ -21,10 +21,10 @@ use crate::store::LocalWorkload;
 use crate::types::agent::{
 	A2aPolicy, Authorization, Backend, BackendName, BackendPolicy, BackendReference,
 	BackendWithPolicies, Bind, BindName, FrontendPolicy, GatewayName, Listener, ListenerKey,
-	ListenerProtocol, ListenerSet, McpAuthentication, McpBackend, McpTarget, McpTargetName,
-	McpTargetSpec, OpenAPITarget, PathMatch, PolicyName, PolicyPhase, PolicyTarget, PolicyType,
-	Route, RouteBackendReference, RouteMatch, RouteName, RouteRuleName, RouteSet, ServerTLSConfig,
-	SimpleBackendReference, SseTargetSpec, StreamableHTTPTargetSpec, TCPRoute,
+	ListenerProtocol, ListenerSet, LocalMcpAuthentication, McpAuthentication, McpBackend, McpTarget,
+	McpTargetName, McpTargetSpec, OpenAPITarget, PathMatch, PolicyName, PolicyPhase, PolicyTarget,
+	PolicyType, Route, RouteBackendReference, RouteMatch, RouteName, RouteRuleName, RouteSet,
+	ServerTLSConfig, SimpleBackendReference, SseTargetSpec, StreamableHTTPTargetSpec, TCPRoute,
 	TCPRouteBackendReference, TCPRouteSet, Target, TargetedPolicy, TrafficPolicy,
 };
 use crate::types::discovery::{NamespacedHostname, Service};
@@ -768,7 +768,7 @@ struct FilterOrPolicy {
 	authorization: Option<Authorization>,
 	/// Authentication for MCP clients.
 	#[serde(default)]
-	mcp_authentication: Option<McpAuthentication>,
+	mcp_authentication: Option<LocalMcpAuthentication>,
 	/// Mark this traffic as A2A to enable A2A processing and telemetry.
 	#[serde(default)]
 	a2a: Option<A2aPolicy>,
@@ -1171,9 +1171,10 @@ async fn split_policies(client: Client, pol: FilterOrPolicy) -> Result<ResolvedP
 		backend_policies.push(BackendPolicy::McpAuthorization(p))
 	}
 	if let Some(p) = mcp_authentication {
-		let jp = p.as_jwt()?;
-		backend_policies.push(BackendPolicy::McpAuthentication(p));
-		route_policies.push(TrafficPolicy::JwtAuth(jp.try_into(client.clone()).await?));
+		// Translate local MCP authn into runtime authn with a ready JWT validator.
+		let authn: McpAuthentication = p.translate(client.clone()).await?;
+		backend_policies.push(BackendPolicy::McpAuthentication(authn));
+		// Do NOT inject a separate route-level JwtAuth; MCP router handles validation using jwt_validator.
 	}
 	if let Some(p) = a2a {
 		backend_policies.push(BackendPolicy::A2a(p))

@@ -3,11 +3,15 @@ use std::sync::Arc;
 use agent_core::prelude::Strng;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
+use axum_core::RequestExt;
+use axum_extra::TypedHeader;
+use axum_extra::headers::Authorization;
+use axum_extra::headers::authorization::Bearer;
 use bytes::Bytes;
 use http::Method;
 use http::uri::PathAndQuery;
 use rmcp::transport::StreamableHttpServerConfig;
-use tracing::warn;
+use tracing::{debug, warn};
 
 use crate::cel::ContextBuilder;
 use crate::http::jwt::Claims;
@@ -144,16 +148,50 @@ impl App {
 		ctx.with_extauthz(&req);
 
 		// `response` is not valid here, since we run authz first
-		// MCP context is added later
-		req.extensions_mut().insert(Arc::new(ctx));
+		// MCP context is added later. The context is inserted after
+		// authentication so it can include verified claims
 
-		// Check if authentication is required and JWT token is missing
-		if let Some(auth) = &authn
-			&& req.extensions().get::<Claims>().is_none()
-			&& !Self::is_well_known_endpoint(req.uri().path())
-		{
-			return Self::create_auth_required_response(&req, auth).into_response();
+		// skip well-known OAuth endpoints for authn
+		if !Self::is_well_known_endpoint(req.uri().path()) {
+			let has_claims = req.extensions().get::<Claims>().is_some();
+
+			match (authn.as_ref(), has_claims) {
+				// if mcp authn is configured, has a validator, and has no claims yet, validate
+				(Some(auth), false) => {
+					if let Ok(TypedHeader(Authorization(bearer))) = req
+						.extract_parts::<TypedHeader<Authorization<Bearer>>>()
+						.await
+					{
+						match auth.jwt_validator.validate_claims(bearer.token()) {
+							Ok(claims) => {
+								// Populate context with verified JWT claims before continuing
+								ctx.with_jwt(&claims);
+								req.headers_mut().remove(http::header::AUTHORIZATION);
+								req.extensions_mut().insert(claims);
+							},
+							Err(_e) => {
+								debug!("JWT validation failed: {:?}", _e);
+								return Self::create_auth_required_response(&req, auth).into_response();
+							},
+						}
+					}
+					// MCP authn validation happens in optional mode, so if no token is present, do nothing
+				},
+				// if mcp authn is configured but JWT already validated (claims exist from previous layer),
+				// reject because we cannot validate MCP-specific auth requirements
+				(Some(auth), true) => {
+					warn!(
+						"MCP backend authentication configured but JWT token already validated and stripped by Gateway or Route level policy"
+					);
+					return Self::create_auth_required_response(&req, auth).into_response();
+				},
+				// if no mcp authn is configured, do nothing
+				(None, _) => {},
+			}
 		}
+
+		// Insert the finalized context (now potentially including verified JWT claims)
+		req.extensions_mut().insert(Arc::new(ctx));
 
 		match (req.uri().path(), req.method(), authn) {
 			("/sse", _, _) => {
@@ -345,7 +383,7 @@ impl App {
 		// Normalize issuer URL by removing trailing slashes to avoid double-slash in path
 		let issuer = auth.issuer.trim_end_matches('/');
 		let ureq = ::http::Request::builder()
-			.uri(format!("{}/.well-known/oauth-authorization-server", issuer))
+			.uri(format!("{issuer}/.well-known/oauth-authorization-server"))
 			.body(Body::empty())?;
 		let upstream = client.simple_call(ureq).await?;
 		let limit = crate::http::response_buffer_limit(&upstream);
@@ -358,7 +396,10 @@ impl App {
 				else {
 					anyhow::bail!("authorization_endpoint missing");
 				};
-				ae.push_str(&format!("?audience={}", auth.audience));
+				// If the user provided multiple audiences with auth0, just prepend the first one
+				if let Some(aud) = auth.audiences.first() {
+					ae.push_str(&format!("?audience={}", aud));
+				}
 			},
 			Some(McpIDP::Keycloak { .. }) => {
 				// Keycloak does not support RFC 8707.
@@ -394,7 +435,7 @@ impl App {
 			.body(axum::body::Body::from(Bytes::from(serde_json::to_string(
 				&resp,
 			)?)))
-			.map_err(|e| anyhow::anyhow!("Failed to build response: {}", e))?;
+			.map_err(|e| anyhow::anyhow!("Failed to build response: {e}"))?;
 
 		Ok(response)
 	}
@@ -408,7 +449,7 @@ impl App {
 		// Normalize issuer URL by removing trailing slashes to avoid double-slash in path
 		let issuer = auth.issuer.trim_end_matches('/');
 		let ureq = ::http::Request::builder()
-			.uri(format!("{}/clients-registrations/openid-connect", issuer))
+			.uri(format!("{issuer}/clients-registrations/openid-connect"))
 			.method(Method::POST)
 			.body(req.into_body())?;
 

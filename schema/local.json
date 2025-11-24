@@ -1178,11 +1178,11 @@
                               "issuer": {
                                 "type": "string"
                               },
-                              "audience": {
-                                "type": "string"
-                              },
-                              "jwksUrl": {
-                                "type": "string"
+                              "audiences": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
                               },
                               "provider": {
                                 "anyOf": [
@@ -1224,16 +1224,44 @@
                               "resourceMetadata": {
                                 "type": "object",
                                 "additionalProperties": true
+                              },
+                              "jwks": {
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "file": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "file"
+                                    ]
+                                  },
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "url": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "url"
+                                    ]
+                                  }
+                                ]
                               }
                             },
                             "additionalProperties": false,
                             "required": [
                               "issuer",
-                              "audience",
-                              "jwksUrl",
-                              "resourceMetadata"
-                            ],
-                            "default": null
+                              "audiences",
+                              "resourceMetadata",
+                              "jwks"
+                            ]
                           },
                           "a2a": {
                             "description": "Mark this traffic as A2A to enable A2A processing and telemetry.",
@@ -9219,11 +9247,11 @@
                   "issuer": {
                     "type": "string"
                   },
-                  "audience": {
-                    "type": "string"
-                  },
-                  "jwksUrl": {
-                    "type": "string"
+                  "audiences": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
                   },
                   "provider": {
                     "anyOf": [
@@ -9265,16 +9293,44 @@
                   "resourceMetadata": {
                     "type": "object",
                     "additionalProperties": true
+                  },
+                  "jwks": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "file": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "file"
+                        ]
+                      },
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "url": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "url"
+                        ]
+                      }
+                    ]
                   }
                 },
                 "additionalProperties": false,
                 "required": [
                   "issuer",
-                  "audience",
-                  "jwksUrl",
-                  "resourceMetadata"
-                ],
-                "default": null
+                  "audiences",
+                  "resourceMetadata",
+                  "jwks"
+                ]
               },
               "a2a": {
                 "description": "Mark this traffic as A2A to enable A2A processing and telemetry.",
