@@ -25,6 +25,56 @@ pub struct RouteIdentifier {
 	pub route_rule: DefaultedUnknown<RichStrng>,
 }
 
+#[derive(
+	Copy, Clone, Hash, Debug, PartialEq, Eq, prometheus_client::encoding::EncodeLabelValue,
+)]
+pub enum GuardrailPhase {
+	Request,
+	Response,
+}
+
+#[derive(
+	Copy, Clone, Hash, Debug, PartialEq, Eq, prometheus_client::encoding::EncodeLabelValue,
+)]
+pub enum GuardrailKind {
+	Regex,
+	Webhook,
+	Moderation,
+}
+
+#[derive(
+	Copy, Clone, Hash, Debug, PartialEq, Eq, prometheus_client::encoding::EncodeLabelValue,
+)]
+pub enum GuardrailAction {
+	Mask,
+	Reject,
+}
+
+impl Default for GuardrailPhase {
+	fn default() -> Self {
+		GuardrailPhase::Request
+	}
+}
+
+impl Default for GuardrailKind {
+	fn default() -> Self {
+		GuardrailKind::Regex
+	}
+}
+
+impl Default for GuardrailAction {
+	fn default() -> Self {
+		GuardrailAction::Mask
+	}
+}
+
+#[derive(Clone, Hash, Default, Debug, PartialEq, Eq, EncodeLabelSet)]
+pub struct GuardrailLabels {
+	pub phase: GuardrailPhase,
+	pub kind: GuardrailKind,
+	pub action: GuardrailAction,
+}
+
 #[derive(Clone, Hash, Default, Debug, PartialEq, Eq, EncodeLabelSet)]
 pub struct HTTPLabels {
 	pub backend: DefaultedUnknown<RichStrng>,
@@ -120,6 +170,9 @@ pub struct Metrics {
 	pub tcp_downstream_tx_bytes: Family<TCPLabels, counter::Counter>,
 
 	pub upstream_connect_duration: Histogram<ConnectLabels>,
+
+	// metrics for guardrail trips (mask/reject) for request/response
+	pub guardrail_trips: Family<GuardrailLabels, counter::Counter>,
 }
 
 // FilteredRegistry is a wrapper around Registry that allows to filter out certain metrics.
@@ -243,6 +296,15 @@ impl Metrics {
 				"requests",
 				"The total number of HTTP requests sent",
 			),
+			guardrail_trips: {
+				let m = Family::<GuardrailLabels, _>::default();
+				registry.register(
+					"guardrail_trips",
+					"Total number of guardrail trips",
+					m.clone(),
+				);
+				m
+			},
 			downstream_connection: build(
 				&mut registry,
 				"downstream_connections",
