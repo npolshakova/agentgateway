@@ -3,6 +3,9 @@ use ::http::header::CONTENT_TYPE;
 use anyhow::anyhow;
 use futures_core::stream::BoxStream;
 use futures_util::{StreamExt, TryFutureExt};
+use opentelemetry::trace::{SpanKind, Tracer as _};
+use opentelemetry::trace::Span;
+use opentelemetry::{Context, KeyValue};
 use reqwest::header::ACCEPT;
 use rmcp::model::{
 	ClientJsonRpcMessage, ClientNotification, ClientRequest, JsonRpcRequest, ServerJsonRpcMessage,
@@ -10,6 +13,7 @@ use rmcp::model::{
 use rmcp::transport::common::http_header::EVENT_STREAM_MIME_TYPE;
 use rmcp::transport::streamable_http_client::{SseError, StreamableHttpPostResponse};
 use sse_stream::{Sse, SseStream};
+use rmcp::model::ConstString;
 
 use crate::mcp::ClientError;
 use crate::mcp::mergestream::Messages;
@@ -81,6 +85,65 @@ impl ClientCore {
 		ctx: &IncomingRequestContext,
 	) -> Result<(), ClientError> {
 		let body = serde_json::to_vec(&message).map_err(ClientError::new)?;
+		let tracer = agent_core::trcng::get_tracer();
+		let parent_cx: Context = ctx.otel_parent_context();
+		let (method_name, request_id) = match &message {
+			ClientJsonRpcMessage::Request(r) => (
+				Some(r.request.method().to_string()),
+				Some(format!("{}", r.id)),
+			),
+			ClientJsonRpcMessage::Notification(n) => {
+				let method = match &n.notification {
+					ClientNotification::CancelledNotification(r) => r.method.as_str(),
+					ClientNotification::ProgressNotification(r) => r.method.as_str(),
+					ClientNotification::InitializedNotification(r) => r.method.as_str(),
+					ClientNotification::RootsListChangedNotification(r) => r.method.as_str()
+				};
+				(Some(method.to_string()), None)
+			},
+			ClientJsonRpcMessage::Response(_) => (None, None),
+			ClientJsonRpcMessage::Error(_) => (None, None),
+		};
+		let (server_addr, server_port) = match self.uri.authority() {
+			Some(a) => {
+				let host = a.host().to_string();
+				let port = a.port_u16().unwrap_or(80);
+				(host, port)
+			},
+			None => ("unknown".to_string(), 0),
+		};
+		let mut attrs = vec![
+			KeyValue::new("rpc.system", "jsonrpc"),
+			KeyValue::new("rpc.jsonrpc.version", "2.0"),
+			KeyValue::new("server.address", server_addr),
+			KeyValue::new("server.port", server_port as i64),
+			KeyValue::new("network.protocol.name", "http"),
+			KeyValue::new("rpc.request.size", body.len() as i64),
+			KeyValue::new(
+				"rpc.service",
+				self
+					.uri
+					.authority()
+					.map(|a| a.as_str().to_string())
+					.unwrap_or_else(|| "unknown".to_string()),
+			),
+		];
+		if let Some(m) = &method_name {
+			attrs.push(KeyValue::new("rpc.method", m.clone()));
+		}
+		if let Some(id) = &request_id {
+			attrs.push(KeyValue::new("rpc.request.id", id.clone()));
+		}
+		let mut span = tracer
+			.span_builder(
+				method_name
+					.as_deref()
+					.map(|m| format!("mcp.upstream.sse.{m}"))
+					.unwrap_or_else(|| "mcp.upstream.sse.send".to_string()),
+			)
+			.with_kind(SpanKind::Client)
+			.with_attributes(attrs)
+			.start_with_context(tracer, &parent_cx);
 
 		let mut req = ::http::Request::builder()
 			.uri(&self.uri)
@@ -94,8 +157,18 @@ impl ClientCore {
 		let resp = self.http_client.call(req).await.map_err(ClientError::new)?;
 
 		if !resp.status().is_success() {
+			span.set_attribute(KeyValue::new(
+				"rpc.error.code",
+				resp.status().as_u16() as i64,
+			));
+			span.set_attribute(KeyValue::new(
+				"rpc.error.message",
+				format!("http {}", resp.status()),
+			));
+			span.end();
 			return Err(ClientError::Status(Box::new(resp)));
 		}
+		span.end();
 		Ok(())
 	}
 }
@@ -105,6 +178,35 @@ impl ClientCore {
 		&self,
 		ctx: &IncomingRequestContext,
 	) -> Result<StreamableHttpPostResponse, ClientError> {
+		let tracer = agent_core::trcng::get_tracer();
+		let parent_cx: Context = ctx.otel_parent_context();
+		let (server_addr, server_port) = match self.uri.authority() {
+			Some(a) => {
+				let host = a.host().to_string();
+				let port = a.port_u16().unwrap_or(80);
+				(host, port)
+			},
+			None => ("unknown".to_string(), 0),
+		};
+		let mut span = tracer
+			.span_builder("mcp.upstream.sse.connect")
+			.with_kind(SpanKind::Client)
+			.with_attributes(vec![
+				KeyValue::new("rpc.system", "jsonrpc"),
+				KeyValue::new("rpc.jsonrpc.version", "2.0"),
+				KeyValue::new("server.address", server_addr),
+				KeyValue::new("server.port", server_port as i64),
+				KeyValue::new(
+					"rpc.service",
+					self
+						.uri
+						.authority()
+						.map(|a| a.as_str().to_string())
+						.unwrap_or_else(|| "unknown".to_string()),
+				),
+				KeyValue::new("network.protocol.name", "http"),
+			])
+			.start_with_context(tracer, &parent_cx);
 		let mut req = ::http::Request::builder()
 			.uri(&self.uri)
 			.method(http::Method::GET)
@@ -117,10 +219,12 @@ impl ClientCore {
 		let resp = self.http_client.call(req).await.map_err(ClientError::new)?;
 
 		if resp.status() == http::StatusCode::ACCEPTED {
+			span.end();
 			return Err(ClientError::new(anyhow!("expected an SSE stream")));
 		}
 
 		if !resp.status().is_success() {
+			span.end();
 			return Err(ClientError::Status(Box::new(resp)));
 		}
 
@@ -129,6 +233,7 @@ impl ClientCore {
 		match content_type {
 			Some(ct) if ct.as_bytes().starts_with(EVENT_STREAM_MIME_TYPE.as_bytes()) => {
 				let event_stream = SseStream::from_byte_stream(resp.into_body().into_data_stream()).boxed();
+				span.end();
 				Ok(StreamableHttpPostResponse::Sse(event_stream, None))
 			},
 			_ => Err(ClientError::new(anyhow!(

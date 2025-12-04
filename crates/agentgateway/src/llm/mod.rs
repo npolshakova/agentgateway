@@ -718,6 +718,7 @@ impl AIProvider {
 					input_tokens: None,
 					output_tokens: None,
 					total_tokens: None,
+					finish_reasons: None,
 					provider_model: None,
 					completion: None,
 					first_token: None,

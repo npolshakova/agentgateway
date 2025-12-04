@@ -287,6 +287,17 @@ fn translate_stop_reason(resp: &StopReason) -> universal::FinishReason {
 	}
 }
 
+fn translate_stop_reason_to_anthropic(stop_reason: StopReason) -> anthropic::StopReason {
+	match stop_reason {
+		StopReason::EndTurn => anthropic::StopReason::EndTurn,
+		StopReason::MaxTokens => anthropic::StopReason::MaxTokens,
+		StopReason::ModelContextWindowExceeded => anthropic::StopReason::ModelContextWindowExceeded,
+		StopReason::StopSequence => anthropic::StopReason::StopSequence,
+		StopReason::ToolUse => anthropic::StopReason::ToolUse,
+		StopReason::ContentFiltered | StopReason::GuardrailIntervened => anthropic::StopReason::Refusal,
+	}
+}
+
 pub(super) fn translate_request_completions(
 	req: universal::Request,
 	provider: &Provider,
@@ -2035,17 +2046,6 @@ fn generate_anthropic_message_id() -> String {
 	let timestamp = chrono::Utc::now().timestamp_millis();
 	let random: u32 = rand::random();
 	format!("msg_{:x}{:08x}", timestamp, random)
-}
-
-fn translate_stop_reason_to_anthropic(stop_reason: StopReason) -> anthropic::StopReason {
-	match stop_reason {
-		StopReason::EndTurn => anthropic::StopReason::EndTurn,
-		StopReason::MaxTokens => anthropic::StopReason::MaxTokens,
-		StopReason::ModelContextWindowExceeded => anthropic::StopReason::ModelContextWindowExceeded,
-		StopReason::StopSequence => anthropic::StopReason::StopSequence,
-		StopReason::ToolUse => anthropic::StopReason::ToolUse,
-		StopReason::ContentFiltered | StopReason::GuardrailIntervened => anthropic::StopReason::Refusal,
-	}
 }
 
 fn to_anthropic_message_delta_usage(

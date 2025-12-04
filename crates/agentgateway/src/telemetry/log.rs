@@ -25,7 +25,7 @@ use crate::cel::{ContextBuilder, Expression};
 use crate::llm::LLMInfo;
 use crate::proxy::ProxyResponseReason;
 use crate::telemetry::metrics::{
-	GenAILabels, GenAILabelsTokenUsage, HTTPLabels, MCPCall, Metrics, RouteIdentifier,
+	GenAILabels, GenAIFinishLabels, GenAILabelsTokenUsage, HTTPLabels, MCPCall, Metrics, RouteIdentifier,
 };
 use crate::telemetry::trc;
 use crate::telemetry::trc::TraceParent;
@@ -412,7 +412,7 @@ impl DropOnLog {
 				llm::InputFormat::Responses => strng::literal!("responses"),
 				llm::InputFormat::CountTokens => strng::literal!("count_tokens"),
 			};
-			let streaming = if llm_response.request.streaming {
+			let _streaming = if llm_response.request.streaming {
 				strng::literal!("true")
 			} else {
 				strng::literal!("false")

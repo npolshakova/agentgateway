@@ -261,6 +261,27 @@ pub mod responses {
 
 		impl ResponseType for Response {
 			fn to_llm_response(&self, include_completion_in_log: bool) -> LLMResponse {
+				let finish_reasons = {
+					let reasons: Vec<agent_core::strng::Strng> = self
+						.output
+						.iter()
+						.filter_map(|o| match o {
+							OutputContent::Message(msg) => Some(msg),
+							_ => None,
+						})
+						.flat_map(|msg| {
+							msg.content.iter().filter_map(|c| match c {
+								Content::OutputText(t) => Some(agent_core::strng::new(&t.text)),
+								_ => None,
+							})
+						})
+						.collect();
+					if reasons.is_empty() {
+						None
+					} else {
+						Some(reasons)
+					}
+				};
 				LLMResponse {
 					input_tokens: self.usage.as_ref().map(|u| u.input_tokens),
 					output_tokens: self.usage.as_ref().map(|u| u.output_tokens),
@@ -268,6 +289,7 @@ pub mod responses {
 						.usage
 						.as_ref()
 						.map(|u| u.input_tokens + u.output_tokens),
+					finish_reasons,
 					provider_model: Some(agent_core::strng::new(&self.model)),
 					completion: if include_completion_in_log {
 						Some(

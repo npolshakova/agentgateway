@@ -1437,10 +1437,12 @@ pub mod passthrough {
 
 	impl ResponseType for Response {
 		fn to_llm_response(&self, include_completion_in_log: bool) -> LLMResponse {
+			// in non streaming mode stop_reason is always set 
 			let finish_reasons = self
-				.stop_reason
-				.as_ref()
-				.map(|sr| vec![translate_stop_reason(sr).to_string()])
+				.rest
+				.get("stop_reason")
+				.and_then(|v| serde_json::from_value::<super::types::StopReason>(v.clone()).ok())
+				.map(|sr| vec![format!("{:?}", super::translate_stop_reason(&sr))])
 				.map(|v| v.into_iter().map(strng::new).collect());
 			LLMResponse {
 				input_tokens: Some(self.usage.input_tokens),
