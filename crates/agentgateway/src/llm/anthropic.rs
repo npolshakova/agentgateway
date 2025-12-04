@@ -1437,10 +1437,16 @@ pub mod passthrough {
 
 	impl ResponseType for Response {
 		fn to_llm_response(&self, include_completion_in_log: bool) -> LLMResponse {
+			let finish_reasons = self
+				.stop_reason
+				.as_ref()
+				.map(|sr| vec![translate_stop_reason(sr).to_string()])
+				.map(|v| v.into_iter().map(strng::new).collect());
 			LLMResponse {
 				input_tokens: Some(self.usage.input_tokens),
 				output_tokens: Some(self.usage.output_tokens),
 				total_tokens: Some(self.usage.output_tokens + self.usage.input_tokens),
+				finish_reasons,
 				provider_model: Some(strng::new(&self.model)),
 				completion: if include_completion_in_log {
 					Some(

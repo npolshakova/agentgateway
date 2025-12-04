@@ -63,6 +63,14 @@ pub struct GenAILabelsTokenUsage {
 	pub common: EncodeArc<GenAILabels>,
 }
 
+#[derive(Clone, Hash, Default, Debug, PartialEq, Eq, EncodeLabelSet)]
+pub struct GenAIFinishLabels {
+	pub gen_ai_finish_reason: DefaultedUnknown<RichStrng>,
+
+	#[prometheus(flatten)]
+	pub common: EncodeArc<GenAILabels>,
+}
+
 #[derive(Clone, Hash, Debug, PartialEq, Eq, EncodeLabelSet)]
 pub struct MCPCall {
 	pub method: DefaultedUnknown<RichStrng>,
@@ -112,6 +120,7 @@ pub struct Metrics {
 	pub gen_ai_request_duration: Histogram<GenAILabels>,
 	pub gen_ai_time_per_output_token: Histogram<GenAILabels>,
 	pub gen_ai_time_to_first_token: Histogram<GenAILabels>,
+	pub gen_ai_finish_reasons: Family<GenAIFinishLabels, counter::Counter>,
 
 	pub tls_handshake_duration: Histogram<TCPLabels>,
 
@@ -236,6 +245,12 @@ impl Metrics {
 			"Time to generate the first token for a given request",
 			gen_ai_time_to_first_token.clone(),
 		);
+		let gen_ai_finish_reasons = Family::<GenAIFinishLabels, _>::default();
+		registry.register(
+			"gen_ai_response_finish_reasons",
+			"Count of GenAI finish reasons by reason label",
+			gen_ai_finish_reasons.clone(),
+		);
 
 		Metrics {
 			requests: build(
@@ -259,6 +274,7 @@ impl Metrics {
 			gen_ai_request_duration,
 			gen_ai_time_per_output_token,
 			gen_ai_time_to_first_token,
+			gen_ai_finish_reasons,
 
 			response_bytes: {
 				let m = Family::<HTTPLabels, _>::default();

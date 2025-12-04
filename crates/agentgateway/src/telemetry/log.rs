@@ -406,14 +406,37 @@ impl DropOnLog {
 		custom_metric_fields: &CustomField,
 	) {
 		if let Some(llm_response) = &llm_response {
+			let operation_name = match llm_response.request.input_format {
+				llm::InputFormat::Messages => strng::literal!("messages"),
+				llm::InputFormat::Completions => strng::literal!("completions"),
+				llm::InputFormat::Responses => strng::literal!("responses"),
+				llm::InputFormat::CountTokens => strng::literal!("count_tokens"),
+			};
+			let streaming = if llm_response.request.streaming {
+				strng::literal!("true")
+			} else {
+				strng::literal!("false")
+			};
 			let gen_ai_labels = Arc::new(GenAILabels {
-				gen_ai_operation_name: strng::literal!("chat").into(),
+				gen_ai_operation_name: operation_name.into(),
 				gen_ai_system: llm_response.request.provider.clone().into(),
 				gen_ai_request_model: llm_response.request.request_model.clone().into(),
 				gen_ai_response_model: llm_response.response.provider_model.clone().into(),
 				custom: custom_metric_fields.clone(),
 				route: route_identifier.clone(),
 			});
+			if let Some(reasons) = &llm_response.response.finish_reasons {
+				for reason in reasons {
+					log
+						.metrics
+						.gen_ai_finish_reasons
+						.get_or_create(&GenAIFinishLabels {
+							gen_ai_finish_reason: reason.clone().into(),
+							common: gen_ai_labels.clone().into(),
+						})
+						.inc();
+				}
+			}
 			if let Some(it) = llm_response.input_tokens() {
 				log
 					.metrics

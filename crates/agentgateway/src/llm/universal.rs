@@ -195,10 +195,24 @@ pub mod passthrough {
 
 	impl super::ResponseType for Response {
 		fn to_llm_response(&self, include_completion_in_log: bool) -> LLMResponse {
+			let finish_reasons = {
+				let reasons: Vec<String> = self
+					.choices
+					.iter()
+					.filter_map(|c| c.rest.get("finish_reason").and_then(|v| v.as_str()))
+					.map(|s| s.to_string())
+					.collect();
+				if reasons.is_empty() {
+					None
+				} else {
+					Some(reasons.into_iter().map(strng::new).collect())
+				}
+			};
 			LLMResponse {
 				input_tokens: self.usage.as_ref().map(|u| u.prompt_tokens as u64),
 				output_tokens: self.usage.as_ref().map(|u| u.completion_tokens as u64),
 				total_tokens: self.usage.as_ref().map(|u| u.total_tokens as u64),
+				finish_reasons,
 				provider_model: Some(strng::new(&self.model)),
 				completion: if include_completion_in_log {
 					Some(

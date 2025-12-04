@@ -180,6 +180,7 @@ pub struct LLMResponse {
 	pub input_tokens: Option<u64>,
 	pub output_tokens: Option<u64>,
 	pub total_tokens: Option<u64>,
+	pub finish_reasons: Option<Vec<Strng>>,
 	pub provider_model: Option<Strng>,
 	pub completion: Option<Vec<String>>,
 	// Time to get the first token. Only used for streaming.
