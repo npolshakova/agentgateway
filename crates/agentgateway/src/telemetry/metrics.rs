@@ -26,46 +26,32 @@ pub struct RouteIdentifier {
 }
 
 #[derive(
-	Copy, Clone, Hash, Debug, PartialEq, Eq, prometheus_client::encoding::EncodeLabelValue,
+	Copy, Clone, Hash, Debug, PartialEq, Eq, prometheus_client::encoding::EncodeLabelValue, Default,
 )]
 pub enum GuardrailPhase {
+	#[default]
 	Request,
 	Response,
 }
 
 #[derive(
-	Copy, Clone, Hash, Debug, PartialEq, Eq, prometheus_client::encoding::EncodeLabelValue,
+	Copy, Clone, Hash, Debug, PartialEq, Eq, prometheus_client::encoding::EncodeLabelValue, Default,
 )]
 pub enum GuardrailKind {
+	#[default]
 	Regex,
 	Webhook,
 	Moderation,
 }
 
 #[derive(
-	Copy, Clone, Hash, Debug, PartialEq, Eq, prometheus_client::encoding::EncodeLabelValue,
+	Copy, Clone, Hash, Debug, PartialEq, Eq, prometheus_client::encoding::EncodeLabelValue, Default,
 )]
 pub enum GuardrailAction {
+	#[default]
+	Allow,
 	Mask,
 	Reject,
-}
-
-impl Default for GuardrailPhase {
-	fn default() -> Self {
-		GuardrailPhase::Request
-	}
-}
-
-impl Default for GuardrailKind {
-	fn default() -> Self {
-		GuardrailKind::Regex
-	}
-}
-
-impl Default for GuardrailAction {
-	fn default() -> Self {
-		GuardrailAction::Mask
-	}
 }
 
 #[derive(Clone, Hash, Default, Debug, PartialEq, Eq, EncodeLabelSet)]
@@ -171,8 +157,8 @@ pub struct Metrics {
 
 	pub upstream_connect_duration: Histogram<ConnectLabels>,
 
-	// metrics for guardrail trips (mask/reject) for request/response
-	pub guardrail_trips: Family<GuardrailLabels, counter::Counter>,
+	// metrics for guardrail checks (allow/mask/reject) for request/response
+	pub guardrail_checks: Family<GuardrailLabels, counter::Counter>,
 }
 
 // FilteredRegistry is a wrapper around Registry that allows to filter out certain metrics.
@@ -296,11 +282,11 @@ impl Metrics {
 				"requests",
 				"The total number of HTTP requests sent",
 			),
-			guardrail_trips: {
+			guardrail_checks: {
 				let m = Family::<GuardrailLabels, _>::default();
 				registry.register(
-					"guardrail_trips",
-					"Total number of guardrail trips",
+					"guardrail_checks",
+					"Total number of guardrail checks",
 					m.clone(),
 				);
 				m
