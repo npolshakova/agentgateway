@@ -256,11 +256,20 @@ impl Connector {
 	) -> Result<Socket, http::Error> {
 		let connect_start = std::time::Instant::now();
 		let transport_name = transport.name();
-		let mut socket = match transport {
-			Transport::Plaintext => Socket::dial(ep, self.backend_config.clone())
+
+		let mut socket = match (transport, &target) {
+			(Transport::Plaintext, Target::UnixSocket(uds)) => {
+				Socket::dial_unix(uds, self.backend_config.clone())
+					.await
+					.map_err(crate::http::Error::new)?
+			},
+			(Transport::Plaintext, _) => Socket::dial(ep, self.backend_config.clone())
 				.await
 				.map_err(crate::http::Error::new)?,
-			Transport::Tls(tls) => {
+			(_, Target::UnixSocket(_)) => {
+				return Err(http::Error::new("UDS is only supported with plaintext"));
+			},
+			(Transport::Tls(tls), _) => {
 				let server_name = if let Some(h) = tls.hostname_override {
 					h
 				} else {
@@ -269,6 +278,10 @@ impl Connector {
 						Target::Hostname(host, _) => ServerName::DnsName(
 							DnsName::try_from(host.to_string()).expect("TODO: hostname conversion failed"),
 						),
+						Target::UnixSocket(_) => {
+							// This should be unreachable - Unix sockets are handled above
+							unreachable!("Unix sockets should not reach TLS connection path")
+						},
 					}
 				};
 
@@ -280,7 +293,7 @@ impl Connector {
 
 				tls.call(ep).await.map_err(crate::http::Error::new)?
 			},
-			Transport::Hbone(inner, identity) => {
+			(Transport::Hbone(inner, identity), _) => {
 				if inner.is_some() {
 					return Err(crate::http::Error::new(anyhow::anyhow!(
 						"todo: inner TLS is not currently supported"
@@ -319,12 +332,15 @@ impl Connector {
 				};
 				Socket::from_hbone(Arc::new(stream::Extension::new()), pool_key.dst, rw)
 			},
-			Transport::DoubleHbone {
-				gateway_address,
-				gateway_identity,
-				waypoint_identity,
-				inner_tls,
-			} => {
+			(
+				Transport::DoubleHbone {
+					gateway_address,
+					gateway_identity,
+					waypoint_identity,
+					inner_tls,
+				},
+				_,
+			) => {
 				if inner_tls.is_some() {
 					return Err(crate::http::Error::new(anyhow::anyhow!(
 						"todo: inner TLS after double hbone is not currently supported"
@@ -350,6 +366,10 @@ impl Connector {
 					.authority(match &target {
 						Target::Hostname(host, port) => format!("{}:{}", host, port),
 						Target::Address(addr) => addr.to_string(),
+						Target::UnixSocket(_) => {
+							// This should be unreachable - Unix sockets are handled above
+							unreachable!("Unix sockets should not reach DoubleHbone connection path")
+						},
 					})
 					.path_and_query("/")
 					.build()
@@ -419,6 +439,10 @@ impl Connector {
 				let inner_authority = match &target {
 					Target::Hostname(host, port) => format!("{}:{}", host, port),
 					Target::Address(addr) => addr.to_string(),
+					Target::UnixSocket(_) => {
+						// This should be unreachable - Unix sockets are handled above
+						unreachable!("Unix sockets should not reach DoubleHbone connection path")
+					},
 				};
 				let inner_uri = Uri::builder()
 					.scheme(Scheme::HTTPS)
@@ -574,6 +598,7 @@ impl Client {
 		} = call;
 		// For double HBONE, we don't need to resolve the hostname locally
 		// The gateway will resolve it. Use a placeholder dest (won't be used).
+		// For Unix sockets, we use a placeholder since the actual connection uses the path directly.
 		let dest = match (&target, &transport) {
 			(Target::Address(addr), _) => *addr,
 			(
@@ -597,6 +622,11 @@ impl Client {
 					.await
 					.map_err(|_| ProxyError::DnsResolution)?;
 				SocketAddr::from((ip, *port))
+			},
+			(Target::UnixSocket(_), _) => {
+				// Placeholder address for Unix sockets - the actual connection
+				// uses the path from the Target, not this address
+				SocketAddr::from(([0, 0, 0, 0], 0))
 			},
 		};
 
@@ -651,6 +681,7 @@ impl Client {
 		} = call;
 		// For double HBONE, we don't need to resolve the hostname locally
 		// The gateway will resolve it. Use a placeholder dest (won't be used).
+		// For Unix sockets, we use a placeholder since the actual connection uses the path directly.
 		let dest = match (&target, &transport) {
 			(Target::Address(addr), _) => *addr,
 			(
@@ -674,6 +705,11 @@ impl Client {
 					.await
 					.map_err(|_| ProxyError::DnsResolution)?;
 				SocketAddr::from((ip, *port))
+			},
+			(Target::UnixSocket(_), _) => {
+				// Placeholder address for Unix sockets - the actual connection
+				// uses the path from the Target, not this address
+				SocketAddr::from(([0, 0, 0, 0], 0))
 			},
 		};
 		let auto_host = req.extensions().get::<filters::AutoHostname>().is_some();
@@ -741,8 +777,16 @@ impl Client {
 
 			duration = dur,
 		);
-
 		let mut resp = resp?.map(http::Body::new);
+
+		event!(
+			target: "upstream response",
+			parent: None,
+			tracing::Level::TRACE,
+
+			response =?resp
+		);
+
 		resp
 			.extensions_mut()
 			.insert(transport::BufferLimit::new(buffer_limit));
