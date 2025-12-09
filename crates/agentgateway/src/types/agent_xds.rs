@@ -1539,8 +1539,6 @@ impl TryFrom<&proto::agent::frontend_policy_spec::Tracing> for types::agent::Tra
 			})
 			.collect::<Result<Vec<_>, ProtoError>>()?;
 
-		let insecure = t.insecure.unwrap_or(true);
-
 		// Optional per-policy sampling overrides
 		let random_sampling = t
 			.random_sampling
@@ -1565,7 +1563,6 @@ impl TryFrom<&proto::agent::frontend_policy_spec::Tracing> for types::agent::Tra
 			provider_backend,
 			attributes,
 			resources,
-			insecure,
 			random_sampling,
 			client_sampling,
 		})
