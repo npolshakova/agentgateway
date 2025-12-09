@@ -9215,6 +9215,22 @@
                 "null"
               ],
               "default": null
+            },
+            "randomSampling": {
+              "description": "Optional per-policy random sampling override.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null
+            },
+            "clientSampling": {
+              "description": "Optional per-policy client sampling override.",
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null
             }
           },
           "additionalProperties": false,
