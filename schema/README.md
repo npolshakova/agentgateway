@@ -972,6 +972,8 @@ This folder contains JSON schemas for various parts of the project
 |`frontendPolicies.tracing.resources[].name`||
 |`frontendPolicies.tracing.resources[].value`||
 |`frontendPolicies.tracing.insecure`|When true, use plaintext (http) for OTLP endpoint; otherwise TLS (https).|
+|`frontendPolicies.tracing.randomSampling`|Optional per-policy random sampling override.|
+|`frontendPolicies.tracing.clientSampling`|Optional per-policy client sampling override.|
 |`policies`|policies defines additional policies that can be attached to various other configurations.<br>This is an advanced feature; users should typically use the inline `policies` field under route/gateway.|
 |`policies[].name`||
 |`policies[].name.name`||
