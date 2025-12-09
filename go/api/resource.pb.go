@@ -6135,19 +6135,16 @@ type FrontendPolicySpec_Tracing struct {
 	ProviderBackend *BackendReference                      `protobuf:"bytes,1,opt,name=provider_backend,json=providerBackend,proto3" json:"provider_backend,omitempty"`
 	Attributes      []*FrontendPolicySpec_TracingAttribute `protobuf:"bytes,2,rep,name=attributes,proto3" json:"attributes,omitempty"`
 	Resources       []*FrontendPolicySpec_TracingAttribute `protobuf:"bytes,3,rep,name=resources,proto3" json:"resources,omitempty"`
-	// When true, use plaintext (http) for OTLP endpoint; otherwise use TLS (https).
-	// If unset, defaults to true to preserve existing behavior.
-	Insecure *bool `protobuf:"varint,4,opt,name=insecure,proto3,oneof" json:"insecure,omitempty"`
 	// random_sampling is a CEL expression to determine the amount of random sampling.
 	// Random sampling will initiate a new trace span if the incoming request does not
 	// have a trace initiated already. This should evaluate to a float between 0.0-1.0,
 	// or a boolean (true/false). If unspecified, random sampling is disabled.
-	RandomSampling *string `protobuf:"bytes,5,opt,name=random_sampling,json=randomSampling,proto3,oneof" json:"random_sampling,omitempty"`
+	RandomSampling *string `protobuf:"bytes,4,opt,name=random_sampling,json=randomSampling,proto3,oneof" json:"random_sampling,omitempty"`
 	// client_sampling is a CEL expression to determine the amount of client sampling.
 	// Client sampling determines whether to initiate a new trace span if the incoming
 	// request already has a trace. This should evaluate to a float between 0.0-1.0,
 	// or a boolean (true/false). If unspecified, client sampling is 100% enabled.
-	ClientSampling *string `protobuf:"bytes,6,opt,name=client_sampling,json=clientSampling,proto3,oneof" json:"client_sampling,omitempty"`
+	ClientSampling *string `protobuf:"bytes,5,opt,name=client_sampling,json=clientSampling,proto3,oneof" json:"client_sampling,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -6201,13 +6198,6 @@ func (x *FrontendPolicySpec_Tracing) GetResources() []*FrontendPolicySpec_Tracin
 		return x.Resources
 	}
 	return nil
-}
-
-func (x *FrontendPolicySpec_Tracing) GetInsecure() bool {
-	if x != nil && x.Insecure != nil {
-		return *x.Insecure
-	}
-	return false
 }
 
 func (x *FrontendPolicySpec_Tracing) GetRandomSampling() string {
@@ -9839,7 +9829,7 @@ const file_resource_proto_rawDesc = "" +
 	"\binterval\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\binterval\x12\x1d\n" +
 	"\aretries\x18\x03 \x01(\rH\x00R\aretries\x88\x01\x01B\n" +
 	"\n" +
-	"\b_retries\"\xb7\x10\n" +
+	"\b_retries\"\x89\x10\n" +
 	"\x12FrontendPolicySpec\x12E\n" +
 	"\x03tcp\x18\x01 \x01(\v21.agentgateway.dev.resource.FrontendPolicySpec.TCPH\x00R\x03tcp\x12E\n" +
 	"\x03tls\x18\x02 \x01(\v21.agentgateway.dev.resource.FrontendPolicySpec.TLSH\x00R\x03tls\x12H\n" +
@@ -9878,17 +9868,15 @@ const file_resource_proto_rawDesc = "" +
 	"\x06Fields\x12\x16\n" +
 	"\x06remove\x18\x01 \x03(\tR\x06remove\x12M\n" +
 	"\x03add\x18\x02 \x03(\v2;.agentgateway.dev.resource.FrontendPolicySpec.Logging.FieldR\x03addB\t\n" +
-	"\a_filter\x1a\xd1\x03\n" +
+	"\a_filter\x1a\xa3\x03\n" +
 	"\aTracing\x12V\n" +
 	"\x10provider_backend\x18\x01 \x01(\v2+.agentgateway.dev.resource.BackendReferenceR\x0fproviderBackend\x12^\n" +
 	"\n" +
 	"attributes\x18\x02 \x03(\v2>.agentgateway.dev.resource.FrontendPolicySpec.TracingAttributeR\n" +
 	"attributes\x12\\\n" +
-	"\tresources\x18\x03 \x03(\v2>.agentgateway.dev.resource.FrontendPolicySpec.TracingAttributeR\tresources\x12\x1f\n" +
-	"\binsecure\x18\x04 \x01(\bH\x00R\binsecure\x88\x01\x01\x12,\n" +
-	"\x0frandom_sampling\x18\x05 \x01(\tH\x01R\x0erandomSampling\x88\x01\x01\x12,\n" +
-	"\x0fclient_sampling\x18\x06 \x01(\tH\x02R\x0eclientSampling\x88\x01\x01B\v\n" +
-	"\t_insecureB\x12\n" +
+	"\tresources\x18\x03 \x03(\v2>.agentgateway.dev.resource.FrontendPolicySpec.TracingAttributeR\tresources\x12,\n" +
+	"\x0frandom_sampling\x18\x04 \x01(\tH\x00R\x0erandomSampling\x88\x01\x01\x12,\n" +
+	"\x0fclient_sampling\x18\x05 \x01(\tH\x01R\x0eclientSampling\x88\x01\x01B\x12\n" +
 	"\x10_random_samplingB\x12\n" +
 	"\x10_client_sampling\x1a<\n" +
 	"\x10TracingAttribute\x12\x12\n" +

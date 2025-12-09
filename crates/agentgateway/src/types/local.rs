@@ -1260,8 +1260,7 @@ async fn split_frontend_policies(
 	}
 	if let Some(p) = tracing {
 		// Convert LocalTracingConfig to TracingPolicy
-		let (provider_backend, _) =
-			to_simple_backend_and_ref(local_name(strng::format!("tracing")), &p.provider_backend);
+		let (provider_backend, _) = to_simple_backend_and_ref(&p.provider_backend);
 
 		let attributes = p
 			.attributes
@@ -1537,6 +1536,25 @@ async fn convert_tcp_route(
 		backends: backend_refs,
 	};
 	Ok((route, external_policies, external_backends))
+}
+
+fn to_simple_backend_and_ref(
+	b: &SimpleLocalBackend,
+) -> (SimpleBackendReference, Option<SimpleBackendWithPolicies>) {
+	match b {
+		SimpleLocalBackend::Service { name, port } => (
+			SimpleBackendReference::Service {
+				name: name.clone(),
+				port: *port,
+			},
+			None,
+		),
+		// For simple opaque targets, we can inline the backend directly.
+		SimpleLocalBackend::Opaque(t) => (SimpleBackendReference::InlineBackend(t.clone()), None),
+		// Explicit reference to an existing backend key.
+		SimpleLocalBackend::Backend(k) => (SimpleBackendReference::Backend(k.clone()), None),
+		SimpleLocalBackend::Invalid => (SimpleBackendReference::Invalid, None),
+	}
 }
 
 // For most local backends we can just use `InlineBackend`. However, for MCP we allow `https://domain/path`
