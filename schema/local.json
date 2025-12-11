@@ -2128,7 +2128,10 @@
                                                 "type": "string"
                                               },
                                               "region": {
-                                                "type": "string"
+                                                "type": [
+                                                  "string",
+                                                  "null"
+                                                ]
                                               },
                                               "sessionToken": {
                                                 "type": [
@@ -2140,8 +2143,7 @@
                                             "additionalProperties": false,
                                             "required": [
                                               "accessKeyId",
-                                              "secretAccessKey",
-                                              "region"
+                                              "secretAccessKey"
                                             ]
                                           },
                                           {
@@ -4312,7 +4314,10 @@
                                                       "type": "string"
                                                     },
                                                     "region": {
-                                                      "type": "string"
+                                                      "type": [
+                                                        "string",
+                                                        "null"
+                                                      ]
                                                     },
                                                     "sessionToken": {
                                                       "type": [
@@ -4324,8 +4329,7 @@
                                                   "additionalProperties": false,
                                                   "required": [
                                                     "accessKeyId",
-                                                    "secretAccessKey",
-                                                    "region"
+                                                    "secretAccessKey"
                                                   ]
                                                 },
                                                 {
@@ -5998,7 +6002,10 @@
                                                                   "type": "string"
                                                                 },
                                                                 "region": {
-                                                                  "type": "string"
+                                                                  "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                  ]
                                                                 },
                                                                 "sessionToken": {
                                                                   "type": [
@@ -6010,8 +6017,7 @@
                                                               "additionalProperties": false,
                                                               "required": [
                                                                 "accessKeyId",
-                                                                "secretAccessKey",
-                                                                "region"
+                                                                "secretAccessKey"
                                                               ]
                                                             },
                                                             {
@@ -7434,7 +7440,10 @@
                                                                               "type": "string"
                                                                             },
                                                                             "region": {
-                                                                              "type": "string"
+                                                                              "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                              ]
                                                                             },
                                                                             "sessionToken": {
                                                                               "type": [
@@ -7446,8 +7455,7 @@
                                                                           "additionalProperties": false,
                                                                           "required": [
                                                                             "accessKeyId",
-                                                                            "secretAccessKey",
-                                                                            "region"
+                                                                            "secretAccessKey"
                                                                           ]
                                                                         },
                                                                         {
@@ -10441,7 +10449,10 @@
                                     "type": "string"
                                   },
                                   "region": {
-                                    "type": "string"
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
                                   },
                                   "sessionToken": {
                                     "type": [
@@ -10453,8 +10464,7 @@
                                 "additionalProperties": false,
                                 "required": [
                                   "accessKeyId",
-                                  "secretAccessKey",
-                                  "region"
+                                  "secretAccessKey"
                                 ]
                               },
                               {
