@@ -11,7 +11,7 @@ use bytes::Bytes;
 use http::Method;
 use http::uri::PathAndQuery;
 use rmcp::transport::StreamableHttpServerConfig;
-use tracing::{debug, info, warn};
+use tracing::{debug, warn};
 
 use crate::cel::ContextBuilder;
 use crate::http::authorization::RuleSets;
