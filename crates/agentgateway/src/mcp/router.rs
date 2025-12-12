@@ -192,7 +192,7 @@ impl App {
 						Err(_missing_header) => {
 							// Enforce strict mode when Authorization header is missing
 							if matches!(auth.mode, jwt::Mode::Strict) {
-								info!("Missing Authorization header and MCP auth is STRICT; returning 401");
+								debug!("Missing Authorization header and MCP auth is STRICT; returning 401");
 								return Self::create_auth_required_response(&req, auth).into_response();
 							}
 							// Optional/Permissive: continue without JWT

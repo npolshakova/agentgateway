@@ -824,7 +824,7 @@ message BackendPolicySpec {
     }
 
     enum McpIDP {
-      MCP_IDP_UNSPECIFIED = 0;
+      UNSPECIFIED = 0;
       AUTH0 = 1;
       KEYCLOAK = 2;
     }
