@@ -3,7 +3,7 @@ use ::http::header::CONTENT_TYPE;
 use anyhow::anyhow;
 use futures::StreamExt;
 use opentelemetry::trace::Span;
-use opentelemetry::trace::{SpanKind, Tracer as _};
+use opentelemetry::trace::{SpanContext, SpanKind, TraceContextExt, Tracer as _};
 use opentelemetry::{Context, KeyValue};
 use reqwest::header::ACCEPT;
 use rmcp::model::ConstString;
@@ -27,6 +27,9 @@ pub struct Client {
 	http_client: super::McpHttpClient,
 	uri: Uri,
 	session_id: AtomicOption<String>,
+	// When set (e.g., after establishing SSE), this span context is used
+	// as the explicit parent for future upstream spans.
+	otel_parent: AtomicOption<SpanContext>,
 }
 
 impl Client {
@@ -36,6 +39,7 @@ impl Client {
 			http_client,
 			uri: ("http://".to_string() + &hp + path.as_str()).parse()?,
 			session_id: Default::default(),
+			otel_parent: Default::default(),
 		})
 	}
 	pub fn set_session_id(&self, s: String) {
@@ -68,7 +72,14 @@ impl Client {
 	) -> Result<StreamableHttpPostResponse, ClientError> {
 		let body = serde_json::to_vec(&message).map_err(ClientError::new)?;
 		let tracer = agent_core::trcng::get_tracer();
-		let parent_cx: Context = ctx.otel_parent_context();
+		let parent_cx: Context = match &*self.otel_parent.load() {
+			Some(sc) => {
+				// Use previously stored parent (e.g., from initial call) to ensure
+				// downstream spans continue the same trace lineage.
+				Context::new().with_remote_span_context(sc.as_ref().clone())
+			},
+			None => ctx.otel_parent_context(),
+		};
 		let (method_name, request_id) = match &message {
 			ClientJsonRpcMessage::Request(r) => (
 				Some(r.request.method().to_string()),
@@ -136,6 +147,10 @@ impl Client {
 			.with_attributes(attrs)
 			.start_with_context(tracer, &parent_cx);
 
+		// Create a derived context containing this span's context so we can
+		// explicitly parent subsequent spans, even after this span ends.
+		let derived_parent_for_children: SpanContext = span.span_context().clone();
+
 		let mut req = ::http::Request::builder()
 			.uri(&self.uri)
 			.method(http::Method::POST)
@@ -196,6 +211,9 @@ impl Client {
 			Some(ct) if ct.as_bytes().starts_with(EVENT_STREAM_MIME_TYPE.as_bytes()) => {
 				let event_stream = SseStream::from_byte_stream(resp.into_body().into_data_stream()).boxed();
 				span.set_attribute(KeyValue::new("rpc.response.mode", "sse"));
+				// Persist this span context to be used as the explicit parent for future spans.
+				self.otel_parent
+					.store(Some(Arc::new(derived_parent_for_children)));
 				span.end();
 				Ok(StreamableHttpPostResponse::Sse(event_stream, session_id))
 			},
