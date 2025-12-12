@@ -6,8 +6,8 @@ use std::sync::{Arc, Mutex};
 use agent_core::prelude::*;
 use futures_util::TryFutureExt;
 use rmcp::model::{
-	ClientJsonRpcMessage, ClientNotification, ClientRequest, JsonRpcMessage, JsonRpcRequest,
-	RequestId, ServerJsonRpcMessage,
+	ClientJsonRpcMessage, ClientNotification, ClientRequest, JsonRpcRequest, RequestId,
+	ServerJsonRpcMessage,
 };
 use rmcp::transport::{TokioChildProcess, Transport};
 use tokio::sync::mpsc::Sender;
@@ -49,7 +49,7 @@ impl Process {
 
 		self
 			.sender
-			.send((JsonRpcMessage::Request(req), ctx.clone()))
+			.send((ClientJsonRpcMessage::Request(req), ctx.clone()))
 			.await
 			.map_err(|_| UpstreamError::Send)?;
 
@@ -68,7 +68,7 @@ impl Process {
 	) -> Result<(), UpstreamError> {
 		self
 			.sender
-			.send((JsonRpcMessage::notification(req), ctx.clone()))
+			.send((ClientJsonRpcMessage::notification(req), ctx.clone()))
 			.await
 			.map_err(|_| UpstreamError::Send)?;
 		Ok(())
