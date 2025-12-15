@@ -187,6 +187,25 @@ This folder contains JSON schemas for various parts of the project
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].rejection.headers.set`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].rejection.headers.remove`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)regex`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)regex.action`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)regex.rules`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)regex.rules[].(any)builtin`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)regex.rules[].(any)pattern`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)webhook`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)webhook.target`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)webhook.target.(1)service`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)webhook.target.(1)service.name`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)webhook.target.(1)service.name.namespace`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)webhook.target.(1)service.name.hostname`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)webhook.target.(1)service.port`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)webhook.target.(1)host`|Hostname or IP address|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)webhook.target.(1)backend`|Explicit backend reference. Backend must be defined in the top level backends list|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].name`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].value`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].value.(1)exact`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].value.(1)regex`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].rejection`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].rejection.body`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].rejection.status`||
@@ -194,26 +213,6 @@ This folder contains JSON schemas for various parts of the project
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].rejection.headers.add`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].rejection.headers.set`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].rejection.headers.remove`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)regex`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)regex.action`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)regex.rules`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)regex.rules[].(any)builtin`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)regex.rules[].(any)pattern`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)webhook`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)webhook.target`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.name`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.name.namespace`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.name.hostname`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.port`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)host`|Hostname or IP address|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)backend`|Explicit backend reference. Backend must be defined in the top level backends list|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].name`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].value`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].value.(1)exact`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].value.(1)regex`||
 |`binds[].listeners[].routes[].policies.ai.defaults`||
 |`binds[].listeners[].routes[].policies.ai.overrides`||
 |`binds[].listeners[].routes[].policies.ai.prompts`||
@@ -469,6 +468,25 @@ This folder contains JSON schemas for various parts of the project
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].rejection.headers.set`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].rejection.headers.remove`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)regex`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)regex.action`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)regex.rules`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)regex.rules[].(any)builtin`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)regex.rules[].(any)pattern`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)webhook`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)webhook.target`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)webhook.target.(1)service`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)webhook.target.(1)service.name`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)webhook.target.(1)service.name.namespace`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)webhook.target.(1)service.name.hostname`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)webhook.target.(1)service.port`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)webhook.target.(1)host`|Hostname or IP address|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)webhook.target.(1)backend`|Explicit backend reference. Backend must be defined in the top level backends list|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].name`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].value`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].value.(1)exact`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].value.(1)regex`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].rejection`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].rejection.status`||
@@ -476,26 +494,6 @@ This folder contains JSON schemas for various parts of the project
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].rejection.headers.add`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].rejection.headers.set`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].rejection.headers.remove`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)regex`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)regex.action`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)regex.rules`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)regex.rules[].(any)builtin`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)regex.rules[].(any)pattern`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)webhook`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)webhook.target`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.name`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.name.namespace`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.name.hostname`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.port`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)host`|Hostname or IP address|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)backend`|Explicit backend reference. Backend must be defined in the top level backends list|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].name`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].value`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].value.(1)exact`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].value.(1)regex`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.defaults`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.overrides`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.prompts`||
@@ -624,6 +622,25 @@ This folder contains JSON schemas for various parts of the project
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].rejection.headers.set`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].rejection.headers.remove`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)regex`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)regex.action`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)regex.rules`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)regex.rules[].(any)builtin`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)regex.rules[].(any)pattern`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)webhook`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)webhook.target`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)webhook.target.(1)service`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)webhook.target.(1)service.name`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)webhook.target.(1)service.name.namespace`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)webhook.target.(1)service.name.hostname`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)webhook.target.(1)service.port`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)webhook.target.(1)host`|Hostname or IP address|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)webhook.target.(1)backend`|Explicit backend reference. Backend must be defined in the top level backends list|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].name`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].value`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].value.(1)exact`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].value.(1)regex`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].rejection`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].rejection.status`||
@@ -631,26 +648,6 @@ This folder contains JSON schemas for various parts of the project
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].rejection.headers.add`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].rejection.headers.set`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].rejection.headers.remove`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)regex`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)regex.action`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)regex.rules`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)regex.rules[].(any)builtin`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)regex.rules[].(any)pattern`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)webhook`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)webhook.target`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.name`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.name.namespace`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.name.hostname`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.port`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)host`|Hostname or IP address|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)backend`|Explicit backend reference. Backend must be defined in the top level backends list|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].name`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].value`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].value.(1)exact`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].value.(1)regex`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.defaults`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.overrides`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.prompts`||
@@ -754,6 +751,25 @@ This folder contains JSON schemas for various parts of the project
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].rejection.headers.set`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].rejection.headers.remove`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)regex`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)regex.action`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)regex.rules`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)regex.rules[].(any)builtin`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)regex.rules[].(any)pattern`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)webhook`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)webhook.target`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)webhook.target.(1)service`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)webhook.target.(1)service.name`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)webhook.target.(1)service.name.namespace`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)webhook.target.(1)service.name.hostname`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)webhook.target.(1)service.port`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)webhook.target.(1)host`|Hostname or IP address|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)webhook.target.(1)backend`|Explicit backend reference. Backend must be defined in the top level backends list|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].name`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].value`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].value.(1)exact`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].value.(1)regex`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].rejection`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].rejection.status`||
@@ -761,26 +777,6 @@ This folder contains JSON schemas for various parts of the project
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].rejection.headers.add`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].rejection.headers.set`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].rejection.headers.remove`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)regex`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)regex.action`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)regex.rules`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)regex.rules[].(any)builtin`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)regex.rules[].(any)pattern`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)webhook`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)webhook.target`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.name`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.name.namespace`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.name.hostname`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.port`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)host`|Hostname or IP address|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)webhook.target.(1)backend`|Explicit backend reference. Backend must be defined in the top level backends list|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].name`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].value`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].value.(1)exact`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].value.(1)regex`||
 |`binds[].listeners[].routes[].backends[].policies.ai.defaults`||
 |`binds[].listeners[].routes[].backends[].policies.ai.overrides`||
 |`binds[].listeners[].routes[].backends[].policies.ai.prompts`||
@@ -1076,6 +1072,25 @@ This folder contains JSON schemas for various parts of the project
 |`policies[].policy.ai.promptGuard.request[].rejection.headers.set`||
 |`policies[].policy.ai.promptGuard.request[].rejection.headers.remove`||
 |`policies[].policy.ai.promptGuard.response`||
+|`policies[].policy.ai.promptGuard.response[].(1)regex`||
+|`policies[].policy.ai.promptGuard.response[].(1)regex.action`||
+|`policies[].policy.ai.promptGuard.response[].(1)regex.rules`||
+|`policies[].policy.ai.promptGuard.response[].(1)regex.rules[].(any)builtin`||
+|`policies[].policy.ai.promptGuard.response[].(1)regex.rules[].(any)pattern`||
+|`policies[].policy.ai.promptGuard.response[].(1)webhook`||
+|`policies[].policy.ai.promptGuard.response[].(1)webhook.target`||
+|`policies[].policy.ai.promptGuard.response[].(1)webhook.target.(1)service`||
+|`policies[].policy.ai.promptGuard.response[].(1)webhook.target.(1)service.name`||
+|`policies[].policy.ai.promptGuard.response[].(1)webhook.target.(1)service.name.namespace`||
+|`policies[].policy.ai.promptGuard.response[].(1)webhook.target.(1)service.name.hostname`||
+|`policies[].policy.ai.promptGuard.response[].(1)webhook.target.(1)service.port`||
+|`policies[].policy.ai.promptGuard.response[].(1)webhook.target.(1)host`|Hostname or IP address|
+|`policies[].policy.ai.promptGuard.response[].(1)webhook.target.(1)backend`|Explicit backend reference. Backend must be defined in the top level backends list|
+|`policies[].policy.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches`||
+|`policies[].policy.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].name`||
+|`policies[].policy.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].value`||
+|`policies[].policy.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].value.(1)exact`||
+|`policies[].policy.ai.promptGuard.response[].(1)webhook.forwardHeaderMatches[].value.(1)regex`||
 |`policies[].policy.ai.promptGuard.response[].rejection`||
 |`policies[].policy.ai.promptGuard.response[].rejection.body`||
 |`policies[].policy.ai.promptGuard.response[].rejection.status`||
@@ -1083,26 +1098,6 @@ This folder contains JSON schemas for various parts of the project
 |`policies[].policy.ai.promptGuard.response[].rejection.headers.add`||
 |`policies[].policy.ai.promptGuard.response[].rejection.headers.set`||
 |`policies[].policy.ai.promptGuard.response[].rejection.headers.remove`||
-|`policies[].policy.ai.promptGuard.response[].kind`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)regex`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)regex.action`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)regex.rules`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)regex.rules[].(any)builtin`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)regex.rules[].(any)pattern`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)webhook`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)webhook.target`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)webhook.target.(1)service`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.name`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.name.namespace`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.name.hostname`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)webhook.target.(1)service.port`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)webhook.target.(1)host`|Hostname or IP address|
-|`policies[].policy.ai.promptGuard.response[].kind.(1)webhook.target.(1)backend`|Explicit backend reference. Backend must be defined in the top level backends list|
-|`policies[].policy.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].name`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].value`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].value.(1)exact`||
-|`policies[].policy.ai.promptGuard.response[].kind.(1)webhook.forwardHeaderMatches[].value.(1)regex`||
 |`policies[].policy.ai.defaults`||
 |`policies[].policy.ai.overrides`||
 |`policies[].policy.ai.prompts`||
