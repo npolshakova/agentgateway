@@ -467,7 +467,6 @@ impl Policy {
 				Self::record_guardrail_trip(
 					client,
 					crate::telemetry::metrics::GuardrailPhase::Response,
-					crate::telemetry::metrics::GuardrailKind::Webhook,
 					crate::telemetry::metrics::GuardrailAction::Reject,
 				);
 				return Ok(Some(
@@ -541,11 +540,7 @@ impl Policy {
 			.inputs
 			.metrics
 			.guardrail_checks
-			.get_or_create(&crate::telemetry::metrics::GuardrailLabels {
-				phase,
-				kind,
-				action,
-			})
+			.get_or_create(&crate::telemetry::metrics::GuardrailLabels { phase, action })
 			.inc();
 	}
 
@@ -834,7 +829,6 @@ fn default_code() -> StatusCode {
 fn default_body() -> Bytes {
 	Bytes::from_static(b"The request was rejected due to inappropriate content")
 }
-
 
 #[cfg(test)]
 mod tests {
