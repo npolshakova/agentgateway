@@ -765,6 +765,10 @@ impl Drop for DropOnLog {
 			),
 			("route", route_identifier.route.as_deref().map(display)),
 			("endpoint", log.endpoint.display()),
+			(
+				"rpc.service",
+				log.backend_info.as_ref().map(|i| display(&i.backend_name)),
+			),
 			("src.addr", Some(display(&log.tcp_info.peer_addr))),
 			("http.method", log.method.display()),
 			("http.host", log.host.display()),
@@ -815,9 +819,31 @@ impl Drop for DropOnLog {
 					.map(display),
 			),
 			(
+				"mcp.method.name",
+				mcp
+					.as_ref()
+					.and_then(|m| m.method_name.as_ref())
+					.map(display),
+			),
+			(
+				"mcp.resource.uri",
+				mcp
+					.as_ref()
+					.and_then(|m| m.resource_name.as_ref())
+					.map(display),
+			),
+			// OpenTelemetry Gen AI Semantic Conventions: capture tool call arguments
+			(
+				"gen_ai.tool.call.arguments",
+				mcp.as_ref()
+					.and_then(|m| m.call_arguments.as_ref())
+					.map(display),
+			),
+			(
 				"inferencepool.selected_endpoint",
 				log.inference_pool.display(),
 			),
+			("mcp.session.pinned_endpoint", log.endpoint.display()),
 			// OpenTelemetry Gen AI Semantic Conventions v1.37.0
 			(
 				"gen_ai.operation.name",
@@ -892,6 +918,10 @@ impl Drop for DropOnLog {
 					.as_ref()
 					.and_then(|l| l.params.seed)
 					.map(Into::into),
+			),
+			(
+				"rpc.response.size",
+				Some((log.response_bytes as i64).into()),
 			),
 			("retry.attempt", log.retry_attempt.display()),
 			("error", log.error.quoted()),

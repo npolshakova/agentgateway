@@ -7,6 +7,8 @@ mod streamablehttp;
 use std::io;
 
 pub(crate) use client::McpHttpClient;
+use opentelemetry::Context;
+use opentelemetry::trace::{SpanContext, TraceContextExt};
 use rmcp::model::{ClientNotification, ClientRequest, JsonRpcRequest};
 use rmcp::transport::TokioChildProcess;
 use rmcp::transport::streamable_http_client::StreamableHttpPostResponse;
@@ -25,6 +27,9 @@ use crate::*;
 pub struct IncomingRequestContext {
 	headers: http::HeaderMap,
 	claims: Option<Claims>,
+	// When present, this explicit parent span context will be preferred
+	// over any context extracted from incoming headers.
+	otel_explicit_parent: Option<SpanContext>,
 }
 
 impl IncomingRequestContext {
@@ -33,6 +38,7 @@ impl IncomingRequestContext {
 		Self {
 			headers: http::HeaderMap::new(),
 			claims: None,
+			otel_explicit_parent: None,
 		}
 	}
 	pub fn new(parts: ::http::request::Parts) -> Self {
@@ -40,6 +46,18 @@ impl IncomingRequestContext {
 		Self {
 			headers: parts.headers,
 			claims,
+			otel_explicit_parent: None,
+		}
+	}
+	/// Construct a context that carries an explicit OpenTelemetry parent span context.
+	/// This is used to link downstream client spans to the currently active server span,
+	/// rather than relying solely on trace context extracted from request headers.
+	pub fn new_with_parent(parts: ::http::request::Parts, parent: SpanContext) -> Self {
+		let claims = parts.extensions.get::<Claims>().cloned();
+		Self {
+			headers: parts.headers,
+			claims,
+			otel_explicit_parent: Some(parent),
 		}
 	}
 	pub fn apply(&self, req: &mut http::Request) {
@@ -56,7 +74,10 @@ impl IncomingRequestContext {
 			req.extensions_mut().insert(claims.clone());
 		}
 	}
-	pub fn otel_parent_context(&self) -> opentelemetry::Context {
+	pub fn otel_parent_context(&self) -> Context {
+		if let Some(sc) = &self.otel_explicit_parent {
+			return Context::new().with_remote_span_context(sc.clone());
+		}
 		agent_core::trcng::extract_context_from_request(&self.headers)
 	}
 }

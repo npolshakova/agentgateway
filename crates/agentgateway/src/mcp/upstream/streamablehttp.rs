@@ -15,11 +15,13 @@ use rmcp::transport::common::http_header::{
 };
 use rmcp::transport::streamable_http_client::StreamableHttpPostResponse;
 use sse_stream::SseStream;
+use std::time::Instant;
 
 use crate::client::ResolvedDestination;
 use crate::http::Request;
 use crate::mcp::ClientError;
 use crate::mcp::upstream::IncomingRequestContext;
+use crate::telemetry::metrics::{MCPClientOpLabels, MCPClientSessionLabels};
 use crate::{json, *};
 
 #[derive(Clone, Debug)]
@@ -30,16 +32,26 @@ pub struct Client {
 	// When set (e.g., after establishing SSE), this span context is used
 	// as the explicit parent for future upstream spans.
 	otel_parent: AtomicOption<SpanContext>,
+	// Persist the negotiated MCP protocol version (e.g., from initialize).
+	protocol_version: AtomicOption<String>,
+	// Metrics handle
+	metrics: Arc<crate::telemetry::metrics::Metrics>,
+	// Session start time (first time we observe a session id)
+	session_start: AtomicOption<Instant>,
 }
 
 impl Client {
 	pub fn new(http_client: super::McpHttpClient, path: Strng) -> anyhow::Result<Self> {
 		let hp = http_client.backend().hostport();
+		let metrics = http_client.metrics().clone();
 		Ok(Self {
 			http_client,
 			uri: ("http://".to_string() + &hp + path.as_str()).parse()?,
 			session_id: Default::default(),
 			otel_parent: Default::default(),
+			protocol_version: Default::default(),
+			metrics,
+			session_start: Default::default(),
 		})
 	}
 	pub fn set_session_id(&self, s: String) {
@@ -70,6 +82,7 @@ impl Client {
 
 		ctx: &IncomingRequestContext,
 	) -> Result<StreamableHttpPostResponse, ClientError> {
+		let op_start = Instant::now();
 		let body = serde_json::to_vec(&message).map_err(ClientError::new)?;
 		let tracer = agent_core::trcng::get_tracer();
 		let parent_cx: Context = match &*self.otel_parent.load() {
@@ -80,6 +93,26 @@ impl Client {
 			},
 			None => ctx.otel_parent_context(),
 		};
+		// Parse the outgoing JSON-RPC message for attribute extraction where applicable.
+		let parsed_body: Option<serde_json::Value> = serde_json::from_slice(&body).ok();
+		let params_obj = parsed_body.as_ref().and_then(|v| v.get("params"));
+		let resource_uri_attr = params_obj
+			.and_then(|p| p.get("uri"))
+			.and_then(|u| u.as_str())
+			.map(|s| s.to_string());
+		// Try to extract the MCP protocol version from params (supports both snake_case and camelCase).
+		let protocol_version_in_params = params_obj
+			.and_then(|p| {
+				p.get("protocol_version")
+					.or_else(|| p.get("protocolVersion"))
+			})
+			.and_then(|v| v.as_str())
+			.map(|s| s.to_string());
+		let method_in_body = parsed_body
+			.as_ref()
+			.and_then(|v| v.get("method"))
+			.and_then(|m| m.as_str())
+			.map(|s| s.to_string());
 		let (method_name, request_id) = match &message {
 			ClientJsonRpcMessage::Request(r) => (
 				Some(r.request.method().to_string()),
@@ -125,8 +158,36 @@ impl Client {
 		if let Some(m) = &method_name {
 			attrs.push(KeyValue::new("rpc.method", m.clone()));
 		}
+		// Registry attribute: mcp.method.name
+		if let Some(m) = method_name.clone().or(method_in_body.clone()) {
+			attrs.push(KeyValue::new("mcp.method.name", m));
+		}
 		if let Some(id) = &request_id {
-			attrs.push(KeyValue::new("rpc.request.id", id.clone()));
+			// Use MCP-consistent attribute name for request id.
+			attrs.push(KeyValue::new("mcp.request.id", id.clone()));
+		}
+		// If a resource URI parameter is present, record it.
+		if let Some(uri) = &resource_uri_attr {
+			attrs.push(KeyValue::new("mcp.resource.uri", uri.clone()));
+		}
+		// Registry attribute: mcp.protocol.version (prefer params; else use stored)
+		if let Some(pv) = &protocol_version_in_params {
+			self.protocol_version.store(Some(Arc::new(pv.clone())));
+			attrs.push(KeyValue::new("mcp.protocol.version", pv.clone()));
+		} else if let Some(pv) = self.protocol_version.load().as_deref() {
+			attrs.push(KeyValue::new("mcp.protocol.version", pv.to_string()));
+		}
+		// If this is a tools/call operation, record the call arguments when available.
+		let effective_method = method_name.as_ref().or(method_in_body.as_ref());
+		if matches!(effective_method.map(|s| s.as_str()), Some("tools/call"))
+			&& let Some(arguments_value) = params_obj.and_then(|p| p.get("arguments"))
+			&& let Ok(mut arguments_str) = serde_json::to_string(arguments_value)
+		{
+			const MAX_ATTR_LEN: usize = 2048;
+			if arguments_str.len() > MAX_ATTR_LEN {
+				arguments_str.truncate(MAX_ATTR_LEN);
+			}
+			attrs.push(KeyValue::new("gen_ai.tool.call.arguments", arguments_str));
 		}
 		attrs.push(KeyValue::new(
 			"rpc.service",
@@ -191,6 +252,10 @@ impl Client {
 			.map(|s| s.to_string());
 		if let Some(sid) = &session_id {
 			span.set_attribute(KeyValue::new("mcp.session.id", sid.clone()));
+			// Initialize session start if not set
+			if self.session_start.load().is_none() {
+				self.session_start.store(Some(Arc::new(op_start)));
+			}
 		}
 		if let Some(resolved) = resp.extensions().get::<ResolvedDestination>() {
 			span.set_attribute(KeyValue::new(
@@ -207,12 +272,26 @@ impl Client {
 			span.set_attribute(KeyValue::new("rpc.response.size", len));
 		}
 
+		// Record client operation duration metric
+		{
+			let labels = MCPClientOpLabels {
+				server_address: server_addr.clone().into(),
+				server_port: Some(server_port).into(),
+			};
+			self
+				.metrics
+				.mcp_client_operation_duration
+				.get_or_create(&labels)
+				.observe(op_start.elapsed().as_secs_f64());
+		}
+
 		match content_type {
 			Some(ct) if ct.as_bytes().starts_with(EVENT_STREAM_MIME_TYPE.as_bytes()) => {
 				let event_stream = SseStream::from_byte_stream(resp.into_body().into_data_stream()).boxed();
 				span.set_attribute(KeyValue::new("rpc.response.mode", "sse"));
 				// Persist this span context to be used as the explicit parent for future spans.
-				self.otel_parent
+				self
+					.otel_parent
 					.store(Some(Arc::new(derived_parent_for_children)));
 				span.end();
 				Ok(StreamableHttpPostResponse::Sse(event_stream, session_id))
@@ -243,6 +322,22 @@ impl Client {
 						_ => {},
 					}
 				}
+				// If this was a tools/call, attempt to record the call result (truncated).
+				if matches!(method_name.as_deref(), Some("tools/call"))
+					&& let Ok(mut val) = serde_json::to_value(&message)
+				{
+					let result_value = val
+						.get_mut("result")
+						.cloned()
+						.unwrap_or(serde_json::Value::Null);
+					if let Ok(mut result_str) = serde_json::to_string(&result_value) {
+						const MAX_ATTR_LEN: usize = 2048;
+						if result_str.len() > MAX_ATTR_LEN {
+							result_str.truncate(MAX_ATTR_LEN);
+						}
+						span.set_attribute(KeyValue::new("gen_ai.tool.call.result", result_str));
+					}
+				}
 				span.set_attribute(KeyValue::new("rpc.response.mode", "json"));
 				span.end();
 				Ok(StreamableHttpPostResponse::Json(message, session_id))
@@ -258,6 +353,7 @@ impl Client {
 
 		ctx: &IncomingRequestContext,
 	) -> Result<StreamableHttpPostResponse, ClientError> {
+		let session_end = Instant::now();
 		let mut req = ::http::Request::builder()
 			.uri(&self.uri)
 			.method(http::Method::DELETE)
@@ -272,6 +368,29 @@ impl Client {
 
 		if !resp.status().is_success() {
 			return Err(ClientError::Status(Box::new(resp)));
+		}
+		// If we have a session, record its duration now that we've ended it.
+		if let Some(start) = self.session_start.load().as_deref() {
+			let (server_addr, server_port) = match self.uri.authority() {
+				Some(a) => {
+					let host = a.host().to_string();
+					let port = a.port_u16().unwrap_or(80);
+					(host, port)
+				},
+				None => ("unknown".to_string(), 0),
+			};
+			let labels = MCPClientSessionLabels {
+				server_address: server_addr.into(),
+				server_port: Some(server_port).into(),
+			};
+			self
+				.metrics
+				.mcp_client_session_duration
+				.get_or_create(&labels)
+				.observe(session_end.saturating_duration_since(*start).as_secs_f64());
+			// Clear session tracking
+			self.session_start.store(None);
+			self.session_id.store(None);
 		}
 		Ok(StreamableHttpPostResponse::Accepted)
 	}

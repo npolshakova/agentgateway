@@ -78,6 +78,18 @@ pub struct MCPCall {
 	pub custom: CustomField,
 }
 
+#[derive(Clone, Hash, Default, Debug, PartialEq, Eq, EncodeLabelSet)]
+pub struct MCPClientOpLabels {
+	pub server_address: DefaultedUnknown<RichStrng>,
+	pub server_port: DefaultedUnknown<EncodeDisplay<u16>>,
+}
+
+#[derive(Clone, Hash, Default, Debug, PartialEq, Eq, EncodeLabelSet)]
+pub struct MCPClientSessionLabels {
+	pub server_address: DefaultedUnknown<RichStrng>,
+	pub server_port: DefaultedUnknown<EncodeDisplay<u16>>,
+}
+
 #[derive(Clone, Hash, Debug, PartialEq, Eq, EncodeLabelSet)]
 pub struct TCPLabels {
 	pub bind: DefaultedUnknown<RichStrng>,
@@ -120,6 +132,10 @@ pub struct Metrics {
 	pub tcp_downstream_tx_bytes: Family<TCPLabels, counter::Counter>,
 
 	pub upstream_connect_duration: Histogram<ConnectLabels>,
+
+	// MCP metrics (client-side)
+	pub mcp_client_operation_duration: Histogram<MCPClientOpLabels>,
+	pub mcp_client_session_duration: Histogram<MCPClientSessionLabels>,
 }
 
 // FilteredRegistry is a wrapper around Registry that allows to filter out certain metrics.
@@ -309,6 +325,31 @@ impl Metrics {
 				registry.register_with_unit(
 					"upstream_connect_duration",
 					"Duration to establish upstream connection (seconds)",
+					Unit::Seconds,
+					m.clone(),
+				);
+				m
+			},
+			mcp_client_operation_duration: {
+				let m = Family::<MCPClientOpLabels, _>::new_with_constructor(move || {
+					PromHistogram::new(HTTP_REQUEST_DURATION_BUCKET)
+				});
+				// Prometheus metric names cannot contain dots; we use underscores.
+				registry.register_with_unit(
+					"mcp_client_operation_duration",
+					"MCP client operation duration (seconds)",
+					Unit::Seconds,
+					m.clone(),
+				);
+				m
+			},
+			mcp_client_session_duration: {
+				let m = Family::<MCPClientSessionLabels, _>::new_with_constructor(move || {
+					PromHistogram::new(HTTP_REQUEST_DURATION_BUCKET)
+				});
+				registry.register_with_unit(
+					"mcp_client_session_duration",
+					"MCP client session duration (seconds)",
 					Unit::Seconds,
 					m.clone(),
 				);

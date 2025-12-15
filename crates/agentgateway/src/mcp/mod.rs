@@ -66,4 +66,6 @@ pub struct MCPInfo {
 	pub resource_name: Option<String>,
 	pub target_name: Option<String>,
 	pub resource: Option<MCPOperation>,
+	/// JSON-serialized arguments for tools/call (truncated for safety)
+	pub call_arguments: Option<String>,
 }

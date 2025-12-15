@@ -182,6 +182,7 @@ impl Session {
 		parts: Parts,
 		message: ClientJsonRpcMessage,
 	) -> Result<Response, UpstreamError> {
+		use opentelemetry::trace::Span as _;
 		// Sending a message entails fanning out the message to each upstream, and then aggregating the responses.
 		// The responses may include any number of notifications on the same HTTP response, and then finish with the
 		// response to the request.
@@ -193,10 +194,11 @@ impl Session {
 			ClientJsonRpcMessage::Request(mut r) => {
 				let method = r.request.method();
 				let (_span, log, cel) = mcp::handler::setup_request_log(&parts, method);
+				let parent_ctx = _span.span_context().clone();
 				log.non_atomic_mutate(|l| {
 					l.method_name = Some(method.to_string());
 				});
-				let ctx = IncomingRequestContext::new(parts);
+				let ctx = IncomingRequestContext::new_with_parent(parts, parent_ctx);
 				match &mut r.request {
 					ClientRequest::InitializeRequest(ir) => {
 						let pv = ir.params.protocol_version.clone();
@@ -350,10 +352,11 @@ impl Session {
 					ClientNotification::RootsListChangedNotification(r) => r.method.as_str(),
 				};
 				let (_span, log, _cel) = mcp::handler::setup_request_log(&parts, method);
+				let parent_ctx = _span.span_context().clone();
 				log.non_atomic_mutate(|l| {
 					l.method_name = Some(method.to_string());
 				});
-				let ctx = IncomingRequestContext::new(parts);
+				let ctx = IncomingRequestContext::new_with_parent(parts, parent_ctx);
 				// TODO: the notification needs to be fanned out in some cases and sent to a single one in others
 				// however, we don't have a way to map to the correct service yet
 				self.relay.send_notification(r, ctx).await

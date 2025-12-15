@@ -37,6 +37,10 @@ impl McpHttpClient {
 		}
 	}
 
+	pub fn metrics(&self) -> Arc<crate::telemetry::metrics::Metrics> {
+		self.client.inputs.metrics.clone()
+	}
+
 	pub async fn call(
 		&self,
 		req: http::Request<crate::http::Body>,
