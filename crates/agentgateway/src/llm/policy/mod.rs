@@ -252,7 +252,6 @@ impl Policy {
 						Self::record_guardrail_trip(
 							&client,
 							crate::telemetry::metrics::GuardrailPhase::Request,
-							crate::telemetry::metrics::GuardrailKind::Regex,
 							crate::telemetry::metrics::GuardrailAction::Reject,
 						);
 						return Ok(Some(res));
@@ -261,7 +260,6 @@ impl Policy {
 						Self::record_guardrail_trip(
 							&client,
 							crate::telemetry::metrics::GuardrailPhase::Request,
-							crate::telemetry::metrics::GuardrailKind::Regex,
 							crate::telemetry::metrics::GuardrailAction::Mask,
 						);
 					},
@@ -269,7 +267,6 @@ impl Policy {
 						Self::record_guardrail_trip(
 							&client,
 							crate::telemetry::metrics::GuardrailPhase::Request,
-							crate::telemetry::metrics::GuardrailKind::Regex,
 							crate::telemetry::metrics::GuardrailAction::Allow,
 						);
 					},
@@ -279,7 +276,6 @@ impl Policy {
 						Self::record_guardrail_trip(
 							&client,
 							crate::telemetry::metrics::GuardrailPhase::Request,
-							crate::telemetry::metrics::GuardrailKind::Webhook,
 							crate::telemetry::metrics::GuardrailAction::Reject,
 						);
 						return Ok(Some(res));
@@ -292,7 +288,6 @@ impl Policy {
 						Self::record_guardrail_trip(
 							&client,
 							crate::telemetry::metrics::GuardrailPhase::Request,
-							crate::telemetry::metrics::GuardrailKind::Moderation,
 							crate::telemetry::metrics::GuardrailAction::Reject,
 						);
 						return Ok(Some(res));
@@ -300,7 +295,6 @@ impl Policy {
 						Self::record_guardrail_trip(
 							&client,
 							crate::telemetry::metrics::GuardrailPhase::Request,
-							crate::telemetry::metrics::GuardrailKind::Moderation,
 							crate::telemetry::metrics::GuardrailAction::Allow,
 						);
 					}
@@ -402,7 +396,6 @@ impl Policy {
 				Self::record_guardrail_trip(
 					client,
 					crate::telemetry::metrics::GuardrailPhase::Request,
-					crate::telemetry::metrics::GuardrailKind::Webhook,
 					crate::telemetry::metrics::GuardrailAction::Mask,
 				);
 			},
@@ -429,7 +422,6 @@ impl Policy {
 				Self::record_guardrail_trip(
 					client,
 					crate::telemetry::metrics::GuardrailPhase::Request,
-					crate::telemetry::metrics::GuardrailKind::Webhook,
 					crate::telemetry::metrics::GuardrailAction::Allow,
 				);
 			},
@@ -462,7 +454,6 @@ impl Policy {
 				Self::record_guardrail_trip(
 					client,
 					crate::telemetry::metrics::GuardrailPhase::Response,
-					crate::telemetry::metrics::GuardrailKind::Webhook,
 					crate::telemetry::metrics::GuardrailAction::Mask,
 				);
 			},
@@ -495,7 +486,6 @@ impl Policy {
 				Self::record_guardrail_trip(
 					client,
 					crate::telemetry::metrics::GuardrailPhase::Response,
-					crate::telemetry::metrics::GuardrailKind::Webhook,
 					crate::telemetry::metrics::GuardrailAction::Allow,
 				);
 			},
@@ -545,7 +535,6 @@ impl Policy {
 	fn record_guardrail_trip(
 		client: &PolicyClient,
 		phase: crate::telemetry::metrics::GuardrailPhase,
-		kind: crate::telemetry::metrics::GuardrailKind,
 		action: crate::telemetry::metrics::GuardrailAction,
 	) {
 		client
@@ -659,7 +648,6 @@ impl Policy {
 						Self::record_guardrail_trip(
 							client,
 							crate::telemetry::metrics::GuardrailPhase::Response,
-							crate::telemetry::metrics::GuardrailKind::Regex,
 							crate::telemetry::metrics::GuardrailAction::Reject,
 						);
 						return Ok(Some(res));
@@ -668,7 +656,6 @@ impl Policy {
 						Self::record_guardrail_trip(
 							client,
 							crate::telemetry::metrics::GuardrailPhase::Response,
-							crate::telemetry::metrics::GuardrailKind::Regex,
 							crate::telemetry::metrics::GuardrailAction::Mask,
 						);
 					},
@@ -676,7 +663,6 @@ impl Policy {
 						Self::record_guardrail_trip(
 							client,
 							crate::telemetry::metrics::GuardrailPhase::Response,
-							crate::telemetry::metrics::GuardrailKind::Regex,
 							crate::telemetry::metrics::GuardrailAction::Allow,
 						);
 					},
@@ -686,7 +672,6 @@ impl Policy {
 						Self::record_guardrail_trip(
 							client,
 							crate::telemetry::metrics::GuardrailPhase::Response,
-							crate::telemetry::metrics::GuardrailKind::Webhook,
 							crate::telemetry::metrics::GuardrailAction::Reject,
 						);
 						return Ok(Some(res));

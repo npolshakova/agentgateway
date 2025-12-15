@@ -37,16 +37,6 @@ pub enum GuardrailPhase {
 #[derive(
 	Copy, Clone, Hash, Debug, PartialEq, Eq, prometheus_client::encoding::EncodeLabelValue, Default,
 )]
-pub enum GuardrailKind {
-	#[default]
-	Regex,
-	Webhook,
-	Moderation,
-}
-
-#[derive(
-	Copy, Clone, Hash, Debug, PartialEq, Eq, prometheus_client::encoding::EncodeLabelValue, Default,
-)]
 pub enum GuardrailAction {
 	#[default]
 	Allow,
@@ -57,7 +47,6 @@ pub enum GuardrailAction {
 #[derive(Clone, Hash, Default, Debug, PartialEq, Eq, EncodeLabelSet)]
 pub struct GuardrailLabels {
 	pub phase: GuardrailPhase,
-	pub kind: GuardrailKind,
 	pub action: GuardrailAction,
 }
 
