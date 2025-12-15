@@ -48,7 +48,7 @@ impl From<&proto::agent::TlsConfig> for ServerTLSConfig {
 				scb.with_no_client_auth()
 			};
 			let mut sc = scb.with_single_cert(cert_chain, private_key)?;
-			// Defaults set here. These can be overriden by Frontend policy
+			// Defaults set here. These can be overridden by Frontend policy
 			// TODO: this default only makes sense for HTTPS, distinguish from TLS
 			sc.alpn_protocols = vec![b"h2".into(), b"http/1.1".into()];
 			Ok(sc)
@@ -866,6 +866,7 @@ impl TryFrom<&proto::agent::BackendPolicySpec> for BackendPolicy {
 						HttpVersion::Http1 => Some(::http::Version::HTTP_11),
 						HttpVersion::Http2 => Some(::http::Version::HTTP_2),
 					},
+					request_timeout: bhttp.request_timeout.map(convert_duration),
 				})
 			},
 			Some(bps::Kind::BackendTcp(btcp)) => BackendPolicy::TCP(backend::TCP {
@@ -1231,6 +1232,8 @@ impl TryFrom<&proto::agent::TrafficPolicySpec> for TrafficPolicy {
 					domain: rrl.domain.clone(),
 					target: Arc::new(target),
 					descriptors: Arc::new(http::remoteratelimit::DescriptorSet(descriptors)),
+					// Not supported over XDS; use a timeout on the backend itself
+					timeout: None,
 				})
 			},
 			Some(tps::Kind::Csrf(csrf_spec)) => {
