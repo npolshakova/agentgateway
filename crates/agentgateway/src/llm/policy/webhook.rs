@@ -41,11 +41,12 @@ pub struct GuardrailsResponseResponse {
 	/// The following actions are available on the response:
 	/// - PassAction: No action is required.
 	/// - MaskAction: Mask the response body.
+	/// - RejectAction: Reject the response.
 	pub action: ResponseAction,
 }
 
 // For convenience, re-use SimpleChatCompletionMessage
-pub type Message = crate::llm::types::SimpleChatCompletionMessage;
+pub type Message = crate::llm::SimpleChatCompletionMessage;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -114,6 +115,7 @@ pub enum RequestAction {
 #[serde(untagged, rename_all = "snake_case")]
 pub enum ResponseAction {
 	Mask(MaskAction),
+	Reject(RejectAction),
 	Pass(PassAction),
 }
 

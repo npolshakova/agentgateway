@@ -133,6 +133,12 @@ pub struct PromptGuard {
 	pub response: Vec<ResponseGuard>,
 }
 
+enum GuardrailOutcome {
+	None,
+	Masked,
+	Rejected(Response),
+}
+
 impl Policy {
 	pub fn compile_model_alias_patterns(&mut self) {
 		let mut patterns = Vec::new();
@@ -241,13 +247,37 @@ impl Policy {
 			.flat_map(|g| g.request.iter())
 		{
 			match &g.kind {
-				RequestGuardKind::Regex(rg) => {
-					if let Some(res) = Self::apply_regex(req, rg, &g.rejection)? {
+				RequestGuardKind::Regex(rg) => match Self::apply_regex(req, rg, &g.rejection)? {
+					GuardrailOutcome::Rejected(res) => {
+						Self::record_guardrail_trip(
+							&client,
+							crate::telemetry::metrics::GuardrailPhase::Request,
+							crate::telemetry::metrics::GuardrailAction::Reject,
+						);
 						return Ok(Some(res));
-					}
+					},
+					GuardrailOutcome::Masked => {
+						Self::record_guardrail_trip(
+							&client,
+							crate::telemetry::metrics::GuardrailPhase::Request,
+							crate::telemetry::metrics::GuardrailAction::Mask,
+						);
+					},
+					GuardrailOutcome::None => {
+						Self::record_guardrail_trip(
+							&client,
+							crate::telemetry::metrics::GuardrailPhase::Request,
+							crate::telemetry::metrics::GuardrailAction::Allow,
+						);
+					},
 				},
 				RequestGuardKind::Webhook(wh) => {
 					if let Some(res) = Self::apply_webhook(req, http_headers, &client, wh).await? {
+						Self::record_guardrail_trip(
+							&client,
+							crate::telemetry::metrics::GuardrailPhase::Request,
+							crate::telemetry::metrics::GuardrailAction::Reject,
+						);
 						return Ok(Some(res));
 					}
 				},
@@ -255,7 +285,18 @@ impl Policy {
 					if let Some(res) =
 						Self::apply_moderation(req, claims.clone(), &client, &g.rejection, m).await?
 					{
+						Self::record_guardrail_trip(
+							&client,
+							crate::telemetry::metrics::GuardrailPhase::Request,
+							crate::telemetry::metrics::GuardrailAction::Reject,
+						);
 						return Ok(Some(res));
+					} else {
+						Self::record_guardrail_trip(
+							&client,
+							crate::telemetry::metrics::GuardrailPhase::Request,
+							crate::telemetry::metrics::GuardrailAction::Allow,
+						);
 					}
 				},
 			}
@@ -282,13 +323,13 @@ impl Policy {
 		req: &mut dyn RequestType,
 		rgx: &RegexRules,
 		rej: &RequestRejection,
-	) -> anyhow::Result<Option<Response>> {
+	) -> anyhow::Result<GuardrailOutcome> {
 		let mut msgs = req.get_messages();
 		let mut any_changed = false;
 		for msg in &mut msgs {
 			match Self::apply_prompt_guard_regex(&msg.content, rgx) {
 				Some(RegexResult::Reject) => {
-					return Ok(Some(rej.as_response()));
+					return Ok(GuardrailOutcome::Rejected(rej.as_response()));
 				},
 				Some(RegexResult::Mask(content)) => {
 					any_changed = true;
@@ -299,21 +340,22 @@ impl Policy {
 		}
 		if any_changed {
 			req.set_messages(msgs);
+			return Ok(GuardrailOutcome::Masked);
 		}
-		Ok(None)
+		Ok(GuardrailOutcome::None)
 	}
 
 	fn apply_regex_response(
 		resp: &mut dyn ResponseType,
 		rgx: &RegexRules,
 		rej: &RequestRejection,
-	) -> anyhow::Result<Option<Response>> {
+	) -> anyhow::Result<GuardrailOutcome> {
 		let mut msgs = resp.to_webhook_choices();
 		let mut any_changed = false;
 		for msg in &mut msgs {
 			match Self::apply_prompt_guard_regex(&msg.message.content, rgx) {
 				Some(RegexResult::Reject) => {
-					return Ok(Some(rej.as_response()));
+					return Ok(GuardrailOutcome::Rejected(rej.as_response()));
 				},
 				Some(RegexResult::Mask(content)) => {
 					any_changed = true;
@@ -324,8 +366,9 @@ impl Policy {
 		}
 		if any_changed {
 			resp.set_webhook_choices(msgs)?;
+			return Ok(GuardrailOutcome::Masked);
 		}
-		Ok(None)
+		Ok(GuardrailOutcome::None)
 	}
 
 	async fn apply_webhook(
@@ -350,6 +393,11 @@ impl Policy {
 				};
 				let msgs = body.messages;
 				req.set_messages(msgs);
+				Self::record_guardrail_trip(
+					client,
+					crate::telemetry::metrics::GuardrailPhase::Request,
+					crate::telemetry::metrics::GuardrailAction::Mask,
+				);
 			},
 			RequestAction::Reject(rej) => {
 				debug!(
@@ -371,7 +419,11 @@ impl Policy {
 						.reason
 						.unwrap_or_else(|| "no reason specified".to_string())
 				);
-				// No action needed
+				Self::record_guardrail_trip(
+					client,
+					crate::telemetry::metrics::GuardrailPhase::Request,
+					crate::telemetry::metrics::GuardrailAction::Allow,
+				);
 			},
 		}
 		Ok(None)
@@ -399,6 +451,29 @@ impl Policy {
 				};
 				let msgs = body.choices;
 				resp.set_webhook_choices(msgs)?;
+				Self::record_guardrail_trip(
+					client,
+					crate::telemetry::metrics::GuardrailPhase::Response,
+					crate::telemetry::metrics::GuardrailAction::Mask,
+				);
+			},
+			ResponseAction::Reject(rej) => {
+				debug!(
+					"webhook rejected response: {}",
+					rej
+						.reason
+						.unwrap_or_else(|| "no reason specified".to_string())
+				);
+				Self::record_guardrail_trip(
+					client,
+					crate::telemetry::metrics::GuardrailPhase::Response,
+					crate::telemetry::metrics::GuardrailAction::Reject,
+				);
+				return Ok(Some(
+					::http::response::Builder::new()
+						.status(rej.status_code)
+						.body(http::Body::from(rej.body))?,
+				));
 			},
 			ResponseAction::Pass(pass) => {
 				debug!(
@@ -407,7 +482,11 @@ impl Policy {
 						.reason
 						.unwrap_or_else(|| "no reason specified".to_string())
 				);
-				// No action needed
+				Self::record_guardrail_trip(
+					client,
+					crate::telemetry::metrics::GuardrailPhase::Response,
+					crate::telemetry::metrics::GuardrailAction::Allow,
+				);
 			},
 		}
 		Ok(None)
@@ -450,6 +529,19 @@ impl Policy {
 			headers.insert(header_name, have.clone());
 		}
 		headers
+	}
+
+	fn record_guardrail_trip(
+		client: &PolicyClient,
+		phase: crate::telemetry::metrics::GuardrailPhase,
+		action: crate::telemetry::metrics::GuardrailAction,
+	) {
+		client
+			.inputs
+			.metrics
+			.guardrail_checks
+			.get_or_create(&crate::telemetry::metrics::GuardrailLabels { phase, action })
+			.inc();
 	}
 
 	// fn convert_message(r: Message) -> ChatCompletionRequestMessage {
@@ -547,13 +639,37 @@ impl Policy {
 	) -> anyhow::Result<Option<Response>> {
 		for g in guards {
 			match &g.kind {
-				ResponseGuardKind::Regex(rg) => {
-					if let Some(res) = Self::apply_regex_response(resp, rg, &g.rejection)? {
+				ResponseGuardKind::Regex(rg) => match Self::apply_regex_response(resp, rg, &g.rejection)? {
+					GuardrailOutcome::Rejected(res) => {
+						Self::record_guardrail_trip(
+							client,
+							crate::telemetry::metrics::GuardrailPhase::Response,
+							crate::telemetry::metrics::GuardrailAction::Reject,
+						);
 						return Ok(Some(res));
-					}
+					},
+					GuardrailOutcome::Masked => {
+						Self::record_guardrail_trip(
+							client,
+							crate::telemetry::metrics::GuardrailPhase::Response,
+							crate::telemetry::metrics::GuardrailAction::Mask,
+						);
+					},
+					GuardrailOutcome::None => {
+						Self::record_guardrail_trip(
+							client,
+							crate::telemetry::metrics::GuardrailPhase::Response,
+							crate::telemetry::metrics::GuardrailAction::Allow,
+						);
+					},
 				},
 				ResponseGuardKind::Webhook(wh) => {
 					if let Some(res) = Self::apply_webhook_response(resp, http_headers, client, wh).await? {
+						Self::record_guardrail_trip(
+							client,
+							crate::telemetry::metrics::GuardrailPhase::Response,
+							crate::telemetry::metrics::GuardrailAction::Reject,
+						);
 						return Ok(Some(res));
 					}
 				},
@@ -714,4 +830,171 @@ fn default_code() -> StatusCode {
 
 fn default_body() -> Bytes {
 	Bytes::from_static(b"The request was rejected due to inappropriate content")
+}
+
+#[test]
+fn test_prompt_caching_policy_deserialization() {
+	use serde_json::json;
+
+	let json = json!({
+		"promptCaching": {
+			"cacheSystem": true,
+			"cacheMessages": true,
+			"cacheTools": false,
+			"minTokens": 1024
+		}
+	});
+
+	let policy: Policy = serde_json::from_value(json).unwrap();
+	let caching = policy.prompt_caching.unwrap();
+
+	assert!(caching.cache_system);
+	assert!(caching.cache_messages);
+	assert!(!caching.cache_tools);
+	assert_eq!(caching.min_tokens, Some(1024));
+}
+
+#[test]
+fn test_prompt_caching_policy_defaults() {
+	use serde_json::json;
+
+	// Empty config should have system and messages enabled by default
+	let json = json!({
+		"promptCaching": {}
+	});
+
+	let policy: Policy = serde_json::from_value(json).unwrap();
+	let caching = policy.prompt_caching.unwrap();
+
+	assert!(caching.cache_system); // Default: true
+	assert!(caching.cache_messages); // Default: true
+	assert!(!caching.cache_tools); // Default: false
+	assert_eq!(caching.min_tokens, Some(1024)); // Default: 1024
+}
+
+#[test]
+fn test_policy_without_prompt_caching_field() {
+	use serde_json::json;
+
+	let json = json!({
+		"modelAliases": {
+			"gpt-4": "anthropic.claude-3-sonnet-20240229-v1:0"
+		}
+	});
+
+	let policy: Policy = serde_json::from_value(json).unwrap();
+
+	// prompt_caching should be None when not specified
+	assert!(policy.prompt_caching.is_none());
+}
+
+#[test]
+fn test_prompt_caching_explicit_disable() {
+	use serde_json::json;
+
+	// Explicitly disable caching
+	let json = json!({
+		"promptCaching": null
+	});
+
+	let policy: Policy = serde_json::from_value(json).unwrap();
+
+	// Should be None when explicitly set to null
+	assert!(policy.prompt_caching.is_none());
+}
+
+#[test]
+fn test_resolve_route() {
+	let mut routes = IndexMap::new();
+	routes.insert(
+		strng::literal!("/completions"),
+		crate::llm::RouteType::Completions,
+	);
+	routes.insert(
+		strng::literal!("/v1/messages"),
+		crate::llm::RouteType::Messages,
+	);
+	routes.insert(strng::literal!("*"), crate::llm::RouteType::Passthrough);
+
+	let policy = Policy {
+		routes,
+		..Default::default()
+	};
+
+	// Suffix matching
+	assert_eq!(
+		policy.resolve_route("/v1/chat/completions"),
+		crate::llm::RouteType::Completions
+	);
+	assert_eq!(
+		policy.resolve_route("/api/completions"),
+		crate::llm::RouteType::Completions
+	);
+	// Exact suffix match
+	assert_eq!(
+		policy.resolve_route("/v1/messages"),
+		crate::llm::RouteType::Messages
+	);
+	// Wildcard fallback
+	assert_eq!(
+		policy.resolve_route("/v1/models"),
+		crate::llm::RouteType::Passthrough
+	);
+	// Empty routes defaults to Completions
+	assert_eq!(
+		Policy::default().resolve_route("/any/path"),
+		crate::llm::RouteType::Completions
+	);
+}
+
+#[test]
+fn test_model_alias_wildcard_resolution() {
+	let mut policy = Policy {
+		model_aliases: HashMap::from([
+			(strng::new("gpt-4"), strng::new("exact-target")),
+			(
+				strng::new("claude-haiku-3.5-*"),
+				strng::new("haiku-3.5-target"),
+			),
+			(strng::new("claude-haiku-*"), strng::new("haiku-target")),
+			(strng::new("*-sonnet-*"), strng::new("sonnet-target")),
+		]),
+		..Default::default()
+	};
+
+	policy.compile_model_alias_patterns();
+
+	// Exact match takes precedence over wildcards
+	assert_eq!(
+		policy.resolve_model_alias("gpt-4"),
+		Some(&strng::new("exact-target"))
+	);
+
+	// Longer patterns are more specific (checked first)
+	assert_eq!(
+		policy.resolve_model_alias("claude-haiku-3.5-v1"),
+		Some(&strng::new("haiku-3.5-target")) // Matches "claude-haiku-3.5-*" not "claude-haiku-*"
+	);
+	assert_eq!(
+		policy.resolve_model_alias("claude-haiku-v1"),
+		Some(&strng::new("haiku-target")) // Only matches "claude-haiku-*"
+	);
+	assert_eq!(
+		policy.resolve_model_alias("other-sonnet-model"),
+		Some(&strng::new("sonnet-target")) // Matches "*-sonnet-*"
+	);
+
+	// No match returns None
+	assert_eq!(policy.resolve_model_alias("unmatched-model"), None);
+}
+
+#[test]
+fn test_model_alias_pattern_validation() {
+	// Pattern must contain wildcard
+	assert!(ModelAliasPattern::from_wildcard("no-wildcards").is_err());
+
+	// Special characters are escaped (dot is literal, not regex wildcard)
+	let pattern = ModelAliasPattern::from_wildcard("test.*").unwrap();
+	assert!(pattern.matches("test.v1"));
+	assert!(!pattern.matches("testXv1")); // X doesn't match literal dot
 }
