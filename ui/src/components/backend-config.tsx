@@ -10,6 +10,7 @@ import {
   useBackendOperations,
 } from "@/lib/backend-hooks";
 import { BackendTable, AddBackendDialog } from "@/components/backend/backend-components";
+import { useXdsMode } from "@/hooks/use-xds-mode";
 
 export function BackendConfig() {
   const {
@@ -46,8 +47,10 @@ export function BackendConfig() {
   } = useBackendDialogs();
 
   const { isSubmitting, addBackend, deleteBackend } = useBackendOperations();
+  const xds = useXdsMode();
 
   // Load backends on component mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadBackends();
   }, []);
@@ -94,6 +97,8 @@ export function BackendConfig() {
             resetBackendForm(binds);
             openAddDialog();
           }}
+          disabled={xds}
+          className={xds ? "opacity-50 cursor-not-allowed" : undefined}
         >
           <Plus className="mr-2 h-4 w-4" />
           Add Backend

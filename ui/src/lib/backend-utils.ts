@@ -556,7 +556,7 @@ export const parseUrl = (url: string): { host: string; port: string; path: strin
     const path = urlObj.pathname + urlObj.search;
 
     return { host, port, path };
-  } catch (err) {
+  } catch {
     // Invalid URL, return empty values
     return { host: "", port: "", path: "" };
   }

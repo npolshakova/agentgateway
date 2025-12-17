@@ -5,6 +5,7 @@ export interface LocalConfig {
   binds: Bind[];
   workloads?: any[];
   services?: any[];
+  appliedPolicies?: AppliedPolicy[];
 }
 
 export interface Bind {
@@ -104,6 +105,28 @@ export interface Policies {
   extAuthz?: any;
   timeout?: TimeoutPolicy | null;
   retry?: RetryPolicy | null;
+}
+
+// Top-level applied policy entries from config dump
+export interface AppliedPolicy {
+  key: string;
+  name: {
+    kind: string;
+    name: string;
+    namespace: string;
+  };
+  target: {
+    backend?: {
+      backend?: { name: string; namespace: string };
+      service?: { hostname: string; namespace: string };
+    };
+    route?: { name: string; namespace: string };
+  };
+  // Keep flexible to match varying shapes in dump; narrow types over time
+  policy: {
+    backend?: Partial<Policies>;
+    traffic?: Record<string, unknown>;
+  };
 }
 
 export interface TcpPolicies {

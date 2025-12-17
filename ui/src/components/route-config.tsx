@@ -16,6 +16,7 @@ import {
   EditRouteDialog,
   EditTcpRouteDialog,
 } from "@/components/route/route-components";
+import { useXdsMode } from "@/hooks/use-xds-mode";
 
 export function RouteConfig() {
   const {
@@ -55,8 +56,10 @@ export function RouteConfig() {
 
   const { isSubmitting, addRoute, editRoute, editTcpRoute, deleteRoute, deleteTcpRoute } =
     useRouteOperations();
+  const xds = useXdsMode();
 
   // Load routes on component mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadRoutes();
   }, []);
@@ -137,7 +140,11 @@ export function RouteConfig() {
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
-        <Button onClick={() => setIsAddRouteDialogOpen(true)}>
+        <Button
+          onClick={() => setIsAddRouteDialogOpen(true)}
+          disabled={xds}
+          className={xds ? "opacity-50 cursor-not-allowed" : undefined}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Add Route
         </Button>
@@ -157,6 +164,7 @@ export function RouteConfig() {
           onEditTcpRoute={handleEditTcpRouteClick}
           onDeleteRoute={handleDeleteRoute}
           onDeleteTcpRoute={handleDeleteTcpRoute}
+          xds={xds}
         />
       )}
 
@@ -194,6 +202,7 @@ export function RouteConfig() {
         onEditRoute={handleEditRoute}
         onCancel={handleCancelDialogs}
         isSubmitting={isSubmitting}
+        xds={xds}
       />
 
       <EditTcpRouteDialog
@@ -210,6 +219,7 @@ export function RouteConfig() {
         onEditTcpRoute={handleEditTcpRoute}
         onCancel={handleCancelDialogs}
         isSubmitting={isSubmitting}
+        xds={xds}
       />
     </div>
   );

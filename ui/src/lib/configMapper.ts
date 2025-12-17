@@ -25,6 +25,7 @@ export function configDumpToLocalConfig(configDump: any): LocalConfig {
     binds: [],
     workloads: configDump.workloads || [],
     services: configDump.services || [],
+    appliedPolicies: configDump.policies || [],
   };
 
   const backends = (configDump.backends || []).map((b: any) => mapToBackend(b)).filter(Boolean);

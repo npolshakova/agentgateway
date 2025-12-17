@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Route as RouteType, TcpRoute, Listener, Bind } from "@/lib/types";
 import { fetchBinds, updateConfig, fetchConfig } from "@/lib/api";
 import { useServer } from "@/lib/server-context";
