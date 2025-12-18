@@ -55,6 +55,7 @@ import { useServer } from "@/lib/server-context";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useXdsMode } from "@/hooks/use-xds-mode";
 
 interface ListenerConfigProps {
   isAddingListener?: boolean;
@@ -109,6 +110,7 @@ export function ListenerConfig({
   setIsAddingListener = () => {},
 }: ListenerConfigProps) {
   const { refreshListeners } = useServer();
+  const xds = useXdsMode();
   const [binds, setBinds] = useState<BindWithBackendsAndRoutes[]>([]);
   const [expandedBinds, setExpandedBinds] = useState<Set<number>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
@@ -140,7 +142,7 @@ export function ListenerConfig({
     isOpen: false,
   });
 
-  const [deleteConfigDialog, setDeleteConfigDialog] = useState<DeleteConfigDialogState>({
+  const [_deleteConfigDialog, setDeleteConfigDialog] = useState<DeleteConfigDialogState>({
     isOpen: false,
     bindPort: 0,
     listenerIndex: -1,
@@ -155,7 +157,7 @@ export function ListenerConfig({
 
     // Count backends across all routes
     if (listener.routes && listener.routes.length > 0) {
-      listener.routes.forEach((route, routeIndex) => {
+      listener.routes.forEach((route, _routeIndex) => {
         if (route.backends && route.backends.length > 0) {
           backendCount += route.backends.length;
         }
@@ -206,6 +208,7 @@ export function ListenerConfig({
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     loadBinds();
   }, []);
@@ -363,7 +366,7 @@ export function ListenerConfig({
     return `${protocol}://${hostname}:${port}`;
   };
 
-  const hasJWTAuth = (listener: Listener) => {
+  const _hasJWTAuth = (listener: Listener) => {
     return (
       listener.routes?.some(
         (route) => route.policies?.jwtAuth || route.policies?.mcpAuthentication
@@ -375,8 +378,21 @@ export function ListenerConfig({
     return !!listener.tls;
   };
 
-  const hasRBAC = (listener: Listener) => {
+  const _hasRBAC = (listener: Listener) => {
     return listener.routes?.some((route) => route.policies?.mcpAuthorization) || false;
+  };
+
+  const getProtocolString = (protocol: unknown): ListenerProtocol => {
+    if (typeof protocol === "string") {
+      return protocol as ListenerProtocol;
+    }
+    if (protocol && typeof protocol === "object") {
+      const keys = Object.keys(protocol as Record<string, unknown>);
+      if (keys.length > 0) {
+        return keys[0] as ListenerProtocol;
+      }
+    }
+    return ListenerProtocol.HTTP;
   };
 
   if (isLoading) {
@@ -391,7 +407,12 @@ export function ListenerConfig({
   return (
     <div className="space-y-6">
       <div className="flex gap-2">
-        <Button onClick={() => setIsAddingBind(true)} variant="outline">
+        <Button
+          onClick={() => setIsAddingBind(true)}
+          variant="outline"
+          disabled={xds}
+          className={xds ? "opacity-50 cursor-not-allowed" : undefined}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Add Bind
         </Button>
@@ -445,7 +466,8 @@ export function ListenerConfig({
                               bindPort: bind.port,
                             });
                           }}
-                          className="text-destructive hover:text-destructive"
+                          disabled={xds}
+                          className={`text-destructive hover:text-destructive ${xds ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -463,7 +485,8 @@ export function ListenerConfig({
                       <Button
                         size="sm"
                         onClick={() => handleAddListenerToBind(bind.port)}
-                        className="h-8"
+                        disabled={xds}
+                        className={`h-8 ${xds ? "opacity-50 cursor-not-allowed" : ""}`}
                       >
                         <Plus className="mr-2 h-3 w-3" />
                         Add Listener
@@ -506,12 +529,18 @@ export function ListenerConfig({
                                 </TableCell>
                                 <TableCell>
                                   <Badge variant="outline">
-                                    {listener.protocol || ListenerProtocol.HTTP}
+                                    {getProtocolString(listener.protocol)}
                                   </Badge>
                                 </TableCell>
                                 <TableCell>{listener.hostname || "localhost"}</TableCell>
                                 <TableCell className="font-mono text-sm">
-                                  {getDisplayEndpoint(listener, bind.port)}
+                                  {getDisplayEndpoint(
+                                    {
+                                      ...listener,
+                                      protocol: getProtocolString(listener.protocol),
+                                    },
+                                    bind.port
+                                  )}
                                 </TableCell>
                                 <TableCell>
                                   <Badge variant="outline">
@@ -564,7 +593,8 @@ export function ListenerConfig({
                                         </DropdownMenuItem>
                                         {hasTLS(listener) && (
                                           <DropdownMenuItem
-                                            className="text-destructive"
+                                            className={`text-destructive ${xds ? "opacity-50 cursor-not-allowed" : ""}`}
+                                            disabled={xds}
                                             onClick={() => {
                                               setDeleteConfigDialog({
                                                 isOpen: true,
@@ -605,7 +635,8 @@ export function ListenerConfig({
                                         listenerIndex,
                                       })
                                     }
-                                    className="text-destructive hover:text-destructive"
+                                    disabled={xds}
+                                    className={`text-destructive hover:text-destructive ${xds ? "opacity-50 cursor-not-allowed" : ""}`}
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
@@ -657,7 +688,7 @@ export function ListenerConfig({
             >
               Cancel
             </Button>
-            <Button onClick={handleAddBind} disabled={isSubmitting}>
+            <Button onClick={handleAddBind} disabled={isSubmitting || xds}>
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Add Bind
             </Button>
@@ -782,7 +813,7 @@ export function ListenerConfig({
             </Button>
             <Button
               onClick={handleAddListener}
-              disabled={isSubmitting || !newListener.targetBindPort}
+              disabled={isSubmitting || !newListener.targetBindPort || xds}
             >
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Add Listener
@@ -885,7 +916,8 @@ export function ListenerConfig({
                   handleDeleteListener(deleteDialog.listenerName);
                 }
               }}
-              disabled={isSubmitting}
+              disabled={isSubmitting || xds}
+              className={xds ? "opacity-50 cursor-not-allowed" : undefined}
             >
               {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Delete

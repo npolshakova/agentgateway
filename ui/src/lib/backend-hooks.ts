@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Backend, Route, Listener, Bind } from "@/lib/types";
 import { fetchConfig, updateConfig } from "@/lib/api";
 import { useServer } from "@/lib/server-context";
