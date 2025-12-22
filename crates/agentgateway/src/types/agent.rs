@@ -1414,44 +1414,33 @@ pub struct TargetedPolicy {
 }
 
 /// Configuration for dynamic tracing policy
-#[apply(schema_ser!)]
+#[apply(schema!)]
 pub struct TracingConfig {
 	pub provider_backend: SimpleBackendReference,
 	pub attributes: Vec<TracingAttribute>,
 	pub resources: Vec<TracingAttribute>,
 	/// Optional per-policy override for random sampling. If set, overrides global config for
 	/// requests that use this frontend policy.
-	#[cfg_attr(feature = "schema", schemars(skip))]
 	pub random_sampling: Option<Arc<cel::Expression>>,
 	/// Optional per-policy override for client sampling. If set, overrides global config for
 	/// requests that use this frontend policy.
-	#[cfg_attr(feature = "schema", schemars(skip))]
 	pub client_sampling: Option<Arc<cel::Expression>>,
+	// OTLP path. Default is /v1/traces
+	pub path: String,
 }
 
 /// A single tracing attribute with a CEL expression
-#[derive(Debug, Clone, serde::Serialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[apply(schema!)]
 pub struct TracingAttribute {
 	pub name: String,
-	#[cfg_attr(feature = "schema", schemars(skip))]
 	pub value: Arc<cel::Expression>,
 }
 
 /// TracingPolicy holds both the configuration and the compiled OpenTelemetry tracer
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TracingPolicy {
 	pub config: TracingConfig,
 	pub tracer: Arc<crate::telemetry::trc::Tracer>,
-}
-
-impl std::fmt::Debug for TracingPolicy {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		f.debug_struct("TracingPolicy")
-			.field("config", &self.config)
-			.field("tracer", &"<tracer>")
-			.finish()
-	}
 }
 
 impl serde::Serialize for TracingPolicy {

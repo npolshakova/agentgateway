@@ -30,6 +30,7 @@
 |`config.tracing.fields.add`||
 |`config.tracing.randomSampling`|Expression to determine the amount of *random sampling*.<br>Random sampling will initiate a new trace span if the incoming request does not have a trace already.<br>This should evaluate to either a float between 0.0-1.0 (0-100%) or true/false.<br>This defaults to 'false'.|
 |`config.tracing.clientSampling`|Expression to determine the amount of *client sampling*.<br>Client sampling determines whether to initiate a new trace span if the incoming request does have a trace already.<br>This should evaluate to either a float between 0.0-1.0 (0-100%) or true/false.<br>This defaults to 'true'.|
+|`config.tracing.path`|OTLP path. Default is /v1/traces|
 |`config.logging`||
 |`config.logging.filter`||
 |`config.logging.fields`||
@@ -988,7 +989,7 @@
 |`frontendPolicies.accessLog.filter`||
 |`frontendPolicies.accessLog.add`||
 |`frontendPolicies.accessLog.remove`||
-|`frontendPolicies.tracing`||
+|`frontendPolicies.tracing`|Configuration for dynamic tracing policy|
 |`frontendPolicies.tracing.providerBackend`||
 |`frontendPolicies.tracing.providerBackend.(1)service`||
 |`frontendPolicies.tracing.providerBackend.(1)service.name`||
@@ -1003,9 +1004,9 @@
 |`frontendPolicies.tracing.resources`||
 |`frontendPolicies.tracing.resources[].name`||
 |`frontendPolicies.tracing.resources[].value`||
-|`frontendPolicies.tracing.insecure`|When true, use plaintext (http) for OTLP endpoint; otherwise TLS (https).|
-|`frontendPolicies.tracing.randomSampling`|Optional per-policy random sampling override.|
-|`frontendPolicies.tracing.clientSampling`|Optional per-policy client sampling override.|
+|`frontendPolicies.tracing.randomSampling`|Optional per-policy override for random sampling. If set, overrides global config for<br>requests that use this frontend policy.|
+|`frontendPolicies.tracing.clientSampling`|Optional per-policy override for client sampling. If set, overrides global config for<br>requests that use this frontend policy.|
+|`frontendPolicies.tracing.path`||
 |`policies`|policies defines additional policies that can be attached to various other configurations.<br>This is an advanced feature; users should typically use the inline `policies` field under route/gateway.|
 |`policies[].name`||
 |`policies[].name.name`||

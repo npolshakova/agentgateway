@@ -184,11 +184,16 @@
                 "boolean",
                 "null"
               ]
+            },
+            "path": {
+              "description": "OTLP path. Default is /v1/traces",
+              "type": "string"
             }
           },
           "additionalProperties": false,
           "required": [
-            "otlpEndpoint"
+            "otlpEndpoint",
+            "path"
           ]
         },
         "logging": {
@@ -9087,6 +9092,7 @@
           "default": null
         },
         "tracing": {
+          "description": "Configuration for dynamic tracing policy",
           "type": [
             "object",
             "null"
@@ -9173,6 +9179,7 @@
             "attributes": {
               "type": "array",
               "items": {
+                "description": "A single tracing attribute with a CEL expression",
                 "type": "object",
                 "properties": {
                   "name": {
@@ -9192,6 +9199,7 @@
             "resources": {
               "type": "array",
               "items": {
+                "description": "A single tracing attribute with a CEL expression",
                 "type": "object",
                 "properties": {
                   "name": {
@@ -9208,35 +9216,32 @@
                 ]
               }
             },
-            "insecure": {
-              "description": "When true, use plaintext (http) for OTLP endpoint; otherwise TLS (https).",
-              "type": [
-                "boolean",
-                "null"
-              ],
-              "default": null
-            },
             "randomSampling": {
-              "description": "Optional per-policy random sampling override.",
+              "description": "Optional per-policy override for random sampling. If set, overrides global config for\nrequests that use this frontend policy.",
               "type": [
                 "string",
                 "null"
-              ],
-              "default": null
+              ]
             },
             "clientSampling": {
-              "description": "Optional per-policy client sampling override.",
+              "description": "Optional per-policy override for client sampling. If set, overrides global config for\nrequests that use this frontend policy.",
               "type": [
                 "string",
                 "null"
-              ],
-              "default": null
+              ]
+            },
+            "path": {
+              "type": "string"
             }
           },
           "additionalProperties": false,
           "required": [
-            "providerBackend"
-          ]
+            "providerBackend",
+            "attributes",
+            "resources",
+            "path"
+          ],
+          "default": null
         }
       },
       "additionalProperties": false

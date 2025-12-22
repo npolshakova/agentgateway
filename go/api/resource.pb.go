@@ -6145,8 +6145,10 @@ type FrontendPolicySpec_Tracing struct {
 	// request already has a trace. This should evaluate to a float between 0.0-1.0,
 	// or a boolean (true/false). If unspecified, client sampling is 100% enabled.
 	ClientSampling *string `protobuf:"bytes,5,opt,name=client_sampling,json=clientSampling,proto3,oneof" json:"client_sampling,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	// OTLP path. Default is /v1/traces
+	Path          *string `protobuf:"bytes,6,opt,name=path,proto3,oneof" json:"path,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *FrontendPolicySpec_Tracing) Reset() {
@@ -6210,6 +6212,13 @@ func (x *FrontendPolicySpec_Tracing) GetRandomSampling() string {
 func (x *FrontendPolicySpec_Tracing) GetClientSampling() string {
 	if x != nil && x.ClientSampling != nil {
 		return *x.ClientSampling
+	}
+	return ""
+}
+
+func (x *FrontendPolicySpec_Tracing) GetPath() string {
+	if x != nil && x.Path != nil {
+		return *x.Path
 	}
 	return ""
 }
@@ -9829,7 +9838,7 @@ const file_resource_proto_rawDesc = "" +
 	"\binterval\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\binterval\x12\x1d\n" +
 	"\aretries\x18\x03 \x01(\rH\x00R\aretries\x88\x01\x01B\n" +
 	"\n" +
-	"\b_retries\"\x89\x10\n" +
+	"\b_retries\"\xab\x10\n" +
 	"\x12FrontendPolicySpec\x12E\n" +
 	"\x03tcp\x18\x01 \x01(\v21.agentgateway.dev.resource.FrontendPolicySpec.TCPH\x00R\x03tcp\x12E\n" +
 	"\x03tls\x18\x02 \x01(\v21.agentgateway.dev.resource.FrontendPolicySpec.TLSH\x00R\x03tls\x12H\n" +
@@ -9868,7 +9877,7 @@ const file_resource_proto_rawDesc = "" +
 	"\x06Fields\x12\x16\n" +
 	"\x06remove\x18\x01 \x03(\tR\x06remove\x12M\n" +
 	"\x03add\x18\x02 \x03(\v2;.agentgateway.dev.resource.FrontendPolicySpec.Logging.FieldR\x03addB\t\n" +
-	"\a_filter\x1a\xa3\x03\n" +
+	"\a_filter\x1a\xc5\x03\n" +
 	"\aTracing\x12V\n" +
 	"\x10provider_backend\x18\x01 \x01(\v2+.agentgateway.dev.resource.BackendReferenceR\x0fproviderBackend\x12^\n" +
 	"\n" +
@@ -9876,9 +9885,11 @@ const file_resource_proto_rawDesc = "" +
 	"attributes\x12\\\n" +
 	"\tresources\x18\x03 \x03(\v2>.agentgateway.dev.resource.FrontendPolicySpec.TracingAttributeR\tresources\x12,\n" +
 	"\x0frandom_sampling\x18\x04 \x01(\tH\x00R\x0erandomSampling\x88\x01\x01\x12,\n" +
-	"\x0fclient_sampling\x18\x05 \x01(\tH\x01R\x0eclientSampling\x88\x01\x01B\x12\n" +
+	"\x0fclient_sampling\x18\x05 \x01(\tH\x01R\x0eclientSampling\x88\x01\x01\x12\x17\n" +
+	"\x04path\x18\x06 \x01(\tH\x02R\x04path\x88\x01\x01B\x12\n" +
 	"\x10_random_samplingB\x12\n" +
-	"\x10_client_sampling\x1a<\n" +
+	"\x10_client_samplingB\a\n" +
+	"\x05_path\x1a<\n" +
 	"\x10TracingAttribute\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05valueB\x06\n" +
