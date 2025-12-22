@@ -27,8 +27,8 @@ use crate::types::agent::{
 	PolicyPhase, PolicyTarget, PolicyType, ResourceName, Route, RouteBackendReference, RouteMatch,
 	RouteName, RouteSet, ServerTLSConfig, SimpleBackend, SimpleBackendReference,
 	SimpleBackendWithPolicies, SseTargetSpec, StreamableHTTPTargetSpec, TCPRoute,
-	TCPRouteBackendReference, TCPRouteSet, Target, TargetedPolicy, TrafficPolicy, TunnelProtocol,
-	TypedResourceName,
+	TCPRouteBackendReference, TCPRouteSet, Target, TargetedPolicy, TracingConfig, TrafficPolicy,
+	TunnelProtocol, TypedResourceName,
 };
 use crate::types::discovery::{NamespacedHostname, Service};
 use crate::types::{backend, frontend};
@@ -762,31 +762,6 @@ impl LocalTCPBackendPolicies {
 }
 
 #[apply(schema_de!)]
-pub struct LocalTracingConfig {
-	#[serde(rename = "providerBackend")]
-	pub provider_backend: SimpleLocalBackend,
-	#[serde(default)]
-	pub attributes: Vec<LocalTracingAttribute>,
-	#[serde(default)]
-	pub resources: Vec<LocalTracingAttribute>,
-	/// When true, use plaintext (http) for OTLP endpoint; otherwise TLS (https).
-	#[serde(default)]
-	pub insecure: Option<bool>,
-	/// Optional per-policy random sampling override.
-	#[serde(rename = "randomSampling", default)]
-	pub random_sampling: Option<String>,
-	/// Optional per-policy client sampling override.
-	#[serde(rename = "clientSampling", default)]
-	pub client_sampling: Option<String>,
-}
-
-#[apply(schema_de!)]
-pub struct LocalTracingAttribute {
-	pub name: String,
-	pub value: String, // CEL expression as string
-}
-
-#[apply(schema_de!)]
 #[derive(Default)]
 struct LocalFrontendPolicies {
 	/// Settings for handling incoming HTTP requests.
@@ -802,7 +777,7 @@ struct LocalFrontendPolicies {
 	#[serde(default)]
 	pub access_log: Option<frontend::LoggingPolicy>,
 	#[serde(default)]
-	pub tracing: Option<LocalTracingConfig>,
+	pub tracing: Option<TracingConfig>,
 }
 
 #[apply(schema_de!)]
@@ -1258,63 +1233,7 @@ async fn split_frontend_policies(
 	if let Some(p) = access_log {
 		add(FrontendPolicy::AccessLog(p), "accessLog");
 	}
-	if let Some(p) = tracing {
-		// Convert LocalTracingConfig to TracingPolicy
-		let (provider_backend, _) = to_simple_backend_and_ref(&p.provider_backend);
-
-		let attributes = p
-			.attributes
-			.into_iter()
-			.map(|a| {
-				let expr = cel::Expression::new_strict(&a.value)
-					.map_err(|e| anyhow!("invalid CEL in attribute: {e}"))?;
-				Ok::<_, Error>(crate::types::agent::TracingAttribute {
-					name: a.name,
-					value: Arc::new(expr),
-				})
-			})
-			.collect::<Result<Vec<_>, _>>()?;
-
-		let resources = p
-			.resources
-			.into_iter()
-			.map(|a| {
-				let expr = cel::Expression::new_strict(&a.value)
-					.map_err(|e| anyhow!("invalid CEL in resource: {e}"))?;
-				Ok::<_, Error>(crate::types::agent::TracingAttribute {
-					name: a.name,
-					value: Arc::new(expr),
-				})
-			})
-			.collect::<Result<Vec<_>, _>>()?;
-
-		let random_sampling = p
-			.random_sampling
-			.as_ref()
-			.map(|s| {
-				cel::Expression::new_strict(s)
-					.map(Arc::new)
-					.map_err(|e| anyhow!("invalid CEL in randomSampling: {e}"))
-			})
-			.transpose()?;
-		let client_sampling = p
-			.client_sampling
-			.as_ref()
-			.map(|s| {
-				cel::Expression::new_strict(s)
-					.map(Arc::new)
-					.map_err(|e| anyhow!("invalid CEL in clientSampling: {e}"))
-			})
-			.transpose()?;
-
-		let tracing_config = crate::types::agent::TracingConfig {
-			provider_backend,
-			attributes,
-			resources,
-			random_sampling,
-			client_sampling,
-		};
-
+	if let Some(tracing_config) = tracing {
 		// Build logging fields from attributes for tracer creation
 		let logging_fields = {
 			let add_map = crate::telemetry::log::OrderedStringMap::from_iter(
@@ -1536,25 +1455,6 @@ async fn convert_tcp_route(
 		backends: backend_refs,
 	};
 	Ok((route, external_policies, external_backends))
-}
-
-fn to_simple_backend_and_ref(
-	b: &SimpleLocalBackend,
-) -> (SimpleBackendReference, Option<SimpleBackendWithPolicies>) {
-	match b {
-		SimpleLocalBackend::Service { name, port } => (
-			SimpleBackendReference::Service {
-				name: name.clone(),
-				port: *port,
-			},
-			None,
-		),
-		// For simple opaque targets, we can inline the backend directly.
-		SimpleLocalBackend::Opaque(t) => (SimpleBackendReference::InlineBackend(t.clone()), None),
-		// Explicit reference to an existing backend key.
-		SimpleLocalBackend::Backend(k) => (SimpleBackendReference::Backend(k.clone()), None),
-		SimpleLocalBackend::Invalid => (SimpleBackendReference::Invalid, None),
-	}
 }
 
 // For most local backends we can just use `InlineBackend`. However, for MCP we allow `https://domain/path`

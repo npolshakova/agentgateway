@@ -506,10 +506,14 @@ impl HTTPProxy {
 			// Apply sampling overrides if present
 			if let Some(rs) = &tp.config.random_sampling {
 				log.cel.tracing_sampler.random_sampling = Some(rs.clone());
+				log.cel.cel_context.register_expression(rs.as_ref());
 			}
 			if let Some(cs) = &tp.config.client_sampling {
 				log.cel.tracing_sampler.client_sampling = Some(cs.clone());
+				log.cel.cel_context.register_expression(cs.as_ref());
 			}
+			// Re-apply request so any newly required attributes are captured before sampling
+			Self::apply_request_to_cel(log, &mut req).await;
 		}
 
 		let trace_parent = trc::TraceParent::from_request(&req);

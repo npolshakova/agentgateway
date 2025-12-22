@@ -17,7 +17,6 @@ pub use traceparent::TraceParent;
 use crate::cel;
 use crate::telemetry::log::{CelLoggingExecutor, LoggingFields, RequestLog};
 use crate::types::agent::{SimpleBackendReference, TracingConfig};
-use std::sync::atomic::{AtomicBool, Ordering};
 
 #[derive(Clone, Debug)]
 pub struct Tracer {
@@ -43,6 +42,7 @@ pub struct Config {
 	pub fields: LoggingFields,
 	pub random_sampling: Option<Arc<cel::Expression>>,
 	pub client_sampling: Option<Arc<cel::Expression>>,
+	pub path: String,
 }
 
 mod semconv {
@@ -106,7 +106,14 @@ impl Tracer {
 					cel::Value::UInt(u) => Value::I64(u as i64),
 					cel::Value::Float(f) => Value::F64(f),
 					cel::Value::Bool(b) => Value::Bool(b),
-					_ => Value::String(format!("{:?}", value).into()),
+					_ => {
+						let json_str = value
+							.json()
+							.ok()
+							.and_then(|j| serde_json::to_string(&j).ok())
+							.unwrap_or_else(|| format!("{:?}", value));
+						Value::String(json_str.into())
+					},
 				};
 				resource_builder =
 					resource_builder.with_attribute(KeyValue::new(resource_attr.name.clone(), otel_value));
@@ -169,7 +176,14 @@ impl Tracer {
 					cel::Value::UInt(u) => Value::I64(u as i64),
 					cel::Value::Float(f) => Value::F64(f),
 					cel::Value::Bool(b) => Value::Bool(b),
-					_ => Value::String(format!("{:?}", value).into()),
+					_ => {
+						let json_str = value
+							.json()
+							.ok()
+							.and_then(|j| serde_json::to_string(&j).ok())
+							.unwrap_or_else(|| format!("{:?}", value));
+						Value::String(json_str.into())
+					},
 				};
 				resource_builder =
 					resource_builder.with_attribute(KeyValue::new(resource_attr.name.clone(), otel_value));
@@ -239,7 +253,11 @@ impl Tracer {
 				opentelemetry_otlp::SpanExporter::builder()
 					.with_http()
 					// For HTTP, we add the suffix ourselves
-					.with_endpoint(format!("{}/v1/traces", ep.strip_suffix("/").unwrap_or(ep)))
+					.with_endpoint(format!(
+						"{}/{}",
+						ep.strip_suffix("/").unwrap_or(ep),
+						cfg.path.clone()
+					))
 					.with_headers(cfg.headers.clone())
 					.build()?
 			})
@@ -319,7 +337,14 @@ impl Tracer {
 					cel::Value::UInt(u) => Value::I64(u as i64),
 					cel::Value::Float(f) => Value::F64(f),
 					cel::Value::Bool(b) => Value::Bool(b),
-					_ => Value::String(format!("{:?}", value).into()),
+					_ => {
+						let json_str = value
+							.json()
+							.ok()
+							.and_then(|j| serde_json::to_string(&j).ok())
+							.unwrap_or_else(|| format!("{:?}", value));
+						Value::String(json_str.into())
+					},
 				};
 				resource_builder =
 					resource_builder.with_attribute(KeyValue::new(resource_attr.name.clone(), otel_value));
@@ -444,9 +469,11 @@ impl Tracer {
 /// For now we implement SpanExporter ourslves for grpc until https://github.com/open-telemetry/opentelemetry-rust/issues/3147 is addressed.
 #[derive(Clone)]
 struct PolicyGrpcSpanExporter {
-	target: Arc<SimpleBackendReference>,
-	client: crate::proxy::httpproxy::PolicyClient,
-	is_shutdown: Arc<AtomicBool>,
+	tonic_client:
+		opentelemetry_proto::tonic::collector::trace::v1::trace_service_client::TraceServiceClient<
+			crate::http::ext_proc::GrpcReferenceChannel,
+		>,
+	is_shutdown: Arc<bool>,
 	resource: Resource,
 }
 
@@ -458,10 +485,18 @@ impl std::fmt::Debug for PolicyGrpcSpanExporter {
 
 impl PolicyGrpcSpanExporter {
 	fn new(inputs: Arc<crate::ProxyInputs>, target: Arc<SimpleBackendReference>) -> Self {
-		Self {
+		use crate::http::ext_proc::GrpcReferenceChannel;
+		let channel = GrpcReferenceChannel {
 			target,
 			client: crate::proxy::httpproxy::PolicyClient { inputs },
-			is_shutdown: Arc::new(AtomicBool::new(false)),
+			timeout: None,
+		};
+		let tonic_client = opentelemetry_proto::tonic::collector::trace::v1::trace_service_client::TraceServiceClient::new(
+			channel,
+		);
+		Self {
+			tonic_client,
+			is_shutdown: Arc::new(false),
 			resource: Resource::builder().build(),
 		}
 	}
@@ -474,21 +509,15 @@ impl opentelemetry_sdk::trace::SpanExporter for PolicyGrpcSpanExporter {
 		batch: Vec<opentelemetry_sdk::trace::SpanData>,
 	) -> impl futures_util::Future<Output = opentelemetry_sdk::error::OTelSdkResult> + Send {
 		use opentelemetry_sdk::error::{OTelSdkError, OTelSdkResult};
-		let is_shutdown = self.is_shutdown.load(Ordering::SeqCst);
-		let target = self.target.clone();
-		let client = self.client.clone();
+		let is_shutdown = self.is_shutdown.clone();
+		let mut client = self.tonic_client.clone();
 		let resource = self.resource.clone();
 		async move {
-			if is_shutdown {
+			if *is_shutdown {
 				return Err(OTelSdkError::AlreadyShutdown);
 			}
-			// Build a tonic client using our GrpcReferenceChannel so calls go through PolicyClient
-			use crate::http::ext_proc::GrpcReferenceChannel;
-			let mut client = opentelemetry_proto::tonic::collector::trace::v1::trace_service_client::TraceServiceClient::new(
-				GrpcReferenceChannel { target, client, timeout: None },
-			);
 			// Reuse OTLP transform to convert SDK spans to ResourceSpans
-			let resource_spans = from_span_data(resource, batch);
+			let resource_spans = from_span_data(&resource, batch);
 			let req = opentelemetry_proto::tonic::collector::trace::v1::ExportTraceServiceRequest {
 				resource_spans,
 			};
@@ -501,7 +530,7 @@ impl opentelemetry_sdk::trace::SpanExporter for PolicyGrpcSpanExporter {
 	}
 
 	fn shutdown(&mut self) -> opentelemetry_sdk::error::OTelSdkResult {
-		self.is_shutdown.store(true, Ordering::SeqCst);
+		self.is_shutdown = Arc::new(true);
 		Ok(())
 	}
 
@@ -513,169 +542,53 @@ impl opentelemetry_sdk::trace::SpanExporter for PolicyGrpcSpanExporter {
 /// Build a tonic ResourceSpans payload from SDK SpanData.
 /// Unblock exports for our custom exporter until https://github.com/open-telemetry/opentelemetry-rust/issues/3147 is addressed.
 fn from_span_data(
-	resource: opentelemetry_sdk::Resource,
-	batch: Vec<opentelemetry_sdk::trace::SpanData>,
+	resource: &opentelemetry_sdk::Resource,
+	spans: Vec<opentelemetry_sdk::trace::SpanData>,
 ) -> Vec<opentelemetry_proto::tonic::trace::v1::ResourceSpans> {
-	use opentelemetry::trace::{SpanId, SpanKind};
-	use opentelemetry_proto::tonic::common::v1 as proto_common;
-	use opentelemetry_proto::tonic::resource::v1::Resource as ProtoResource;
-	use opentelemetry_proto::tonic::trace::v1 as proto_trace;
+	let resource: opentelemetry_proto::transform::common::tonic::ResourceAttributesWithSchema =
+		resource.into();
+	// Group spans by their instrumentation scope
+	let scope_map = spans.iter().fold(
+		HashMap::new(),
+		|mut scope_map: HashMap<
+			&opentelemetry::InstrumentationScope,
+			Vec<&opentelemetry_sdk::trace::SpanData>,
+		>,
+		 span| {
+			let instrumentation = &span.instrumentation_scope;
+			scope_map.entry(instrumentation).or_default().push(span);
+			scope_map
+		},
+	);
 
-	fn to_nanos(t: std::time::SystemTime) -> u64 {
-		match t.duration_since(std::time::UNIX_EPOCH) {
-			Ok(d) => d.as_nanos() as u64,
-			Err(e) => {
-				// Time before UNIX_EPOCH, clamp to 0
-				let _ = e;
-				0
-			},
-		}
-	}
-
-	fn value_to_any_value(v: &opentelemetry::Value) -> Option<proto_common::AnyValue> {
-		use opentelemetry::Value;
-		use proto_common::any_value::Value as Av;
-		let av = match v {
-			Value::Bool(b) => Av::BoolValue(*b),
-			Value::I64(i) => Av::IntValue(*i),
-			Value::F64(f) => Av::DoubleValue(*f),
-			Value::String(s) => Av::StringValue(s.to_string()),
-			// Fallback: stringify other value types (arrays, maps, bytes)
-			_ => Av::StringValue(v.to_string()),
-		};
-		Some(proto_common::AnyValue { value: Some(av) })
-	}
-
-	fn attributes_to_proto(attrs: Vec<opentelemetry::KeyValue>) -> Vec<proto_common::KeyValue> {
-		attrs
-			.into_iter()
-			.map(|kv| proto_common::KeyValue {
-				key: kv.key.as_str().to_string(),
-				value: value_to_any_value(&kv.value),
-			})
-			.collect()
-	}
-
-	fn build_span_flags(parent_span_is_remote: bool, base_flags: u32) -> u32 {
-		use proto_trace::SpanFlags;
-		let mut flags = base_flags;
-		flags |= SpanFlags::ContextHasIsRemoteMask as u32;
-		if parent_span_is_remote {
-			flags |= SpanFlags::ContextIsRemoteMask as u32;
-		}
-		flags
-	}
-
-	fn span_kind_to_proto(kind: SpanKind) -> i32 {
-		use proto_trace::span::SpanKind as P;
-		let k = match kind {
-			SpanKind::Client => P::Client,
-			SpanKind::Consumer => P::Consumer,
-			SpanKind::Internal => P::Internal,
-			SpanKind::Producer => P::Producer,
-			SpanKind::Server => P::Server,
-		};
-		k as i32
-	}
-
-	fn status_to_proto(status: &opentelemetry::trace::Status) -> proto_trace::Status {
-		use opentelemetry::trace::Status as S;
-		use proto_trace::status::StatusCode as C;
-		let (code, message) = match status {
-			S::Ok => (C::Ok as i32, String::new()),
-			S::Unset => (C::Unset as i32, String::new()),
-			S::Error { description } => (C::Error as i32, description.to_string()),
-		};
-		proto_trace::Status { code, message }
-	}
-
-	fn link_to_proto(link: opentelemetry::trace::Link) -> proto_trace::span::Link {
-		proto_trace::span::Link {
-			trace_id: link.span_context.trace_id().to_bytes().to_vec(),
-			span_id: link.span_context.span_id().to_bytes().to_vec(),
-			trace_state: link.span_context.trace_state().header(),
-			attributes: attributes_to_proto(link.attributes),
-			dropped_attributes_count: link.dropped_attributes_count,
-			flags: build_span_flags(
-				link.span_context.is_remote(),
-				link.span_context.trace_flags().to_u8() as u32,
-			),
-		}
-	}
-
-	let spans: Vec<proto_trace::Span> = batch
+	// Convert the grouped spans into ScopeSpans
+	let scope_spans = scope_map
 		.into_iter()
-		.map(|s| {
-			let parent_span_id = if s.parent_span_id != SpanId::INVALID {
-				s.parent_span_id.to_bytes().to_vec()
-			} else {
-				Vec::new()
-			};
-
-			let events = s
-				.events
-				.into_iter()
-				.map(|e| proto_trace::span::Event {
-					time_unix_nano: to_nanos(e.timestamp),
-					name: e.name.into(),
-					attributes: attributes_to_proto(e.attributes),
-					dropped_attributes_count: e.dropped_attributes_count,
-				})
-				.collect();
-
-			let links = s.links.into_iter().map(link_to_proto).collect();
-
-			proto_trace::Span {
-				trace_id: s.span_context.trace_id().to_bytes().to_vec(),
-				span_id: s.span_context.span_id().to_bytes().to_vec(),
-				trace_state: s.span_context.trace_state().header(),
-				parent_span_id,
-				flags: build_span_flags(
-					s.parent_span_is_remote,
-					s.span_context.trace_flags().to_u8() as u32,
-				),
-				name: s.name.into_owned(),
-				kind: span_kind_to_proto(s.span_kind),
-				start_time_unix_nano: to_nanos(s.start_time),
-				end_time_unix_nano: to_nanos(s.end_time),
-				attributes: attributes_to_proto(s.attributes),
-				dropped_attributes_count: s.dropped_attributes_count,
-				events,
-				dropped_events_count: 0, // already encoded per-event
-				links,
-				dropped_links_count: 0, // already encoded per-link
-				status: Some(status_to_proto(&s.status)),
-			}
-		})
+		.map(
+			|(instrumentation, span_records)| opentelemetry_proto::tonic::trace::v1::ScopeSpans {
+				scope: Some((instrumentation, None).into()),
+				schema_url: instrumentation
+					.schema_url()
+					.map(ToOwned::to_owned)
+					.unwrap_or_default(),
+				spans: span_records
+					.into_iter()
+					.map(|span_data| span_data.clone().into())
+					.collect(),
+			},
+		)
 		.collect();
-
 	// We currently do not extract resource attributes; send empty resource payload.
 	// This is sufficient for collector ingestion and can be enhanced later if needed.
-	let rs = opentelemetry_proto::tonic::trace::v1::ResourceSpans {
-		resource: Some(ProtoResource {
-			attributes: {
-				// Try to read attributes if available via IntoIterator. Otherwise leave empty.
-				let mut out = Vec::new();
-				for (key, value) in resource.iter() {
-					out.push(proto_common::KeyValue {
-						key: key.as_str().to_string(),
-						value: value_to_any_value(value),
-					});
-				}
-				out
-			},
+	vec![opentelemetry_proto::tonic::trace::v1::ResourceSpans {
+		resource: Some(opentelemetry_proto::tonic::resource::v1::Resource {
+			attributes: resource.attributes.0.clone(),
 			dropped_attributes_count: 0,
 			entity_refs: vec![],
 		}),
 		schema_url: String::new(),
-		scope_spans: vec![proto_trace::ScopeSpans {
-			scope: None,
-			schema_url: String::new(),
-			spans,
-		}],
-	};
-
-	vec![rs]
+		scope_spans,
+	}]
 }
 
 fn to_otel(v: &ValueBag) -> opentelemetry::Value {
@@ -690,16 +603,10 @@ fn to_otel(v: &ValueBag) -> opentelemetry::Value {
 	}
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct PolicyOtelHttpClient {
 	policy_client: crate::proxy::httpproxy::PolicyClient,
 	backend_ref: SimpleBackendReference,
-}
-
-impl std::fmt::Debug for PolicyOtelHttpClient {
-	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		f.debug_struct("PolicyOtelHttpClient").finish()
-	}
 }
 
 #[async_trait::async_trait]
@@ -715,8 +622,7 @@ impl opentelemetry_http::HttpClient for PolicyOtelHttpClient {
 		let mut uri_parts = head.uri.into_parts();
 		uri_parts.scheme = None;
 		uri_parts.authority = None;
-		head.uri = http::Uri::from_parts(uri_parts)
-			.map_err(|e| -> Box<dyn std::error::Error + Send + Sync> { Box::new(e) })?;
+		head.uri = http::Uri::from_parts(uri_parts).map_err(Box::new)?;
 		let req = crate::http::Request::from_parts(head, crate::http::Body::from(body_bytes));
 
 		let resp = client
@@ -735,87 +641,11 @@ impl opentelemetry_http::HttpClient for PolicyOtelHttpClient {
 	}
 }
 
-impl Tracer {
-	pub fn create_tracer_from_config_with_client(
-		config: &TracingConfig,
-		fields: Arc<LoggingFields>,
-		policy_client: crate::proxy::httpproxy::PolicyClient,
-	) -> anyhow::Result<Tracer> {
-		let defaults = GLOBAL_RESOURCE_DEFAULTS.get();
-		let mut resource_builder = Resource::builder();
-		if let Some(d) = defaults {
-			for kv in &d.attrs {
-				resource_builder = resource_builder.with_attribute(kv.clone());
-			}
-		}
-		resource_builder = resource_builder.with_attribute(KeyValue::new(
-			"service.version",
-			agent_core::version::BuildInfo::new().version,
-		));
-		let executor = cel::ContextBuilder::new().build()?;
-		let mut tracer_name: Option<String> = None;
-		for resource_attr in &config.resources {
-			if let Ok(value) = executor.eval(&resource_attr.value) {
-				use opentelemetry::Value;
-				let otel_value = match value {
-					cel::Value::String(s) => {
-						if resource_attr.name == "service.name" && tracer_name.is_none() {
-							tracer_name = Some(s.to_string());
-						}
-						Value::String(s.to_string().into())
-					},
-					cel::Value::Int(i) => Value::I64(i),
-					cel::Value::UInt(u) => Value::I64(u as i64),
-					cel::Value::Float(f) => Value::F64(f),
-					cel::Value::Bool(b) => Value::Bool(b),
-					_ => Value::String(format!("{:?}", value).into()),
-				};
-				resource_builder =
-					resource_builder.with_attribute(KeyValue::new(resource_attr.name.clone(), otel_value));
-			}
-		}
-		let tracer_name = tracer_name
-			.or_else(|| defaults.and_then(|d| d.service_name.clone()))
-			.unwrap_or_else(|| "agentgateway".to_string());
-		resource_builder = resource_builder.with_service_name(tracer_name.clone());
-
-		let http_client = PolicyOtelHttpClient {
-			policy_client,
-			backend_ref: config.provider_backend.clone(),
-		};
-		// Determine the OTLP/HTTP endpoint path; authority is resolved via backend policies.
-		let endpoint_path = GLOBAL_RESOURCE_DEFAULTS
-			.get()
-			.and_then(|d| d.otlp_http_path.clone())
-			.ok_or_else(|| {
-				anyhow::anyhow!(
-					"OTLP HTTP exporter not configured: no tracing endpoint found (set cfg.tracing.endpoint)"
-				)
-			})?;
-		let provider = opentelemetry_sdk::trace::SdkTracerProvider::builder()
-			.with_resource(resource_builder.build())
-			.with_batch_exporter(
-				opentelemetry_otlp::SpanExporter::builder()
-					.with_http()
-					.with_http_client(http_client)
-					.with_endpoint(endpoint_path)
-					.build()?,
-			)
-			.build();
-		let tracer = provider.tracer(tracer_name);
-		Ok(Tracer {
-			tracer: Arc::new(tracer),
-			provider,
-			fields,
-		})
-	}
-}
-
 #[derive(Clone, Debug)]
 struct GlobalResourceDefaults {
 	service_name: Option<String>,
 	attrs: Vec<KeyValue>,
-	// If set, the OTLP/HTTP path (e.g., "/v1/traces") derived from cfg.tracing.endpoint
+	// If set, the OTLP/HTTP path (e.g., "/v1/traces") derived from cfg.tracing.endpoint or per-policy TracingConfig.path
 	otlp_http_path: Option<String>,
 }
 
@@ -851,15 +681,19 @@ pub fn set_resource_defaults_from_config(cfg: &crate::Config) {
 		if let Ok(uri) = http::Uri::try_from(ep) {
 			let base_path = uri.path().to_string();
 			let path = if base_path.is_empty() || base_path == "/" {
-				"/v1/traces".to_string()
-			} else if base_path.ends_with("/v1/traces") {
+				cfg.tracing.path.clone()
+			} else if base_path.ends_with(cfg.tracing.path.as_str()) {
 				base_path
 			} else {
-				format!("{}/v1/traces", base_path.trim_end_matches('/'))
+				format!(
+					"{}/{}",
+					base_path.trim_end_matches('/'),
+					cfg.tracing.path.as_str()
+				)
 			};
 			otlp_http_path = Some(path);
 		} else {
-			// Fallback if parsing fails
+			// Fallback to default if parsing fails
 			otlp_http_path = Some("/v1/traces".to_string());
 		}
 	}
