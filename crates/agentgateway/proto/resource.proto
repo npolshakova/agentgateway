@@ -457,6 +457,9 @@ message FrontendPolicySpec {
     // request already has a trace. This should evaluate to a float between 0.0-1.0,
     // or a boolean (true/false). If unspecified, client sampling is 100% enabled.
     optional string client_sampling = 5;
+
+    // OTLP path. Default is /v1/traces 
+    optional string path = 6;
   }
 
   message TracingAttribute {

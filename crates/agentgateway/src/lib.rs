@@ -210,6 +210,8 @@ pub struct RawTracing {
 	/// This should evaluate to either a float between 0.0-1.0 (0-100%) or true/false.
 	/// This defaults to 'true'.
 	client_sampling: Option<StringBoolFloat>,
+	/// OTLP path. Default is /v1/traces
+	path: String,
 }
 
 #[apply(schema_de!)]

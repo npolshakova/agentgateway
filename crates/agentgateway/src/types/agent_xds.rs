@@ -1517,8 +1517,7 @@ impl TryFrom<&proto::agent::frontend_policy_spec::Tracing> for types::agent::Tra
 			.attributes
 			.iter()
 			.map(|a| {
-				let expr = cel::Expression::new_strict(&a.value)
-					.map_err(|e| ProtoError::Generic(format!("invalid CEL in attribute: {e}")))?;
+				let expr = cel::Expression::new_permissive(&a.value);
 				Ok::<_, ProtoError>(types::agent::TracingAttribute {
 					name: a.name.clone(),
 					value: Arc::new(expr),
@@ -1530,8 +1529,7 @@ impl TryFrom<&proto::agent::frontend_policy_spec::Tracing> for types::agent::Tra
 			.resources
 			.iter()
 			.map(|a| {
-				let expr = cel::Expression::new_strict(&a.value)
-					.map_err(|e| ProtoError::Generic(format!("invalid CEL in resource: {e}")))?;
+				let expr = cel::Expression::new_permissive(&a.value);
 				Ok::<_, ProtoError>(types::agent::TracingAttribute {
 					name: a.name.clone(),
 					value: Arc::new(expr),
@@ -1543,21 +1541,13 @@ impl TryFrom<&proto::agent::frontend_policy_spec::Tracing> for types::agent::Tra
 		let random_sampling = t
 			.random_sampling
 			.as_ref()
-			.map(|s| {
-				cel::Expression::new_strict(s)
-					.map(Arc::new)
-					.map_err(|e| ProtoError::Generic(format!("invalid CEL in random_sampling: {e}")))
-			})
-			.transpose()?;
+			.map(|s| Arc::new(cel::Expression::new_permissive(s)));
 		let client_sampling = t
 			.client_sampling
 			.as_ref()
-			.map(|s| {
-				cel::Expression::new_strict(s)
-					.map(Arc::new)
-					.map_err(|e| ProtoError::Generic(format!("invalid CEL in client_sampling: {e}")))
-			})
-			.transpose()?;
+			.map(|s| Arc::new(cel::Expression::new_permissive(s)));
+
+		let path = t.path.clone().unwrap_or_else(|| "/v1/traces".to_string());
 
 		Ok(types::agent::TracingConfig {
 			provider_backend,
@@ -1565,6 +1555,7 @@ impl TryFrom<&proto::agent::frontend_policy_spec::Tracing> for types::agent::Tra
 			resources,
 			random_sampling,
 			client_sampling,
+			path,
 		})
 	}
 }
