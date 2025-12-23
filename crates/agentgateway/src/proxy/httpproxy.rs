@@ -521,21 +521,23 @@ impl HTTPProxy {
 
 		// Use dynamic tracer from frontend policy if available, otherwise use static tracer
 		if trace_sampled {
-			log.tracer = frontend_policies
-				.tracing
-				.as_ref()
-				.map(|tp| {
-					debug!(
-						resources_count=%tp.config.resources.len(),
-						attrs_count=%tp.config.attributes.len(),
-						"Using dynamic tracer from frontend policy"
-					);
-					tp.tracer.clone()
-				})
-				.or_else(|| {
-					debug!("No frontend tracing policy found, using static tracer");
-					self.inputs.tracer.clone()
-				});
+			log.tracer = if let Some(tp) = frontend_policies.tracing.as_ref() {
+				debug!(
+					resources_count=%tp.config.resources.len(),
+					attrs_count=%tp.config.attributes.len(),
+					"Using dynamic tracer from frontend policy"
+				);
+
+				tp.get_or_init(self.policy_client())
+					.map(|t| Some(t.clone()))
+					.unwrap_or_else(|e| {
+						debug!("failed to initialize dynamic tracer, falling back to static tracer: {e:?}");
+						self.inputs.tracer.clone()
+					})
+			} else {
+				debug!("No frontend tracing policy found, using static tracer");
+				self.inputs.tracer.clone()
+			};
 			// Register CEL expressions from the tracer
 			if let Some(tracer) = &log.tracer {
 				log.cel.register(tracer.fields.as_ref());

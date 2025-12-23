@@ -1234,7 +1234,7 @@ async fn split_frontend_policies(
 		add(FrontendPolicy::AccessLog(p), "accessLog");
 	}
 	if let Some(tracing_config) = tracing {
-		// Build logging fields from attributes for tracer creation
+		// Build logging fields from attributes for lazy tracer creation
 		let logging_fields = {
 			let add_map = crate::telemetry::log::OrderedStringMap::from_iter(
 				tracing_config
@@ -1248,13 +1248,11 @@ async fn split_frontend_policies(
 			})
 		};
 
-		let tracer =
-			crate::telemetry::trc::Tracer::create_tracer_from_config(&tracing_config, logging_fields)?;
-
 		add(
 			FrontendPolicy::Tracing(crate::types::agent::TracingPolicy {
 				config: tracing_config,
-				tracer: Arc::new(tracer),
+				fields: logging_fields,
+				tracer: once_cell::sync::OnceCell::new(),
 			}),
 			"tracing",
 		);
