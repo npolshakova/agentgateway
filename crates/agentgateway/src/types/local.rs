@@ -21,14 +21,13 @@ use crate::mcp::McpAuthorization;
 use crate::store::LocalWorkload;
 use crate::types::agent::{
 	A2aPolicy, Authorization, Backend, BackendKey, BackendPolicy, BackendReference,
-	BackendWithPolicies, Bind, BindKey, BindProtocol, FrontendPolicy, Listener, ListenerKey,
-	ListenerName, ListenerProtocol, ListenerSet, ListenerTarget, LocalMcpAuthentication,
-	McpAuthentication, McpBackend, McpTarget, McpTargetName, McpTargetSpec, OpenAPITarget, PathMatch,
-	PolicyPhase, PolicyTarget, PolicyType, ResourceName, Route, RouteBackendReference, RouteMatch,
-	RouteName, RouteSet, ServerTLSConfig, SimpleBackend, SimpleBackendReference,
-	SimpleBackendWithPolicies, SseTargetSpec, StreamableHTTPTargetSpec, TCPRoute,
-	TCPRouteBackendReference, TCPRouteSet, Target, TargetedPolicy, TracingConfig, TrafficPolicy,
-	TunnelProtocol, TypedResourceName,
+	BackendWithPolicies, Bind, BindProtocol, FrontendPolicy, Listener, ListenerKey, ListenerName,
+	ListenerProtocol, ListenerSet, ListenerTarget, LocalMcpAuthentication, McpAuthentication,
+	McpBackend, McpTarget, McpTargetName, McpTargetSpec, OpenAPITarget, PathMatch, PolicyPhase,
+	PolicyTarget, PolicyType, ResourceName, Route, RouteBackendReference, RouteMatch, RouteName,
+	RouteSet, ServerTLSConfig, SimpleBackend, SimpleBackendReference, SimpleBackendWithPolicies,
+	SseTargetSpec, StreamableHTTPTargetSpec, TCPRoute, TCPRouteBackendReference, TCPRouteSet, Target,
+	TargetedPolicy, TracingConfig, TrafficPolicy, TunnelProtocol, TypedResourceName,
 };
 use crate::types::discovery::{NamespacedHostname, Service};
 use crate::types::{backend, frontend};
@@ -99,9 +98,6 @@ pub struct LocalListenerName {
 	pub name: Option<Strng>,
 	#[serde(default)]
 	pub namespace: Option<Strng>,
-	// User facing name of the Gateway. Option, one will be set if not.
-	#[serde(default)]
-	pub gateway_name: Option<Strng>,
 }
 
 #[apply(schema_de!)]
@@ -886,7 +882,7 @@ struct TCPFilterOrPolicy {
 
 async fn convert(
 	client: client::Client,
-	_gateway: ListenerTarget,
+	gateway: ListenerTarget,
 	i: LocalConfig,
 ) -> anyhow::Result<NormalizedLocalConfig> {
 	let LocalConfig {
@@ -907,10 +903,10 @@ async fn convert(
 		for (idx, l) in b.listeners.into_iter().enumerate() {
 			let (l, pol, backends) = convert_listener(
 				client.clone(),
-				bind_name.clone(),
 				idx,
 				l,
 				Some(frontend_policies.clone()),
+				gateway.clone(),
 			)
 			.await?;
 			all_policies.extend_from_slice(&pol);
@@ -956,9 +952,6 @@ async fn convert(
 		all_policies.push(tgt_policy);
 	}
 
-	// Note: frontend_policies are added per-listener in convert_listener
-	// so they can use the listener's specific gateway_name instead of a global one
-
 	for b in backends {
 		let policies = b
 			.policies
@@ -974,7 +967,6 @@ async fn convert(
 	Ok(NormalizedLocalConfig {
 		binds: all_binds,
 		policies: all_policies,
-		// TODO: use inline policies!
 		backends: all_backends.into_iter().collect(),
 		workloads,
 		services,
@@ -1005,10 +997,10 @@ fn detect_bind_protocol(listeners: &ListenerSet) -> BindProtocol {
 
 async fn convert_listener(
 	client: client::Client,
-	bind_name: BindKey,
 	idx: usize,
 	l: LocalListener,
 	frontend_policies: Option<LocalFrontendPolicies>,
+	gateway: ListenerTarget,
 ) -> anyhow::Result<(Listener, Vec<TargetedPolicy>, Vec<BackendWithPolicies>)> {
 	let LocalListener {
 		name,
@@ -1056,12 +1048,12 @@ async fn convert_listener(
 		bail!("only 'routes' or 'tcpRoutes' may be set");
 	}
 
-	let namespace = name.namespace.unwrap_or_else(|| strng::new("default"));
 	let listener_name = name
 		.name
 		.unwrap_or_else(|| strng::format!("listener{}", idx));
-	let gateway_name = name.gateway_name.unwrap_or(bind_name);
-	let key: ListenerKey = strng::format!("{namespace}/{gateway_name}/{listener_name}");
+	let gateway_name = gateway.gateway_name.clone();
+	let gateway_namespace = gateway.gateway_namespace.clone();
+	let key: ListenerKey = strng::format!("{gateway_namespace}/{gateway_name}/{listener_name}");
 
 	let mut all_policies = vec![];
 	let mut all_backends = vec![];
@@ -1070,7 +1062,7 @@ async fn convert_listener(
 	if let Some(frontend_pols) = frontend_policies {
 		let listener_target = ListenerTarget {
 			gateway_name: gateway_name.clone(),
-			gateway_namespace: namespace.clone(),
+			gateway_namespace: gateway_namespace.clone(),
 			listener_name: Some(listener_name.clone()),
 		};
 		all_policies.extend_from_slice(&split_frontend_policies(listener_target, frontend_pols).await?);
@@ -1094,7 +1086,7 @@ async fn convert_listener(
 
 	let name = ListenerName {
 		gateway_name,
-		gateway_namespace: namespace,
+		gateway_namespace,
 		listener_name,
 		listener_set: None,
 	};

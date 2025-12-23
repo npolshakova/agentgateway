@@ -296,7 +296,7 @@ pub fn parse_config(contents: String, filename: Option<PathBuf>) -> anyhow::Resu
 			path: raw
 				.tracing
 				.as_ref()
-				.map(|t| t.path.clone())
+				.and_then(|t| t.path.clone())
 				.unwrap_or_else(|| "/v1/traces".to_string()),
 		},
 		logging: telemetry::log::Config {

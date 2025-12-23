@@ -211,7 +211,7 @@ pub struct RawTracing {
 	/// This defaults to 'true'.
 	client_sampling: Option<StringBoolFloat>,
 	/// OTLP path. Default is /v1/traces
-	path: String,
+	path: Option<String>,
 }
 
 #[apply(schema_de!)]
