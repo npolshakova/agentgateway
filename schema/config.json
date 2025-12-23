@@ -9232,6 +9232,13 @@
             },
             "path": {
               "type": "string"
+            },
+            "protocol": {
+              "type": "string",
+              "enum": [
+                "http",
+                "grpc"
+              ]
             }
           },
           "additionalProperties": false,
@@ -9239,7 +9246,8 @@
             "providerBackend",
             "attributes",
             "resources",
-            "path"
+            "path",
+            "protocol"
           ],
           "default": null
         }

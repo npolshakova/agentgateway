@@ -1478,7 +1478,7 @@ impl TryFrom<&proto::agent::FrontendPolicySpec> for FrontendPolicy {
 				// Convert protobuf to TracingConfig
 				let tracing_config = types::agent::TracingConfig::try_from(t)?;
 
-				// Create LoggingFields with the CEL attributes from TracingConfig
+				// Prepare LoggingFields with the CEL attributes from TracingConfig
 				let logging_fields = {
 					let add_map = crate::telemetry::log::OrderedStringMap::from_iter(
 						tracing_config
@@ -1492,14 +1492,10 @@ impl TryFrom<&proto::agent::FrontendPolicySpec> for FrontendPolicy {
 					})
 				};
 
-				// Instantiate the tracer
-				let tracer =
-					crate::telemetry::trc::Tracer::create_tracer_from_config(&tracing_config, logging_fields)
-						.map_err(|e| ProtoError::Generic(format!("failed to create tracer: {e}")))?;
-
 				FrontendPolicy::Tracing(types::agent::TracingPolicy {
 					config: tracing_config,
-					tracer: Arc::new(tracer),
+					fields: logging_fields,
+					tracer: once_cell::sync::OnceCell::new(),
 				})
 			},
 			None => return Err(ProtoError::MissingRequiredField),
@@ -1549,6 +1545,16 @@ impl TryFrom<&proto::agent::frontend_policy_spec::Tracing> for types::agent::Tra
 
 		let path = t.path.clone().unwrap_or_else(|| "/v1/traces".to_string());
 
+		let protocol =
+			match crate::types::proto::agent::frontend_policy_spec::tracing::Protocol::try_from(
+				t.protocol,
+			) {
+				Ok(crate::types::proto::agent::frontend_policy_spec::tracing::Protocol::Grpc) => {
+					types::agent::TracingProtocol::Grpc
+				},
+				_ => types::agent::TracingProtocol::Http,
+			};
+
 		Ok(types::agent::TracingConfig {
 			provider_backend,
 			attributes,
@@ -1556,6 +1562,7 @@ impl TryFrom<&proto::agent::frontend_policy_spec::Tracing> for types::agent::Tra
 			random_sampling,
 			client_sampling,
 			path,
+			protocol,
 		})
 	}
 }

@@ -460,6 +460,11 @@ message FrontendPolicySpec {
 
     // OTLP path. Default is /v1/traces 
     optional string path = 6;
+
+    // protocol specifies the OTLP protocol variant to use. Default is HTTP
+    Protocol protocol = 7;
+
+    enum Protocol {HTTP = 0; GRPC = 1;}
   }
 
   message TracingAttribute {
