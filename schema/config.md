@@ -1007,6 +1007,7 @@
 |`frontendPolicies.tracing.randomSampling`|Optional per-policy override for random sampling. If set, overrides global config for<br>requests that use this frontend policy.|
 |`frontendPolicies.tracing.clientSampling`|Optional per-policy override for client sampling. If set, overrides global config for<br>requests that use this frontend policy.|
 |`frontendPolicies.tracing.path`||
+|`frontendPolicies.tracing.protocol`||
 |`policies`|policies defines additional policies that can be attached to various other configurations.<br>This is an advanced feature; users should typically use the inline `policies` field under route/gateway.|
 |`policies[].name`||
 |`policies[].name.name`||
