@@ -62,7 +62,6 @@
 |`binds[].listeners`||
 |`binds[].listeners[].name`||
 |`binds[].listeners[].namespace`||
-|`binds[].listeners[].gatewayName`||
 |`binds[].listeners[].hostname`|Can be a wildcard|
 |`binds[].listeners[].protocol`||
 |`binds[].listeners[].tls`||
