@@ -1,6 +1,7 @@
 use std::net::SocketAddr;
 use std::str::FromStr;
 use std::sync::Arc;
+use std::time::SystemTime;
 
 use ::http::uri::PathAndQuery;
 use ::http::{HeaderMap, header};
@@ -32,7 +33,7 @@ use crate::store::{
 	RoutePath,
 };
 use crate::telemetry::log;
-use crate::telemetry::log::{AsyncLog, DropOnLog, LogBody, RequestLog};
+use crate::telemetry::log::{AsyncLog, DropOnLog, LogBody, RequestLog, SpanWriter};
 use crate::telemetry::trc::TraceParent;
 use crate::transport::stream::{Extension, TCPConnectionInfo, TLSConnectionInfo};
 use crate::types::{backend, frontend};
@@ -103,6 +104,7 @@ async fn apply_request_policies(
 			client.clone(),
 			req,
 			log.cel.ctx_borrow(),
+			log.span_writer().clone(),
 		)
 		.await?
 	} else {
@@ -125,7 +127,14 @@ async fn apply_request_policies(
 	}
 
 	if let Some(rrl) = &policies.remote_rate_limit {
-		rrl.check(client, req, build_ctx(&exec, log)?).await?
+		rrl
+			.check(
+				client,
+				req,
+				build_ctx(&exec, log)?,
+				log.span_writer().clone(),
+			)
+			.await?
 	} else {
 		http::PolicyResponse::default()
 	}
@@ -287,6 +296,7 @@ async fn apply_gateway_policies(
 			client.clone(),
 			req,
 			log.cel.ctx_borrow(),
+			log.span_writer(),
 		)
 		.await?
 	} else {
@@ -338,7 +348,13 @@ async fn apply_llm_request_policies(
 		// or 0.
 		// Either way, we will 'true up' on the response side.
 		rrl
-			.check_llm(client, req, &exec, llm_req.input_tokens.unwrap_or_default())
+			.check_llm(
+				client,
+				req,
+				&exec,
+				llm_req.input_tokens.unwrap_or_default(),
+				log.span_writer().clone(),
+			)
 			.await?
 	} else {
 		(http::PolicyResponse::default(), None)
@@ -541,13 +557,15 @@ impl HTTPProxy {
 		Self::apply_request_to_cel(log, &mut req).await;
 
 		let mut response_headers = HeaderMap::new();
+		let span_writer = log.span_writer();
+		let policy_client = self.policy_client().with_span_writer(span_writer);
 		let mut maybe_gateway_ext_proc = gateway_policies
 			.ext_proc
 			.take()
-			.map(|c| c.build(self.policy_client()));
+			.map(|c| c.build(policy_client.clone()));
 		apply_gateway_policies(
 			&gateway_policies,
-			self.policy_client(),
+			policy_client.clone(),
 			log,
 			&mut req,
 			maybe_gateway_ext_proc.as_mut(),
@@ -599,7 +617,7 @@ impl HTTPProxy {
 		let maybe_ext_proc = route_policies
 			.ext_proc
 			.take()
-			.map(|c| c.build(self.policy_client()));
+			.map(|c| c.build(policy_client.clone()));
 		response_policies.route_response_header = route_policies.response_header_modifier.clone();
 		// backend_response_header is set much later
 		response_policies.timeout = route_policies.timeout.clone();
@@ -610,7 +628,7 @@ impl HTTPProxy {
 
 		apply_request_policies(
 			&route_policies,
-			self.policy_client(),
+			policy_client.clone(),
 			log,
 			&mut req,
 			response_policies,
@@ -649,8 +667,9 @@ impl HTTPProxy {
 			let inputs = inputs.clone();
 			let policy_client = self.policy_client();
 			let mirror = mirror.clone();
+			let span_writer = log.span_writer();
 			tokio::task::spawn(async move {
-				if let Err(e) = send_mirror(inputs, policy_client, mirror, req).await {
+				if let Err(e) = send_mirror(inputs, policy_client, mirror, req, span_writer).await {
 					warn!("error sending mirror request: {}", e);
 				}
 			});
@@ -781,9 +800,13 @@ impl HTTPProxy {
 				.extensions_mut()
 				.insert(BackendRequestTimeout(backend_timeout));
 		}
+		let sw = log.span_writer();
 		let call = make_backend_call(
-			self.inputs.clone(),
-			route_policies.clone(),
+			BackendCallShared {
+				inputs: self.inputs.clone(),
+				route_policies: route_policies.clone(),
+				span_writer: sw,
+			},
 			&selected_backend.backend.backend,
 			backend_policies,
 			req,
@@ -829,6 +852,7 @@ impl HTTPProxy {
 	fn policy_client(&self) -> PolicyClient {
 		PolicyClient {
 			inputs: self.inputs.clone(),
+			span_writer: None,
 		}
 	}
 }
@@ -978,17 +1002,30 @@ fn get_backend_policies(
 	)
 }
 
-async fn make_backend_call(
+#[derive(Clone)]
+struct BackendCallShared {
 	inputs: Arc<ProxyInputs>,
 	route_policies: Arc<store::LLMRequestPolicies>,
+	span_writer: Option<SpanWriter>,
+}
+
+async fn make_backend_call(
+	shared: BackendCallShared,
 	backend: &Backend,
 	base_policies: BackendPolicies,
 	mut req: Request,
 	mut log: Option<&mut RequestLog>,
 	response_policies: &mut ResponsePolicies,
 ) -> Result<Pin<Box<dyn Future<Output = Result<Response, ProxyError>> + Send>>, ProxyResponse> {
+	let BackendCallShared {
+		inputs,
+		route_policies,
+		span_writer,
+	} = shared;
+
 	let policy_client = PolicyClient {
 		inputs: inputs.clone(),
+		span_writer: span_writer.clone(),
 	};
 
 	// The MCP backend aggregates multiple backends into a single backend.
@@ -1116,11 +1153,21 @@ async fn make_backend_call(
 			set_backend_cel_context(&mut log);
 			let mcp_response_log = log.map(|l| l.mcp_status.clone()).expect("must be set");
 			let name = name.clone();
+			let span_writer = span_writer.clone();
 			return Ok(Box::pin(async move {
 				inputs
 					.clone()
 					.mcp_state
-					.serve(inputs, name, backend, policies, req, mcp_response_log, time)
+					.serve(
+						inputs,
+						name,
+						backend,
+						policies,
+						req,
+						mcp_response_log,
+						time,
+						span_writer,
+					)
 					.map(Ok)
 					.await
 			}));
@@ -1317,7 +1364,12 @@ async fn make_backend_call(
 		.unwrap_or_default();
 	let a2a_type = response_policies.a2a_type.clone();
 	Ok(Box::pin(async move {
+		let t0 = SystemTime::now();
+		let name = format!("upstream {}", call.target);
 		let mut resp = upstream.call(call).await?;
+		if let Some(spans) = span_writer.as_ref() {
+			spans.write(name, |sb| sb.with_start_time(t0));
+		}
 		a2a::apply_to_response(
 			backend_call.backend_policies.a2a.as_ref(),
 			a2a_type,
@@ -1328,16 +1380,16 @@ async fn make_backend_call(
 		let mut resp = if let (Some(llm), Some(llm_request)) =
 			(backend_call.backend_policies.llm_provider, llm_request)
 		{
+			let ctx = crate::llm::ProcessResponseCtx {
+				client: policy_client.clone(),
+				rate_limit: llm_response_policies,
+				log: llm_response_log.expect("must be set"),
+				include_completion_in_log,
+				span_writer: span_writer.clone(),
+			};
 			llm
 				.provider
-				.process_response(
-					policy_client.clone(),
-					llm_request,
-					llm_response_policies,
-					llm_response_log.expect("must be set"),
-					include_completion_in_log,
-					resp,
-				)
+				.process_response(ctx, llm_request, resp)
 				.await
 				.map_err(|e| ProxyError::Processing(e.into()))?
 		} else {
@@ -1485,10 +1537,11 @@ async fn send_mirror(
 	upstream: PolicyClient,
 	mirror: filters::RequestMirror,
 	mut req: Request,
+	span_writer: Option<SpanWriter>,
 ) -> Result<(), ProxyError> {
 	req.headers_mut().remove(http::header::CONTENT_LENGTH);
 	let backend = super::resolve_simple_backend(&mirror.backend, inputs.as_ref())?;
-	let _ = upstream.call(req, backend).await?;
+	let _ = upstream.call(req, backend, span_writer).await?;
 	Ok(())
 }
 
@@ -1677,13 +1730,22 @@ impl ResponsePolicies {
 #[derive(Debug, Clone)]
 pub struct PolicyClient {
 	pub inputs: Arc<ProxyInputs>,
+	/// Optional request-scoped span writer. When set, callers may omit passing an explicit
+	/// `SpanWriter` and rely on this default.
+	pub span_writer: Option<SpanWriter>,
 }
 
 impl PolicyClient {
+	pub fn with_span_writer(mut self, span_writer: Option<SpanWriter>) -> Self {
+		self.span_writer = span_writer;
+		self
+	}
+
 	pub async fn call_reference(
 		&self,
 		mut req: Request,
 		backend_ref: &SimpleBackendReference,
+		span_writer: Option<SpanWriter>,
 	) -> Result<Response, ProxyError> {
 		let backend = resolve_simple_backend(backend_ref, self.inputs.as_ref())?;
 		trace!("resolved {:?} to {:?}", backend_ref, &backend);
@@ -1704,7 +1766,7 @@ impl PolicyClient {
 		let backend = BackendWithPolicies::from(backend);
 		let pols = get_backend_policies(&self.inputs, &backend, &[], None);
 		self
-			.internal_call_with_policies(req, backend.backend, pols)
+			.internal_call_with_policies(req, backend.backend, pols, span_writer)
 			.await
 	}
 
@@ -1712,11 +1774,12 @@ impl PolicyClient {
 		&self,
 		req: Request,
 		backend: SimpleBackendWithPolicies,
+		span_writer: Option<SpanWriter>,
 	) -> Result<Response, ProxyError> {
 		let backend = BackendWithPolicies::from(backend);
 		let pols = get_backend_policies(&self.inputs, &backend, &[], None);
 		self
-			.internal_call_with_policies(req, backend.backend, pols)
+			.internal_call_with_policies(req, backend.backend, pols, span_writer)
 			.await
 	}
 
@@ -1725,11 +1788,12 @@ impl PolicyClient {
 		req: Request,
 		backend: &SimpleBackend,
 		defaults: BackendPolicies,
+		span_writer: Option<SpanWriter>,
 	) -> Result<Response, ProxyError> {
 		let backend = Backend::from(backend.clone()).into();
 		let pols = defaults.merge(get_backend_policies(&self.inputs, &backend, &[], None));
 		self
-			.internal_call_with_policies(req, backend.backend, pols)
+			.internal_call_with_policies(req, backend.backend, pols, span_writer)
 			.await
 	}
 
@@ -1738,6 +1802,7 @@ impl PolicyClient {
 		req: Request,
 		backend: SimpleBackend,
 		policies: Vec<BackendPolicy>,
+		span_writer: Option<SpanWriter>,
 	) -> Result<Response, ProxyError> {
 		let backend = Backend::from(backend);
 		let pols = self
@@ -1745,7 +1810,9 @@ impl PolicyClient {
 			.stores
 			.read_binds()
 			.inline_backend_policies(&policies);
-		self.internal_call_with_policies(req, backend, pols).await
+		self
+			.internal_call_with_policies(req, backend, pols, span_writer)
+			.await
 	}
 
 	pub fn internal_call_with_policies<'a>(
@@ -1753,11 +1820,16 @@ impl PolicyClient {
 		req: Request,
 		backend: Backend,
 		pols: BackendPolicies,
+		span_writer: Option<SpanWriter>,
 	) -> Pin<Box<dyn Future<Output = Result<Response, ProxyError>> + Send + '_>> {
 		Box::pin(async move {
+			let span_writer = span_writer.or_else(|| self.span_writer.clone());
 			make_backend_call(
-				self.inputs.clone(),
-				Arc::new(LLMRequestPolicies::default()),
+				BackendCallShared {
+					inputs: self.inputs.clone(),
+					route_policies: Arc::new(LLMRequestPolicies::default()),
+					span_writer,
+				},
 				&backend,
 				pols,
 				req,
