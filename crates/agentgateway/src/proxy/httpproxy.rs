@@ -558,11 +558,11 @@ impl HTTPProxy {
 
 		let mut response_headers = HeaderMap::new();
 		let span_writer = log.span_writer();
-		let policy_client = self.policy_client().with_span_writer(span_writer);
+		let policy_client = self.policy_client();
 		let mut maybe_gateway_ext_proc = gateway_policies
 			.ext_proc
 			.take()
-			.map(|c| c.build(policy_client.clone()));
+			.map(|c| c.build(policy_client.clone(), span_writer.clone()));
 		apply_gateway_policies(
 			&gateway_policies,
 			policy_client.clone(),
@@ -617,7 +617,7 @@ impl HTTPProxy {
 		let maybe_ext_proc = route_policies
 			.ext_proc
 			.take()
-			.map(|c| c.build(policy_client.clone()));
+			.map(|c| c.build(policy_client.clone(), span_writer.clone()));
 		response_policies.route_response_header = route_policies.response_header_modifier.clone();
 		// backend_response_header is set much later
 		response_policies.timeout = route_policies.timeout.clone();
@@ -802,7 +802,7 @@ impl HTTPProxy {
 		}
 		let sw = log.span_writer();
 		let call = make_backend_call(
-			BackendCallShared {
+			BackendCallContext {
 				inputs: self.inputs.clone(),
 				route_policies: route_policies.clone(),
 				span_writer: sw,
@@ -852,7 +852,6 @@ impl HTTPProxy {
 	fn policy_client(&self) -> PolicyClient {
 		PolicyClient {
 			inputs: self.inputs.clone(),
-			span_writer: None,
 		}
 	}
 }
@@ -1003,21 +1002,21 @@ fn get_backend_policies(
 }
 
 #[derive(Clone)]
-struct BackendCallShared {
+struct BackendCallContext {
 	inputs: Arc<ProxyInputs>,
 	route_policies: Arc<store::LLMRequestPolicies>,
 	span_writer: Option<SpanWriter>,
 }
 
 async fn make_backend_call(
-	shared: BackendCallShared,
+	shared: BackendCallContext,
 	backend: &Backend,
 	base_policies: BackendPolicies,
 	mut req: Request,
 	mut log: Option<&mut RequestLog>,
 	response_policies: &mut ResponsePolicies,
 ) -> Result<Pin<Box<dyn Future<Output = Result<Response, ProxyError>> + Send>>, ProxyResponse> {
-	let BackendCallShared {
+	let BackendCallContext {
 		inputs,
 		route_policies,
 		span_writer,
@@ -1025,7 +1024,6 @@ async fn make_backend_call(
 
 	let policy_client = PolicyClient {
 		inputs: inputs.clone(),
-		span_writer: span_writer.clone(),
 	};
 
 	// The MCP backend aggregates multiple backends into a single backend.
@@ -1063,7 +1061,7 @@ async fn make_backend_call(
 		}
 	});
 
-	let mut maybe_inference = policies.build_inference(policy_client.clone());
+	let mut maybe_inference = policies.build_inference(policy_client.clone(), span_writer.clone());
 	let (inference_override, ext_proc_resp) = maybe_inference.mutate_request(&mut req).await?;
 	ext_proc_resp.apply(response_policies.headers())?;
 	log.add(|l| l.inference_pool = inference_override);
@@ -1730,17 +1728,9 @@ impl ResponsePolicies {
 #[derive(Debug, Clone)]
 pub struct PolicyClient {
 	pub inputs: Arc<ProxyInputs>,
-	/// Optional request-scoped span writer. When set, callers may omit passing an explicit
-	/// `SpanWriter` and rely on this default.
-	pub span_writer: Option<SpanWriter>,
 }
 
 impl PolicyClient {
-	pub fn with_span_writer(mut self, span_writer: Option<SpanWriter>) -> Self {
-		self.span_writer = span_writer;
-		self
-	}
-
 	pub async fn call_reference(
 		&self,
 		mut req: Request,
@@ -1823,9 +1813,8 @@ impl PolicyClient {
 		span_writer: Option<SpanWriter>,
 	) -> Pin<Box<dyn Future<Output = Result<Response, ProxyError>> + Send + '_>> {
 		Box::pin(async move {
-			let span_writer = span_writer.or_else(|| self.span_writer.clone());
 			make_backend_call(
-				BackendCallShared {
+				BackendCallContext {
 					inputs: self.inputs.clone(),
 					route_policies: Arc::new(LLMRequestPolicies::default()),
 					span_writer,

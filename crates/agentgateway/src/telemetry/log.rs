@@ -935,7 +935,7 @@ impl Drop for DropOnLog {
 		if enable_trace && let Some(t) = &log.tracer {
 			t.send(&log, &cel_exec, kv.as_slice());
 			// Flush any buffered spans created during request processing.
-			// Best effort: if the lock is poisoned, we skip flushing.
+			// Does best effort, if the lock is poisoned, skip flushing.
 			if let Ok(mut spans) = log.trace_spans.lock() {
 				for sb in spans.drain(..) {
 					sb.start(t.tracer.as_ref()).end();

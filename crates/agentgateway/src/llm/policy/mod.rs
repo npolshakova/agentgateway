@@ -241,7 +241,6 @@ impl Policy {
 	) -> anyhow::Result<Option<Response>> {
 		let client = PolicyClient {
 			inputs: backend_info.inputs.clone(),
-			span_writer: span_writer.clone(),
 		};
 		for g in self
 			.prompt_guard

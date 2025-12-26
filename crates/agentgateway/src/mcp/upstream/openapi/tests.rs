@@ -46,10 +46,7 @@ async fn setup() -> (MockServer, Handler) {
 		mcp_state: mcp::router::App::new(stores.clone()),
 	});
 
-	let client = PolicyClient {
-		inputs: pi.clone(),
-		span_writer: None,
-	};
+	let client = PolicyClient { inputs: pi.clone() };
 	// Define a sample tool for testing
 	let test_tool_get = Tool {
 		name: Cow::Borrowed("get_user"),

@@ -73,9 +73,11 @@ pub struct InferencePoolRouter {
 }
 
 impl InferenceRouting {
-	pub fn build(&self, client: PolicyClient) -> InferencePoolRouter {
-		// Prefer request-scoped span writer from the client (plumbed from request logs).
-		let span_writer = client.span_writer.clone();
+	pub fn build(
+		&self,
+		client: PolicyClient,
+		span_writer: Option<SpanWriter>,
+	) -> InferencePoolRouter {
 		InferencePoolRouter {
 			ext_proc: Some(ExtProcInstance::new(
 				client,
@@ -131,9 +133,7 @@ pub struct ExtProc {
 }
 
 impl ExtProc {
-	pub fn build(&self, client: PolicyClient) -> ExtProcRequest {
-		// Prefer request-scoped span writer from the client (plumbed from request logs).
-		let span_writer = client.span_writer.clone();
+	pub fn build(&self, client: PolicyClient, span_writer: Option<SpanWriter>) -> ExtProcRequest {
 		ExtProcRequest {
 			ext_proc: Some(ExtProcInstance::new(
 				client,

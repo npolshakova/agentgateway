@@ -125,10 +125,7 @@ impl App {
 		};
 		let sm = self.session.clone();
 		let sw = span_writer.clone();
-		let client = PolicyClient {
-			inputs: pi.clone(),
-			span_writer: sw.clone(),
-		};
+		let client = PolicyClient { inputs: pi.clone() };
 		let authorization_policies = backend_policies
 			.mcp_authorization
 			.unwrap_or_else(|| McpAuthorizationSet::new(RuleSets::from(Vec::new())));
