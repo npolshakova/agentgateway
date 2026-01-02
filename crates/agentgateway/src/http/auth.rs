@@ -368,9 +368,7 @@ mod azure {
 		auth: &AzureAuth,
 	) -> anyhow::Result<Arc<dyn TokenCredential>> {
 		let client_options = azure_core::http::ClientOptions {
-			transport: Some(azure_core::http::TransportOptions::new(Arc::new(
-				client.clone(),
-			))),
+			transport: Some(azure_core::http::Transport::new(Arc::new(client.clone()))),
 			..Default::default()
 		};
 		match auth {
@@ -383,10 +381,7 @@ mod azure {
 					tenant_id,
 					client_id.to_string(),
 					azure_core::credentials::Secret::new(client_secret.expose_secret().to_string()),
-					Some(azure_identity::ClientSecretCredentialOptions {
-						client_options,
-						..Default::default()
-					}),
+					Some(azure_identity::ClientSecretCredentialOptions { client_options }),
 				)?),
 				AzureAuthCredentialSource::ManagedIdentity {
 					user_assigned_identity,
