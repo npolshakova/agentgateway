@@ -1048,6 +1048,9 @@
 |`frontendPolicies.tls`|Settings for handling incoming TLS connections.|
 |`frontendPolicies.tls.tlsHandshakeTimeout`||
 |`frontendPolicies.tls.alpn`||
+|`frontendPolicies.tls.minTlsVersion`||
+|`frontendPolicies.tls.maxTlsVersion`||
+|`frontendPolicies.tls.cipherSuites`||
 |`frontendPolicies.tcp`|Settings for handling incoming TCP connections.|
 |`frontendPolicies.tcp.keepalives`||
 |`frontendPolicies.tcp.keepalives.enabled`||

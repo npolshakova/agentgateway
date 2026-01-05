@@ -522,8 +522,8 @@ impl Gateway {
 		is_https: bool,
 	) -> anyhow::Result<(Arc<Listener>, Socket)> {
 		let def = frontend::TLS::default();
-		let to = policies.tls.as_ref().unwrap_or(&def).tls_handshake_timeout;
-		let alpn = policies.tls.as_ref().and_then(|t| t.alpn.as_deref());
+		let tls_pol = policies.tls.as_ref();
+		let to = tls_pol.unwrap_or(&def).handshake_timeout;
 		let handshake = async move {
 			let Some(bind) = inp.stores.read_binds().bind(&bind_key) else {
 				return Err(ProxyError::BindNotFound.into());
@@ -556,7 +556,7 @@ impl Gateway {
 			let best = listeners
 				.best_match(sni)
 				.ok_or(anyhow!("no TLS listener match for {sni}"))?;
-			match best.protocol.tls(alpn) {
+			match best.protocol.tls(tls_pol) {
 				Some(Err(e)) => {
 					// There is a TLS config for this listener, but its invalid. Reject the connection
 					Err(e)
@@ -674,7 +674,7 @@ impl Gateway {
 		};
 
 		let def = frontend::TLS::default();
-		let to = policies.tls.as_ref().unwrap_or(&def).tls_handshake_timeout;
+		let to = policies.tls.as_ref().unwrap_or(&def).handshake_timeout;
 
 		let cert = ca.get_identity().await?;
 		let sc = Arc::new(cert.hbone_termination()?);
@@ -719,7 +719,7 @@ impl Gateway {
 		};
 
 		let def = frontend::TLS::default();
-		let to = policies.tls.as_ref().unwrap_or(&def).tls_handshake_timeout;
+		let to = policies.tls.as_ref().unwrap_or(&def).handshake_timeout;
 
 		let cert = ca.get_identity().await?;
 		let sc = Arc::new(cert.hbone_termination()?);

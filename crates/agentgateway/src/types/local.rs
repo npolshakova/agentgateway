@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::io::Cursor;
 use std::net::SocketAddr;
 use std::path::PathBuf;
 
@@ -9,7 +8,6 @@ use anyhow::{Error, anyhow, bail};
 use itertools::Itertools;
 use macro_rules_attribute::apply;
 use openapiv3::OpenAPI;
-use rustls::ServerConfig;
 
 use crate::client::Client;
 use crate::http::auth::BackendAuth;
@@ -135,6 +133,26 @@ pub struct LocalTLSServerConfig {
 	pub cert: PathBuf,
 	pub key: PathBuf,
 	pub root: Option<PathBuf>,
+	/// Optional cipher suite allowlist (order is preserved).
+	#[cfg_attr(feature = "schema", schemars(with = "Option<Vec<String>>"))]
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub cipher_suites: Option<Vec<crate::transport::tls::CipherSuite>>,
+	/// Minimum supported TLS version (only TLS 1.2 and 1.3 are supported).
+	#[serde(
+		default,
+		skip_serializing_if = "Option::is_none",
+		rename = "minTLSVersion",
+		alias = "minTlsVersion"
+	)]
+	pub min_tls_version: Option<frontend::TLSVersion>,
+	/// Maximum supported TLS version (only TLS 1.2 and 1.3 are supported).
+	#[serde(
+		default,
+		skip_serializing_if = "Option::is_none",
+		rename = "maxTLSVersion",
+		alias = "maxTlsVersion"
+	)]
+	pub max_tls_version: Option<frontend::TLSVersion>,
 }
 
 #[apply(schema_de!)]
@@ -1454,33 +1472,18 @@ impl TryInto<ServerTLSConfig> for LocalTLSServerConfig {
 	type Error = anyhow::Error;
 
 	fn try_into(self) -> Result<ServerTLSConfig, Self::Error> {
-		let cert = fs_err::read(self.cert)?;
-		let cert_chain = crate::types::agent::parse_cert(&cert)?;
-		let key = fs_err::read(self.key)?;
-		let private_key = crate::types::agent::parse_key(&key)?;
-
-		let ccb = ServerConfig::builder_with_provider(transport::tls::provider())
-			.with_protocol_versions(transport::tls::ALL_TLS_VERSIONS)
-			.expect("server config must be valid");
-
-		let ccb = if let Some(root) = self.root {
-			let root = fs_err::read(root)?;
-			let mut roots_store = rustls::RootCertStore::empty();
-			let mut reader = std::io::BufReader::new(Cursor::new(root));
-			let certs = rustls_pemfile::certs(&mut reader).collect::<Result<Vec<_>, _>>()?;
-			roots_store.add_parsable_certificates(certs);
-			let verify = rustls::server::WebPkiClientVerifier::builder_with_provider(
-				Arc::new(roots_store),
-				transport::tls::provider(),
-			)
-			.build()?;
-			ccb.with_client_cert_verifier(verify)
-		} else {
-			ccb.with_no_client_auth()
-		};
-		let mut ccb = ccb.with_single_cert(cert_chain, private_key)?;
-		ccb.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
-		Ok(ServerTLSConfig::new(Arc::new(ccb)))
+		let cert_pem = fs_err::read(self.cert)?;
+		let key_pem = fs_err::read(self.key)?;
+		let root_pem = self.root.map(fs_err::read).transpose()?;
+		ServerTLSConfig::from_pem_with_profile(
+			cert_pem,
+			key_pem,
+			root_pem,
+			vec![b"h2".to_vec(), b"http/1.1".to_vec()],
+			self.min_tls_version.map(Into::into),
+			self.max_tls_version.map(Into::into),
+			self.cipher_suites,
+		)
 	}
 }
 

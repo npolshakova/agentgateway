@@ -9822,6 +9822,41 @@
                 }
               },
               "default": null
+            },
+            "minTlsVersion": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "TLS_V1_0",
+                "TLS_V1_1",
+                "TLS_V1_2",
+                "TLS_V1_3",
+                null
+              ]
+            },
+            "maxTlsVersion": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "TLS_V1_0",
+                "TLS_V1_1",
+                "TLS_V1_2",
+                "TLS_V1_3",
+                null
+              ]
+            },
+            "cipherSuites": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
             }
           },
           "additionalProperties": false,

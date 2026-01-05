@@ -33,6 +33,18 @@ export enum ListenerProtocol {
 export interface TlsConfig {
   cert: string;
   key: string;
+  // Optional mTLS client verification roots (server-side).
+  root?: string;
+  // Optional overrides
+  cipherSuites?: string[];
+  minTLSVersion?: TLSVersion;
+  maxTLSVersion?: TLSVersion;
+}
+
+export enum TLSVersion {
+  // rustls only supports TLS 1.2 and 1.3
+  TLS_V1_2 = "TLS_V1_2",
+  TLS_V1_3 = "TLS_V1_3",
 }
 
 export interface Route {

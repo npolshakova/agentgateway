@@ -252,6 +252,9 @@ async fn tls_termination() {
 					cert: "../../examples/tls/certs/cert.pem".into(),
 					key: "../../examples/tls/certs/key.pem".into(),
 					root: None,
+					cipher_suites: None,
+					min_tls_version: None,
+					max_tls_version: None,
 				}
 				.try_into()
 				.unwrap(),
