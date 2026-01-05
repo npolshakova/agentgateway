@@ -2000,7 +2000,43 @@
                               "routes": {
                                 "type": "object",
                                 "additionalProperties": {
-                                  "type": "string"
+                                  "oneOf": [
+                                    {
+                                      "description": "OpenAI /v1/chat/completions",
+                                      "type": "string",
+                                      "const": "completions"
+                                    },
+                                    {
+                                      "description": "Anthropic /v1/messages",
+                                      "type": "string",
+                                      "const": "messages"
+                                    },
+                                    {
+                                      "description": "OpenAI /v1/models",
+                                      "type": "string",
+                                      "const": "models"
+                                    },
+                                    {
+                                      "description": "Send the request to the upstream LLM provider as-is",
+                                      "type": "string",
+                                      "const": "passthrough"
+                                    },
+                                    {
+                                      "description": "OpenAI /responses",
+                                      "type": "string",
+                                      "const": "responses"
+                                    },
+                                    {
+                                      "description": "OpenAI /embeddings",
+                                      "type": "string",
+                                      "const": "embeddings"
+                                    },
+                                    {
+                                      "description": "Anthropic /v1/messages/count_tokens",
+                                      "type": "string",
+                                      "const": "anthropicTokenCount"
+                                    }
+                                  ]
                                 }
                               }
                             },
@@ -4188,7 +4224,43 @@
                                     "routes": {
                                       "type": "object",
                                       "additionalProperties": {
-                                        "type": "string"
+                                        "oneOf": [
+                                          {
+                                            "description": "OpenAI /v1/chat/completions",
+                                            "type": "string",
+                                            "const": "completions"
+                                          },
+                                          {
+                                            "description": "Anthropic /v1/messages",
+                                            "type": "string",
+                                            "const": "messages"
+                                          },
+                                          {
+                                            "description": "OpenAI /v1/models",
+                                            "type": "string",
+                                            "const": "models"
+                                          },
+                                          {
+                                            "description": "Send the request to the upstream LLM provider as-is",
+                                            "type": "string",
+                                            "const": "passthrough"
+                                          },
+                                          {
+                                            "description": "OpenAI /responses",
+                                            "type": "string",
+                                            "const": "responses"
+                                          },
+                                          {
+                                            "description": "OpenAI /embeddings",
+                                            "type": "string",
+                                            "const": "embeddings"
+                                          },
+                                          {
+                                            "description": "Anthropic /v1/messages/count_tokens",
+                                            "type": "string",
+                                            "const": "anthropicTokenCount"
+                                          }
+                                        ]
                                       }
                                     }
                                   },
@@ -5953,7 +6025,43 @@
                                                 "routes": {
                                                   "type": "object",
                                                   "additionalProperties": {
-                                                    "type": "string"
+                                                    "oneOf": [
+                                                      {
+                                                        "description": "OpenAI /v1/chat/completions",
+                                                        "type": "string",
+                                                        "const": "completions"
+                                                      },
+                                                      {
+                                                        "description": "Anthropic /v1/messages",
+                                                        "type": "string",
+                                                        "const": "messages"
+                                                      },
+                                                      {
+                                                        "description": "OpenAI /v1/models",
+                                                        "type": "string",
+                                                        "const": "models"
+                                                      },
+                                                      {
+                                                        "description": "Send the request to the upstream LLM provider as-is",
+                                                        "type": "string",
+                                                        "const": "passthrough"
+                                                      },
+                                                      {
+                                                        "description": "OpenAI /responses",
+                                                        "type": "string",
+                                                        "const": "responses"
+                                                      },
+                                                      {
+                                                        "description": "OpenAI /embeddings",
+                                                        "type": "string",
+                                                        "const": "embeddings"
+                                                      },
+                                                      {
+                                                        "description": "Anthropic /v1/messages/count_tokens",
+                                                        "type": "string",
+                                                        "const": "anthropicTokenCount"
+                                                      }
+                                                    ]
                                                   }
                                                 }
                                               },
@@ -7468,7 +7576,43 @@
                                                             "routes": {
                                                               "type": "object",
                                                               "additionalProperties": {
-                                                                "type": "string"
+                                                                "oneOf": [
+                                                                  {
+                                                                    "description": "OpenAI /v1/chat/completions",
+                                                                    "type": "string",
+                                                                    "const": "completions"
+                                                                  },
+                                                                  {
+                                                                    "description": "Anthropic /v1/messages",
+                                                                    "type": "string",
+                                                                    "const": "messages"
+                                                                  },
+                                                                  {
+                                                                    "description": "OpenAI /v1/models",
+                                                                    "type": "string",
+                                                                    "const": "models"
+                                                                  },
+                                                                  {
+                                                                    "description": "Send the request to the upstream LLM provider as-is",
+                                                                    "type": "string",
+                                                                    "const": "passthrough"
+                                                                  },
+                                                                  {
+                                                                    "description": "OpenAI /responses",
+                                                                    "type": "string",
+                                                                    "const": "responses"
+                                                                  },
+                                                                  {
+                                                                    "description": "OpenAI /embeddings",
+                                                                    "type": "string",
+                                                                    "const": "embeddings"
+                                                                  },
+                                                                  {
+                                                                    "description": "Anthropic /v1/messages/count_tokens",
+                                                                    "type": "string",
+                                                                    "const": "anthropicTokenCount"
+                                                                  }
+                                                                ]
                                                               }
                                                             }
                                                           },
@@ -10584,7 +10728,43 @@
                   "routes": {
                     "type": "object",
                     "additionalProperties": {
-                      "type": "string"
+                      "oneOf": [
+                        {
+                          "description": "OpenAI /v1/chat/completions",
+                          "type": "string",
+                          "const": "completions"
+                        },
+                        {
+                          "description": "Anthropic /v1/messages",
+                          "type": "string",
+                          "const": "messages"
+                        },
+                        {
+                          "description": "OpenAI /v1/models",
+                          "type": "string",
+                          "const": "models"
+                        },
+                        {
+                          "description": "Send the request to the upstream LLM provider as-is",
+                          "type": "string",
+                          "const": "passthrough"
+                        },
+                        {
+                          "description": "OpenAI /responses",
+                          "type": "string",
+                          "const": "responses"
+                        },
+                        {
+                          "description": "OpenAI /embeddings",
+                          "type": "string",
+                          "const": "embeddings"
+                        },
+                        {
+                          "description": "Anthropic /v1/messages/count_tokens",
+                          "type": "string",
+                          "const": "anthropicTokenCount"
+                        }
+                      ]
                     }
                   }
                 },
@@ -12787,7 +12967,43 @@
                   "routes": {
                     "type": "object",
                     "additionalProperties": {
-                      "type": "string"
+                      "oneOf": [
+                        {
+                          "description": "OpenAI /v1/chat/completions",
+                          "type": "string",
+                          "const": "completions"
+                        },
+                        {
+                          "description": "Anthropic /v1/messages",
+                          "type": "string",
+                          "const": "messages"
+                        },
+                        {
+                          "description": "OpenAI /v1/models",
+                          "type": "string",
+                          "const": "models"
+                        },
+                        {
+                          "description": "Send the request to the upstream LLM provider as-is",
+                          "type": "string",
+                          "const": "passthrough"
+                        },
+                        {
+                          "description": "OpenAI /responses",
+                          "type": "string",
+                          "const": "responses"
+                        },
+                        {
+                          "description": "OpenAI /embeddings",
+                          "type": "string",
+                          "const": "embeddings"
+                        },
+                        {
+                          "description": "Anthropic /v1/messages/count_tokens",
+                          "type": "string",
+                          "const": "anthropicTokenCount"
+                        }
+                      ]
                     }
                   }
                 },
