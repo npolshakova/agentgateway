@@ -996,7 +996,7 @@
 |`frontendPolicies.tracing.(any)(1)service.port`||
 |`frontendPolicies.tracing.(any)(1)host`|Hostname or IP address|
 |`frontendPolicies.tracing.(any)(1)backend`|Explicit backend reference. Backend must be defined in the top level backends list|
-|`frontendPolicies.tracing.(any)attributes`|Span attributes to add, keyed by attribute name.<br><br>Config supports two equivalent formats:<br>- Map form (preferred):<br>  attributes:<br>    http.method: request.method<br>    user.id: request.auth.claims.sub<br>- List form (backwards compatible):<br>  attributes:<br>  - name: http.method<br>    value: request.method|
+|`frontendPolicies.tracing.(any)attributes`|Span attributes to add, keyed by attribute name.|
 |`frontendPolicies.tracing.(any)resources`|Resource attributes to add to the tracer provider (OTel `Resource`).<br>This can be used to set things like `service.name` dynamically.|
 |`frontendPolicies.tracing.(any)remove`|Attribute keys to remove from the emitted span attributes.<br><br>This is applied before `attributes` are evaluated/added, so it can be used to drop<br>default attributes or avoid duplication.|
 |`frontendPolicies.tracing.(any)randomSampling`|Optional per-policy override for random sampling. If set, overrides global config for<br>requests that use this frontend policy.|

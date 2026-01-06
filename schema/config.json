@@ -9093,7 +9093,7 @@
               "type": "object",
               "properties": {
                 "attributes": {
-                  "description": "Span attributes to add, keyed by attribute name.\n\nConfig supports two equivalent formats:\n- Map form (preferred):\n  attributes:\n    http.method: request.method\n    user.id: request.auth.claims.sub\n- List form (backwards compatible):\n  attributes:\n  - name: http.method\n    value: request.method",
+                  "description": "Span attributes to add, keyed by attribute name.",
                   "type": "object",
                   "additionalProperties": {
                     "type": "string"
