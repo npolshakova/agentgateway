@@ -236,6 +236,7 @@ pub fn parse_config(contents: String, filename: Option<PathBuf>) -> anyhow::Resu
 		termination_min_deadline,
 		threading_mode,
 		backend: raw.backend,
+		admin_runtime_handle: None,
 		termination_max_deadline: match termination_max_deadline {
 			Some(period) => period,
 			None => match parse::<u64>("TERMINATION_GRACE_PERIOD_SECONDS")? {

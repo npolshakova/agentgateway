@@ -8,6 +8,7 @@ use frozen_collections::FzHashSet;
 use itertools::Itertools;
 use llm::{AIBackend, AIProvider, NamedAIProvider};
 use rustls::ServerConfig;
+use std::collections::HashMap;
 
 use super::agent::*;
 use crate::http::auth::{AwsAuth, BackendAuth};
@@ -1479,24 +1480,16 @@ impl TryFrom<&proto::agent::FrontendPolicySpec> for FrontendPolicy {
 				let tracing_config = types::agent::TracingConfig::try_from(t)?;
 
 				// Prepare LoggingFields with the CEL attributes from TracingConfig
-				let logging_fields = {
-					let add_map = crate::telemetry::log::OrderedStringMap::from_iter(
-						tracing_config
-							.attributes
-							.iter()
-							.map(|attr| (attr.name.clone(), attr.value.clone())),
-					);
-					Arc::new(crate::telemetry::log::LoggingFields {
-						remove: Arc::new(Default::default()),
-						add: Arc::new(add_map),
-					})
-				};
+				let logging_fields = Arc::new(crate::telemetry::log::LoggingFields {
+					remove: Arc::new(tracing_config.remove.iter().cloned().collect()),
+					add: Arc::new(tracing_config.attributes.clone()),
+				});
 
-				FrontendPolicy::Tracing(types::agent::TracingPolicy {
+				FrontendPolicy::Tracing(Box::new(types::agent::TracingPolicy {
 					config: tracing_config,
 					fields: logging_fields,
 					tracer: once_cell::sync::OnceCell::new(),
-				})
+				}))
 			},
 			None => return Err(ProtoError::MissingRequiredField),
 		})
@@ -1509,29 +1502,23 @@ impl TryFrom<&proto::agent::frontend_policy_spec::Tracing> for types::agent::Tra
 	fn try_from(t: &proto::agent::frontend_policy_spec::Tracing) -> Result<Self, Self::Error> {
 		let provider_backend = resolve_simple_reference(t.provider_backend.as_ref())?;
 
-		let attributes = t
+		let attributes: OrderedStringMap<Arc<cel::Expression>> = t
 			.attributes
 			.iter()
 			.map(|a| {
 				let expr = cel::Expression::new_permissive(&a.value);
-				Ok::<_, ProtoError>(types::agent::TracingAttribute {
-					name: a.name.clone(),
-					value: Arc::new(expr),
-				})
+				(a.name.clone(), Arc::new(expr))
 			})
-			.collect::<Result<Vec<_>, ProtoError>>()?;
+			.collect();
 
-		let resources = t
+		let resources: OrderedStringMap<Arc<cel::Expression>> = t
 			.resources
 			.iter()
 			.map(|a| {
 				let expr = cel::Expression::new_permissive(&a.value);
-				Ok::<_, ProtoError>(types::agent::TracingAttribute {
-					name: a.name.clone(),
-					value: Arc::new(expr),
-				})
+				(a.name.clone(), Arc::new(expr))
 			})
-			.collect::<Result<Vec<_>, ProtoError>>()?;
+			.collect();
 
 		// Optional per-policy sampling overrides
 		let random_sampling = t
@@ -1559,6 +1546,7 @@ impl TryFrom<&proto::agent::frontend_policy_spec::Tracing> for types::agent::Tra
 			provider_backend,
 			attributes,
 			resources,
+			remove: t.remove.clone(),
 			random_sampling,
 			client_sampling,
 			path,

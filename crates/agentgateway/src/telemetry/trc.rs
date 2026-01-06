@@ -58,6 +58,15 @@ impl Tracer {
 		fields: Arc<LoggingFields>,
 		policy_client: crate::proxy::httpproxy::PolicyClient,
 	) -> anyhow::Result<Tracer> {
+		// Important: this may be called from the dataplane runtime (policy lazy init),
+		// but we want exporter tasks/spans to run on the admin runtime when available.
+		let exporter_runtime = policy_client
+			.inputs
+			.cfg
+			.admin_runtime_handle
+			.clone()
+			.unwrap_or_else(tokio::runtime::Handle::current);
+
 		let defaults = GLOBAL_RESOURCE_DEFAULTS.get();
 		let mut resource_builder = Resource::builder();
 		if let Some(d) = defaults {
@@ -71,12 +80,13 @@ impl Tracer {
 		));
 		let executor = cel::ContextBuilder::new().build()?;
 		let mut tracer_name: Option<String> = None;
-		for resource_attr in &config.resources {
-			if let Ok(value) = executor.eval(&resource_attr.value) {
+		for (name, expr) in config.resources.iter() {
+			let name: &str = name.as_ref();
+			if let Ok(value) = executor.eval(expr.as_ref()) {
 				use opentelemetry::Value;
 				let otel_value = match value {
 					cel::Value::String(s) => {
-						if resource_attr.name == "service.name" && tracer_name.is_none() {
+						if name == "service.name" && tracer_name.is_none() {
 							tracer_name = Some(s.to_string());
 						}
 						Value::String(s.to_string().into())
@@ -95,7 +105,7 @@ impl Tracer {
 					},
 				};
 				resource_builder =
-					resource_builder.with_attribute(KeyValue::new(resource_attr.name.clone(), otel_value));
+					resource_builder.with_attribute(KeyValue::new(name.to_string(), otel_value));
 			}
 		}
 		let tracer_name = tracer_name
@@ -114,6 +124,7 @@ impl Tracer {
 			let exporter = PolicyGrpcSpanExporter::new(
 				policy_client.inputs.clone(),
 				Arc::new(config.provider_backend.clone()),
+				exporter_runtime.clone(),
 			);
 			opentelemetry_sdk::trace::SdkTracerProvider::builder()
 				.with_resource(resource.clone())
@@ -136,7 +147,7 @@ impl Tracer {
 			let http_client = PolicyOtelHttpClient {
 				policy_client,
 				backend_ref: config.provider_backend.clone(),
-				runtime: tokio::runtime::Handle::current(),
+				runtime: exporter_runtime,
 			};
 			opentelemetry_sdk::trace::SdkTracerProvider::builder()
 				.with_resource(resource.clone())
@@ -232,6 +243,7 @@ impl Tracer {
 	) {
 		let mut attributes = attrs
 			.iter()
+			.filter(|(k, _)| !self.fields.has(k))
 			.filter_map(|(k, v)| v.as_ref().map(|v| (k, v)))
 			.map(|(k, v)| KeyValue::new(Key::new(k.to_string()), to_otel(v)))
 			.collect_vec();
@@ -328,7 +340,11 @@ impl std::fmt::Debug for PolicyGrpcSpanExporter {
 }
 
 impl PolicyGrpcSpanExporter {
-	fn new(inputs: Arc<crate::ProxyInputs>, target: Arc<SimpleBackendReference>) -> Self {
+	fn new(
+		inputs: Arc<crate::ProxyInputs>,
+		target: Arc<SimpleBackendReference>,
+		runtime: tokio::runtime::Handle,
+	) -> Self {
 		use crate::http::ext_proc::GrpcReferenceChannel;
 		let channel = GrpcReferenceChannel {
 			target,
@@ -342,7 +358,7 @@ impl PolicyGrpcSpanExporter {
 			tonic_client,
 			is_shutdown: Arc::new(false),
 			resource: Resource::builder().build(),
-			runtime: tokio::runtime::Handle::current(),
+			runtime,
 		}
 	}
 }

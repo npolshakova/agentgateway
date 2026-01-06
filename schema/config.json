@@ -9087,13 +9087,65 @@
           "default": null
         },
         "tracing": {
-          "description": "Configuration for dynamic tracing policy",
-          "type": [
-            "object",
-            "null"
-          ],
-          "properties": {
-            "providerBackend": {
+          "anyOf": [
+            {
+              "description": "Configuration for dynamic tracing policy",
+              "type": "object",
+              "properties": {
+                "attributes": {
+                  "description": "Span attributes to add, keyed by attribute name.\n\nConfig supports two equivalent formats:\n- Map form (preferred):\n  attributes:\n    http.method: request.method\n    user.id: request.auth.claims.sub\n- List form (backwards compatible):\n  attributes:\n  - name: http.method\n    value: request.method",
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "default": {}
+                },
+                "resources": {
+                  "description": "Resource attributes to add to the tracer provider (OTel `Resource`).\nThis can be used to set things like `service.name` dynamically.",
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "default": {}
+                },
+                "remove": {
+                  "description": "Attribute keys to remove from the emitted span attributes.\n\nThis is applied before `attributes` are evaluated/added, so it can be used to drop\ndefault attributes or avoid duplication.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                },
+                "randomSampling": {
+                  "description": "Optional per-policy override for random sampling. If set, overrides global config for\nrequests that use this frontend policy.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null
+                },
+                "clientSampling": {
+                  "description": "Optional per-policy override for client sampling. If set, overrides global config for\nrequests that use this frontend policy.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null
+                },
+                "path": {
+                  "type": "string",
+                  "default": "/v1/traces"
+                },
+                "protocol": {
+                  "type": "string",
+                  "enum": [
+                    "http",
+                    "grpc"
+                  ],
+                  "default": "http"
+                }
+              },
+              "unevaluatedProperties": false,
               "oneOf": [
                 {
                   "type": "string",
@@ -9139,8 +9191,7 @@
                   },
                   "required": [
                     "service"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 {
                   "description": "Hostname or IP address",
@@ -9153,8 +9204,7 @@
                   },
                   "required": [
                     "host"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 {
                   "type": "object",
@@ -9166,83 +9216,13 @@
                   },
                   "required": [
                     "backend"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               ]
             },
-            "attributes": {
-              "type": "array",
-              "items": {
-                "description": "A single tracing attribute with a CEL expression",
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "name",
-                  "value"
-                ]
-              }
-            },
-            "resources": {
-              "type": "array",
-              "items": {
-                "description": "A single tracing attribute with a CEL expression",
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "additionalProperties": false,
-                "required": [
-                  "name",
-                  "value"
-                ]
-              }
-            },
-            "randomSampling": {
-              "description": "Optional per-policy override for random sampling. If set, overrides global config for\nrequests that use this frontend policy.",
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "clientSampling": {
-              "description": "Optional per-policy override for client sampling. If set, overrides global config for\nrequests that use this frontend policy.",
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "path": {
-              "type": "string"
-            },
-            "protocol": {
-              "type": "string",
-              "enum": [
-                "http",
-                "grpc"
-              ]
+            {
+              "type": "null"
             }
-          },
-          "additionalProperties": false,
-          "required": [
-            "providerBackend",
-            "attributes",
-            "resources",
-            "path",
-            "protocol"
           ],
           "default": null
         }

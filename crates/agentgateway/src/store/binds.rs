@@ -64,7 +64,7 @@ pub struct FrontendPolices {
 	pub tls: Option<frontend::TLS>,
 	pub tcp: Option<frontend::TCP>,
 	pub access_log: Option<frontend::LoggingPolicy>,
-	pub tracing: Option<crate::types::agent::TracingPolicy>,
+	pub tracing: Option<Box<crate::types::agent::TracingPolicy>>,
 }
 
 impl FrontendPolices {
@@ -639,7 +639,7 @@ impl Store {
 
 		let mut pol = FrontendPolices::default();
 		for rule in rules {
-			match &rule {
+			match rule {
 				FrontendPolicy::HTTP(p) => {
 					pol.http.get_or_insert_with(|| p.clone());
 				},

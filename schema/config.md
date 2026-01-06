@@ -988,25 +988,21 @@
 |`frontendPolicies.accessLog.filter`||
 |`frontendPolicies.accessLog.add`||
 |`frontendPolicies.accessLog.remove`||
-|`frontendPolicies.tracing`|Configuration for dynamic tracing policy|
-|`frontendPolicies.tracing.providerBackend`||
-|`frontendPolicies.tracing.providerBackend.(1)service`||
-|`frontendPolicies.tracing.providerBackend.(1)service.name`||
-|`frontendPolicies.tracing.providerBackend.(1)service.name.namespace`||
-|`frontendPolicies.tracing.providerBackend.(1)service.name.hostname`||
-|`frontendPolicies.tracing.providerBackend.(1)service.port`||
-|`frontendPolicies.tracing.providerBackend.(1)host`|Hostname or IP address|
-|`frontendPolicies.tracing.providerBackend.(1)backend`|Explicit backend reference. Backend must be defined in the top level backends list|
-|`frontendPolicies.tracing.attributes`||
-|`frontendPolicies.tracing.attributes[].name`||
-|`frontendPolicies.tracing.attributes[].value`||
-|`frontendPolicies.tracing.resources`||
-|`frontendPolicies.tracing.resources[].name`||
-|`frontendPolicies.tracing.resources[].value`||
-|`frontendPolicies.tracing.randomSampling`|Optional per-policy override for random sampling. If set, overrides global config for<br>requests that use this frontend policy.|
-|`frontendPolicies.tracing.clientSampling`|Optional per-policy override for client sampling. If set, overrides global config for<br>requests that use this frontend policy.|
-|`frontendPolicies.tracing.path`||
-|`frontendPolicies.tracing.protocol`||
+|`frontendPolicies.tracing`||
+|`frontendPolicies.tracing.(any)(1)service`||
+|`frontendPolicies.tracing.(any)(1)service.name`||
+|`frontendPolicies.tracing.(any)(1)service.name.namespace`||
+|`frontendPolicies.tracing.(any)(1)service.name.hostname`||
+|`frontendPolicies.tracing.(any)(1)service.port`||
+|`frontendPolicies.tracing.(any)(1)host`|Hostname or IP address|
+|`frontendPolicies.tracing.(any)(1)backend`|Explicit backend reference. Backend must be defined in the top level backends list|
+|`frontendPolicies.tracing.(any)attributes`|Span attributes to add, keyed by attribute name.<br><br>Config supports two equivalent formats:<br>- Map form (preferred):<br>  attributes:<br>    http.method: request.method<br>    user.id: request.auth.claims.sub<br>- List form (backwards compatible):<br>  attributes:<br>  - name: http.method<br>    value: request.method|
+|`frontendPolicies.tracing.(any)resources`|Resource attributes to add to the tracer provider (OTel `Resource`).<br>This can be used to set things like `service.name` dynamically.|
+|`frontendPolicies.tracing.(any)remove`|Attribute keys to remove from the emitted span attributes.<br><br>This is applied before `attributes` are evaluated/added, so it can be used to drop<br>default attributes or avoid duplication.|
+|`frontendPolicies.tracing.(any)randomSampling`|Optional per-policy override for random sampling. If set, overrides global config for<br>requests that use this frontend policy.|
+|`frontendPolicies.tracing.(any)clientSampling`|Optional per-policy override for client sampling. If set, overrides global config for<br>requests that use this frontend policy.|
+|`frontendPolicies.tracing.(any)path`||
+|`frontendPolicies.tracing.(any)protocol`||
 |`policies`|policies defines additional policies that can be attached to various other configurations.<br>This is an advanced feature; users should typically use the inline `policies` field under route/gateway.|
 |`policies[].name`||
 |`policies[].name.name`||

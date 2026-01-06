@@ -97,7 +97,10 @@ fn main() -> anyhow::Result<()> {
 			if validate_only {
 				return validate(contents, filename).await;
 			}
-			let config = agentgateway::config::parse_config(contents, filename)?;
+			let mut config = agentgateway::config::parse_config(contents, filename)?;
+			// Capture the admin/runtime handle to ensure some background tasks (e.g., OTLP exporters created from dataplane
+			// policy initialization) run on the admin runtime rather than the dataplane runtime.
+			config.admin_runtime_handle = Some(tokio::runtime::Handle::current());
 			let _log_flush = telemetry::setup_logging(
 				&config.logging.level,
 				config.logging.format == LoggingFormat::Json,

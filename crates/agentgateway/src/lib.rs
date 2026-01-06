@@ -378,6 +378,9 @@ pub struct Config {
 	pub dns: client::Config,
 	pub proxy_metadata: ProxyMetadata,
 	pub threading_mode: ThreadingMode,
+	/// Handle for tasks/spans emitted on the admin runtime.
+	#[serde(skip)]
+	pub admin_runtime_handle: Option<tokio::runtime::Handle>,
 
 	pub backend: BackendConfig,
 }

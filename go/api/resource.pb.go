@@ -6181,6 +6181,10 @@ type FrontendPolicySpec_Tracing struct {
 	ProviderBackend *BackendReference                      `protobuf:"bytes,1,opt,name=provider_backend,json=providerBackend,proto3" json:"provider_backend,omitempty"`
 	Attributes      []*FrontendPolicySpec_TracingAttribute `protobuf:"bytes,2,rep,name=attributes,proto3" json:"attributes,omitempty"`
 	Resources       []*FrontendPolicySpec_TracingAttribute `protobuf:"bytes,3,rep,name=resources,proto3" json:"resources,omitempty"`
+	// remove is a list of attribute keys to remove from emitted spans.
+	// This is applied before `attributes` are evaluated/added, so it can drop defaults
+	// or avoid duplicates.
+	Remove []string `protobuf:"bytes,8,rep,name=remove,proto3" json:"remove,omitempty"`
 	// random_sampling is a CEL expression to determine the amount of random sampling.
 	// Random sampling will initiate a new trace span if the incoming request does not
 	// have a trace initiated already. This should evaluate to a float between 0.0-1.0,
@@ -6246,6 +6250,13 @@ func (x *FrontendPolicySpec_Tracing) GetAttributes() []*FrontendPolicySpec_Traci
 func (x *FrontendPolicySpec_Tracing) GetResources() []*FrontendPolicySpec_TracingAttribute {
 	if x != nil {
 		return x.Resources
+	}
+	return nil
+}
+
+func (x *FrontendPolicySpec_Tracing) GetRemove() []string {
+	if x != nil {
+		return x.Remove
 	}
 	return nil
 }
@@ -9893,7 +9904,7 @@ const file_resource_proto_rawDesc = "" +
 	"\binterval\x18\x02 \x01(\v2\x19.google.protobuf.DurationR\binterval\x12\x1d\n" +
 	"\aretries\x18\x03 \x01(\rH\x00R\aretries\x88\x01\x01B\n" +
 	"\n" +
-	"\b_retries\"\xa7\x11\n" +
+	"\b_retries\"\xbf\x11\n" +
 	"\x12FrontendPolicySpec\x12E\n" +
 	"\x03tcp\x18\x01 \x01(\v21.agentgateway.dev.resource.FrontendPolicySpec.TCPH\x00R\x03tcp\x12E\n" +
 	"\x03tls\x18\x02 \x01(\v21.agentgateway.dev.resource.FrontendPolicySpec.TLSH\x00R\x03tls\x12H\n" +
@@ -9932,13 +9943,14 @@ const file_resource_proto_rawDesc = "" +
 	"\x06Fields\x12\x16\n" +
 	"\x06remove\x18\x01 \x03(\tR\x06remove\x12M\n" +
 	"\x03add\x18\x02 \x03(\v2;.agentgateway.dev.resource.FrontendPolicySpec.Logging.FieldR\x03addB\t\n" +
-	"\a_filter\x1a\xc1\x04\n" +
+	"\a_filter\x1a\xd9\x04\n" +
 	"\aTracing\x12V\n" +
 	"\x10provider_backend\x18\x01 \x01(\v2+.agentgateway.dev.resource.BackendReferenceR\x0fproviderBackend\x12^\n" +
 	"\n" +
 	"attributes\x18\x02 \x03(\v2>.agentgateway.dev.resource.FrontendPolicySpec.TracingAttributeR\n" +
 	"attributes\x12\\\n" +
-	"\tresources\x18\x03 \x03(\v2>.agentgateway.dev.resource.FrontendPolicySpec.TracingAttributeR\tresources\x12,\n" +
+	"\tresources\x18\x03 \x03(\v2>.agentgateway.dev.resource.FrontendPolicySpec.TracingAttributeR\tresources\x12\x16\n" +
+	"\x06remove\x18\b \x03(\tR\x06remove\x12,\n" +
 	"\x0frandom_sampling\x18\x04 \x01(\tH\x00R\x0erandomSampling\x88\x01\x01\x12,\n" +
 	"\x0fclient_sampling\x18\x05 \x01(\tH\x01R\x0eclientSampling\x88\x01\x01\x12\x17\n" +
 	"\x04path\x18\x06 \x01(\tH\x02R\x04path\x88\x01\x01\x12Z\n" +

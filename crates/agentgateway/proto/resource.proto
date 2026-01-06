@@ -446,6 +446,11 @@ message FrontendPolicySpec {
     repeated TracingAttribute attributes = 2;
     repeated TracingAttribute resources = 3;
       
+    // remove is a list of attribute keys to remove from emitted spans.
+    // This is applied before `attributes` are evaluated/added, so it can drop defaults
+    // or avoid duplicates.
+    repeated string remove = 8;
+
     // random_sampling is a CEL expression to determine the amount of random sampling.
     // Random sampling will initiate a new trace span if the incoming request does not
     // have a trace initiated already. This should evaluate to a float between 0.0-1.0,

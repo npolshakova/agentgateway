@@ -502,7 +502,7 @@ impl HTTPProxy {
 			.stores
 			.read_binds()
 			.frontend_policies(self.inputs.cfg.gateway());
-		if let Some(tp) = frontend_policies.tracing.as_ref() {
+		if let Some(tp) = frontend_policies.tracing.as_deref() {
 			// Apply sampling overrides if present
 			if let Some(rs) = &tp.config.random_sampling {
 				log.cel.tracing_sampler.random_sampling = Some(rs.clone());
@@ -521,7 +521,7 @@ impl HTTPProxy {
 
 		// Use dynamic tracer from frontend policy if available, otherwise use static tracer
 		if trace_sampled {
-			log.tracer = if let Some(tp) = frontend_policies.tracing.as_ref() {
+			log.tracer = if let Some(tp) = frontend_policies.tracing.as_deref() {
 				debug!(
 					resources_count=%tp.config.resources.len(),
 					attrs_count=%tp.config.attributes.len(),

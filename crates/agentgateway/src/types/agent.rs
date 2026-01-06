@@ -13,6 +13,7 @@ use crate::http::{
 	HeaderOrPseudo, HeaderValue, ext_authz, ext_proc, filters, remoteratelimit, retry, timeout,
 };
 use crate::mcp::McpAuthorization;
+use crate::telemetry::log::OrderedStringMap;
 use crate::types::discovery::{NamespacedHostname, Service};
 use crate::types::local::SimpleLocalBackend;
 use crate::types::{agent, backend, frontend};
@@ -1416,19 +1417,52 @@ pub struct TargetedPolicy {
 /// Configuration for dynamic tracing policy
 #[apply(schema!)]
 pub struct TracingConfig {
+	#[serde(flatten)]
 	pub provider_backend: SimpleBackendReference,
-	pub attributes: Vec<TracingAttribute>,
-	pub resources: Vec<TracingAttribute>,
+	/// Span attributes to add, keyed by attribute name.
+	#[serde(default)]
+	pub attributes: OrderedStringMap<Arc<cel::Expression>>,
+	/// Resource attributes to add to the tracer provider (OTel `Resource`).
+	/// This can be used to set things like `service.name` dynamically.
+	#[serde(default)]
+	pub resources: OrderedStringMap<Arc<cel::Expression>>,
+	/// Attribute keys to remove from the emitted span attributes.
+	///
+	/// This is applied before `attributes` are evaluated/added, so it can be used to drop
+	/// default attributes or avoid duplication.
+	#[serde(default)]
+	pub remove: Vec<String>,
 	/// Optional per-policy override for random sampling. If set, overrides global config for
 	/// requests that use this frontend policy.
+	#[serde(default, deserialize_with = "deserialize_sampling_expr_opt")]
 	pub random_sampling: Option<Arc<cel::Expression>>,
 	/// Optional per-policy override for client sampling. If set, overrides global config for
 	/// requests that use this frontend policy.
+	#[serde(default, deserialize_with = "deserialize_sampling_expr_opt")]
 	pub client_sampling: Option<Arc<cel::Expression>>,
 	// OTLP path. Default is /v1/traces
+	#[serde(default = "default_otlp_path")]
 	pub path: String,
 	// protocol specifies the OTLP protocol variant to use. Default is HTTP
+	#[serde(default)]
 	pub protocol: TracingProtocol,
+}
+
+fn default_otlp_path() -> String {
+	"/v1/traces".to_string()
+}
+
+fn deserialize_sampling_expr_opt<'de, D>(
+	deserializer: D,
+) -> Result<Option<Arc<cel::Expression>>, D::Error>
+where
+	D: serde::Deserializer<'de>,
+{
+	let v = Option::<crate::StringBoolFloat>::deserialize(deserializer)?;
+	v.map(|v| cel::Expression::new_strict(&v.0))
+		.transpose()
+		.map(|o| o.map(Arc::new))
+		.map_err(|e| serde::de::Error::custom(e.to_string()))
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Default, Copy, Eq, PartialEq, Clone, Debug)]
@@ -1438,13 +1472,6 @@ pub enum TracingProtocol {
 	#[default]
 	Http,
 	Grpc,
-}
-
-/// A single tracing attribute with a CEL expression
-#[apply(schema!)]
-pub struct TracingAttribute {
-	pub name: String,
-	pub value: Arc<cel::Expression>,
 }
 
 /// TracingPolicy holds both the configuration and the compiled OpenTelemetry tracer
@@ -1615,7 +1642,7 @@ pub enum FrontendPolicy {
 	TLS(frontend::TLS),
 	TCP(frontend::TCP),
 	AccessLog(frontend::LoggingPolicy),
-	Tracing(TracingPolicy),
+	Tracing(Box<TracingPolicy>),
 }
 
 #[derive(Debug, Clone, serde::Serialize)]

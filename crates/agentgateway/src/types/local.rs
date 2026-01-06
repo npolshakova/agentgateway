@@ -1063,7 +1063,7 @@ async fn convert_listener(
 		let listener_target = ListenerTarget {
 			gateway_name: gateway_name.clone(),
 			gateway_namespace: gateway_namespace.clone(),
-			listener_name: Some(listener_name.clone()),
+			listener_name: None,
 		};
 		all_policies.extend_from_slice(&split_frontend_policies(listener_target, frontend_pols).await?);
 	}
@@ -1227,25 +1227,17 @@ async fn split_frontend_policies(
 	}
 	if let Some(tracing_config) = tracing {
 		// Build logging fields from attributes for lazy tracer creation
-		let logging_fields = {
-			let add_map = crate::telemetry::log::OrderedStringMap::from_iter(
-				tracing_config
-					.attributes
-					.iter()
-					.map(|attr| (attr.name.clone(), attr.value.clone())),
-			);
-			Arc::new(crate::telemetry::log::LoggingFields {
-				remove: Arc::new(Default::default()),
-				add: Arc::new(add_map),
-			})
-		};
+		let logging_fields = Arc::new(crate::telemetry::log::LoggingFields {
+			remove: Arc::new(tracing_config.remove.iter().cloned().collect()),
+			add: Arc::new(tracing_config.attributes.clone()),
+		});
 
 		add(
-			FrontendPolicy::Tracing(crate::types::agent::TracingPolicy {
+			FrontendPolicy::Tracing(Box::new(crate::types::agent::TracingPolicy {
 				config: tracing_config,
 				fields: logging_fields,
 				tracer: once_cell::sync::OnceCell::new(),
-			}),
+			})),
 			"tracing",
 		);
 	}
