@@ -8,6 +8,7 @@ use frozen_collections::FzHashSet;
 use itertools::Itertools;
 use llm::{AIBackend, AIProvider, NamedAIProvider};
 use rustls::ServerConfig;
+use std::collections::HashMap;
 
 use super::agent::*;
 use crate::http::auth::{AwsAuth, BackendAuth};
@@ -1475,8 +1476,82 @@ impl TryFrom<&proto::agent::FrontendPolicySpec> for FrontendPolicy {
 					remove: Arc::new(FzHashSet::new(rm)),
 				})
 			},
-			Some(fps::Kind::Tracing(_)) => FrontendPolicy::Tracing(()),
+			Some(fps::Kind::Tracing(t)) => {
+				// Convert protobuf to TracingConfig
+				let tracing_config = types::agent::TracingConfig::try_from(t)?;
+
+				// Prepare LoggingFields with the CEL attributes from TracingConfig
+				let logging_fields = Arc::new(crate::telemetry::log::LoggingFields {
+					remove: Arc::new(tracing_config.remove.iter().cloned().collect()),
+					add: Arc::new(tracing_config.attributes.clone()),
+				});
+
+				FrontendPolicy::Tracing(Arc::new(types::agent::TracingPolicy {
+					config: tracing_config,
+					fields: logging_fields,
+					tracer: once_cell::sync::OnceCell::new(),
+				}))
+			},
 			None => return Err(ProtoError::MissingRequiredField),
+		})
+	}
+}
+
+impl TryFrom<&proto::agent::frontend_policy_spec::Tracing> for types::agent::TracingConfig {
+	type Error = ProtoError;
+
+	fn try_from(t: &proto::agent::frontend_policy_spec::Tracing) -> Result<Self, Self::Error> {
+		let provider_backend = resolve_simple_reference(t.provider_backend.as_ref())?;
+
+		let attributes: OrderedStringMap<Arc<cel::Expression>> = t
+			.attributes
+			.iter()
+			.map(|a| {
+				let expr = cel::Expression::new_permissive(&a.value);
+				(a.name.clone(), Arc::new(expr))
+			})
+			.collect();
+
+		let resources: OrderedStringMap<Arc<cel::Expression>> = t
+			.resources
+			.iter()
+			.map(|a| {
+				let expr = cel::Expression::new_permissive(&a.value);
+				(a.name.clone(), Arc::new(expr))
+			})
+			.collect();
+
+		// Optional per-policy sampling overrides
+		let random_sampling = t
+			.random_sampling
+			.as_ref()
+			.map(|s| Arc::new(cel::Expression::new_permissive(s)));
+		let client_sampling = t
+			.client_sampling
+			.as_ref()
+			.map(|s| Arc::new(cel::Expression::new_permissive(s)));
+
+		let path = t.path.clone().unwrap_or_else(|| "/v1/traces".to_string());
+
+		let protocol =
+			match crate::types::proto::agent::frontend_policy_spec::tracing::Protocol::try_from(
+				t.protocol,
+			) {
+				Ok(crate::types::proto::agent::frontend_policy_spec::tracing::Protocol::Grpc) => {
+					types::agent::TracingProtocol::Grpc
+				},
+				_ => types::agent::TracingProtocol::Http,
+			};
+
+		Ok(types::agent::TracingConfig {
+			provider_backend,
+			attributes,
+			resources,
+			remove: t.remove.clone(),
+			random_sampling,
+			client_sampling,
+			path,
+			protocol,
 		})
 	}
 }

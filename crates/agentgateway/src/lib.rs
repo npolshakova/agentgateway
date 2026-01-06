@@ -210,6 +210,8 @@ pub struct RawTracing {
 	/// This should evaluate to either a float between 0.0-1.0 (0-100%) or true/false.
 	/// This defaults to 'true'.
 	client_sampling: Option<StringBoolFloat>,
+	/// OTLP path. Default is /v1/traces
+	path: Option<String>,
 }
 
 #[apply(schema_de!)]
@@ -376,6 +378,9 @@ pub struct Config {
 	pub dns: client::Config,
 	pub proxy_metadata: ProxyMetadata,
 	pub threading_mode: ThreadingMode,
+	/// Handle for tasks/spans emitted on the admin runtime.
+	#[serde(skip)]
+	pub admin_runtime_handle: Option<tokio::runtime::Handle>,
 
 	pub backend: BackendConfig,
 }
@@ -466,7 +471,7 @@ pub struct ProxyInputs {
 	upstream: client::Client,
 
 	metrics: Arc<metrics::Metrics>,
-	tracer: Option<trc::Tracer>,
+	tracer: Option<std::sync::Arc<trc::Tracer>>,
 
 	mcp_state: mcp::App,
 	ca: Option<Arc<CaClient>>,

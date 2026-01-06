@@ -68,7 +68,6 @@ interface NewBindState {
 
 interface NewListenerState {
   name: string;
-  gatewayName: string;
   hostname: string;
   protocol: ListenerProtocol;
   targetBindPort: number | null;
@@ -149,7 +148,6 @@ export function ListenerConfig({
 
   const [newListener, setNewListener] = useState<NewListenerState>({
     name: "",
-    gatewayName: "",
     hostname: "localhost",
     protocol: ListenerProtocol.HTTP,
     targetBindPort: null,
@@ -260,7 +258,6 @@ export function ListenerConfig({
 
       const listenerToAdd: Listener = {
         name: newListener.name || `listener-${Date.now()}`,
-        gatewayName: newListener.gatewayName || null,
         hostname: newListener.hostname,
         protocol: newListener.protocol,
         ...(newListener.protocol === ListenerProtocol.TCP ||
@@ -278,7 +275,6 @@ export function ListenerConfig({
 
       setNewListener({
         name: "",
-        gatewayName: "",
         hostname: "localhost",
         protocol: ListenerProtocol.HTTP,
         targetBindPort: null,
@@ -313,7 +309,6 @@ export function ListenerConfig({
   const handleAddListenerToBind = (bindPort: number) => {
     setNewListener({
       name: "",
-      gatewayName: "",
       hostname: "localhost",
       protocol: ListenerProtocol.HTTP,
       targetBindPort: bindPort,
@@ -702,19 +697,6 @@ export function ListenerConfig({
               />
               <p className="text-xs text-muted-foreground">
                 A unique name for this listener. If left empty, a default name will be generated.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="gatewayName">Gateway Name</Label>
-              <Input
-                id="gatewayName"
-                value={newListener.gatewayName}
-                onChange={(e) => setNewListener({ ...newListener, gatewayName: e.target.value })}
-                placeholder="e.g., main-gateway"
-              />
-              <p className="text-xs text-muted-foreground">
-                Optional gateway name for this listener. Can be used for grouping or identification.
               </p>
             </div>
 

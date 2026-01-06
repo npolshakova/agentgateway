@@ -30,6 +30,7 @@
 |`config.tracing.fields.add`||
 |`config.tracing.randomSampling`|Expression to determine the amount of *random sampling*.<br>Random sampling will initiate a new trace span if the incoming request does not have a trace already.<br>This should evaluate to either a float between 0.0-1.0 (0-100%) or true/false.<br>This defaults to 'false'.|
 |`config.tracing.clientSampling`|Expression to determine the amount of *client sampling*.<br>Client sampling determines whether to initiate a new trace span if the incoming request does have a trace already.<br>This should evaluate to either a float between 0.0-1.0 (0-100%) or true/false.<br>This defaults to 'true'.|
+|`config.tracing.path`|OTLP path. Default is /v1/traces|
 |`config.logging`||
 |`config.logging.filter`||
 |`config.logging.fields`||
@@ -61,7 +62,6 @@
 |`binds[].listeners`||
 |`binds[].listeners[].name`||
 |`binds[].listeners[].namespace`||
-|`binds[].listeners[].gatewayName`||
 |`binds[].listeners[].hostname`|Can be a wildcard|
 |`binds[].listeners[].protocol`||
 |`binds[].listeners[].tls`||
@@ -1059,6 +1059,20 @@
 |`frontendPolicies.accessLog.add`||
 |`frontendPolicies.accessLog.remove`||
 |`frontendPolicies.tracing`||
+|`frontendPolicies.tracing.(any)(1)service`||
+|`frontendPolicies.tracing.(any)(1)service.name`||
+|`frontendPolicies.tracing.(any)(1)service.name.namespace`||
+|`frontendPolicies.tracing.(any)(1)service.name.hostname`||
+|`frontendPolicies.tracing.(any)(1)service.port`||
+|`frontendPolicies.tracing.(any)(1)host`|Hostname or IP address|
+|`frontendPolicies.tracing.(any)(1)backend`|Explicit backend reference. Backend must be defined in the top level backends list|
+|`frontendPolicies.tracing.(any)attributes`|Span attributes to add, keyed by attribute name.|
+|`frontendPolicies.tracing.(any)resources`|Resource attributes to add to the tracer provider (OTel `Resource`).<br>This can be used to set things like `service.name` dynamically.|
+|`frontendPolicies.tracing.(any)remove`|Attribute keys to remove from the emitted span attributes.<br><br>This is applied before `attributes` are evaluated/added, so it can be used to drop<br>default attributes or avoid duplication.|
+|`frontendPolicies.tracing.(any)randomSampling`|Optional per-policy override for random sampling. If set, overrides global config for<br>requests that use this frontend policy.|
+|`frontendPolicies.tracing.(any)clientSampling`|Optional per-policy override for client sampling. If set, overrides global config for<br>requests that use this frontend policy.|
+|`frontendPolicies.tracing.(any)path`||
+|`frontendPolicies.tracing.(any)protocol`||
 |`policies`|policies defines additional policies that can be attached to various other configurations.<br>This is an advanced feature; users should typically use the inline `policies` field under route/gateway.|
 |`policies[].name`||
 |`policies[].name.name`||
