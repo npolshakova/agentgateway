@@ -481,6 +481,44 @@
                         "string",
                         "null"
                       ]
+                    },
+                    "cipherSuites": {
+                      "description": "Optional cipher suite allowlist (order is preserved).",
+                      "type": [
+                        "array",
+                        "null"
+                      ],
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "minTLSVersion": {
+                      "description": "Minimum supported TLS version (only TLS 1.2 and 1.3 are supported).",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "TLS_V1_0",
+                        "TLS_V1_1",
+                        "TLS_V1_2",
+                        "TLS_V1_3",
+                        null
+                      ]
+                    },
+                    "maxTLSVersion": {
+                      "description": "Maximum supported TLS version (only TLS 1.2 and 1.3 are supported).",
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "enum": [
+                        "TLS_V1_0",
+                        "TLS_V1_1",
+                        "TLS_V1_2",
+                        "TLS_V1_3",
+                        null
+                      ]
                     }
                   },
                   "additionalProperties": false,
@@ -9803,7 +9841,7 @@
             "null"
           ],
           "properties": {
-            "tlsHandshakeTimeout": {
+            "handshakeTimeout": {
               "type": "string",
               "default": "15s"
             },
@@ -9822,6 +9860,41 @@
                 }
               },
               "default": null
+            },
+            "minVersion": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "TLS_V1_0",
+                "TLS_V1_1",
+                "TLS_V1_2",
+                "TLS_V1_3",
+                null
+              ]
+            },
+            "maxVersion": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "TLS_V1_0",
+                "TLS_V1_1",
+                "TLS_V1_2",
+                "TLS_V1_3",
+                null
+              ]
+            },
+            "cipherSuites": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "string"
+              }
             }
           },
           "additionalProperties": false,

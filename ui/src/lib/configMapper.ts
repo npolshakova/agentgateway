@@ -348,5 +348,12 @@ function mapToAiBackend(data: any): AiBackend | undefined {
 
 function mapToTlsConfig(data: any): TlsConfig | undefined {
   if (!data) return undefined;
-  return { cert: data.cert, key: data.key } as TlsConfig;
+  return {
+    cert: data.cert,
+    key: data.key,
+    root: data.root,
+    cipherSuites: data.cipherSuites,
+    minTLSVersion: data.minTLSVersion,
+    maxTLSVersion: data.maxTLSVersion,
+  };
 }

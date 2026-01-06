@@ -1,4 +1,3 @@
-use std::io::Cursor;
 use std::net::{IpAddr, SocketAddr};
 use std::num::NonZeroU16;
 use std::sync::Arc;
@@ -7,7 +6,6 @@ use ::http::{HeaderName, StatusCode};
 use frozen_collections::FzHashSet;
 use itertools::Itertools;
 use llm::{AIBackend, AIProvider, NamedAIProvider};
-use rustls::ServerConfig;
 use std::collections::HashMap;
 
 use super::agent::*;
@@ -26,36 +24,94 @@ use crate::types::proto::agent::traffic_policy_spec::host_rewrite::Mode;
 use crate::types::{agent, backend, proto};
 use crate::*;
 
+impl TryFrom<proto::agent::tls_config::CipherSuite> for crate::transport::tls::CipherSuite {
+	type Error = anyhow::Error;
+
+	fn try_from(value: proto::agent::tls_config::CipherSuite) -> Result<Self, Self::Error> {
+		use crate::transport::tls::CipherSuite as Cs;
+		match value {
+			proto::agent::tls_config::CipherSuite::Unspecified => Err(anyhow::anyhow!(
+				"unsupported cipher suite: CIPHER_SUITE_UNSPECIFIED"
+			)),
+			proto::agent::tls_config::CipherSuite::TlsAes256GcmSha384 => Ok(Cs::TLS_AES_256_GCM_SHA384),
+			proto::agent::tls_config::CipherSuite::TlsAes128GcmSha256 => Ok(Cs::TLS_AES_128_GCM_SHA256),
+			proto::agent::tls_config::CipherSuite::TlsChacha20Poly1305Sha256 => {
+				Ok(Cs::TLS_CHACHA20_POLY1305_SHA256)
+			},
+			proto::agent::tls_config::CipherSuite::TlsEcdheEcdsaWithAes256GcmSha384 => {
+				Ok(Cs::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384)
+			},
+			proto::agent::tls_config::CipherSuite::TlsEcdheEcdsaWithAes128GcmSha256 => {
+				Ok(Cs::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256)
+			},
+			proto::agent::tls_config::CipherSuite::TlsEcdheEcdsaWithChacha20Poly1305Sha256 => {
+				Ok(Cs::TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256)
+			},
+			proto::agent::tls_config::CipherSuite::TlsEcdheRsaWithAes256GcmSha384 => {
+				Ok(Cs::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384)
+			},
+			proto::agent::tls_config::CipherSuite::TlsEcdheRsaWithAes128GcmSha256 => {
+				Ok(Cs::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256)
+			},
+			proto::agent::tls_config::CipherSuite::TlsEcdheRsaWithChacha20Poly1305Sha256 => {
+				Ok(Cs::TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256)
+			},
+		}
+	}
+}
+
 impl From<&proto::agent::TlsConfig> for ServerTLSConfig {
 	fn from(value: &proto::agent::TlsConfig) -> Self {
-		fn build(value: &proto::agent::TlsConfig) -> anyhow::Result<ServerConfig> {
-			let cert_chain = parse_cert(&value.cert)?;
-			let private_key = parse_key(&value.private_key)?;
-			let scb = ServerConfig::builder_with_provider(transport::tls::provider())
-				.with_protocol_versions(transport::tls::ALL_TLS_VERSIONS)
-				.expect("server config must be valid");
-			let scb = if let Some(root) = &value.root {
-				let mut roots_store = rustls::RootCertStore::empty();
-				let mut reader = std::io::BufReader::new(Cursor::new(root));
-				let certs = rustls_pemfile::certs(&mut reader).collect::<Result<Vec<_>, _>>()?;
-				roots_store.add_parsable_certificates(certs);
-				let verify = rustls::server::WebPkiClientVerifier::builder_with_provider(
-					Arc::new(roots_store),
-					transport::tls::provider(),
-				)
-				.build()?;
-				scb.with_client_cert_verifier(verify)
+		// Defaults set here. These can be overridden by Frontend policy
+		// TODO: this default only makes sense for HTTPS, distinguish from TLS
+		let default_alpns = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
+
+		// These are optional, so treat unknown/unsupported values as "unset".
+		// rustls in this repo only supports TLS1.2/1.3.
+		let map_tls_version = |raw: Option<i32>| {
+			raw.and_then(
+				|raw| match proto::agent::tls_config::TlsVersion::try_from(raw).ok() {
+					Some(proto::agent::tls_config::TlsVersion::TlsV12) => Some(TLSVersion::TLS_V1_2),
+					Some(proto::agent::tls_config::TlsVersion::TlsV13) => Some(TLSVersion::TLS_V1_3),
+					_ => None,
+				},
+			)
+		};
+		let min_version = map_tls_version(value.min_version);
+		let max_version = map_tls_version(value.max_version);
+		// Convert proto enum values into the enums that our TLS provider expects.
+		let cipher_suites: Option<Vec<crate::transport::tls::CipherSuite>> = {
+			if value.cipher_suites.is_empty() {
+				None
 			} else {
-				scb.with_no_client_auth()
-			};
-			let mut sc = scb.with_single_cert(cert_chain, private_key)?;
-			// Defaults set here. These can be overridden by Frontend policy
-			// TODO: this default only makes sense for HTTPS, distinguish from TLS
-			sc.alpn_protocols = vec![b"h2".into(), b"http/1.1".into()];
-			Ok(sc)
-		}
-		match build(value) {
-			Ok(sc) => ServerTLSConfig::new(Arc::new(sc)),
+				let mut out = Vec::with_capacity(value.cipher_suites.len());
+				for &raw in &value.cipher_suites {
+					if raw == 0 {
+						// CIPHER_SUITE_UNSPECIFIED
+						continue;
+					}
+					match proto::agent::tls_config::CipherSuite::try_from(raw) {
+						Ok(suite) => match crate::transport::tls::CipherSuite::try_from(suite) {
+							Ok(suite) => out.push(suite),
+							Err(e) => warn!("unknown/unsupported TLS cipher suite {raw}: {e}"),
+						},
+						Err(e) => warn!("unknown TLS cipher suite enum value {raw}: {e}"),
+					}
+				}
+				if out.is_empty() { None } else { Some(out) }
+			}
+		};
+
+		match ServerTLSConfig::from_pem_with_profile(
+			value.cert.clone(),
+			value.private_key.clone(),
+			value.root.clone(),
+			default_alpns,
+			min_version,
+			max_version,
+			cipher_suites,
+		) {
+			Ok(sc) => sc,
 			Err(e) => {
 				warn!("TLS certificate is invalid: {}", e);
 				ServerTLSConfig::new_invalid()
@@ -1413,6 +1469,20 @@ impl TryFrom<&proto::agent::FrontendPolicySpec> for FrontendPolicy {
 		use crate::types::frontend;
 		use crate::types::proto::agent::frontend_policy_spec as fps;
 
+		let map_tls_version = |raw: Option<i32>| {
+			raw.and_then(
+				|raw| match proto::agent::tls_config::TlsVersion::try_from(raw).ok() {
+					Some(proto::agent::tls_config::TlsVersion::TlsV12) => {
+						Some(frontend::TLSVersion::TLS_V1_2)
+					},
+					Some(proto::agent::tls_config::TlsVersion::TlsV13) => {
+						Some(frontend::TLSVersion::TLS_V1_3)
+					},
+					_ => None,
+				},
+			)
+		};
+
 		Ok(match &spec.kind {
 			Some(fps::Kind::Http(h)) => FrontendPolicy::HTTP(frontend::HTTP {
 				max_buffer_size: h
@@ -1431,14 +1501,37 @@ impl TryFrom<&proto::agent::FrontendPolicySpec> for FrontendPolicy {
 				http2_keepalive_timeout: h.http2_keepalive_timeout.map(convert_duration),
 			}),
 			Some(fps::Kind::Tls(t)) => FrontendPolicy::TLS(frontend::TLS {
-				tls_handshake_timeout: t
-					.tls_handshake_timeout
+				handshake_timeout: t
+					.handshake_timeout
 					.map(convert_duration)
 					.unwrap_or_else(crate::defaults::tls_handshake_timeout),
 				alpn: t
 					.alpn
 					.as_ref()
 					.map(|t| t.protocols.iter().map(|s| s.as_bytes().to_vec()).collect()),
+				min_version: map_tls_version(t.min_version),
+				max_version: map_tls_version(t.max_version),
+				cipher_suites: {
+					if t.cipher_suites.is_empty() {
+						None
+					} else {
+						let mut out = Vec::with_capacity(t.cipher_suites.len());
+						for &raw in &t.cipher_suites {
+							if raw == 0 {
+								// CIPHER_SUITE_UNSPECIFIED
+								continue;
+							}
+							match proto::agent::tls_config::CipherSuite::try_from(raw) {
+								Ok(suite) => match crate::transport::tls::CipherSuite::try_from(suite) {
+									Ok(suite) => out.push(suite),
+									Err(e) => warn!("unknown/unsupported TLS cipher suite {raw}: {e}"),
+								},
+								Err(e) => warn!("unknown TLS cipher suite enum value {raw}: {e}"),
+							}
+						}
+						if out.is_empty() { None } else { Some(out) }
+					}
+				},
 			}),
 			Some(fps::Kind::Tcp(t)) => FrontendPolicy::TCP(frontend::TCP {
 				keepalives: t
