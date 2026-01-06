@@ -68,6 +68,9 @@
 |`binds[].listeners[].tls.cert`||
 |`binds[].listeners[].tls.key`||
 |`binds[].listeners[].tls.root`||
+|`binds[].listeners[].tls.cipherSuites`|Optional cipher suite allowlist (order is preserved).|
+|`binds[].listeners[].tls.minTLSVersion`|Minimum supported TLS version (only TLS 1.2 and 1.3 are supported).|
+|`binds[].listeners[].tls.maxTLSVersion`|Maximum supported TLS version (only TLS 1.2 and 1.3 are supported).|
 |`binds[].listeners[].routes`||
 |`binds[].listeners[].routes[].name`||
 |`binds[].listeners[].routes[].namespace`||
@@ -1046,10 +1049,10 @@
 |`frontendPolicies.http.http2KeepaliveInterval`||
 |`frontendPolicies.http.http2KeepaliveTimeout`||
 |`frontendPolicies.tls`|Settings for handling incoming TLS connections.|
-|`frontendPolicies.tls.tlsHandshakeTimeout`||
+|`frontendPolicies.tls.handshakeTimeout`||
 |`frontendPolicies.tls.alpn`||
-|`frontendPolicies.tls.minTlsVersion`||
-|`frontendPolicies.tls.maxTlsVersion`||
+|`frontendPolicies.tls.minVersion`||
+|`frontendPolicies.tls.maxVersion`||
 |`frontendPolicies.tls.cipherSuites`||
 |`frontendPolicies.tcp`|Settings for handling incoming TCP connections.|
 |`frontendPolicies.tcp.keepalives`||
