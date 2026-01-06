@@ -1485,7 +1485,7 @@ impl TryFrom<&proto::agent::FrontendPolicySpec> for FrontendPolicy {
 					add: Arc::new(tracing_config.attributes.clone()),
 				});
 
-				FrontendPolicy::Tracing(Box::new(types::agent::TracingPolicy {
+				FrontendPolicy::Tracing(Arc::new(types::agent::TracingPolicy {
 					config: tracing_config,
 					fields: logging_fields,
 					tracer: once_cell::sync::OnceCell::new(),

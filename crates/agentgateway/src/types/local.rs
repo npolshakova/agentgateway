@@ -1233,7 +1233,7 @@ async fn split_frontend_policies(
 		});
 
 		add(
-			FrontendPolicy::Tracing(Box::new(crate::types::agent::TracingPolicy {
+			FrontendPolicy::Tracing(Arc::new(crate::types::agent::TracingPolicy {
 				config: tracing_config,
 				fields: logging_fields,
 				tracer: once_cell::sync::OnceCell::new(),

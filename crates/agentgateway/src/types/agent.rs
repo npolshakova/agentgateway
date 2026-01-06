@@ -1642,7 +1642,7 @@ pub enum FrontendPolicy {
 	TLS(frontend::TLS),
 	TCP(frontend::TCP),
 	AccessLog(frontend::LoggingPolicy),
-	Tracing(Box<TracingPolicy>),
+	Tracing(Arc<TracingPolicy>),
 }
 
 #[derive(Debug, Clone, serde::Serialize)]

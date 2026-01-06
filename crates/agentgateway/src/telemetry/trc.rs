@@ -522,13 +522,24 @@ fn from_span_data(
 /// Initialize defaults using gateway name/namespace from config
 pub fn set_resource_defaults_from_config(cfg: &crate::Config) {
 	let pm = &cfg.proxy_metadata;
-	let mut attrs: Vec<KeyValue> = vec![
-		KeyValue::new("k8s.pod.name", pm.pod_name.clone()),
-		KeyValue::new("k8s.namespace.name", pm.pod_namespace.clone()),
-		KeyValue::new("k8s.node.name", pm.node_name.clone()),
-		KeyValue::new("k8s.pod.ip", pm.instance_ip.clone()),
-		KeyValue::new("service.instance.id", pm.node_id.clone()),
-	];
+	let mut attrs: Vec<KeyValue> = Vec::new();
+	let mut push_if_present = |k: &'static str, v: &str| {
+		if !v.is_empty() {
+			attrs.push(KeyValue::new(k, v.to_string()));
+		}
+	};
+
+	push_if_present("k8s.pod.name", pm.pod_name.as_str());
+	push_if_present("k8s.namespace.name", pm.pod_namespace.as_str());
+	push_if_present("k8s.node.name", pm.node_name.as_str());
+	// `INSTANCE_IP` defaults to "1.1.1.1" when unset, avoid exporting placeholder values.
+	if !pm.instance_ip.is_empty() && pm.instance_ip != "1.1.1.1" {
+		attrs.push(KeyValue::new("k8s.pod.ip", pm.instance_ip.clone()));
+	}
+	// `node_id` is derived from pod name/namespace, only set if we have those set
+	if !pm.node_id.is_empty() && !pm.pod_name.is_empty() && !pm.pod_namespace.is_empty() {
+		attrs.push(KeyValue::new("service.instance.id", pm.node_id.clone()));
+	}
 	if let Some(host) = cfg.self_addr.as_deref()
 		&& !host.is_empty()
 	{

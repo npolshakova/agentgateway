@@ -64,7 +64,7 @@ pub struct FrontendPolices {
 	pub tls: Option<frontend::TLS>,
 	pub tcp: Option<frontend::TCP>,
 	pub access_log: Option<frontend::LoggingPolicy>,
-	pub tracing: Option<Box<crate::types::agent::TracingPolicy>>,
+	pub tracing: Option<Arc<crate::types::agent::TracingPolicy>>,
 }
 
 impl FrontendPolices {
