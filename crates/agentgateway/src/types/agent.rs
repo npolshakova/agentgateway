@@ -481,16 +481,6 @@ impl RouteName {
 			kind: self.kind.as_deref(),
 		}
 	}
-	/// Like [`RouteName::as_route_rule_target_ref`], but intentionally ignores `kind`.
-	/// This is used as a compatibility fallback for configs that didn't specify a kind.
-	pub fn as_route_rule_target_ref_without_kind(&self) -> PolicyTargetRef {
-		PolicyTargetRef::Route {
-			name: self.name.as_ref(),
-			namespace: self.namespace.as_ref(),
-			rule_name: self.rule_name.as_deref(),
-			kind: None,
-		}
-	}
 }
 
 #[apply(schema!)]

@@ -347,9 +347,6 @@ impl Store {
 		let route_rule_rules = self
 			.policies_by_target
 			.get(&route_ref.as_route_rule_target_ref());
-		let route_rule_rules_no_kind = self
-			.policies_by_target
-			.get(&route_ref.as_route_rule_target_ref_without_kind());
 		let route_rules = self
 			.policies_by_target
 			.get(&route_ref.as_route_target_ref());
@@ -360,7 +357,6 @@ impl Store {
 			.iter()
 			.copied()
 			.flatten()
-			.chain(route_rule_rules_no_kind.iter().copied().flatten())
 			.chain(route_rules.iter().copied().flatten())
 			.chain(route_rules_no_kind.iter().copied().flatten())
 			.chain(listener_rules.iter().copied().flatten())
@@ -560,11 +556,6 @@ impl Store {
 			sub_backend.and_then(|t| self.policies_by_target.get(&PolicyTargetRef::Backend(t)));
 		let route_rule_rules =
 			route.and_then(|t| self.policies_by_target.get(&t.as_route_rule_target_ref()));
-		let route_rule_rules_no_kind = route.and_then(|t| {
-			self
-				.policies_by_target
-				.get(&t.as_route_rule_target_ref_without_kind())
-		});
 		let route_rules = route.and_then(|t| self.policies_by_target.get(&t.as_route_target_ref()));
 		let route_rules_no_kind = route.and_then(|t| {
 			self
@@ -582,7 +573,6 @@ impl Store {
 			.iter()
 			.copied()
 			.flatten()
-			.chain(route_rule_rules_no_kind.iter().copied().flatten())
 			.chain(sub_backend_rules.iter().copied().flatten())
 			.chain(route_rules.iter().copied().flatten())
 			.chain(route_rules_no_kind.iter().copied().flatten())
@@ -1196,4 +1186,121 @@ fn preload_tokenizers() {
 			info!("tokenizers loaded in {}ms", t0.elapsed().as_millis());
 		});
 	});
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use std::time::Duration;
+
+	fn listener() -> ListenerName {
+		ListenerName {
+			gateway_name: strng::literal!("gw"),
+			gateway_namespace: strng::literal!("ns"),
+			listener_name: strng::literal!("listener"),
+			listener_set: None,
+		}
+	}
+
+	fn route(name: &'static str, namespace: &'static str, kind: Option<&'static str>) -> RouteName {
+		RouteName {
+			name: strng::new(name),
+			namespace: strng::new(namespace),
+			rule_name: None,
+			kind: kind.map(strng::new),
+		}
+	}
+
+	fn insert_route_timeout_policy(
+		store: &mut Store,
+		key: &str,
+		route_target: RouteName,
+		request_timeout_secs: u64,
+	) -> timeout::Policy {
+		let policy_key: PolicyKey = strng::new(key);
+		let pol = timeout::Policy {
+			request_timeout: Some(Duration::from_secs(request_timeout_secs)),
+			backend_request_timeout: None,
+		};
+		let targeted = TargetedPolicy {
+			key: policy_key.clone(),
+			name: None,
+			target: PolicyTarget::Route(route_target.clone()),
+			policy: TrafficPolicy::Timeout(pol.clone()).into(),
+		};
+
+		store
+			.policies_by_key
+			.insert(policy_key.clone(), Arc::new(targeted));
+		store
+			.policies_by_target
+			.entry(PolicyTarget::Route(route_target))
+			.or_default()
+			.insert(policy_key);
+
+		pol
+	}
+
+	#[test]
+	fn route_policies_are_kind_scoped() {
+		let mut store = Store::new();
+		let listener = listener();
+
+		let http_route = route("r", "ns", Some("HTTPRoute"));
+		let grpc_route = route("r", "ns", Some("GRPCRoute"));
+
+		let http_timeout = insert_route_timeout_policy(&mut store, "p-http", http_route.clone(), 1);
+		let grpc_timeout = insert_route_timeout_policy(&mut store, "p-grpc", grpc_route.clone(), 2);
+
+		let http_pols = store.route_policies(
+			&RoutePath {
+				listener: &listener,
+				route: &http_route,
+			},
+			&[],
+		);
+		assert_eq!(http_pols.timeout, Some(http_timeout));
+
+		let grpc_pols = store.route_policies(
+			&RoutePath {
+				listener: &listener,
+				route: &grpc_route,
+			},
+			&[],
+		);
+		assert_eq!(grpc_pols.timeout, Some(grpc_timeout));
+	}
+
+	#[test]
+	fn route_policies_without_kind_are_backward_compatible() {
+		let mut store = Store::new();
+		let listener = listener();
+
+		// Legacy policy target: kind omitted.
+		let legacy_target = route("r", "ns", None);
+		let legacy_timeout =
+			insert_route_timeout_policy(&mut store, "p-legacy", legacy_target.clone(), 3);
+
+		// Old behavior: route with kind omitted matches the policy with kind omitted.
+		let no_kind_route = route("r", "ns", None);
+		let pols_no_kind = store.route_policies(
+			&RoutePath {
+				listener: &listener,
+				route: &no_kind_route,
+			},
+			&[],
+		);
+		assert_eq!(pols_no_kind.timeout, Some(legacy_timeout.clone()));
+
+		// Compatibility fallback: route has kind, but legacy policy target didn't.
+		let kind_route = route("r", "ns", Some("HTTPRoute"));
+		let pols_kind = store.route_policies(
+			&RoutePath {
+				listener: &listener,
+				route: &kind_route,
+			},
+			&[],
+		);
+		assert_eq!(pols_kind.timeout, Some(legacy_timeout));
+	}
 }
