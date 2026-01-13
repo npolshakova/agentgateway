@@ -1704,7 +1704,7 @@ impl TryFrom<&proto::agent::PolicyTarget> for PolicyTarget {
 				name: strng::new(&r.name),
 				namespace: strng::new(&r.namespace),
 				rule_name: r.route_rule.as_ref().map(Into::into),
-				kind: None,
+				kind: (!r.kind.is_empty()).then(|| strng::new(&r.kind)),
 			})),
 			Some(tgt::Kind::Backend(b)) => Ok(PolicyTarget::Backend(BackendTarget::Backend {
 				name: strng::new(&b.name),

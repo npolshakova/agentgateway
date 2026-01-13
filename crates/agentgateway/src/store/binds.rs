@@ -334,24 +334,38 @@ impl Store {
 	}
 
 	pub fn route_policies(&self, path: &RoutePath<'_>, inline: &[TrafficPolicy]) -> RoutePolicies {
-		let &RoutePath { listener, route } = path;
-		let gateway = self
+		let &RoutePath {
+			listener,
+			route: route_ref,
+		} = path;
+		let gateway_rules = self
 			.policies_by_target
 			.get(&listener.as_gateway_target_ref());
-		let listener = self
+		let listener_rules = self
 			.policies_by_target
 			.get(&listener.as_listener_target_ref());
-		let route_rule = self
+		let route_rule_rules = self
 			.policies_by_target
-			.get(&route.as_route_rule_target_ref());
-		let route = self.policies_by_target.get(&route.as_route_target_ref());
-		let rules = route_rule
+			.get(&route_ref.as_route_rule_target_ref());
+		let route_rule_rules_no_kind = self
+			.policies_by_target
+			.get(&route_ref.as_route_rule_target_ref_without_kind());
+		let route_rules = self
+			.policies_by_target
+			.get(&route_ref.as_route_target_ref());
+		let route_rules_no_kind = self
+			.policies_by_target
+			.get(&route_ref.as_route_target_ref_without_kind());
+		let rules = route_rule_rules
 			.iter()
 			.copied()
 			.flatten()
-			.chain(route.iter().copied().flatten())
-			.chain(listener.iter().copied().flatten())
-			.chain(gateway.iter().copied().flatten())
+			.chain(route_rule_rules_no_kind.iter().copied().flatten())
+			.chain(route_rules.iter().copied().flatten())
+			.chain(route_rules_no_kind.iter().copied().flatten())
+			.chain(listener_rules.iter().copied().flatten())
+			.chain(gateway_rules.iter().copied().flatten())
+			.unique()
 			.filter_map(|n| self.policies_by_key.get(n))
 			.filter_map(|p| p.policy.as_traffic_route_phase());
 		let rules = inline.iter().chain(rules);
@@ -546,7 +560,17 @@ impl Store {
 			sub_backend.and_then(|t| self.policies_by_target.get(&PolicyTargetRef::Backend(t)));
 		let route_rule_rules =
 			route.and_then(|t| self.policies_by_target.get(&t.as_route_rule_target_ref()));
+		let route_rule_rules_no_kind = route.and_then(|t| {
+			self
+				.policies_by_target
+				.get(&t.as_route_rule_target_ref_without_kind())
+		});
 		let route_rules = route.and_then(|t| self.policies_by_target.get(&t.as_route_target_ref()));
+		let route_rules_no_kind = route.and_then(|t| {
+			self
+				.policies_by_target
+				.get(&t.as_route_target_ref_without_kind())
+		});
 		let listener_rules =
 			gateway.and_then(|t| self.policies_by_target.get(&t.as_listener_target_ref()));
 		let gateway_rules =
@@ -558,11 +582,14 @@ impl Store {
 			.iter()
 			.copied()
 			.flatten()
+			.chain(route_rule_rules_no_kind.iter().copied().flatten())
 			.chain(sub_backend_rules.iter().copied().flatten())
 			.chain(route_rules.iter().copied().flatten())
+			.chain(route_rules_no_kind.iter().copied().flatten())
 			.chain(backend_rules.iter().copied().flatten())
 			.chain(listener_rules.iter().copied().flatten())
 			.chain(gateway_rules.iter().copied().flatten())
+			.unique()
 			.filter_map(|n| self.policies_by_key.get(n))
 			.filter_map(|p| p.policy.as_backend());
 		let rules = inline_policies

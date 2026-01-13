@@ -461,6 +461,16 @@ impl RouteName {
 			name: self.name.as_ref(),
 			namespace: self.namespace.as_ref(),
 			rule_name: None,
+			kind: self.kind.as_deref(),
+		}
+	}
+	/// compatibility fallback for configs that didn't specify a kind.
+	pub fn as_route_target_ref_without_kind(&self) -> PolicyTargetRef {
+		PolicyTargetRef::Route {
+			name: self.name.as_ref(),
+			namespace: self.namespace.as_ref(),
+			rule_name: None,
+			kind: None,
 		}
 	}
 	pub fn as_route_rule_target_ref(&self) -> PolicyTargetRef {
@@ -468,6 +478,17 @@ impl RouteName {
 			name: self.name.as_ref(),
 			namespace: self.namespace.as_ref(),
 			rule_name: self.rule_name.as_deref(),
+			kind: self.kind.as_deref(),
+		}
+	}
+	/// Like [`RouteName::as_route_rule_target_ref`], but intentionally ignores `kind`.
+	/// This is used as a compatibility fallback for configs that didn't specify a kind.
+	pub fn as_route_rule_target_ref_without_kind(&self) -> PolicyTargetRef {
+		PolicyTargetRef::Route {
+			name: self.name.as_ref(),
+			namespace: self.namespace.as_ref(),
+			rule_name: self.rule_name.as_deref(),
+			kind: None,
 		}
 	}
 }
@@ -1839,6 +1860,7 @@ pub enum PolicyTargetRef<'a> {
 		name: &'a str,
 		namespace: &'a str,
 		rule_name: Option<&'a str>,
+		kind: Option<&'a str>,
 	},
 	Backend(BackendTargetRef<'a>),
 }
@@ -1855,6 +1877,7 @@ impl<'a> From<&'a PolicyTarget> for PolicyTargetRef<'a> {
 				name: &v.name,
 				namespace: v.namespace.as_ref(),
 				rule_name: v.rule_name.as_deref(),
+				kind: v.kind.as_deref(),
 			},
 			PolicyTarget::Backend(v) => PolicyTargetRef::Backend(v.into()),
 		}
