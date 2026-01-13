@@ -448,6 +448,8 @@ pub struct RouteName {
 	pub namespace: Strng,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub rule_name: Option<Strng>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub kind: Option<Strng>,
 }
 
 impl RouteName {

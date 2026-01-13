@@ -563,13 +563,32 @@ impl TryFrom<&proto::agent::Route> for (Route, ListenerKey) {
 	type Error = ProtoError;
 
 	fn try_from(s: &proto::agent::Route) -> Result<Self, Self::Error> {
+		fn route_kind_from_key<'a>(key: &'a str, namespace: &str, name: &str) -> Option<&'a str> {
+			let segs: Vec<&str> = key.split('/').filter(|s| !s.is_empty()).collect();
+			if segs.len() < 3 {
+				return None;
+			}
+			for i in 1..segs.len() - 1 {
+				if segs[i] == namespace && segs[i + 1] == name {
+					return Some(segs[i - 1]);
+				}
+			}
+			None
+		}
+
+		let mut name: RouteName = s
+			.name
+			.as_ref()
+			.ok_or(ProtoError::MissingRequiredField)?
+			.into();
+		if name.kind.is_none()
+			&& let Some(kind) = route_kind_from_key(&s.key, name.namespace.as_str(), name.name.as_str())
+		{
+			name.kind = Some(strng::new(kind));
+		}
 		let r = Route {
 			key: strng::new(&s.key),
-			name: s
-				.name
-				.as_ref()
-				.ok_or(ProtoError::MissingRequiredField)?
-				.into(),
+			name,
 			hostnames: s.hostnames.iter().map(strng::new).collect(),
 			matches: s
 				.matches
@@ -1685,6 +1704,7 @@ impl TryFrom<&proto::agent::PolicyTarget> for PolicyTarget {
 				name: strng::new(&r.name),
 				namespace: strng::new(&r.namespace),
 				rule_name: r.route_rule.as_ref().map(Into::into),
+				kind: None,
 			})),
 			Some(tgt::Kind::Backend(b)) => Ok(PolicyTarget::Backend(BackendTarget::Backend {
 				name: strng::new(&b.name),
@@ -1754,6 +1774,7 @@ impl From<&proto::agent::RouteName> for RouteName {
 			name: strng::new(&value.name),
 			namespace: strng::new(&value.namespace),
 			rule_name: value.rule_name.as_ref().map(Into::into),
+			kind: (!value.kind.is_empty()).then(|| strng::new(&value.kind)),
 		}
 	}
 }
