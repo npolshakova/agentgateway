@@ -464,15 +464,6 @@ impl RouteName {
 			kind: self.kind.as_deref(),
 		}
 	}
-	/// compatibility fallback for configs that didn't specify a kind.
-	pub fn as_route_target_ref_without_kind(&self) -> PolicyTargetRef {
-		PolicyTargetRef::Route {
-			name: self.name.as_ref(),
-			namespace: self.namespace.as_ref(),
-			rule_name: None,
-			kind: None,
-		}
-	}
 	pub fn as_route_rule_target_ref(&self) -> PolicyTargetRef {
 		PolicyTargetRef::Route {
 			name: self.name.as_ref(),

@@ -334,34 +334,24 @@ impl Store {
 	}
 
 	pub fn route_policies(&self, path: &RoutePath<'_>, inline: &[TrafficPolicy]) -> RoutePolicies {
-		let &RoutePath {
-			listener,
-			route: route_ref,
-		} = path;
-		let gateway_rules = self
+		let &RoutePath { listener, route } = path;
+		let gateway = self
 			.policies_by_target
 			.get(&listener.as_gateway_target_ref());
-		let listener_rules = self
+		let listener = self
 			.policies_by_target
 			.get(&listener.as_listener_target_ref());
-		let route_rule_rules = self
+		let route_rule = self
 			.policies_by_target
-			.get(&route_ref.as_route_rule_target_ref());
-		let route_rules = self
-			.policies_by_target
-			.get(&route_ref.as_route_target_ref());
-		let route_rules_no_kind = self
-			.policies_by_target
-			.get(&route_ref.as_route_target_ref_without_kind());
-		let rules = route_rule_rules
+			.get(&route.as_route_rule_target_ref());
+		let route = self.policies_by_target.get(&route.as_route_target_ref());
+		let rules = route_rule
 			.iter()
 			.copied()
 			.flatten()
-			.chain(route_rules.iter().copied().flatten())
-			.chain(route_rules_no_kind.iter().copied().flatten())
-			.chain(listener_rules.iter().copied().flatten())
-			.chain(gateway_rules.iter().copied().flatten())
-			.unique()
+			.chain(route.iter().copied().flatten())
+			.chain(listener.iter().copied().flatten())
+			.chain(gateway.iter().copied().flatten())
 			.filter_map(|n| self.policies_by_key.get(n))
 			.filter_map(|p| p.policy.as_traffic_route_phase());
 		let rules = inline.iter().chain(rules);
@@ -557,11 +547,6 @@ impl Store {
 		let route_rule_rules =
 			route.and_then(|t| self.policies_by_target.get(&t.as_route_rule_target_ref()));
 		let route_rules = route.and_then(|t| self.policies_by_target.get(&t.as_route_target_ref()));
-		let route_rules_no_kind = route.and_then(|t| {
-			self
-				.policies_by_target
-				.get(&t.as_route_target_ref_without_kind())
-		});
 		let listener_rules =
 			gateway.and_then(|t| self.policies_by_target.get(&t.as_listener_target_ref()));
 		let gateway_rules =
@@ -575,7 +560,6 @@ impl Store {
 			.flatten()
 			.chain(sub_backend_rules.iter().copied().flatten())
 			.chain(route_rules.iter().copied().flatten())
-			.chain(route_rules_no_kind.iter().copied().flatten())
 			.chain(backend_rules.iter().copied().flatten())
 			.chain(listener_rules.iter().copied().flatten())
 			.chain(gateway_rules.iter().copied().flatten())
@@ -1269,38 +1253,5 @@ mod tests {
 			&[],
 		);
 		assert_eq!(grpc_pols.timeout, Some(grpc_timeout));
-	}
-
-	#[test]
-	fn route_policies_without_kind_are_backward_compatible() {
-		let mut store = Store::new();
-		let listener = listener();
-
-		// Legacy policy target: kind omitted.
-		let legacy_target = route("r", "ns", None);
-		let legacy_timeout =
-			insert_route_timeout_policy(&mut store, "p-legacy", legacy_target.clone(), 3);
-
-		// Old behavior: route with kind omitted matches the policy with kind omitted.
-		let no_kind_route = route("r", "ns", None);
-		let pols_no_kind = store.route_policies(
-			&RoutePath {
-				listener: &listener,
-				route: &no_kind_route,
-			},
-			&[],
-		);
-		assert_eq!(pols_no_kind.timeout, Some(legacy_timeout.clone()));
-
-		// Compatibility fallback: route has kind, but legacy policy target didn't.
-		let kind_route = route("r", "ns", Some("HTTPRoute"));
-		let pols_kind = store.route_policies(
-			&RoutePath {
-				listener: &listener,
-				route: &kind_route,
-			},
-			&[],
-		);
-		assert_eq!(pols_kind.timeout, Some(legacy_timeout));
 	}
 }
