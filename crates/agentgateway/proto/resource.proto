@@ -722,6 +722,11 @@ message TrafficPolicySpec {
 
     map<string, string> request_attributes = 3;
     map<string, string> response_attributes = 4;
+
+    message NamespacedMetadataContext {
+      map<string, string> context = 1;
+    }
+    map<string, NamespacedMetadataContext> metadata_context = 5;
   }
   enum PolicyPhase {
     ROUTE = 0;
