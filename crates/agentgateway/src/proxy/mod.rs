@@ -6,6 +6,8 @@ pub mod tcpproxy;
 
 pub use gateway::Gateway;
 use hyper_util_fork::client::legacy::Error as HyperError;
+use rmcp::ErrorData;
+use rmcp::model::{ErrorCode, JsonRpcError};
 
 use crate::http::{HeaderValue, Response, StatusCode, ext_proc};
 use crate::types::agent::{
@@ -42,12 +44,16 @@ impl ProxyResponse {
 			| ProxyError::InvalidRequest
 			| ProxyError::ProcessingString(_)
 			| ProxyError::Processing(_)
+			| ProxyError::Body(_)
+			| ProxyError::Http(_)
 			| ProxyError::BackendUnsupportedMirror
 			| ProxyError::FilterError(_) => ProxyResponseReason::Internal,
 			ProxyError::JwtAuthenticationFailure(_) => ProxyResponseReason::JwtAuth,
+			ProxyError::McpJwtAuthenticationFailure(_, _) => ProxyResponseReason::JwtAuth,
 			ProxyError::BasicAuthenticationFailure(_) => ProxyResponseReason::BasicAuth,
 			ProxyError::APIKeyAuthenticationFailure(_) => ProxyResponseReason::APIKeyAuth,
 			ProxyError::ExternalAuthorizationFailed(_) => ProxyResponseReason::ExtAuth,
+			ProxyError::MCP(_) => ProxyResponseReason::MCP,
 			ProxyError::AuthorizationFailed | ProxyError::CsrfValidationFailed => {
 				ProxyResponseReason::Authorization
 			},
@@ -100,6 +106,8 @@ pub enum ProxyResponseReason {
 	ExtProc,
 	/// Rate limit exceeded
 	RateLimit,
+	/// MCP
+	MCP,
 	/// The upstream request failed
 	UpstreamFailure,
 }
@@ -132,6 +140,8 @@ pub enum ProxyError {
 	BackendUnsupportedMirror,
 	#[error("authentication failure: {0}")]
 	JwtAuthenticationFailure(http::jwt::TokenError),
+	#[error("mcp authentication failure: {0}")]
+	McpJwtAuthenticationFailure(Box<ProxyError>, String),
 	#[error("basic authentication failure: {0}")]
 	BasicAuthenticationFailure(http::basicauth::Error),
 	#[error("api key authentication failure: {0}")]
@@ -150,6 +160,8 @@ pub enum ProxyError {
 	AuthorizationFailed,
 	#[error("backend authentication failed: {0}")]
 	BackendAuthenticationFailed(anyhow::Error),
+	#[error("parsing body: {0}")]
+	Body(http::Error),
 	#[error("upstream call failed: {0}")]
 	UpstreamCallFailed(HyperError),
 	#[error("upstream call timeout")]
@@ -162,6 +174,8 @@ pub enum ProxyError {
 	RequestTimeout,
 	#[error("processing failed: {0}")]
 	Processing(anyhow::Error),
+	#[error("invalid http: {0}")]
+	Http(#[from] ::http::Error),
 	#[error("ext_proc failed: {0}")]
 	ExtProc(#[from] ext_proc::Error),
 	#[error("processing failed: {0}")]
@@ -178,6 +192,8 @@ pub enum ProxyError {
 	InvalidRequest,
 	#[error("request upgrade failed, backend tried {1:?} but {0:?} was requested")]
 	UpgradeFailed(Option<HeaderValue>, Option<HeaderValue>),
+	#[error("mcp: {0}")]
+	MCP(mcp::Error),
 }
 
 impl ProxyError {
@@ -214,6 +230,7 @@ impl ProxyError {
 			ProxyError::JwtAuthenticationFailure(_) => StatusCode::UNAUTHORIZED,
 			ProxyError::BasicAuthenticationFailure(_) => StatusCode::UNAUTHORIZED,
 			ProxyError::APIKeyAuthenticationFailure(_) => StatusCode::UNAUTHORIZED,
+			ProxyError::McpJwtAuthenticationFailure(_, _) => StatusCode::UNAUTHORIZED,
 			ProxyError::AuthorizationFailed => StatusCode::FORBIDDEN,
 			ProxyError::ExternalAuthorizationFailed(status) => status.unwrap_or(StatusCode::FORBIDDEN),
 
@@ -224,6 +241,8 @@ impl ProxyError {
 
 			ProxyError::RequestTimeout => StatusCode::GATEWAY_TIMEOUT,
 			ProxyError::Processing(_) => StatusCode::SERVICE_UNAVAILABLE,
+			ProxyError::Http(_) => StatusCode::SERVICE_UNAVAILABLE,
+			ProxyError::Body(_) => StatusCode::SERVICE_UNAVAILABLE,
 			ProxyError::ProcessingString(_) => StatusCode::SERVICE_UNAVAILABLE,
 			ProxyError::RateLimitExceeded { .. } => StatusCode::TOO_MANY_REQUESTS,
 			ProxyError::RateLimitFailed => StatusCode::TOO_MANY_REQUESTS,
@@ -231,11 +250,26 @@ impl ProxyError {
 			// Shouldn't happen on this path
 			ProxyError::UpstreamTCPCallFailed(_) => StatusCode::INTERNAL_SERVER_ERROR,
 			ProxyError::UpstreamTCPProxy(_) => StatusCode::INTERNAL_SERVER_ERROR,
+			ProxyError::MCP(mcp::Error::MethodNotAllowed) => StatusCode::METHOD_NOT_ALLOWED,
+			ProxyError::MCP(mcp::Error::InvalidAccept) => StatusCode::NOT_ACCEPTABLE,
+			ProxyError::MCP(mcp::Error::InvalidContentType) => StatusCode::UNSUPPORTED_MEDIA_TYPE,
+			ProxyError::MCP(mcp::Error::Deserialize(_)) => StatusCode::BAD_REQUEST,
+			ProxyError::MCP(mcp::Error::StartSession(_)) => StatusCode::INTERNAL_SERVER_ERROR,
+			ProxyError::MCP(mcp::Error::UnknownSession) => StatusCode::NOT_FOUND,
+			ProxyError::MCP(mcp::Error::MissingSessionHeader) => StatusCode::UNPROCESSABLE_ENTITY,
+			ProxyError::MCP(mcp::Error::SessionIdRequired) => StatusCode::UNPROCESSABLE_ENTITY,
+			ProxyError::MCP(mcp::Error::InvalidSessionIdQuery) => StatusCode::UNPROCESSABLE_ENTITY,
+			ProxyError::MCP(mcp::Error::InvalidSessionIdHeader) => StatusCode::BAD_REQUEST,
+			ProxyError::MCP(mcp::Error::CreateSseUrl(_)) => StatusCode::BAD_REQUEST,
+			ProxyError::MCP(mcp::Error::EstablishGetStream(_)) => StatusCode::INTERNAL_SERVER_ERROR,
+			ProxyError::MCP(mcp::Error::ForwardLegacySse(_)) => StatusCode::INTERNAL_SERVER_ERROR,
+			ProxyError::MCP(mcp::Error::UpstreamError(ref e)) => e.0.status(),
+			ProxyError::MCP(mcp::Error::SendError(_, _)) => StatusCode::INTERNAL_SERVER_ERROR,
+			// Note: we do not return a 401/403 here, as the obscure that it was rejected due to auth
+			ProxyError::MCP(mcp::Error::Authorization(_, _, _)) => StatusCode::INTERNAL_SERVER_ERROR,
 		};
 		let msg = self.to_string();
-		let mut rb = ::http::Response::builder()
-			.status(code)
-			.header(hyper::header::CONTENT_TYPE, "text/plain");
+		let mut rb = ::http::Response::builder().status(code);
 
 		// Apply per-error headers
 		if let ProxyError::RateLimitExceeded {
@@ -267,7 +301,59 @@ impl ProxyError {
 			}
 		}
 
-		rb.body(http::Body::from(msg)).unwrap()
+		// Add WWW-Authenticate header for MCP failures
+		if let ProxyError::McpJwtAuthenticationFailure(_, www) = &self {
+			if let Ok(hv) = HeaderValue::try_from(www) {
+				rb = rb.header(hyper::header::WWW_AUTHENTICATE, hv);
+			}
+			rb = rb.header("content-type", "application/json");
+			return rb
+				.body(http::Body::from(Bytes::from(
+					r#"{"error":"unauthorized","error_description":"JWT token required"}"#,
+				)))
+				.unwrap();
+		}
+		if let ProxyError::MCP(ref e @ mcp::Error::SendError(ref id, _)) = self {
+			let err = if let Some(req_id) = id {
+				serde_json::to_string(&JsonRpcError {
+					jsonrpc: Default::default(),
+					id: req_id.clone(),
+					error: ErrorData {
+						code: ErrorCode::INTERNAL_ERROR,
+						message: format!("failed to send message: {e}",).into(),
+						data: None,
+					},
+				})
+				.ok()
+			} else {
+				None
+			};
+			let msg = err.unwrap_or_else(|| format!("failed to send message: {e}"));
+			return rb
+				.header("content-type", "application/json")
+				.body(http::Body::from(msg))
+				.unwrap();
+		}
+		if let ProxyError::MCP(ref e @ mcp::Error::Authorization(ref req_id, _, _)) = self {
+			let msg = serde_json::to_string(&JsonRpcError {
+				jsonrpc: Default::default(),
+				id: req_id.clone(),
+				error: ErrorData {
+					code: ErrorCode::INVALID_PARAMS,
+					message: e.to_string().into(),
+					data: None,
+				},
+			})
+			.unwrap_or_default();
+			return rb
+				.header("content-type", "application/json")
+				.body(http::Body::from(msg))
+				.unwrap();
+		}
+
+		rb.header(hyper::header::CONTENT_TYPE, "text/plain")
+			.body(http::Body::from(msg))
+			.unwrap()
 	}
 }
 
