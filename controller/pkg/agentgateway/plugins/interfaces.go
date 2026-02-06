@@ -12,20 +12,25 @@ import (
 
 	"github.com/agentgateway/agentgateway/api"
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/ir"
+	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/utils"
 	"github.com/agentgateway/agentgateway/controller/pkg/apiclient"
 )
 
 // AgwResourceStatusSyncHandler defines a function that handles status syncing for a specific resource type in AgentGateway
 type AgwResourceStatusSyncHandler func(ctx context.Context, client apiclient.Client, namespacedName types.NamespacedName, status any) error
 
+type PolicyPluginInput struct {
+	Ancestors krt.IndexCollection[utils.TypedNamespacedName, *utils.AncestorBackend]
+}
+
 type PolicyPlugin struct {
-	Policies       krt.Collection[AgwPolicy]
-	PolicyStatuses krt.StatusCollection[controllers.Object, gwv1.PolicyStatus]
+	Build func(PolicyPluginInput) (krt.StatusCollection[controllers.Object, gwv1.PolicyStatus], krt.Collection[AgwPolicy])
 }
 
 // ApplyPolicies extracts all policies from the collection
-func (p *PolicyPlugin) ApplyPolicies() (krt.Collection[AgwPolicy], krt.StatusCollection[controllers.Object, gwv1.PolicyStatus]) {
-	return p.Policies, p.PolicyStatuses
+func (p *PolicyPlugin) ApplyPolicies(inputs PolicyPluginInput) (krt.Collection[AgwPolicy], krt.StatusCollection[controllers.Object, gwv1.PolicyStatus]) {
+	status, col := p.Build(inputs)
+	return col, status
 }
 
 // AgwPolicy wraps an Agw policy for collection handling

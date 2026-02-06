@@ -21,7 +21,7 @@ func TestZeroDowntimeRolloutAgentgateway(t *testing.T) {
 		t,
 		&install.Context{
 			InstallNamespace:          installNs,
-			ProfileValuesManifestFile: e2e.CommonRecommendationManifest,
+			ProfileValuesManifestFile: e2e.EmptyValuesManifestPath,
 			ChartType:                 "agentgateway",
 			ValuesManifestFile:        e2e.ManifestPath("agent-gateway-integration.yaml"),
 		},

@@ -86,7 +86,6 @@ DEPSGOBIN ?= $(OUTPUT_DIR)
 ANALYZE_ARGS ?= --fix --verbose --max-issues-per-linter 0 --max-same-issues 0
 CUSTOM_GOLANGCI_LINT_BIN ?= $(DEPSGOBIN)/golangci-lint-custom
 CUSTOM_GOLANGCI_LINT_RUN ?= $(CUSTOM_GOLANGCI_LINT_BIN) run --build-tags e2e
-CUSTOM_GOLANGCI_LINT_FMT ?= $(GOLANGCI_LINT) fmt
 
 #----------------------------------------------------------------------------------
 # Macros
@@ -106,7 +105,7 @@ init-git-hooks:  ## Use the tracked version of Git hooks from this repo
 
 .PHONY: fmt
 fmt:  ## Format the code with golangci-lint
-	$(CUSTOM_GOLANGCI_LINT_FMT) ./...
+	golangci-lint fmt ./...
 
 .PHONY: fmt-changed
 fmt-changed: ## Format only the changed code with golangci-lint (skip deleted files)

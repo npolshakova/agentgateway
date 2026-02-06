@@ -3,10 +3,12 @@ package plugins
 import (
 	"strconv"
 
+	"istio.io/istio/pkg/kube/controllers"
 	"istio.io/istio/pkg/kube/krt"
 	"istio.io/istio/pkg/ptr"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	inf "sigs.k8s.io/gateway-api-inference-extension/api/v1"
+	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/agentgateway/agentgateway/api"
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/utils"
@@ -22,11 +24,10 @@ func NewInferencePlugin(agw *AgwCollections) AgwPlugin {
 	return AgwPlugin{
 		ContributesPolicies: map[schema.GroupKind]PolicyPlugin{
 			wellknown.InferencePoolGVK.GroupKind(): {
-				Policies: policyCol,
+				Build: func(input PolicyPluginInput) (krt.StatusCollection[controllers.Object, gwv1.PolicyStatus], krt.Collection[AgwPolicy]) {
+					return nil, policyCol
+				},
 			},
-		},
-		ExtraHasSynced: func() bool {
-			return policyCol.HasSynced()
 		},
 	}
 }

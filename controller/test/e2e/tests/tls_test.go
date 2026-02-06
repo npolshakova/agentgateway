@@ -26,7 +26,7 @@ func TestControlPlaneTLS(t *testing.T) {
 		t,
 		&install.Context{
 			InstallNamespace:          installNs,
-			ProfileValuesManifestFile: e2e.CommonRecommendationManifest,
+			ProfileValuesManifestFile: e2e.EmptyValuesManifestPath,
 			ValuesManifestFile:        e2e.ControlPlaneTLSManifestPath,
 			ExtraHelmArgs: []string{
 				"--set", "controller.extraEnv.KGW_GLOBAL_POLICY_NAMESPACE=" + installNs,

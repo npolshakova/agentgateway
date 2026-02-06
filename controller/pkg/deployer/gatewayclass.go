@@ -44,13 +44,6 @@ func GetCommonExemptFeatures() sets.Set[features.Feature] {
 	for _, feature := range features.MeshExtendedFeatures.UnsortedList() {
 		exemptFeatures.Insert(feature)
 	}
-	// we don't support the BackendTLSPolicy feature at all.
-	for _, feature := range features.BackendTLSPolicyCoreFeatures.UnsortedList() {
-		exemptFeatures.Insert(feature)
-	}
-	for _, feature := range features.BackendTLSPolicyExtendedFeatures.UnsortedList() {
-		exemptFeatures.Insert(feature)
-	}
 	return exemptFeatures
 }
 
