@@ -27,7 +27,6 @@ import (
 	agwir "github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/ir"
 	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/agentgatewaysyncer/status"
 	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/wellknown"
-	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/ir"
 	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/krtutil"
 	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/reporter"
 	"github.com/kgateway-dev/kgateway/v2/pkg/reports"
@@ -176,7 +175,7 @@ func ProcessParentReferences[T any](
 	}
 
 	// If conversion (backend/filter resolution) failed, ResolvedRefs=False for all parents.
-	resolvedOK := (gwResult.Error == nil)
+	resolvedOK := gwResult.Error == nil
 
 	// Consider each raw parentRef (listener-scoped) for mapping.
 	for _, parent := range parentRefs {
@@ -514,8 +513,6 @@ func computeRoute[T controllers.Object, O comparable](ctx RouteContext, obj T, t
 type RouteContext struct {
 	Krt krt.HandlerContext
 	RouteContextInputs
-	AttachedPolicies ir.AttachedPolicies
-	pluginPasses     []agwir.AgwTranslationPass
 }
 
 // RouteContextInputs defines the collections needed to translate a route.

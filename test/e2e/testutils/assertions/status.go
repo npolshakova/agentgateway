@@ -18,7 +18,6 @@ import (
 	gwxv1a1 "sigs.k8s.io/gateway-api/apisx/v1alpha1"
 
 	"github.com/kgateway-dev/kgateway/v2/api/v1alpha1/agentgateway"
-	"github.com/kgateway-dev/kgateway/v2/api/v1alpha1/kgateway"
 	"github.com/kgateway-dev/kgateway/v2/test/gomega/matchers"
 	"github.com/kgateway-dev/kgateway/v2/test/helpers"
 )
@@ -388,53 +387,6 @@ func getListenerStatus(listeners []gwv1.ListenerStatus, name string) *gwv1.Liste
 		}
 	}
 	return nil
-}
-
-// extractAncestorConditions extracts conditions from policy ancestor statuses.
-func extractAncestorConditions(ancestors []gwv1.PolicyAncestorStatus) [][]metav1.Condition {
-	result := make([][]metav1.Condition, len(ancestors))
-	for i, a := range ancestors {
-		result[i] = a.Conditions
-	}
-	return result
-}
-
-// EventuallyHTTPListenerPolicyCondition checks that provided HTTPListenerPolicy condition is set to expect.
-func (p *Provider) EventuallyHTTPListenerPolicyCondition(
-	ctx context.Context,
-	name string,
-	namespace string,
-	cond gwv1.GatewayConditionType,
-	expect metav1.ConditionStatus,
-	timeout ...time.Duration,
-) {
-	ginkgo.GinkgoHelper()
-	currentTimeout, pollingInterval := helpers.GetTimeouts(timeout...)
-	p.Gomega.Eventually(func(g gomega.Gomega) {
-		hlp := &kgateway.HTTPListenerPolicy{}
-		err := p.clusterContext.Client.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, hlp)
-		g.Expect(err).NotTo(gomega.HaveOccurred(), fmt.Sprintf("failed to get HTTPListenerPolicy %s/%s", namespace, name))
-		g.Expect(extractAncestorConditions(hlp.Status.Ancestors)).To(matchers.HaveAnyAncestorCondition(string(cond), expect))
-	}, currentTimeout, pollingInterval).Should(gomega.Succeed())
-}
-
-// EventuallyBackendCondition checks that provided Backend condition is set to expect.
-func (p *Provider) EventuallyBackendCondition(
-	ctx context.Context,
-	name string,
-	namespace string,
-	condition string,
-	expect metav1.ConditionStatus,
-	timeout ...time.Duration,
-) {
-	ginkgo.GinkgoHelper()
-	currentTimeout, pollingInterval := helpers.GetTimeouts(timeout...)
-	p.Gomega.Eventually(func(g gomega.Gomega) {
-		backend := &kgateway.Backend{}
-		err := p.clusterContext.Client.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, backend)
-		g.Expect(err).NotTo(gomega.HaveOccurred(), fmt.Sprintf("failed to get Backend %s/%s", namespace, name))
-		g.Expect(backend.Status.Conditions).To(matchers.HaveCondition(condition, expect))
-	}, currentTimeout, pollingInterval).Should(gomega.Succeed())
 }
 
 // EventuallyAgwBackendCondition checks that provided AgentgatewayBackend condition is set to expect.

@@ -17,11 +17,7 @@ const (
 
 // getChartLabelSelector returns the appropriate label selector based on the chart type
 func (p *Provider) getChartLabelSelector() string {
-	chartType := p.installContext.GetChartType()
-	if chartType == "agentgateway" {
-		return AgentgatewayLabelSelector
-	}
-	return KgatewayLabelSelector
+	return AgentgatewayLabelSelector
 }
 
 func (p *Provider) EventuallyGatewayInstallSucceeded(ctx context.Context) {

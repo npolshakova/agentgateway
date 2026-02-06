@@ -40,7 +40,7 @@ type agentgatewayBackends struct {
 }
 
 // newAgentgatewayBackends returns a AgentgatewayBackends
-func newAgentgatewayBackends(c *GatewayAgentgatewayClient, namespace string) *agentgatewayBackends {
+func newAgentgatewayBackends(c *AgentgatewayAgentgatewayClient, namespace string) *agentgatewayBackends {
 	return &agentgatewayBackends{
 		gentype.NewClientWithList[*v1alpha1agentgateway.AgentgatewayBackend, *v1alpha1agentgateway.AgentgatewayBackendList](
 			"agentgatewaybackends",

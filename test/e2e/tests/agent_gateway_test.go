@@ -46,11 +46,11 @@ func TestAgentgatewayIntegration(t *testing.T) {
 			testInstallation.PreFailHandler(ctx, t)
 		}
 
-		testInstallation.UninstallKgateway(ctx, t)
+		testInstallation.Uninstall(ctx, t)
 	})
 
 	// Install kgateway
-	testInstallation.InstallKgatewayFromLocalChart(ctx, t)
+	testInstallation.InstallFromLocalChart(ctx, t)
 
 	common.SetupBaseConfig(ctx, t, testInstallation, filepath.Join("manifests", "agent-gateway-base.yaml"))
 	common.SetupBaseGateway(ctx, testInstallation, types.NamespacedName{

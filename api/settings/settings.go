@@ -126,6 +126,22 @@ func (r *GatewayClassParametersRefs) Decode(value string) error {
 	return nil
 }
 
+const (
+	// TLSSecretName is the name of the Kubernetes Secret containing the TLS certificate,
+	// private key, and CA certificate for xDS communication. This secret must exist in the
+	// kgateway installation namespace when TLS is enabled.
+	TLSSecretName = "kgateway-xds-cert" //nolint:gosec // G101: This is a well-known xDS TLS secret name, not a credential
+
+	// TLSCertPath is the path to the TLS certificate
+	TLSCertPath = "/etc/xds-tls/tls.crt"
+
+	// TLSKeyPath is the path to the TLS key
+	TLSKeyPath = "/etc/xds-tls/tls.key"
+
+	// TLSRootCAPath is the path to the TLS root CA
+	TLSRootCAPath = "/etc/xds-tls/ca.crt"
+)
+
 type Settings struct {
 	// Controls the DnsLookupFamily for all static clusters created via Backend resources.
 	// If not set, kgateway will default to "V4_PREFERRED". Note that this is different
@@ -138,9 +154,6 @@ type Settings struct {
 	// Controls the listener bind address. Can be either V4 or V6
 	ListenerBindIpv6 bool `split_words:"true" default:"true"`
 
-	EnableIstioIntegration bool `split_words:"true"`
-	EnableIstioAutoMtls    bool `split_words:"true"`
-
 	// IstioNamespace is the namespace where Istio control plane components are installed.
 	// Defaults to "istio-system".
 	IstioNamespace string `split_words:"true" default:"istio-system"`
@@ -152,7 +165,7 @@ type Settings struct {
 	// XdsServiceName is the name of the Kubernetes Service that serves xDS config.
 	// It is assumed to be in the kgateway install namespace.
 	// Ignored if XdsServiceHost is set.
-	XdsServiceName string `split_words:"true" default:"kgateway"`
+	XdsServiceName string `split_words:"true" default:"agentgateway"`
 
 	// XdsServicePort is the port of the Kubernetes Service that serves xDS config.
 	// This corresponds to the value of the `grpc-xds` port in the service.
@@ -170,72 +183,21 @@ type Settings struct {
 	// This corresponds to the value of the `grpc-xds-agw` port in the service.
 	AgentgatewayXdsServicePort uint32 `split_words:"true" default:"9978"`
 
-	UseRustFormations bool `split_words:"true" default:"true"`
-
 	// EnableInferExt defines whether to enable/disable support for Gateway API inference extension.
 	// If enabled, EnableAgentgateway should also be set to true. Enabling inference extension without agentgateway
 	// is deprecated in v2.1 and will not be supported in v2.2.
 	EnableInferExt bool `split_words:"true"`
 
-	// DefaultImageRegistry is the default image registry to use for the kgateway image.
-	DefaultImageRegistry string `split_words:"true" default:"cr.kgateway.dev"`
-	// DefaultImageTag is the default image tag to use for the kgateway image.
-	DefaultImageTag string `split_words:"true" default:""`
-	// DefaultImagePullPolicy is the default image pull policy to use for the kgateway image.
-	DefaultImagePullPolicy string `split_words:"true" default:"IfNotPresent"`
-
-	// WaypointLocalBinding will make the waypoint bind to a loopback address,
-	// so that only the zTunnel can make connections to it. This requires the zTunnel
-	// shipped with Istio 1.26.0+.
-	WaypointLocalBinding bool `split_words:"true" default:"false"`
-
-	// IngressUseWaypoints enables the waypoint feature for ingress traffic.
-	// When enabled, backends with the ambient.istio.io/redirection=enabled annotation and
-	// istio.io/ingress-use-waypoint=true label will be redirected through a waypoint proxy.
-	// The feature is enabled by default and can be disabled by setting this to false.
-	IngressUseWaypoints bool `split_words:"true" default:"true"`
-
 	// LogLevel specifies the logging level (e.g., "trace", "debug", "info", "warn", "error").
 	// Defaults to "info" if not set.
 	LogLevel string `split_words:"true" default:"info"`
-
-	// JSON representation of list of metav1.LabelSelector to select namespaces considered for resource discovery.
-	// Defaults to an empty list which selects all namespaces.
-	// E.g., [{"matchExpressions":[{"key":"kubernetes.io/metadata.name","operator":"In","values":["infra"]}]},{"matchLabels":{"app":"a"}}]
-	DiscoveryNamespaceSelectors string `split_words:"true" default:"[]"`
-
-	// EnableEnvoy enables kgateway to send config to Envoy
-	EnableEnvoy bool `split_words:"true" default:"true"`
-
-	// EnableAgentgateway enables kgateway to send config to Agentgateway
-	EnableAgentgateway bool `split_words:"true" default:"true"`
-
-	// WeightedRoutePrecedence enables routes with a larger weight to take precedence over routes with a smaller weight.
-	// If two routes have the same weight, Gateway API route precedence rules apply.
-	// When enabled, the default weight for a route is 0.
-	WeightedRoutePrecedence bool `split_words:"true" default:"false"`
-
-	// ValidationMode determines how invalid routes and policies are handled during translation.
-	// If not set, kgateway will default to "STANDARD". Supported values are:
-	// - "STANDARD": Rewrites invalid routes to direct responses (typically HTTP 500)
-	// - "STRICT": Builds on STANDARD by running targeted validation
-	ValidationMode ValidationMode `split_words:"true" default:"STANDARD"`
 
 	// EnableBuiltinDefaultMetrics enables the default builtin controller-runtime metrics and go runtime metrics.
 	// Since these metrics can be numerous, it is disabled by default.
 	EnableBuiltinDefaultMetrics bool `split_words:"true" default:"false"`
 
-	// GlobalPolicyNamespace is the namespace where policies that can attach to resources
-	// in any namespace are defined.
-	GlobalPolicyNamespace string `split_words:"true"`
-
 	// Controls if leader election is disabled. Defaults to false.
 	DisableLeaderElection bool `split_words:"true" default:"false"`
-
-	PolicyMerge string `split_words:"true" default:"{}"`
-
-	// EnableWaypoint enables kgateway to translate istio waypoints
-	EnableWaypoint bool `split_words:"true" default:"false"`
 
 	// EnableExperimentalGatewayAPIFeatures enables kgateway to support experimental features and APIs
 	EnableExperimentalGatewayAPIFeatures bool `split_words:"true" default:"true"`
@@ -250,7 +212,7 @@ type Settings struct {
 // BuildSettings returns a zero-valued Settings obj if error is encountered when parsing env
 func BuildSettings() (*Settings, error) {
 	settings := &Settings{}
-	if err := envconfig.Process("KGW", settings); err != nil {
+	if err := envconfig.Process("AGW", settings); err != nil {
 		return settings, err
 	}
 	return settings, nil

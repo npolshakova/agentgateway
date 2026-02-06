@@ -11,10 +11,10 @@ import (
 // fakeAgentgatewayPolicies implements AgentgatewayPolicyInterface
 type fakeAgentgatewayPolicies struct {
 	*gentype.FakeClientWithList[*agentgateway.AgentgatewayPolicy, *agentgateway.AgentgatewayPolicyList]
-	Fake *FakeGatewayAgentgateway
+	Fake *FakeAgentgatewayAgentgateway
 }
 
-func newFakeAgentgatewayPolicies(fake *FakeGatewayAgentgateway, namespace string) v1alpha1agentgateway.AgentgatewayPolicyInterface {
+func newFakeAgentgatewayPolicies(fake *FakeAgentgatewayAgentgateway, namespace string) v1alpha1agentgateway.AgentgatewayPolicyInterface {
 	return &fakeAgentgatewayPolicies{
 		gentype.NewFakeClientWithList[*agentgateway.AgentgatewayPolicy, *agentgateway.AgentgatewayPolicyList](
 			fake.Fake,

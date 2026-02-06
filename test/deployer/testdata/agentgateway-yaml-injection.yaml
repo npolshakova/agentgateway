@@ -19,7 +19,7 @@ metadata:
   namespace: default
 spec:
   logging:
-    format: "json\nattack"
+    level: "json\nattack"
   rawConfig:
     blah: "bar\nattack"
   image:

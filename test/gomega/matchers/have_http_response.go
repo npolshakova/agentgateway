@@ -14,61 +14,6 @@ import (
 
 var _ types.GomegaMatcher = new(HaveHttpResponseMatcher)
 
-// HaveOkResponse expects a http response with a 200 status code
-func HaveOkResponse() types.GomegaMatcher {
-	return HaveStatusCode(http.StatusOK)
-}
-
-// HaveStatusCode expects a http response with a particular status code
-func HaveStatusCode(statusCode int) types.GomegaMatcher {
-	return HaveHttpResponse(&HttpResponse{
-		StatusCode: statusCode,
-		Body:       gstruct.Ignore(),
-	})
-}
-
-// HaveExactResponseBody expects a 200 response with a body that matches the provided string
-func HaveExactResponseBody(body string) types.GomegaMatcher {
-	return HaveHttpResponse(&HttpResponse{
-		StatusCode: http.StatusOK,
-		Body:       body,
-	})
-}
-
-// HavePartialResponseBody expects a 200 response with a body that contains the provided substring
-func HavePartialResponseBody(substring string) types.GomegaMatcher {
-	return HaveHttpResponse(&HttpResponse{
-		StatusCode: http.StatusOK,
-		Body:       gomega.ContainSubstring(substring),
-	})
-}
-
-// HaveOkResponseWithHeaders expects an 200 response with a set of headers that match the provided headers
-func HaveOkResponseWithHeaders(headers map[string]any) types.GomegaMatcher {
-	return HaveHttpResponse(&HttpResponse{
-		StatusCode: http.StatusOK,
-		Body:       gomega.BeEmpty(),
-		Headers:    headers,
-	})
-}
-
-// HaveOkResponseWithoutHeaders expects a 200 response that does not contain the specified headers
-func HaveOkResponseWithoutHeaders(headerNames ...string) types.GomegaMatcher {
-	return HaveHttpResponse(&HttpResponse{
-		StatusCode: http.StatusOK,
-		Body:       gomega.BeEmpty(),
-		NotHeaders: headerNames,
-	})
-}
-
-// HaveOKResponseWithJSONContains expects a 200 response with a body that contains the provided JSON
-func HaveOKResponseWithJSONContains(jsonBody []byte) types.GomegaMatcher {
-	return HaveHttpResponse(&HttpResponse{
-		StatusCode: http.StatusOK,
-		Body:       JSONContains(jsonBody),
-	})
-}
-
 // HttpResponse defines the set of properties that we can validate from an http.Response
 type HttpResponse struct {
 	// StatusCode is the expected status code for an http.Response

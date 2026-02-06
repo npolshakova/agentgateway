@@ -112,10 +112,5 @@ Commercial support is available at
 
 	WellKnownAppLabel = "app.kubernetes.io/name"
 
-	KGatewayDeployment = "deploy/kgateway"
-	KGatewayPodLabel   = "kgateway=kgateway"
-
 	AIGuardrailsWebhookManifest = filepath.Join(fsutils.MustGetThisDir(), "testdata", "ai_guardrails_webhook.yaml")
-
-	ExtProcManifest = filepath.Join(fsutils.MustGetThisDir(), "testdata", "extproc-service.yaml")
 )

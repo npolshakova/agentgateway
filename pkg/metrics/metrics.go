@@ -8,7 +8,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
-	"istio.io/istio/pkg/kube/krt"
 	"sigs.k8s.io/controller-runtime/pkg/metrics"
 )
 
@@ -347,13 +346,4 @@ func isNil(arg any) bool {
 	}
 
 	return false
-}
-
-// RegisterEvents registers KRT events for a collection if metrics are active.
-func RegisterEvents[T any](c krt.Collection[T], f func(o krt.Event[T])) krt.Syncer {
-	if !Active() {
-		return nil
-	}
-
-	return c.Register(f)
 }

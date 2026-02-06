@@ -40,7 +40,7 @@ type agentgatewayParameters struct {
 }
 
 // newAgentgatewayParameters returns a AgentgatewayParameters
-func newAgentgatewayParameters(c *GatewayAgentgatewayClient, namespace string) *agentgatewayParameters {
+func newAgentgatewayParameters(c *AgentgatewayAgentgatewayClient, namespace string) *agentgatewayParameters {
 	return &agentgatewayParameters{
 		gentype.NewClientWithList[*v1alpha1agentgateway.AgentgatewayParameters, *v1alpha1agentgateway.AgentgatewayParametersList](
 			"agentgatewayparameters",

@@ -17,8 +17,9 @@ metadata:
   name: mcp-route
 spec:
   parentRefs:
-    - name: gw
-      sectionName: http-8080
+    - name: gateway
+      namespace: agentgateway-base
+      sectionName: http
   rules:
   - matches:
       # need to get redirect address from OAuth server as part of OAuth Authentication flow when testing with mcp inspector
@@ -43,8 +44,9 @@ metadata:
   name: idp-route
 spec:
   parentRefs:
-    - name: gw
-      sectionName: idp-8081
+    - name: gateway
+      namespace: agentgateway-base
+      sectionName: http
   rules:
   - matches:
       - path:

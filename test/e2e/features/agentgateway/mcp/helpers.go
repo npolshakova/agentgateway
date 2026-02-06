@@ -5,14 +5,21 @@ package mcp
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"maps"
-	"os/exec"
+	"net"
+	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/kgateway-dev/kgateway/v2/pkg/utils/requestutils/curl"
+	"github.com/kgateway-dev/kgateway/v2/test/e2e/common"
 )
 
 // buildInitializeRequest is a helper function to build the initialize request for the MCP server
@@ -180,83 +187,127 @@ func (s *testingSuite) notifyInitialized(sessionID string, extraHeaders map[stri
 	headers := withSessionID(mcpHeaders(extraHeaders), sessionID)
 	// We don't care about the body; just make sure it doesn't 401.
 	out, _ := s.execCurlMCP(headers, mcpRequest, "-N", "--max-time", "2")
-	if strings.Contains(out, "401 Unauthorized") {
+	if strings.Contains(out, "401 Unauthorized") || strings.Contains(out, "HTTP_STATUS:401") {
 		s.T().Log("notifyInitialized hit 401; session likely already GC’d")
 	}
 	// Allow the gateway to register the session before the first RPC.
 	time.Sleep(warmupTime)
 }
 
-// helper to run a request via curl pod to a given path and return combined
-// output.
+// helper to run a request to a given path and return combined output that
+// includes response headers, body, and an HTTP_STATUS sentinel line.
 func (s *testingSuite) execCurl(path string, headers map[string]string, body string, extraArgs ...string) (string, error) {
-	// Use -swi to silence progress, write-out HTTP status, and include headers.
-	// The custom format includes a sentinel "HTTP_STATUS:" line after the body.
-	args := []string{"exec", "-n", "curl", "curl", "--", "curl", "-N", "--http1.1", "-si",
-		"-w", "\nHTTP_STATUS:%{http_code}\nContent-Type:%{content_type}\n",
+	timeoutSec := parseMaxTimeSeconds(extraArgs, 10)
+	opts := []curl.Option{
+		curl.WithHost(common.BaseGateway.Address),
+		curl.WithPort(80),
+		curl.WithPath(path),
+		curl.WithMethod(http.MethodPost),
+		curl.WithConnectionTimeout(timeoutSec),
 	}
 	for k, v := range headers {
-		args = append(args, "-H", fmt.Sprintf("%s: %s", k, v))
+		opts = append(opts, curl.WithHeader(k, v))
 	}
 	if body != "" {
-		args = append(args, "-d", body)
+		opts = append(opts, curl.WithBody(body))
 	}
-	args = append(args, extraArgs...)
-	args = append(args, fmt.Sprintf("http://%s.%s.svc.cluster.local:%d%s", gatewayName, gatewayNamespace, 8080, path))
 
-	cmd := exec.Command("kubectl", args...)
-	out, err := cmd.CombinedOutput()
-	// Helpful visibility: show the curl invocation and its output in debug mode.
-
-	// Redact potentially sensitive headers when logging
-	redacted := make([]string, 0, len(args))
-	for i := 0; i < len(args); i++ {
-		if args[i] == "-H" && i+1 < len(args) {
-			h := args[i+1]
-			hl := strings.ToLower(h)
-			if strings.HasPrefix(hl, "authorization:") || strings.HasPrefix(hl, "mcp-session-id:") {
-				// keep header name, redact value
-				colon := strings.Index(h, ":")
-				if colon > -1 {
-					h = h[:colon+1] + " <redacted>"
-				} else {
-					h = "<redacted header>"
-				}
-			}
-			redacted = append(redacted, "-H", h)
-			i++
-			continue
-		}
-		redacted = append(redacted, args[i])
+	resp, err := curl.ExecuteRequest(opts...)
+	if err != nil {
+		return "", err
 	}
-	s.T().Logf("kubectl %s", strings.Join(redacted, " "))
-	s.T().Logf("curl response: %s", string(out))
+	defer resp.Body.Close()
 
-	return string(out), err
+	bodyBytes, readErr := io.ReadAll(resp.Body)
+	if readErr != nil && !isTimeoutError(readErr) {
+		return "", readErr
+	}
+
+	out := formatHTTPOutput(resp, string(bodyBytes))
+	s.T().Logf("mcp response: %s", out)
+	return out, nil
 }
 
-// helper to run a POST to /mcp with optional headers and body via curl pod and return combined output
+// helper to run a POST to /mcp with optional headers and body and return combined output
 func (s *testingSuite) execCurlMCP(headers map[string]string, body string, extraArgs ...string) (string, error) {
 	out, err := s.execCurl("/mcp", headers, body, extraArgs...)
 	s.T().Logf("execCurlMCP:\n%s", out) // always print
 	return out, err
 }
 
-// execCurlMCPStatus returns just the HTTP status code deterministically using curl -w %{http_code}
+// execCurlMCPStatus returns just the HTTP status code deterministically.
 func (s *testingSuite) execCurlMCPStatus(port int, headers map[string]string, body string, extraArgs ...string) (string, error) {
-	args := []string{"exec", "-n", "curl", "curl", "--", "curl", "-sS", "--fail-with-body", "-o", "/dev/null", "-w", "%{http_code}"}
+	timeoutSec := parseMaxTimeSeconds(extraArgs, 10)
+	if port == 8080 {
+		port = 80
+	}
+	opts := []curl.Option{
+		curl.WithHost(common.BaseGateway.Address),
+		curl.WithPort(port),
+		curl.WithPath("/mcp"),
+		curl.WithMethod(http.MethodPost),
+		curl.WithConnectionTimeout(timeoutSec),
+	}
 	for k, v := range headers {
-		args = append(args, "-H", fmt.Sprintf("%s: %s", k, v))
+		opts = append(opts, curl.WithHeader(k, v))
 	}
 	if body != "" {
-		args = append(args, "--data-binary", body)
+		opts = append(opts, curl.WithBody(body))
 	}
-	args = append(args, extraArgs...)
-	args = append(args, fmt.Sprintf("http://%s.%s.svc.cluster.local:%d/mcp", gatewayName, gatewayNamespace, port))
 
-	cmd := exec.Command("kubectl", args...)
-	out, err := cmd.CombinedOutput()
-	return strings.TrimSpace(string(out)), err
+	resp, err := curl.ExecuteRequest(opts...)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	_, _ = io.Copy(io.Discard, resp.Body)
+	return strconv.Itoa(resp.StatusCode), nil
+}
+
+func parseMaxTimeSeconds(extraArgs []string, defaultSeconds int) int {
+	for i := 0; i < len(extraArgs)-1; i++ {
+		if extraArgs[i] == "--max-time" {
+			if parsed, err := strconv.Atoi(extraArgs[i+1]); err == nil && parsed > 0 {
+				return parsed
+			}
+		}
+	}
+	return defaultSeconds
+}
+
+func isTimeoutError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+	var netErr net.Error
+	return errors.As(err, &netErr) && netErr.Timeout()
+}
+
+func formatHTTPOutput(resp *http.Response, body string) string {
+	var sb strings.Builder
+	for k, values := range resp.Header {
+		for _, v := range values {
+			sb.WriteString(strings.ToLower(k))
+			sb.WriteString(": ")
+			sb.WriteString(v)
+			sb.WriteString("\n")
+		}
+	}
+	sb.WriteString("\n")
+	sb.WriteString(body)
+	if body != "" && !strings.HasSuffix(body, "\n") {
+		sb.WriteString("\n")
+	}
+	sb.WriteString("HTTP_STATUS:")
+	sb.WriteString(strconv.Itoa(resp.StatusCode))
+	sb.WriteString("\n")
+	sb.WriteString("Content-Type:")
+	sb.WriteString(resp.Header.Get("Content-Type"))
+	sb.WriteString("\n")
+	return sb.String()
 }
 
 // helper to assert HTTP status from verbose curl output (supports HTTP/1.1 and HTTP/2)

@@ -39,9 +39,5 @@ func (o UninstallOpts) flags() []string {
 }
 
 func (o UninstallOpts) release() string {
-	if o.ReleaseName != "" {
-		return o.ReleaseName
-	}
-
-	return ChartName
+	return o.ReleaseName
 }

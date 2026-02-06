@@ -92,11 +92,3 @@ func collectReconciliationMetrics(controllerName string, req types.NamespacedNam
 		)
 	}
 }
-
-// ResetMetrics resets the metrics from this package.
-// This is provided for testing purposes only.
-func ResetMetrics() {
-	reconciliationsTotal.Reset()
-	reconciliationsRunning.Reset()
-	reconcileDuration.Reset()
-}

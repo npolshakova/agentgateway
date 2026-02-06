@@ -40,7 +40,7 @@ type agentgatewayPolicies struct {
 }
 
 // newAgentgatewayPolicies returns a AgentgatewayPolicies
-func newAgentgatewayPolicies(c *GatewayAgentgatewayClient, namespace string) *agentgatewayPolicies {
+func newAgentgatewayPolicies(c *AgentgatewayAgentgatewayClient, namespace string) *agentgatewayPolicies {
 	return &agentgatewayPolicies{
 		gentype.NewClientWithList[*v1alpha1agentgateway.AgentgatewayPolicy, *v1alpha1agentgateway.AgentgatewayPolicyList](
 			"agentgatewaypolicies",

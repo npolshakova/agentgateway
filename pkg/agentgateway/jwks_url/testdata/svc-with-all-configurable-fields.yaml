@@ -21,6 +21,7 @@ spec:
               kind: Service
               name: dummy-idp
               port: 8443
+              namespace: default
 ---
 apiVersion: v1
 data:

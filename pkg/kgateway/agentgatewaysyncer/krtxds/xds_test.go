@@ -21,7 +21,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	agwir "github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/ir"
-	"github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/translator"
 	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/agentgatewaysyncer"
 	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/agentgatewaysyncer/krtxds"
 	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/krtutil"
@@ -116,20 +115,20 @@ var (
 
 func TestEmptyXDS(t *testing.T) {
 	s := NewFakeDiscoveryServer(t)
-	ads := s.ConnectDeltaADS().WithType(translator.TargetTypeAddressUrl)
+	ads := s.ConnectDeltaADS().WithType(krtxds.TargetTypeAddressUrl)
 	ads.Request(nil)
 	ads.ExpectEmptyResponse()
 }
 
 func TestXDS(t *testing.T) {
 	s := NewFakeDiscoveryServer(t, testWorkload1)
-	ads := s.ConnectDeltaADS().WithType(translator.TargetTypeAddressUrl)
+	ads := s.ConnectDeltaADS().WithType(krtxds.TargetTypeAddressUrl)
 	ads.RequestResponseAck(nil)
 }
 
 func TestXDSUpdate(t *testing.T) {
 	s := NewFakeDiscoveryServer(t, testWorkload1)
-	ads := s.ConnectDeltaADS().WithType(translator.TargetTypeAddressUrl)
+	ads := s.ConnectDeltaADS().WithType(krtxds.TargetTypeAddressUrl)
 	ads.RequestResponseAck(nil)
 
 	wl1Updated := agentgatewaysyncer.Address{
@@ -150,7 +149,7 @@ func TestXDSUpdate(t *testing.T) {
 func TestXDSDisconnect(t *testing.T) {
 	t.Run("addresses", func(t *testing.T) {
 		s := NewFakeDiscoveryServer(t, testWorkload1)
-		ads := s.ConnectDeltaADS().WithType(translator.TargetTypeAddressUrl)
+		ads := s.ConnectDeltaADS().WithType(krtxds.TargetTypeAddressUrl)
 		ads.RequestResponseAck(nil)
 		ads.Cleanup()
 
@@ -161,10 +160,10 @@ func TestXDSDisconnect(t *testing.T) {
 		s.Addresses.UpdateObject(wl2)
 
 		assert.EventuallyEqual(t, func() bool {
-			col := s.Server.Collections[translator.TargetTypeAddressUrl].Col
+			col := s.Server.Collections[krtxds.TargetTypeAddressUrl].Col
 			return col.GetKey("wl2") != nil && col.GetKey("wl1") == nil
 		}, true)
-		ads = s.ConnectDeltaADS().WithType(translator.TargetTypeAddressUrl)
+		ads = s.ConnectDeltaADS().WithType(krtxds.TargetTypeAddressUrl)
 		ads.Request(&discovery.DeltaDiscoveryRequest{
 			ResourceNamesSubscribe:   []string{"*"},
 			ResourceNamesUnsubscribe: []string{"*"},
@@ -184,7 +183,7 @@ func TestXDSDisconnect(t *testing.T) {
 			},
 		}
 		s := NewFakeDiscoveryServerWith(t, nil, []agwir.AgwResource{bind1})
-		ads := s.ConnectDeltaADS().WithType(translator.TargetTypeResourceUrl)
+		ads := s.ConnectDeltaADS().WithType(krtxds.TargetTypeResourceUrl)
 		ads.RequestResponseAck(nil)
 		ads.Cleanup()
 
@@ -197,10 +196,10 @@ func TestXDSDisconnect(t *testing.T) {
 		s.Resources.UpdateObject(bind2)
 
 		assert.EventuallyEqual(t, func() bool {
-			col := s.Server.Collections[translator.TargetTypeResourceUrl].Col
+			col := s.Server.Collections[krtxds.TargetTypeResourceUrl].Col
 			return col.GetKey("//bind/bind2") != nil && col.GetKey("//bind/bind1") == nil
 		}, true)
-		ads = s.ConnectDeltaADS().WithType(translator.TargetTypeResourceUrl)
+		ads = s.ConnectDeltaADS().WithType(krtxds.TargetTypeResourceUrl)
 		ads.Request(&discovery.DeltaDiscoveryRequest{
 			ResourceNamesSubscribe:   []string{"*"},
 			ResourceNamesUnsubscribe: []string{"*"},

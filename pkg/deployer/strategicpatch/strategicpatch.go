@@ -17,7 +17,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/kgateway-dev/kgateway/v2/api/v1alpha1/agentgateway"
-	"github.com/kgateway-dev/kgateway/v2/api/v1alpha1/kgateway"
 	"github.com/kgateway-dev/kgateway/v2/api/v1alpha1/shared"
 	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/wellknown"
 )
@@ -49,22 +48,6 @@ func FromAgentgatewayParameters(params *agentgateway.AgentgatewayParameters) *Re
 	}
 }
 
-// FromGatewayParameters converts GatewayParameters overlays to generic ResourceOverlays.
-func FromGatewayParameters(params *kgateway.GatewayParameters) *ResourceOverlays {
-	if params == nil || params.Spec.Kube == nil {
-		return nil
-	}
-	overlays := params.Spec.Kube.GatewayParametersOverlays
-	return &ResourceOverlays{
-		Deployment:              overlays.DeploymentOverlay,
-		Service:                 overlays.ServiceOverlay,
-		ServiceAccount:          overlays.ServiceAccountOverlay,
-		PodDisruptionBudget:     overlays.PodDisruptionBudget,
-		HorizontalPodAutoscaler: overlays.HorizontalPodAutoscaler,
-		VerticalPodAutoscaler:   overlays.VerticalPodAutoscaler,
-	}
-}
-
 // OverlayApplier applies overlays to rendered k8s objects using strategic merge patch semantics.
 type OverlayApplier struct {
 	overlays *ResourceOverlays
@@ -73,16 +56,6 @@ type OverlayApplier struct {
 // NewOverlayApplier creates a new OverlayApplier from AgentgatewayParameters.
 func NewOverlayApplier(params *agentgateway.AgentgatewayParameters) *OverlayApplier {
 	return &OverlayApplier{overlays: FromAgentgatewayParameters(params)}
-}
-
-// NewOverlayApplierFromGatewayParameters creates a new OverlayApplier from GatewayParameters.
-func NewOverlayApplierFromGatewayParameters(params *kgateway.GatewayParameters) *OverlayApplier {
-	return &OverlayApplier{overlays: FromGatewayParameters(params)}
-}
-
-// NewOverlayApplierFromOverlays creates a new OverlayApplier from ResourceOverlays directly.
-func NewOverlayApplierFromOverlays(overlays *ResourceOverlays) *OverlayApplier {
-	return &OverlayApplier{overlays: overlays}
 }
 
 // ApplyOverlays applies the overlays to the rendered objects.

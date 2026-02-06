@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/wellknown"
+	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/reporter"
 	"istio.io/istio/pkg/ptr"
 	"istio.io/istio/pkg/slices"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -14,12 +16,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwv1a2 "sigs.k8s.io/gateway-api/apis/v1alpha2"
-	gwxv1a1 "sigs.k8s.io/gateway-api/apisx/v1alpha1"
-
-	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/translator/utils"
-	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/wellknown"
-	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/reporter"
-	"github.com/kgateway-dev/kgateway/v2/pkg/utils/kubeutils"
 )
 
 // Status message constants
@@ -155,116 +151,6 @@ func handleInvalidAddresses(report *GatewayReport, g *gwv1.Gateway) {
 	}
 }
 
-func (r *ReportMap) BuildListenerSetStatus(ctx context.Context, ls gwxv1a1.XListenerSet) *gwxv1a1.ListenerSetStatus {
-	lsReport := r.ListenerSet(&ls)
-	if lsReport == nil {
-		return nil
-	}
-
-	finalListeners := make([]gwv1.ListenerStatus, 0, len(ls.Spec.Listeners))
-	var invalidListeners []string
-	var invalidMessages []string
-
-	// We check if the ls has been rejected since no status implies that it will be accepted later on
-	listenerSetRejected := func(lsReport *ListenerSetReport) bool {
-		if cond := meta.FindStatusCondition(lsReport.GetConditions(), string(gwv1.GatewayConditionAccepted)); cond != nil {
-			return cond.Status == metav1.ConditionFalse
-		}
-		return false
-	}
-
-	if !listenerSetRejected(lsReport) {
-		for _, l := range ls.Spec.Listeners {
-			lis := utils.ToListener(l)
-			lisReport := lsReport.listener(string(lis.Name))
-			AddMissingListenerConditions(lisReport)
-
-			finalConditions := make([]metav1.Condition, 0, len(lisReport.Status.Conditions))
-			oldLisStatusIndex := slices.IndexFunc(ls.Status.Listeners, func(l gwxv1a1.ListenerEntryStatus) bool {
-				return l.Name == lis.Name
-			})
-			for _, lisCondition := range lisReport.Status.Conditions {
-				lisCondition.ObservedGeneration = lsReport.observedGeneration
-
-				// copy old condition from ls so LastTransitionTime is set correctly below by SetStatusCondition()
-				if oldLisStatusIndex != -1 {
-					if cond := meta.FindStatusCondition(ls.Status.Listeners[oldLisStatusIndex].Conditions, lisCondition.Type); cond != nil {
-						finalConditions = append(finalConditions, *cond)
-					}
-				}
-				meta.SetStatusCondition(&finalConditions, lisCondition)
-
-				// Check if this is the Programmed condition and it's False
-				if lisCondition.Type == string(gwv1.ListenerConditionProgrammed) && lisCondition.Status == metav1.ConditionFalse {
-					invalidListeners = append(invalidListeners, string(lis.Name))
-					if lisCondition.Message != "" {
-						invalidMessages = append(invalidMessages, fmt.Sprintf("%s: %s", lis.Name, lisCondition.Message))
-					}
-				}
-			}
-			lisReport.Status.Conditions = finalConditions
-			finalListeners = append(finalListeners, lisReport.Status)
-		}
-	}
-
-	// If any listeners have Programmed=False, set ListenerSet Accepted=True with ListenersNotValid reason
-	if len(invalidListeners) > 0 {
-		message := fmt.Sprintf("Some listeners are not programmed: %s", strings.Join(invalidMessages, "; "))
-		if len(invalidMessages) == 0 {
-			message = fmt.Sprintf("Some listeners are not programmed: %s", strings.Join(invalidListeners, ", "))
-		}
-
-		lsReport.SetCondition(reporter.GatewayCondition{
-			Type:    gwv1.GatewayConditionAccepted,
-			Status:  metav1.ConditionTrue,
-			Reason:  gwv1.GatewayReasonListenersNotValid,
-			Message: message,
-		})
-	}
-
-	AddMissingListenerSetConditions(r.ListenerSet(&ls))
-
-	finalConditions := make([]metav1.Condition, 0)
-	for _, lsCondition := range lsReport.GetConditions() {
-		lsCondition.ObservedGeneration = lsReport.observedGeneration
-
-		// copy old condition from ls so LastTransitionTime is set correctly below by SetStatusCondition()
-		if cond := meta.FindStatusCondition(ls.Status.Conditions, lsCondition.Type); cond != nil {
-			finalConditions = append(finalConditions, *cond)
-		}
-		meta.SetStatusCondition(&finalConditions, lsCondition)
-	}
-	// If there are conditions on the Listener Set that are not owned by our reporter, include
-	// them in the final list of conditions to preseve conditions we do not own
-	for _, condition := range ls.Status.Conditions {
-		if meta.FindStatusCondition(finalConditions, condition.Type) == nil {
-			finalConditions = append(finalConditions, condition)
-		}
-	}
-
-	finalLsStatus := gwxv1a1.ListenerSetStatus{}
-	finalLsStatus.Conditions = finalConditions
-	fl := make([]gwxv1a1.ListenerEntryStatus, 0, len(finalListeners))
-	for i, f := range finalListeners {
-		listener := ls.Spec.Listeners[i]
-		port, err := kubeutils.DetectListenerPortNumber(listener.Protocol, listener.Port)
-		if err != nil {
-			// Set a random value until upstream to allows 0 for implementations that do not support dynamic port assignment
-			port = 65535
-		}
-
-		fl = append(fl, gwxv1a1.ListenerEntryStatus{
-			Name:           f.Name,
-			Port:           port,
-			SupportedKinds: f.SupportedKinds,
-			AttachedRoutes: f.AttachedRoutes,
-			Conditions:     f.Conditions,
-		})
-	}
-	finalLsStatus.Listeners = fl
-	return &finalLsStatus
-}
-
 // BuildRouteStatus returns a newly constructed and fully defined RouteStatus for the supplied route object
 // according to the state of the ReportMap and the current status of the route.
 // The gwv1.RouteStatus returned will contain all non-gateway parents from the provided current route status
@@ -381,7 +267,7 @@ func (r *ReportMap) BuildRouteStatusWithParentRefDefaulting(
 
 	// now we have a status object reflecting the state of translation according to our reportMap
 	// let's add status from other controllers on the current object status
-	var kgwStatus *gwv1.RouteStatus = &newStatus
+	var kgwStatus = &newStatus
 	for _, rps := range existingStatus.Parents {
 		if rps.ControllerName != gwv1.GatewayController(controller) {
 			kgwStatus.Parents = append(kgwStatus.Parents, rps)
@@ -454,28 +340,6 @@ func addMissingGatewayConditions(gwReport *GatewayReport, gw *gwv1.Gateway) {
 			Status:  metav1.ConditionTrue,
 			Reason:  gwv1.GatewayReasonProgrammed,
 			Message: GatewayProgrammedMessage,
-		})
-	}
-}
-
-// Reports will initially only contain negative conditions found during translation,
-// so all missing conditions are assumed to be positive. Here we will add all missing conditions
-// to a given report, i.e. set healthy conditions
-func AddMissingListenerSetConditions(lsReport *ListenerSetReport) {
-	if cond := meta.FindStatusCondition(lsReport.GetConditions(), string(gwv1.GatewayConditionAccepted)); cond == nil {
-		lsReport.SetCondition(reporter.GatewayCondition{
-			Type:    gwv1.GatewayConditionAccepted,
-			Status:  metav1.ConditionTrue,
-			Reason:  gwv1.GatewayReasonAccepted,
-			Message: ListenerSetAcceptedMessage,
-		})
-	}
-	if cond := meta.FindStatusCondition(lsReport.GetConditions(), string(gwv1.GatewayConditionProgrammed)); cond == nil {
-		lsReport.SetCondition(reporter.GatewayCondition{
-			Type:    gwv1.GatewayConditionProgrammed,
-			Status:  metav1.ConditionTrue,
-			Reason:  gwv1.GatewayReasonProgrammed,
-			Message: ListenerSetProgrammedMessage,
 		})
 	}
 }

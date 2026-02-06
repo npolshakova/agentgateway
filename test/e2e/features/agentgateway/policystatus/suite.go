@@ -38,10 +38,10 @@ func (s *testingSuite) TestAgwPolicyClearStaleStatus() {
 	otherControllerName := "other-controller.example.com/controller"
 
 	// Add fake ancestor status from another controller
-	s.addAncestorStatus("example-policy", "default", "other-gw", otherControllerName)
+	s.addAncestorStatus("example-policy", "agentgateway-base", "other-gw", otherControllerName)
 
 	// Verify both agw and other controller statuses exist
-	s.assertAncestorStatuses("gw", map[string]bool{
+	s.assertAncestorStatuses("gateway", map[string]bool{
 		agwControllerName: true,
 	})
 	s.assertAncestorStatuses("other-gw", map[string]bool{
@@ -56,7 +56,7 @@ func (s *testingSuite) TestAgwPolicyClearStaleStatus() {
 	s.Require().NoError(err)
 
 	// Verify agw status cleared, other remains
-	s.assertAncestorStatuses("gw", map[string]bool{
+	s.assertAncestorStatuses("gateway", map[string]bool{
 		agwControllerName: false,
 	})
 	s.assertAncestorStatuses("other-gw", map[string]bool{
@@ -102,7 +102,7 @@ func (s *testingSuite) assertAncestorStatuses(ancestorName string, expectedContr
 		policy := &agentgateway.AgentgatewayPolicy{}
 		err := s.TestInstallation.ClusterContext.Client.Get(
 			s.Ctx,
-			types.NamespacedName{Name: "example-policy", Namespace: "default"},
+			types.NamespacedName{Name: "example-policy", Namespace: "agentgateway-base"},
 			policy,
 		)
 		g.Expect(err).NotTo(gomega.HaveOccurred())

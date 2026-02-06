@@ -2,7 +2,6 @@ package translator
 
 import (
 	"istio.io/istio/pkg/cluster"
-	"istio.io/istio/pkg/kube/krt"
 	"istio.io/istio/pkg/network"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -37,18 +36,4 @@ func (n NetworkGateway) Equals(other NetworkGateway) bool {
 		n.HBONEPort == other.HBONEPort &&
 		n.ServiceAccount == other.ServiceAccount &&
 		n.Source == other.Source
-}
-
-// LookupNetworkGateway finds network gateways for the given network
-func LookupNetworkGateway(
-	ctx krt.HandlerContext,
-	nw network.ID,
-	networkGateways krt.Collection[NetworkGateway],
-	gatewaysByNetwork krt.Index[network.ID, NetworkGateway],
-) []NetworkGateway {
-	if nw == "" {
-		// Default network, no gateway needed
-		return nil
-	}
-	return krt.Fetch(ctx, networkGateways, krt.FilterIndex(gatewaysByNetwork, nw))
 }

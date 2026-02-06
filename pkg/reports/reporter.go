@@ -24,7 +24,6 @@ type ReportMap struct {
 	GRPCRoutes   map[types.NamespacedName]*RouteReport
 	TCPRoutes    map[types.NamespacedName]*RouteReport
 	TLSRoutes    map[types.NamespacedName]*RouteReport
-	Policies     map[reporter.PolicyKey]*PolicyReport
 }
 
 type GatewayReport struct {
@@ -67,7 +66,6 @@ func NewReportMap() ReportMap {
 		GRPCRoutes:   make(map[types.NamespacedName]*RouteReport),
 		TCPRoutes:    make(map[types.NamespacedName]*RouteReport),
 		TLSRoutes:    make(map[types.NamespacedName]*RouteReport),
-		Policies:     make(map[reporter.PolicyKey]*PolicyReport),
 	}
 }
 

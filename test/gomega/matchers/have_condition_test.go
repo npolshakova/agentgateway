@@ -50,16 +50,6 @@ var _ = Describe("HaveCondition", func() {
 		})
 	})
 
-	Describe("matching with reason", func() {
-		It("matches when type, status, and reason all match", func() {
-			Expect(conditions).To(matchers.HaveConditionWithReason("Ready", metav1.ConditionTrue, "AllGood"))
-		})
-
-		It("does not match when reason differs", func() {
-			Expect(conditions).ToNot(matchers.HaveConditionWithReason("Ready", metav1.ConditionTrue, "WrongReason"))
-		})
-	})
-
 	Describe("empty conditions", func() {
 		It("does not match when conditions slice is empty", func() {
 			Expect([]metav1.Condition{}).ToNot(matchers.HaveCondition("Ready", metav1.ConditionTrue))
@@ -111,16 +101,6 @@ var _ = Describe("HaveAnyParentCondition", func() {
 		})
 	})
 
-	Describe("matching with reason", func() {
-		It("matches when type, status, and reason all match on any parent", func() {
-			Expect(parentConditions).To(matchers.HaveAnyParentConditionWithReason("Accepted", metav1.ConditionFalse, "Rejected"))
-		})
-
-		It("does not match when reason differs on all parents", func() {
-			Expect(parentConditions).ToNot(matchers.HaveAnyParentConditionWithReason("Accepted", metav1.ConditionTrue, "WrongReason"))
-		})
-	})
-
 	Describe("empty parents", func() {
 		It("does not match when parents slice is empty", func() {
 			Expect([][]metav1.Condition{}).ToNot(matchers.HaveAnyParentCondition("Accepted", metav1.ConditionTrue))
@@ -146,12 +126,6 @@ var _ = Describe("HaveAnyAncestorCondition", func() {
 
 		It("does not match when no ancestor has matching condition", func() {
 			Expect(ancestorConditions).ToNot(matchers.HaveAnyAncestorCondition("NonExistent", metav1.ConditionTrue))
-		})
-	})
-
-	Describe("matching with reason", func() {
-		It("matches when type, status, and reason all match on any ancestor", func() {
-			Expect(ancestorConditions).To(matchers.HaveAnyAncestorConditionWithReason("Accepted", metav1.ConditionTrue, "PolicyAccepted"))
 		})
 	})
 })

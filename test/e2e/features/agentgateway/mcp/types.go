@@ -8,7 +8,6 @@ import (
 
 	"github.com/kgateway-dev/kgateway/v2/pkg/utils/fsutils"
 	"github.com/kgateway-dev/kgateway/v2/test/e2e"
-	"github.com/kgateway-dev/kgateway/v2/test/e2e/defaults"
 	"github.com/kgateway-dev/kgateway/v2/test/e2e/tests/base"
 )
 
@@ -75,8 +74,8 @@ var (
 var (
 	_ e2e.NewSuiteFunc = NewTestingSuite
 	// Gateway defaults used by this feature suite
-	gatewayName      = "gw"
-	gatewayNamespace = "default"
+	gatewayName      = "gateway"
+	gatewayNamespace = "agentgateway-base"
 
 	// manifests
 	setupManifest        = filepath.Join(fsutils.MustGetThisDir(), "testdata", "common.yaml")
@@ -85,9 +84,9 @@ var (
 	mcpAuthnManifest     = filepath.Join(fsutils.MustGetThisDir(), "testdata", "auth0-mock-server.yaml")
 	authnPolicyManifest  = filepath.Join(fsutils.MustGetThisDir(), "testdata", "remote-authn-auth0.yaml")
 
-	// Base test setup - common resources + curl pod
+	// Base test setup - common resources
 	setup = base.TestCase{
-		Manifests: []string{setupManifest, defaults.CurlPodManifest},
+		Manifests: []string{setupManifest},
 	}
 
 	// Dynamic test setup (only dynamic-specific resources)

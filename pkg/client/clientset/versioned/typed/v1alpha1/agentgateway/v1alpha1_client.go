@@ -10,34 +10,34 @@ import (
 	rest "k8s.io/client-go/rest"
 )
 
-type GatewayAgentgatewayInterface interface {
+type AgentgatewayAgentgatewayInterface interface {
 	RESTClient() rest.Interface
 	AgentgatewayBackendsGetter
 	AgentgatewayParametersGetter
 	AgentgatewayPoliciesGetter
 }
 
-// GatewayAgentgatewayClient is used to interact with features provided by the agentgateway.dev group.
-type GatewayAgentgatewayClient struct {
+// AgentgatewayAgentgatewayClient is used to interact with features provided by the agentgateway.dev group.
+type AgentgatewayAgentgatewayClient struct {
 	restClient rest.Interface
 }
 
-func (c *GatewayAgentgatewayClient) AgentgatewayBackends(namespace string) AgentgatewayBackendInterface {
+func (c *AgentgatewayAgentgatewayClient) AgentgatewayBackends(namespace string) AgentgatewayBackendInterface {
 	return newAgentgatewayBackends(c, namespace)
 }
 
-func (c *GatewayAgentgatewayClient) AgentgatewayParameters(namespace string) AgentgatewayParametersInterface {
+func (c *AgentgatewayAgentgatewayClient) AgentgatewayParameters(namespace string) AgentgatewayParametersInterface {
 	return newAgentgatewayParameters(c, namespace)
 }
 
-func (c *GatewayAgentgatewayClient) AgentgatewayPolicies(namespace string) AgentgatewayPolicyInterface {
+func (c *AgentgatewayAgentgatewayClient) AgentgatewayPolicies(namespace string) AgentgatewayPolicyInterface {
 	return newAgentgatewayPolicies(c, namespace)
 }
 
-// NewForConfig creates a new GatewayAgentgatewayClient for the given config.
+// NewForConfig creates a new AgentgatewayAgentgatewayClient for the given config.
 // NewForConfig is equivalent to NewForConfigAndClient(c, httpClient),
 // where httpClient was generated with rest.HTTPClientFor(c).
-func NewForConfig(c *rest.Config) (*GatewayAgentgatewayClient, error) {
+func NewForConfig(c *rest.Config) (*AgentgatewayAgentgatewayClient, error) {
 	config := *c
 	setConfigDefaults(&config)
 	httpClient, err := rest.HTTPClientFor(&config)
@@ -47,21 +47,21 @@ func NewForConfig(c *rest.Config) (*GatewayAgentgatewayClient, error) {
 	return NewForConfigAndClient(&config, httpClient)
 }
 
-// NewForConfigAndClient creates a new GatewayAgentgatewayClient for the given config and http client.
+// NewForConfigAndClient creates a new AgentgatewayAgentgatewayClient for the given config and http client.
 // Note the http client provided takes precedence over the configured transport values.
-func NewForConfigAndClient(c *rest.Config, h *http.Client) (*GatewayAgentgatewayClient, error) {
+func NewForConfigAndClient(c *rest.Config, h *http.Client) (*AgentgatewayAgentgatewayClient, error) {
 	config := *c
 	setConfigDefaults(&config)
 	client, err := rest.RESTClientForConfigAndClient(&config, h)
 	if err != nil {
 		return nil, err
 	}
-	return &GatewayAgentgatewayClient{client}, nil
+	return &AgentgatewayAgentgatewayClient{client}, nil
 }
 
-// NewForConfigOrDie creates a new GatewayAgentgatewayClient for the given config and
+// NewForConfigOrDie creates a new AgentgatewayAgentgatewayClient for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *rest.Config) *GatewayAgentgatewayClient {
+func NewForConfigOrDie(c *rest.Config) *AgentgatewayAgentgatewayClient {
 	client, err := NewForConfig(c)
 	if err != nil {
 		panic(err)
@@ -69,9 +69,9 @@ func NewForConfigOrDie(c *rest.Config) *GatewayAgentgatewayClient {
 	return client
 }
 
-// New creates a new GatewayAgentgatewayClient for the given RESTClient.
-func New(c rest.Interface) *GatewayAgentgatewayClient {
-	return &GatewayAgentgatewayClient{c}
+// New creates a new AgentgatewayAgentgatewayClient for the given RESTClient.
+func New(c rest.Interface) *AgentgatewayAgentgatewayClient {
+	return &AgentgatewayAgentgatewayClient{c}
 }
 
 func setConfigDefaults(config *rest.Config) {
@@ -87,7 +87,7 @@ func setConfigDefaults(config *rest.Config) {
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *GatewayAgentgatewayClient) RESTClient() rest.Interface {
+func (c *AgentgatewayAgentgatewayClient) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}

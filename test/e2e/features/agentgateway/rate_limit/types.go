@@ -34,14 +34,14 @@ var (
 	combinedRateLimitManifest = getTestFile("combined-rate-limit.yaml")
 	rateLimitServerManifest   = getTestFile("rate-limit-server.yaml")
 
-	// metadata for gateway - matches the name "super-gateway" from common.yaml
-	gatewayObjectMeta = metav1.ObjectMeta{Name: "super-gateway", Namespace: namespace}
+	// metadata for gateway - matches the name "gateway" from common.yaml
+	gatewayObjectMeta = metav1.ObjectMeta{Name: "gateway", Namespace: namespace}
 	gateway           = &gwv1.Gateway{
 		ObjectMeta: gatewayObjectMeta,
 	}
 
 	// metadata for proxy resources
-	proxyObjectMeta = metav1.ObjectMeta{Name: "super-gateway", Namespace: namespace}
+	proxyObjectMeta = metav1.ObjectMeta{Name: "gateway", Namespace: namespace}
 
 	proxyDeployment = &appsv1.Deployment{
 		ObjectMeta: proxyObjectMeta,

@@ -54,7 +54,7 @@ func TestInferenceExtension(t *testing.T) {
 			testInstallation.PreFailHandler(ctx, t)
 		}
 
-		testInstallation.UninstallKgateway(ctx, t)
+		testInstallation.Uninstall(ctx, t)
 
 		// Uninstall InferencePool v1 CRD
 		err := testInstallation.Actions.Kubectl().DeleteFile(ctx, poolCrdManifest)
@@ -66,7 +66,7 @@ func TestInferenceExtension(t *testing.T) {
 	testInstallation.AssertionsT(t).Require.NoError(err, "can apply manifest %s", poolCrdManifest)
 
 	// Install kgateway
-	testInstallation.InstallKgatewayFromLocalChart(ctx, t)
+	testInstallation.InstallFromLocalChart(ctx, t)
 	testInstallation.AssertionsT(t).EventuallyNamespaceExists(ctx, infExtNs)
 
 	// Run the e2e tests

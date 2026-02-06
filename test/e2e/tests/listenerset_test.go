@@ -41,11 +41,11 @@ func TestListenerSet(t *testing.T) {
 			testInstallation.PreFailHandler(ctx, t)
 		}
 
-		testInstallation.UninstallKgateway(ctx, t)
+		testInstallation.Uninstall(ctx, t)
 	})
 
 	// Install kgateway
-	testInstallation.InstallKgatewayFromLocalChart(ctx, t)
+	testInstallation.InstallFromLocalChart(ctx, t)
 
 	ListenerSetSuiteRunner().Run(ctx, t, testInstallation)
 }

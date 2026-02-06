@@ -13,7 +13,6 @@ import (
 	"github.com/kgateway-dev/kgateway/v2/pkg/apiclient"
 	"github.com/kgateway-dev/kgateway/v2/pkg/deployer"
 	internaldeployer "github.com/kgateway-dev/kgateway/v2/pkg/kgateway/deployer"
-	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk"
 	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/collections"
 )
 
@@ -30,31 +29,15 @@ type GatewayConfig struct {
 	Mgr    manager.Manager
 	// Dev enables development mode for the controller.
 	Dev bool
-	// ControllerName is the name of the Envoy controller. Any GatewayClass objects
-	// managed by this controller must have this name as their ControllerName.
-	ControllerName string
 	// AgwControllerName is the name of the agentgateway controller. Any GatewayClass objects
 	// managed by this controller must have this name as their ControllerName.
 	AgwControllerName string
-	// EnableEnvoy indicates if the Envoy controller is enabled
-	EnableEnvoy bool
-	// EnableAgentgateway indicates if the agentgateway controller is enabled
-	EnableAgentgateway bool
 	// ControlPlane sets the default control plane information the deployer will use.
 	ControlPlane deployer.ControlPlaneInfo
-	// IstioAutoMtlsEnabled enables istio auto mtls mode for the controller,
-	// resulting in the deployer to enable istio and sds sidecars on the deployed proxies.
-	IstioAutoMtlsEnabled bool
-	// ImageInfo sets the default image information the deployer will use.
-	ImageInfo *deployer.ImageInfo
 	// DiscoveryNamespaceFilter filters namespaced objects based on the discovery namespace filter.
 	DiscoveryNamespaceFilter kubetypes.DynamicObjectFilter
 	// CommonCollections used to fetch ir.Gateways for the deployer to generate the ports for the proxy service
 	CommonCollections *collections.CommonCollections
-	// GatewayClassName is the configured gateway class name.
-	GatewayClassName string
-	// WaypointGatewayClassName is the configured waypoint gateway class name.
-	WaypointGatewayClassName string
 	// AgentgatewayClassName is the configured agent gateway class name.
 	AgentgatewayClassName string
 	// Additional GatewayClass definitions to support extending to other well-known gateway classes
@@ -70,12 +53,11 @@ func NewBaseGatewayController(
 	cfg GatewayConfig,
 	classInfos map[string]*deployer.GatewayClassInfo,
 	helmValuesGeneratorOverride HelmValuesGeneratorOverrideFunc,
-	gatewayControllerExtension pluginsdk.GatewayControllerExtension,
 ) error {
 	logger.Info("starting controllers")
 
 	// Initialize Gateway reconciler
-	if err := watchGw(cfg, helmValuesGeneratorOverride, gatewayControllerExtension); err != nil {
+	if err := watchGw(cfg, helmValuesGeneratorOverride); err != nil {
 		return nil
 	}
 
@@ -90,22 +72,17 @@ func NewBaseGatewayController(
 func watchGw(
 	cfg GatewayConfig,
 	helmValuesGeneratorOverride HelmValuesGeneratorOverrideFunc,
-	gatewayControllerExtension pluginsdk.GatewayControllerExtension,
 ) error {
 	logger.Info("creating gateway deployer",
-		"ctrlname", cfg.ControllerName, "agwctrlname", cfg.AgwControllerName,
-		"server", cfg.ControlPlane.XdsHost, "port", cfg.ControlPlane.XdsPort,
-		"agwport", cfg.ControlPlane.AgwXdsPort, "tls", cfg.ControlPlane.XdsTLS,
+		"agwctrlname", cfg.AgwControllerName,
+		"server", cfg.ControlPlane.XdsHost,
+		"port", cfg.ControlPlane.AgwXdsPort, "tls", cfg.ControlPlane.XdsTLS,
 	)
 
 	inputs := &deployer.Inputs{
 		Dev:                        cfg.Dev,
-		IstioAutoMtlsEnabled:       cfg.IstioAutoMtlsEnabled,
 		ControlPlane:               cfg.ControlPlane,
-		ImageInfo:                  cfg.ImageInfo,
 		CommonCollections:          cfg.CommonCollections,
-		GatewayClassName:           cfg.GatewayClassName,
-		WaypointGatewayClassName:   cfg.WaypointGatewayClassName,
 		AgentgatewayClassName:      cfg.AgentgatewayClassName,
 		AgentgatewayControllerName: cfg.AgwControllerName,
 	}
@@ -116,7 +93,6 @@ func watchGw(
 	}
 
 	d, err := internaldeployer.NewGatewayDeployer(
-		cfg.ControllerName,
 		cfg.AgwControllerName,
 		cfg.AgentgatewayClassName,
 		cfg.Mgr.GetScheme(),
@@ -127,5 +103,5 @@ func watchGw(
 		return err
 	}
 
-	return cfg.Mgr.Add(NewGatewayReconciler(cfg, d, gwParams, gatewayControllerExtension))
+	return cfg.Mgr.Add(NewGatewayReconciler(cfg, d, gwParams))
 }

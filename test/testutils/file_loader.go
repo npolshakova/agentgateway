@@ -2,7 +2,6 @@ package testutils
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -180,23 +179,6 @@ func truncateString(str string, num int) string {
 		result = str[0:num] + "..."
 	}
 	return result
-}
-
-func MarshalAnyYaml(m any) ([]byte, error) {
-	jsn, err := json.Marshal(m)
-	if err != nil {
-		return nil, err
-	}
-	return yaml.JSONToYAML(jsn)
-}
-
-func UnmarshalAnyYaml(data []byte, into any) error {
-	jsn, err := yaml.YAMLToJSON(data)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(jsn, into)
 }
 
 func ToRuntimeObjects(objs ...client.Object) []runtime.Object {

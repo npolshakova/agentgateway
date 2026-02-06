@@ -14,7 +14,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/xds"
+	"github.com/kgateway-dev/kgateway/v2/api/settings"
 )
 
 const (
@@ -41,7 +41,7 @@ data:
   tls.crt: %s
   tls.key: %s
 `,
-		xds.TLSSecretName,
+		settings.TLSSecretName,
 		ns,
 		base64.StdEncoding.EncodeToString(certPEM),
 		base64.StdEncoding.EncodeToString(certPEM),

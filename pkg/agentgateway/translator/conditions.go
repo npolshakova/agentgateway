@@ -18,32 +18,16 @@ const (
 	ParentErrorNotAccepted       = ParentErrorReason(gwv1.RouteReasonNoMatchingParent)
 	ParentErrorNotAllowed        = ParentErrorReason(gwv1.RouteReasonNotAllowedByListeners)
 	ParentErrorNoHostname        = ParentErrorReason(gwv1.RouteReasonNoMatchingListenerHostname)
-	ParentErrorParentRefConflict = ParentErrorReason("ParentRefConflict")
-	ParentNoError                = ParentErrorReason("")
 )
 
 // ConfigErrorReason is the error string for a ConfigError (reason configuration is invalid)
 type ConfigErrorReason = string
 
 const (
-	// InvalidDestination indicates an issue with the destination
-	InvalidDestination ConfigErrorReason = "InvalidDestination"
-	InvalidAddress     ConfigErrorReason = ConfigErrorReason(gwv1.GatewayReasonUnsupportedAddress)
-	// InvalidDestinationPermit indicates a destination was not permitted
-	InvalidDestinationPermit ConfigErrorReason = ConfigErrorReason(gwv1.RouteReasonRefNotPermitted)
-	// InvalidDestinationKind indicates an issue with the destination kind
-	InvalidDestinationKind ConfigErrorReason = ConfigErrorReason(gwv1.RouteReasonInvalidKind)
-	// InvalidDestinationNotFound indicates a destination does not exist
-	InvalidDestinationNotFound ConfigErrorReason = ConfigErrorReason(gwv1.RouteReasonBackendNotFound)
-	// InvalidFilter indicates an issue with the filters
-	InvalidFilter ConfigErrorReason = "InvalidFilter"
 	// InvalidTLS indicates an issue with TLS settings
-	InvalidTLS ConfigErrorReason = ConfigErrorReason(gwv1.ListenerReasonInvalidCertificateRef)
+	InvalidTLS = ConfigErrorReason(gwv1.ListenerReasonInvalidCertificateRef)
 	// InvalidListenerRefNotPermitted indicates a listener reference was not permitted
-	InvalidListenerRefNotPermitted ConfigErrorReason = ConfigErrorReason(gwv1.ListenerReasonRefNotPermitted)
-	// InvalidConfiguration indicates a generic error for all other invalid configurations
-	InvalidConfiguration ConfigErrorReason = "InvalidConfiguration"
-	DeprecateFieldUsage  ConfigErrorReason = "DeprecatedField"
+	InvalidListenerRefNotPermitted = ConfigErrorReason(gwv1.ListenerReasonRefNotPermitted)
 )
 
 // ParentError represents that a parent could not be referenced

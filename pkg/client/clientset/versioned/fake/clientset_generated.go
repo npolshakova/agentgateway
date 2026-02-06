@@ -4,10 +4,8 @@ package fake
 
 import (
 	clientset "github.com/kgateway-dev/kgateway/v2/pkg/client/clientset/versioned"
-	gatewayagentgateway "github.com/kgateway-dev/kgateway/v2/pkg/client/clientset/versioned/typed/v1alpha1/agentgateway"
-	fakegatewayagentgateway "github.com/kgateway-dev/kgateway/v2/pkg/client/clientset/versioned/typed/v1alpha1/agentgateway/fake"
-	gatewaykgateway "github.com/kgateway-dev/kgateway/v2/pkg/client/clientset/versioned/typed/v1alpha1/kgateway"
-	fakegatewaykgateway "github.com/kgateway-dev/kgateway/v2/pkg/client/clientset/versioned/typed/v1alpha1/kgateway/fake"
+	agentgatewayagentgateway "github.com/kgateway-dev/kgateway/v2/pkg/client/clientset/versioned/typed/v1alpha1/agentgateway"
+	fakeagentgatewayagentgateway "github.com/kgateway-dev/kgateway/v2/pkg/client/clientset/versioned/typed/v1alpha1/agentgateway/fake"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
@@ -74,12 +72,7 @@ var (
 	_ testing.FakeClient  = &Clientset{}
 )
 
-// GatewayKgateway retrieves the GatewayKgatewayClient
-func (c *Clientset) GatewayKgateway() gatewaykgateway.GatewayKgatewayInterface {
-	return &fakegatewaykgateway.FakeGatewayKgateway{Fake: &c.Fake}
-}
-
-// GatewayAgentgateway retrieves the GatewayAgentgatewayClient
-func (c *Clientset) GatewayAgentgateway() gatewayagentgateway.GatewayAgentgatewayInterface {
-	return &fakegatewayagentgateway.FakeGatewayAgentgateway{Fake: &c.Fake}
+// AgentgatewayAgentgateway retrieves the AgentgatewayAgentgatewayClient
+func (c *Clientset) AgentgatewayAgentgateway() agentgatewayagentgateway.AgentgatewayAgentgatewayInterface {
+	return &fakeagentgatewayagentgateway.FakeAgentgatewayAgentgateway{Fake: &c.Fake}
 }

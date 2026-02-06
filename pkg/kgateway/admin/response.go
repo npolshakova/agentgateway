@@ -75,10 +75,3 @@ func formatOutput(format OutputFormat, genericOutput any) ([]byte, error) {
 		return nil, fmt.Errorf("invalid format of %s", format)
 	}
 }
-
-func completeSnapshotResponse(data any) SnapshotResponseData {
-	return SnapshotResponseData{
-		Data:  data,
-		Error: nil,
-	}
-}

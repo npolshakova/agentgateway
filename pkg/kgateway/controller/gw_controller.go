@@ -14,7 +14,6 @@ import (
 	"istio.io/istio/pkg/kube"
 	"istio.io/istio/pkg/kube/controllers"
 	"istio.io/istio/pkg/kube/kclient"
-	"istio.io/istio/pkg/kube/krt"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -31,19 +30,12 @@ import (
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/kgateway-dev/kgateway/v2/api/v1alpha1/agentgateway"
-	"github.com/kgateway-dev/kgateway/v2/api/v1alpha1/kgateway"
 	"github.com/kgateway-dev/kgateway/v2/pkg/deployer"
 	internaldeployer "github.com/kgateway-dev/kgateway/v2/pkg/kgateway/deployer"
 	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/wellknown"
 	"github.com/kgateway-dev/kgateway/v2/pkg/logging"
-	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk"
-	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/ir"
 	"github.com/kgateway-dev/kgateway/v2/pkg/reports"
 	"github.com/kgateway-dev/kgateway/v2/pkg/utils/kubeutils"
-)
-
-const (
-	GatewayAutoDeployAnnotationKey = "gateway.kgateway.dev/auto-deploy"
 )
 
 var logger = logging.New("gateway-controller")
@@ -54,22 +46,16 @@ type gatewayReconciler struct {
 	deployer          *deployer.Deployer
 	gwParams          *internaldeployer.GatewayParameters
 	scheme            *runtime.Scheme
-	controllerName    string
 	agwControllerName string
-	enableEnvoy       bool
-	enableAgw         bool
 
 	gwClient         kclient.Client[*gwv1.Gateway]
 	gwClassClient    kclient.Client[*gwv1.GatewayClass]
-	gwParamClient    kclient.Client[*kgateway.GatewayParameters]
 	agwParamClient   kclient.Client[*agentgateway.AgentgatewayParameters]
 	nsClient         kclient.Client[*corev1.Namespace]
 	svcClient        kclient.Client[*corev1.Service]
 	deploymentClient kclient.Client[*appsv1.Deployment]
 	svcAccountClient kclient.Client[*corev1.ServiceAccount]
 	configMapClient  kclient.Client[*corev1.ConfigMap]
-
-	controllerExtension pluginsdk.GatewayControllerExtension
 
 	queue controllers.Queue
 }
@@ -78,18 +64,13 @@ func NewGatewayReconciler(
 	cfg GatewayConfig,
 	deployer *deployer.Deployer,
 	gwParams *internaldeployer.GatewayParameters,
-	controllerExtension pluginsdk.GatewayControllerExtension,
 ) *gatewayReconciler {
 	filter := kclient.Filter{ObjectFilter: cfg.Client.ObjectFilter()}
 	r := &gatewayReconciler{
-		deployer:            deployer,
-		gwParams:            gwParams,
-		scheme:              cfg.Mgr.GetScheme(),
-		controllerName:      cfg.ControllerName,
-		agwControllerName:   cfg.AgwControllerName,
-		enableEnvoy:         cfg.CommonCollections.Settings.EnableEnvoy,
-		enableAgw:           cfg.CommonCollections.Settings.EnableAgentgateway,
-		controllerExtension: controllerExtension,
+		deployer:          deployer,
+		gwParams:          gwParams,
+		scheme:            cfg.Mgr.GetScheme(),
+		agwControllerName: cfg.AgwControllerName,
 
 		gwClient:         kclient.NewFilteredDelayed[*gwv1.Gateway](cfg.Client, gvr.KubernetesGateway, filter),
 		gwClassClient:    kclient.NewFilteredDelayed[*gwv1.GatewayClass](cfg.Client, gvr.GatewayClass, filter),
@@ -102,7 +83,6 @@ func NewGatewayReconciler(
 
 	// Reuse the parameter clients from the deployer to avoid duplicate watches
 	// These clients are only created when the respective controllers are enabled
-	r.gwParamClient = gwParams.GetGatewayParametersClient()
 	r.agwParamClient = gwParams.GetAgentgatewayParametersClient()
 
 	r.queue = controllers.NewQueue("GatewayController", controllers.WithReconciler(r.Reconcile), controllers.WithMaxAttempts(math.MaxInt), controllers.WithRateLimiter(rateLimiter))
@@ -142,8 +122,7 @@ func NewGatewayReconciler(
 			return
 		}
 		// If this GatewayClass is not ours, ignore it
-		if !(gwClass.Spec.ControllerName == gwv1.GatewayController(r.controllerName) ||
-			gwClass.Spec.ControllerName == gwv1.GatewayController(r.agwControllerName)) {
+		if gwClass.Spec.ControllerName != gwv1.GatewayController(r.agwControllerName) {
 			return
 		}
 		for _, g := range r.gwClient.List(metav1.NamespaceAll, labels.Everything()) {
@@ -167,46 +146,6 @@ func NewGatewayReconciler(
 		p := fetchGatewaysByGatewayClass(o)
 		return []types.NamespacedName{p}
 	})
-	// gwParamEventHandler is a handler that reconciles Gateways based on GatewayParameters changes
-	gwParamEventHandler := controllers.ObjectHandler(func(o controllers.Object) {
-		gwpName := o.GetName()
-		gwpNamespace := o.GetNamespace()
-
-		// 1. Look up Gateways directly using this GatewayParameters object (via spec.infrastructure.parametersRef)
-		gateways := gatewaysByParamsRef.Lookup(types.NamespacedName{Namespace: gwpNamespace, Name: gwpName})
-		for _, gw := range gateways {
-			logger.Debug("reconciling Gateway due to GatewayParameters change",
-				"ref", kubeutils.NamespacedNameFrom(gw), "gwparam", types.NamespacedName{Namespace: gwpNamespace, Name: gwpName})
-			r.queue.AddObject(gw)
-		}
-
-		// 2. Look up GatewayClasses using this GatewayParameters object (via spec.parametersRef)
-		gwClasses := r.gwClassClient.List(metav1.NamespaceAll, labels.Everything())
-		// For each GatewayClass that references this parameter, find all Gateways using that class
-		for _, gc := range gwClasses {
-			// Only process GatewayClasses managed by our controllers
-			if gc.Spec.ControllerName != gwv1.GatewayController(r.controllerName) &&
-				gc.Spec.ControllerName != gwv1.GatewayController(r.agwControllerName) {
-				continue
-			}
-			if gc.Spec.ParametersRef != nil &&
-				gc.Spec.ParametersRef.Name == gwpName &&
-				gc.Spec.ParametersRef.Namespace != nil && string(*gc.Spec.ParametersRef.Namespace) == gwpNamespace {
-				// This GatewayClass references our GatewayParameters, find all Gateways using this class
-				gateways := gatewaysByClass.Lookup(types.NamespacedName{Name: gc.Name})
-				for _, gw := range gateways {
-					logger.Debug("reconciling Gateway due to GatewayParameters change via GatewayClass",
-						"ref", kubeutils.NamespacedNameFrom(gw), "gwparam", types.NamespacedName{Namespace: gwpNamespace, Name: gwpName},
-						"gwclass", gc.Name)
-					r.queue.AddObject(gw)
-				}
-			}
-		}
-	})
-	if r.gwParamClient != nil {
-		r.gwParamClient.AddEventHandler(gwParamEventHandler)
-	}
-
 	// AgentgatewayParameters event handler (same logic as GatewayParameters)
 	// agwParamEventHandler is a handler that reconciles Gateways based on AgentgatewayParameters changes
 	agwParamEventHandler := controllers.ObjectHandler(func(o controllers.Object) {
@@ -226,8 +165,7 @@ func NewGatewayReconciler(
 		// For each GatewayClass that references this parameter, find all Gateways using that class
 		for _, gc := range gwClasses {
 			// Only process GatewayClasses managed by our controllers
-			if gc.Spec.ControllerName != gwv1.GatewayController(r.controllerName) &&
-				gc.Spec.ControllerName != gwv1.GatewayController(r.agwControllerName) {
+			if gc.Spec.ControllerName != gwv1.GatewayController(r.agwControllerName) {
 				continue
 			}
 			if gc.Spec.ParametersRef != nil &&
@@ -249,12 +187,13 @@ func NewGatewayReconciler(
 	}
 
 	// Custom event handler for XListenerSet changes
-	cfg.CommonCollections.GatewayIndex.GatewaysForDeployer.Register(func(o krt.Event[ir.GatewayForDeployer]) {
-		gw := o.Latest()
-		ref := types.NamespacedName{Namespace: gw.Namespace, Name: gw.Name}
-		logger.Debug("reconciling Gateway due to XListenerSet change", "ref", ref)
-		r.queue.Add(ref)
-	})
+	// TODODONOTMERGE
+	//cfg.CommonCollections.GatewayIndex.GatewaysForDeployer.Register(func(o krt.Event[ir.GatewayForDeployer]) {
+	//	gw := o.Latest()
+	//	ref := types.NamespacedName{Namespace: gw.Namespace, Name: gw.Name}
+	//	logger.Debug("reconciling Gateway due to XListenerSet change", "ref", ref)
+	//	r.queue.Add(ref)
+	//})
 
 	// Add a handler to reconcile the parent Gateway when child objects (Deployment, Service, etc.)
 	parentHandler := controllers.ObjectHandler(controllers.EnqueueForParentHandler(r.queue, gvk.KubernetesGateway))
@@ -264,9 +203,10 @@ func NewGatewayReconciler(
 	r.configMapClient.AddEventHandler(parentHandler)
 
 	// Register controller extensions
-	if controllerExtension != nil {
-		controllerExtension.Register(r.queue, gwParamEventHandler)
-	}
+	// TODODONOTMERGE
+	//if controllerExtension != nil {
+	//	controllerExtension.Register(r.queue, gwParamEventHandler)
+	//}
 
 	// Add a handler to reconcile the Gateways when the xDS TLS certificate changes
 	r.setupTLSCertificateWatch(cfg.CertWatcher)
@@ -296,9 +236,6 @@ func (r *gatewayReconciler) Start(ctx context.Context) error {
 
 	// Wait for all caches to sync
 	kube.WaitForCacheSync("GatewayController", ctx.Done(), hasSynced...)
-	if r.controllerExtension != nil {
-		r.controllerExtension.Start(ctx)
-	}
 	r.queue.Run(ctx.Done())
 
 	// Shutdown all the clients
@@ -311,16 +248,11 @@ func (r *gatewayReconciler) Start(ctx context.Context) error {
 		r.svcClient,
 		r.configMapClient,
 	}
-	if r.gwParamClient != nil {
-		clients = append(clients, r.gwParamClient)
-	}
 	if r.agwParamClient != nil {
 		clients = append(clients, r.agwParamClient)
 	}
 	controllers.ShutdownAll(clients...)
-	if r.controllerExtension != nil {
-		r.controllerExtension.Stop()
-	}
+
 	return nil
 }
 
@@ -344,18 +276,8 @@ func (r *gatewayReconciler) Reconcile(req types.NamespacedName) (rErr error) {
 	}
 
 	// Only reconcile Gateways for enabled controllers
-	isEnvoyGateway := gwc.Spec.ControllerName == gwv1.GatewayController(r.controllerName)
 	isAgwGateway := gwc.Spec.ControllerName == gwv1.GatewayController(r.agwControllerName)
-
-	if isEnvoyGateway && !r.enableEnvoy {
-		logger.Debug("skipping gateway for disabled envoy controller", "gateway", req, "controllerName", gwc.Spec.ControllerName)
-		return nil
-	}
-	if isAgwGateway && !r.enableAgw {
-		logger.Debug("skipping gateway for disabled agentgateway controller", "gateway", req, "controllerName", gwc.Spec.ControllerName)
-		return nil
-	}
-	if !isEnvoyGateway && !isAgwGateway {
+	if !isAgwGateway {
 		// Not our GatewayClass at all
 		return nil
 	}
@@ -517,7 +439,7 @@ func updateGatewayStatusWithRetryFunc(
 			return nil
 		}
 		_, err := cli.UpdateStatus(&gwv1.Gateway{
-			ObjectMeta: pluginsdk.CloneObjectMetaForStatus(gw.ObjectMeta),
+			ObjectMeta: CloneObjectMetaForStatus(gw.ObjectMeta),
 			Status:     status,
 		})
 		return err
@@ -586,8 +508,7 @@ func (r *gatewayReconciler) setupTLSCertificateWatch(certWatcher *certwatcher.Ce
 				logger.Error("error getting GatewayClass for Gateway during certificate change", "ref", ref)
 				continue
 			}
-			if gwClass.Spec.ControllerName == gwv1.GatewayController(r.controllerName) ||
-				gwClass.Spec.ControllerName == gwv1.GatewayController(r.agwControllerName) {
+			if gwClass.Spec.ControllerName == gwv1.GatewayController(r.agwControllerName) {
 				logger.Debug("enqueueing Gateway for reconciliation due to certificate change", "ref", ref)
 				r.queue.AddObject(gw)
 			}

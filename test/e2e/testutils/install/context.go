@@ -26,14 +26,6 @@ type Context struct {
 	ExtraHelmArgs []string
 }
 
-// GetChartType returns the chart type, defaulting to "kgateway" if not specified
-func (c *Context) GetChartType() string {
-	if c.ChartType == "" {
-		return "kgateway"
-	}
-	return c.ChartType
-}
-
 // ValidateInstallContext returns an error if the provided Context is invalid
 func ValidateInstallContext(context *Context) error {
 	return ValidateContext(context, validateValuesManifest)

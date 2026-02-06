@@ -1,18 +1,3 @@
-apiVersion: gateway.networking.k8s.io/v1
-kind: Gateway
-metadata:
-  name: ai-gateway
-  namespace: default
-spec:
-  gatewayClassName: agentgateway
-  listeners:
-  - allowedRoutes:
-      namespaces:
-        from: Same
-    name: http
-    port: 8080
-    protocol: HTTP
----
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
@@ -54,7 +39,8 @@ spec:
   parentRefs:
   - group: gateway.networking.k8s.io
     kind: Gateway
-    name: ai-gateway
+    name: gateway
+    namespace: agentgateway-base
   rules:
   - name: openai
     backendRefs:

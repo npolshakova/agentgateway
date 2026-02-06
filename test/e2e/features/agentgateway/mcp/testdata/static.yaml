@@ -18,7 +18,8 @@ metadata:
   name: mcp-route
 spec:
   parentRefs:
-  - name: gw
+  - name: gateway
+    namespace: agentgateway-base
   rules:
     - backendRefs:
       - name: mcp-backend

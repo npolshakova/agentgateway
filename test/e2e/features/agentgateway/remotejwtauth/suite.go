@@ -12,10 +12,9 @@ import (
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/kgateway-dev/kgateway/v2/pkg/utils/fsutils"
-	"github.com/kgateway-dev/kgateway/v2/pkg/utils/kubeutils"
 	"github.com/kgateway-dev/kgateway/v2/pkg/utils/requestutils/curl"
 	"github.com/kgateway-dev/kgateway/v2/test/e2e"
-	testdefaults "github.com/kgateway-dev/kgateway/v2/test/e2e/defaults"
+	"github.com/kgateway-dev/kgateway/v2/test/e2e/common"
 	"github.com/kgateway-dev/kgateway/v2/test/e2e/tests/base"
 	testmatchers "github.com/kgateway-dev/kgateway/v2/test/gomega/matchers"
 )
@@ -28,7 +27,7 @@ import (
 var _ e2e.NewSuiteFunc = NewTestingSuite
 
 const (
-	namespace = "default"
+	namespace = "agentgateway-base"
 	// jwt subject is "ignore@kgateway.dev"
 	// could also retrieve these jwts from  https://dummy-idp.default:8443/org-one/jwt, https://dummy-idp.default:8443/org-two/jwt
 	JwtOrgOne = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjUzNTAyMzEyMTkzMDYwMzg2OTIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2tnYXRld2F5LmRldiIsInN1YiI6Imlnbm9yZUBrZ2F0ZXdheS5kZXYiLCJleHAiOjIwNzExNjM0MDcsIm5iZiI6MTc2MzU3OTQwNywiaWF0IjoxNzYzNTc5NDA3fQ.TsHCCdd0_629wibU4EviEi1-_UXaFUX1NuLgXCrC-tr7kqlcnUJIJC0WSab1EgXKtF8gTfwTUeQcAQNrunwngQU-K9DFcH5-2vnGeiXV3_X3SokkPq74ceRrCFEL2d7YNaGfhq_UNyvKRJsRz-pwdKK7QIPXALmWaUHn7EV7zU-CcPCKNwmt62P88qNp5HYSbgqz_WfnzIIH8LANpCC8fUqVedgTJMJ86E06pfDNUuuXe_fhjgMQXlfyDeUxIuzJunvS2qIqt4IYMzjcQbl2QI1QK3xz37tridSP_WVuuMUe2Lqo0oDjWVpxqPb5fb90W6a6khRP59Pf6qKMbQ9SQg"
@@ -38,13 +37,10 @@ const (
 )
 
 var (
-	proxyObjectMeta = metav1.ObjectMeta{Name: "super-gateway", Namespace: namespace}
-
 	setup = base.TestCase{
 		Manifests: []string{
 			getTestFile("common.yaml"),
 			getTestFile("service.yaml"),
-			testdefaults.CurlPodManifest,
 		},
 	}
 
@@ -84,16 +80,11 @@ var (
 
 type testingSuite struct {
 	*base.BaseTestingSuite
-
-	// testInstallation contains all the metadata/utilities necessary to execute a series of tests
-	// against an installation of kgateway
-	testInstallation *e2e.TestInstallation
 }
 
 func NewTestingSuite(ctx context.Context, testInst *e2e.TestInstallation) suite.TestingSuite {
 	return &testingSuite{
 		BaseTestingSuite: base.NewBaseTestingSuite(ctx, testInst, setup, testCases),
-		testInstallation: testInst,
 	}
 }
 
@@ -115,7 +106,7 @@ func (s *testingSuite) TestRoutePolicyBackend() {
 	s.TestInstallation.AssertionsT(s.T()).EventuallyHTTPRouteCondition(
 		s.Ctx,
 		"route-example-insecure",
-		"default",
+		namespace,
 		gwv1.RouteConditionAccepted,
 		metav1.ConditionTrue,
 	)
@@ -125,7 +116,7 @@ func (s *testingSuite) TestRoutePolicyBackend() {
 	s.TestInstallation.AssertionsT(s.T()).EventuallyHTTPRouteCondition(
 		s.Ctx,
 		"route-secure",
-		"default",
+		namespace,
 		gwv1.RouteConditionAccepted,
 		metav1.ConditionTrue,
 	)
@@ -141,7 +132,7 @@ func (s *testingSuite) TestRoutePolicyBackendAndTlsPolicy() {
 	s.TestInstallation.AssertionsT(s.T()).EventuallyHTTPRouteCondition(
 		s.Ctx,
 		"route-secure",
-		"default",
+		namespace,
 		gwv1.RouteConditionAccepted,
 		metav1.ConditionTrue,
 	)
@@ -160,7 +151,7 @@ func (s *testingSuite) TestRoutePolicySvc() {
 	s.TestInstallation.AssertionsT(s.T()).EventuallyHTTPRouteCondition(
 		s.Ctx,
 		"route-secure",
-		"default",
+		namespace,
 		gwv1.RouteConditionAccepted,
 		metav1.ConditionTrue,
 	)
@@ -175,7 +166,7 @@ func (s *testingSuite) TestRoutePolicyWithRbac() {
 	s.TestInstallation.AssertionsT(s.T()).EventuallyHTTPRouteCondition(
 		s.Ctx,
 		"route-secure",
-		"default",
+		namespace,
 		gwv1.RouteConditionAccepted,
 		metav1.ConditionTrue,
 	)
@@ -189,7 +180,7 @@ func (s *testingSuite) TestGatewayPolicySvc() {
 	s.TestInstallation.AssertionsT(s.T()).EventuallyHTTPRouteCondition(
 		s.Ctx,
 		"route-secure-gw",
-		"default",
+		namespace,
 		gwv1.RouteConditionAccepted,
 		metav1.ConditionTrue,
 	)
@@ -207,7 +198,7 @@ func (s *testingSuite) TestGatewayPolicyBackend() {
 	s.TestInstallation.AssertionsT(s.T()).EventuallyHTTPRouteCondition(
 		s.Ctx,
 		"route-secure-gw",
-		"default",
+		namespace,
 		gwv1.RouteConditionAccepted,
 		metav1.ConditionTrue,
 	)
@@ -222,7 +213,7 @@ func (s *testingSuite) TestGatewayPolicyBackendWithTlsPolicy() {
 	s.TestInstallation.AssertionsT(s.T()).EventuallyHTTPRouteCondition(
 		s.Ctx,
 		"route-secure-gw",
-		"default",
+		namespace,
 		gwv1.RouteConditionAccepted,
 		metav1.ConditionTrue,
 	)
@@ -236,7 +227,7 @@ func (s *testingSuite) TestGatewayPolicyWithRbac() {
 	s.TestInstallation.AssertionsT(s.T()).EventuallyHTTPRouteCondition(
 		s.Ctx,
 		"route-secure-gw",
-		"default",
+		namespace,
 		gwv1.RouteConditionAccepted,
 		metav1.ConditionTrue,
 	)
@@ -247,32 +238,24 @@ func (s *testingSuite) TestGatewayPolicyWithRbac() {
 }
 
 func (s *testingSuite) assertResponse(hostHeader, authHeader string, expectedStatus int) {
-	s.testInstallation.AssertionsT(s.T()).AssertEventualCurlResponse(
-		s.Ctx,
-		testdefaults.CurlPodExecOpt,
-		[]curl.Option{
-			curl.WithHost(kubeutils.ServiceFQDN(proxyObjectMeta)),
-			curl.WithHostHeader(hostHeader),
-			curl.WithHeader("Authorization", "Bearer "+authHeader),
-			curl.WithPort(8080),
-		},
+	common.BaseGateway.Send(
+		s.T(),
 		&testmatchers.HttpResponse{
 			StatusCode: expectedStatus,
-		})
+		},
+		curl.WithHostHeader(hostHeader),
+		curl.WithHeader("Authorization", "Bearer "+authHeader),
+	)
 }
 
 func (s *testingSuite) assertResponseWithoutAuth(hostHeader string, expectedStatus int) {
-	s.testInstallation.AssertionsT(s.T()).AssertEventualCurlResponse(
-		s.Ctx,
-		testdefaults.CurlPodExecOpt,
-		[]curl.Option{
-			curl.WithHost(kubeutils.ServiceFQDN(proxyObjectMeta)),
-			curl.WithHostHeader(hostHeader),
-			curl.WithPort(8080),
-		},
+	common.BaseGateway.Send(
+		s.T(),
 		&testmatchers.HttpResponse{
 			StatusCode: expectedStatus,
-		})
+		},
+		curl.WithHostHeader(hostHeader),
+	)
 }
 
 func getTestFile(filename string) string {

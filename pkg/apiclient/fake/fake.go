@@ -15,7 +15,6 @@ import (
 	"sigs.k8s.io/gateway-api/pkg/consts"
 
 	"github.com/kgateway-dev/kgateway/v2/api/v1alpha1/agentgateway"
-	"github.com/kgateway-dev/kgateway/v2/api/v1alpha1/kgateway"
 	"github.com/kgateway-dev/kgateway/v2/pkg/apiclient"
 	"github.com/kgateway-dev/kgateway/v2/pkg/client/clientset/versioned"
 	"github.com/kgateway-dev/kgateway/v2/pkg/client/clientset/versioned/fake"
@@ -99,14 +98,7 @@ func fakeKgwClient(objects ...client.Object) *fake.Clientset {
 func filterObjects(objects ...client.Object) (istio []client.Object, kgw []client.Object) {
 	for _, obj := range objects {
 		switch obj.(type) {
-		case *kgateway.Backend,
-			*kgateway.BackendConfigPolicy,
-			*kgateway.DirectResponse,
-			*kgateway.GatewayExtension,
-			*kgateway.GatewayParameters,
-			*kgateway.HTTPListenerPolicy,
-			*kgateway.ListenerPolicy,
-			*kgateway.TrafficPolicy,
+		case
 			*agentgateway.AgentgatewayPolicy,
 			*agentgateway.AgentgatewayBackend,
 			*agentgateway.AgentgatewayParameters:

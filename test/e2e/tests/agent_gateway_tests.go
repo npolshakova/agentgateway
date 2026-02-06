@@ -28,28 +28,24 @@ import (
 func AgentgatewaySuiteRunner() e2e.SuiteRunner {
 	agentgatewaySuiteRunner := e2e.NewSuiteRunner(false)
 
-	// Slow tests not yet migrated to use the more modern testing approach
 	agentgatewaySuiteRunner.Register("A2A", a2a.NewTestingSuite)
 	agentgatewaySuiteRunner.Register("BasicRouting", agentgateway.NewTestingSuite)
-	agentgatewaySuiteRunner.Register("Extauth", extauth.NewTestingSuite)
-	agentgatewaySuiteRunner.Register("Extproc", extproc.NewTestingSuite)
-	agentgatewaySuiteRunner.Register("LocalRateLimit", local_rate_limit.NewTestingSuite)
-	agentgatewaySuiteRunner.Register("GlobalRateLimit", global_rate_limit.NewTestingSuite)
-	agentgatewaySuiteRunner.Register("MCP", mcp.NewTestingSuite)
-	agentgatewaySuiteRunner.Register("AIBackend", aibackend.NewTestingSuite)
-	agentgatewaySuiteRunner.Register("ConfigMap", configmap.NewTestingSuite) // redeploys by need
-	agentgatewaySuiteRunner.Register("RemoteJwtAuth", remotejwtauth.NewTestingSuite)
-	agentgatewaySuiteRunner.Register("Tracing", tracing.NewTestingSuite)
-
-	// Fast tests
-	agentgatewaySuiteRunner.Register("CSRF", csrf.NewTestingSuite)
-	agentgatewaySuiteRunner.Register("LocalRateLimit", local_rate_limit.NewTestingSuite)
-	agentgatewaySuiteRunner.Register("RBAC", rbac.NewTestingSuite)
-	agentgatewaySuiteRunner.Register("Transformation", transformation.NewTestingSuite)
 	agentgatewaySuiteRunner.Register("BackendTLSPolicy", backendtls.NewTestingSuite)
 	agentgatewaySuiteRunner.Register("BasicAuth", basicauth.NewTestingSuite)
 	agentgatewaySuiteRunner.Register("ApiKeyAuth", apikeyauth.NewTestingSuite)
 	agentgatewaySuiteRunner.Register("JwtAuth", jwtauth.NewTestingSuite)
+	agentgatewaySuiteRunner.Register("CSRF", csrf.NewTestingSuite)
+	agentgatewaySuiteRunner.Register("Extauth", extauth.NewTestingSuite)
+	agentgatewaySuiteRunner.Register("Extproc", extproc.NewTestingSuite)
+	agentgatewaySuiteRunner.Register("LocalRateLimit", local_rate_limit.NewTestingSuite)
+	agentgatewaySuiteRunner.Register("GlobalRateLimit", global_rate_limit.NewTestingSuite)
+	agentgatewaySuiteRunner.Register("RBAC", rbac.NewTestingSuite)
+	agentgatewaySuiteRunner.Register("MCP", mcp.NewTestingSuite)
+	agentgatewaySuiteRunner.Register("AIBackend", aibackend.NewTestingSuite)
+	agentgatewaySuiteRunner.Register("Transformation", transformation.NewTestingSuite)
+	agentgatewaySuiteRunner.Register("RemoteJwtAuth", remotejwtauth.NewTestingSuite)
+	agentgatewaySuiteRunner.Register("ConfigMap", configmap.NewTestingSuite) // redeploys by need
+	agentgatewaySuiteRunner.Register("Tracing", tracing.NewTestingSuite)
 	agentgatewaySuiteRunner.Register("PolicyStatus", policystatus.NewTestingSuite)
 
 	return agentgatewaySuiteRunner

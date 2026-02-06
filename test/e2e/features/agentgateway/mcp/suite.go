@@ -14,7 +14,6 @@ import (
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/kgateway-dev/kgateway/v2/test/e2e"
-	"github.com/kgateway-dev/kgateway/v2/test/e2e/defaults"
 	"github.com/kgateway-dev/kgateway/v2/test/e2e/tests/base"
 )
 
@@ -241,10 +240,6 @@ func (s *testingSuite) waitDynamicReady() {
 		s.Ctx, "default",
 		metav1.ListOptions{LabelSelector: "app=mcp-website-fetcher"},
 	)
-	s.TestInstallation.AssertionsT(s.T()).EventuallyPodsRunning(
-		s.Ctx, "curl",
-		metav1.ListOptions{LabelSelector: defaults.WellKnownAppLabel + "=curl"},
-	)
 	s.TestInstallation.AssertionsT(s.T()).EventuallyGatewayCondition(s.Ctx, gatewayName, gatewayNamespace, gwv1.GatewayConditionProgrammed, metav1.ConditionTrue)
 	s.TestInstallation.AssertionsT(s.T()).EventuallyAgwBackendCondition(s.Ctx, "admin-mcp-backend", "default", "Accepted", metav1.ConditionTrue)
 	s.TestInstallation.AssertionsT(s.T()).EventuallyAgwBackendCondition(s.Ctx, "user-mcp-backend", "default", "Accepted", metav1.ConditionTrue)
@@ -258,10 +253,6 @@ func (s *testingSuite) waitStaticReady() {
 	s.TestInstallation.AssertionsT(s.T()).EventuallyPodsRunning(
 		s.Ctx, "default",
 		metav1.ListOptions{LabelSelector: "app=mcp-website-fetcher"},
-	)
-	s.TestInstallation.AssertionsT(s.T()).EventuallyPodsRunning(
-		s.Ctx, "curl",
-		metav1.ListOptions{LabelSelector: defaults.WellKnownAppLabel + "=curl"},
 	)
 	s.TestInstallation.AssertionsT(s.T()).EventuallyGatewayCondition(s.Ctx, gatewayName, gatewayNamespace, gwv1.GatewayConditionProgrammed, metav1.ConditionTrue)
 	s.TestInstallation.AssertionsT(s.T()).EventuallyAgwBackendCondition(s.Ctx, "mcp-backend", "default", "Accepted", metav1.ConditionTrue)

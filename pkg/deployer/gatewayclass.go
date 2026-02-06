@@ -26,24 +26,6 @@ type GatewayClassInfo struct {
 	SupportedFeatures []gwv1.SupportedFeature
 }
 
-// GetSupportedFeaturesForStandardGateway returns the supported features for the standard Gateway class.
-// This is derived from the conformance test configuration where we exempt certain features.
-func GetSupportedFeaturesForStandardGateway() []gwv1.SupportedFeature {
-	exemptFeatures := GetCommonExemptFeatures()
-	// backfill individual features that we don't support yet.
-	exemptFeatures.Insert(
-		features.GatewayHTTPListenerIsolationFeature,
-	)
-	return getSupportedFeatures(exemptFeatures)
-}
-
-// GetSupportedFeaturesForWaypointGateway returns the supported features for the waypoint Gateway class.
-// Waypoint gateways have similar support to standard gateways but may have some differences.
-func GetSupportedFeaturesForWaypointGateway() []gwv1.SupportedFeature {
-	// For now, waypoint gateways support the same features as standard gateways
-	return GetSupportedFeaturesForStandardGateway()
-}
-
 // GetSupportedFeaturesForAgentGateway returns the supported features for the agent Gateway class.
 // Agent gateways support additional features beyond the standard gateway class.
 func GetSupportedFeaturesForAgentGateway() []gwv1.SupportedFeature {

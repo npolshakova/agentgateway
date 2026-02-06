@@ -35,12 +35,6 @@ const (
 	// Kind string for InferencePool resource
 	InferencePoolKind = "InferencePool"
 
-	// List Kind strings
-	HTTPRouteListKind      = "HTTPRouteList"
-	GatewayListKind        = "GatewayList"
-	GatewayClassListKind   = "GatewayClassList"
-	ReferenceGrantListKind = "ReferenceGrantList"
-
 	// Gateway API CRD names
 	TCPRouteCRDName = "tcproutes.gateway.networking.k8s.io"
 )
@@ -154,10 +148,3 @@ var (
 		Resource: "xlistenersets",
 	}
 )
-
-// IsInferencePoolGK returns true if the given group and kind match
-// the InferencePool Group, Version, and Kind.
-func IsInferencePoolGK(group, kind string) bool {
-	return InferencePoolGVK.Group == group &&
-		InferencePoolGVK.Kind == kind
-}

@@ -30,10 +30,10 @@ var (
 
 	testCases = map[string]*base.TestCase{
 		"TestAgentgatewayHTTPRoute": {
-			Manifests: []string{defaults.HttpbinManifest, defaults.CurlPodManifest, httpRouteManifest},
+			Manifests: []string{defaults.HttpbinManifest, httpRouteManifest},
 		},
 		"TestAgentgatewayTCPRoute": {
-			Manifests:       []string{defaults.CurlPodManifest, tcpRouteManifest},
+			Manifests:       []string{tcpRouteManifest},
 			MinGwApiVersion: base.GwApiRequireTcpRoutes, // TCPRoutes are experimental only
 		},
 	}

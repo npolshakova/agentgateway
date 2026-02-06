@@ -22,11 +22,6 @@ data:
     blah: |-
       bar
       attack
-    config:
-      logging:
-        format: |-
-          json
-          attack
 kind: ConfigMap
 metadata:
   annotations:
@@ -99,7 +94,7 @@ spec:
   template:
     metadata:
       annotations:
-        checksum/config: 742e237f5e52d6e9ec5ec88bfbf17d33ca53da13d2eeb84a856ea88bf28d5533
+        checksum/config: b90a8eb34d3d5082498d2226b619beea258e6753371b9970790b026550cd2ec5
         foo: |-
           bar
           attack
@@ -137,7 +132,9 @@ spec:
         - name: RUST_BACKTRACE
           value: "1"
         - name: RUST_LOG
-          value: info
+          value: |-
+            json
+            attack
         - name: XDS_ADDRESS
           value: http://xds.cluster.local:9978
         - name: NAMESPACE

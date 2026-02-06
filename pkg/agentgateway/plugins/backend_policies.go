@@ -189,7 +189,7 @@ func translateBackendTLS(ctx PolicyCtx, policy *agentgateway.AgentgatewayPolicy,
 	if len(tls.VerifySubjectAltNames) > 0 {
 		p.VerifySubjectAltNames = tls.VerifySubjectAltNames
 	}
-	p.Hostname = (tls.Sni)
+	p.Hostname = tls.Sni
 
 	if tls.InsecureSkipVerify != nil {
 		switch *tls.InsecureSkipVerify {

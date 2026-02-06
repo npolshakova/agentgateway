@@ -33,7 +33,8 @@ metadata:
   name: dynamic-mcp-route
 spec:
   parentRefs:
-  - name: gw
+  - name: gateway
+    namespace: agentgateway-base
   rules:
     # Admin route - matches requests with user-type: admin header
     - matches:

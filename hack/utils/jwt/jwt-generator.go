@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"time"
 
-	jose "github.com/go-jose/go-jose/v4"
+	"github.com/go-jose/go-jose/v4"
 	"github.com/golang-jwt/jwt/v5"
 )
 

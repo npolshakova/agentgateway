@@ -11,7 +11,6 @@ import (
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 	gwxv1a1 "sigs.k8s.io/gateway-api/apisx/v1alpha1"
 
-	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/translator/listener"
 	"github.com/kgateway-dev/kgateway/v2/pkg/utils/kubeutils"
 	"github.com/kgateway-dev/kgateway/v2/pkg/utils/requestutils/curl"
 	"github.com/kgateway-dev/kgateway/v2/test/e2e"
@@ -303,7 +302,7 @@ func (s *testingSuite) TestPolicies() {
 }
 
 func (s *testingSuite) expectValidListenerSetAccepted(obj client.Object) {
-	s.TestInstallation.AssertionsT(s.T()).EventuallyGatewayCondition(s.Ctx, proxyObjectMeta.Name, proxyObjectMeta.Namespace, listener.GatewayConditionAttachedListenerSets, metav1.ConditionTrue)
+	s.TestInstallation.AssertionsT(s.T()).EventuallyGatewayCondition(s.Ctx, proxyObjectMeta.Name, proxyObjectMeta.Namespace, GatewayConditionAttachedListenerSets, metav1.ConditionTrue)
 
 	s.TestInstallation.AssertionsT(s.T()).EventuallyListenerSetStatus(s.Ctx, obj.GetName(), obj.GetNamespace(),
 		gwxv1a1.ListenerSetStatus{
@@ -379,7 +378,7 @@ func (s *testingSuite) expectValidListenerSetAccepted(obj client.Object) {
 }
 
 func (s *testingSuite) expectInvalidListenerSetNotAllowed(obj client.Object) {
-	s.TestInstallation.AssertionsT(s.T()).EventuallyGatewayCondition(s.Ctx, proxyObjectMeta.Name, proxyObjectMeta.Namespace, listener.GatewayConditionAttachedListenerSets, metav1.ConditionFalse)
+	s.TestInstallation.AssertionsT(s.T()).EventuallyGatewayCondition(s.Ctx, proxyObjectMeta.Name, proxyObjectMeta.Namespace, GatewayConditionAttachedListenerSets, metav1.ConditionFalse)
 
 	s.TestInstallation.AssertionsT(s.T()).EventuallyListenerSetStatus(s.Ctx, obj.GetName(), obj.GetNamespace(),
 		gwxv1a1.ListenerSetStatus{
@@ -399,7 +398,7 @@ func (s *testingSuite) expectInvalidListenerSetNotAllowed(obj client.Object) {
 }
 
 func (s *testingSuite) expectInvalidListenerSetUnknown(obj client.Object) {
-	s.TestInstallation.AssertionsT(s.T()).EventuallyGatewayCondition(s.Ctx, proxyObjectMeta.Name, proxyObjectMeta.Namespace, listener.GatewayConditionAttachedListenerSets, metav1.ConditionFalse)
+	s.TestInstallation.AssertionsT(s.T()).EventuallyGatewayCondition(s.Ctx, proxyObjectMeta.Name, proxyObjectMeta.Namespace, GatewayConditionAttachedListenerSets, metav1.ConditionFalse)
 
 	s.TestInstallation.AssertionsT(s.T()).EventuallyListenerSetStatus(s.Ctx, obj.GetName(), obj.GetNamespace(),
 		gwxv1a1.ListenerSetStatus{
@@ -490,7 +489,7 @@ func (s *testingSuite) expectGatewayAccepted(obj client.Object) {
 }
 
 func (s *testingSuite) expectConflictedListenerSetConflicted(obj client.Object) {
-	s.TestInstallation.AssertionsT(s.T()).EventuallyGatewayCondition(s.Ctx, proxyObjectMeta.Name, proxyObjectMeta.Namespace, listener.GatewayConditionAttachedListenerSets, metav1.ConditionTrue)
+	s.TestInstallation.AssertionsT(s.T()).EventuallyGatewayCondition(s.Ctx, proxyObjectMeta.Name, proxyObjectMeta.Namespace, GatewayConditionAttachedListenerSets, metav1.ConditionTrue)
 
 	s.TestInstallation.AssertionsT(s.T()).EventuallyListenerSetStatus(s.Ctx, obj.GetName(), obj.GetNamespace(),
 		gwxv1a1.ListenerSetStatus{
@@ -516,19 +515,19 @@ func (s *testingSuite) expectConflictedListenerSetConflicted(obj client.Object) 
 							Type:    string(gwxv1a1.ListenerEntryConditionAccepted),
 							Status:  metav1.ConditionFalse,
 							Reason:  string(gwv1.ListenerReasonHostnameConflict),
-							Message: listener.ListenerMessageHostnameConflict,
+							Message: ListenerMessageHostnameConflict,
 						},
 						{
 							Type:    string(gwxv1a1.ListenerEntryConditionProgrammed),
 							Status:  metav1.ConditionFalse,
 							Reason:  string(gwv1.ListenerReasonHostnameConflict),
-							Message: listener.ListenerMessageHostnameConflict,
+							Message: ListenerMessageHostnameConflict,
 						},
 						{
 							Type:    string(gwxv1a1.ListenerEntryConditionConflicted),
 							Status:  metav1.ConditionTrue,
 							Reason:  string(gwv1.ListenerReasonHostnameConflict),
-							Message: listener.ListenerMessageHostnameConflict,
+							Message: ListenerMessageHostnameConflict,
 						},
 						{
 							Type:   string(gwxv1a1.ListenerEntryConditionResolvedRefs),
@@ -546,19 +545,19 @@ func (s *testingSuite) expectConflictedListenerSetConflicted(obj client.Object) 
 							Type:    string(gwxv1a1.ListenerEntryConditionAccepted),
 							Status:  metav1.ConditionFalse,
 							Reason:  string(gwv1.ListenerReasonProtocolConflict),
-							Message: listener.ListenerMessageProtocolConflict,
+							Message: ListenerMessageProtocolConflict,
 						},
 						{
 							Type:    string(gwxv1a1.ListenerEntryConditionProgrammed),
 							Status:  metav1.ConditionFalse,
 							Reason:  string(gwv1.ListenerReasonProtocolConflict),
-							Message: listener.ListenerMessageProtocolConflict,
+							Message: ListenerMessageProtocolConflict,
 						},
 						{
 							Type:    string(gwxv1a1.ListenerEntryConditionConflicted),
 							Status:  metav1.ConditionTrue,
 							Reason:  string(gwv1.ListenerReasonProtocolConflict),
-							Message: listener.ListenerMessageProtocolConflict,
+							Message: ListenerMessageProtocolConflict,
 						},
 						{
 							Type:   string(gwxv1a1.ListenerEntryConditionResolvedRefs),
@@ -597,3 +596,10 @@ func (s *testingSuite) expectConflictedListenerSetConflicted(obj client.Object) 
 			},
 		})
 }
+
+const (
+	GatewayConditionAttachedListenerSets = "AttachedListenerSets"
+
+	ListenerMessageProtocolConflict = "Found conflicting protocols on listeners, a single port can only contain listeners with compatible protocols"
+	ListenerMessageHostnameConflict = "Found conflicting hostnames on listeners, all listeners on a single port must have unique hostnames"
+)

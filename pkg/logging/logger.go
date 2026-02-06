@@ -28,7 +28,6 @@ SOFTWARE.
 package logging
 
 import (
-	"fmt"
 	"log/slog"
 	"sync"
 )
@@ -97,15 +96,6 @@ func NewWithOptions(component string, opts Options) *slog.Logger {
 	}
 
 	return slog.New(slogHandler)
-}
-
-// DeleteLeveler deletes the leveler instance for the given component
-func DeleteLeveler(component string) error {
-	if component == "" {
-		return fmt.Errorf("component unspecified")
-	}
-	componentLeveler.Delete(component)
-	return nil
 }
 
 // GetComponentLevels returns a map of component names to their respective slog.Level

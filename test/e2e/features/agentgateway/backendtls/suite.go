@@ -4,6 +4,7 @@ package backendtls
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"path/filepath"
@@ -17,7 +18,6 @@ import (
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/kgateway-dev/kgateway/v2/api/v1alpha1/shared"
-	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/extensions2/plugins/backendtlspolicy"
 	reports "github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/reporter"
 	"github.com/kgateway-dev/kgateway/v2/pkg/utils/fsutils"
 	"github.com/kgateway-dev/kgateway/v2/pkg/utils/requestutils/curl"
@@ -133,7 +133,7 @@ func (s *tsuite) TestBackendTLSPolicyAndStatus() {
 		Type:               string(gwv1.PolicyConditionAccepted),
 		Status:             metav1.ConditionFalse,
 		Reason:             string(gwv1.PolicyReasonInvalid),
-		Message:            fmt.Sprintf("%s: %s/ca", backendtlspolicy.ErrConfigMapNotFound, namespace),
+		Message:            fmt.Sprintf("%s: %s/ca", ErrConfigMapNotFound, namespace),
 		ObservedGeneration: backendTlsPolicy.Generation,
 	})
 }
@@ -178,3 +178,7 @@ func (s *tsuite) assertPolicyStatus(inCondition metav1.Condition) {
 		}
 	}, currentTimeout, pollingInterval).Should(gomega.Succeed())
 }
+
+var (
+	ErrConfigMapNotFound = errors.New("ConfigMap not found")
+)

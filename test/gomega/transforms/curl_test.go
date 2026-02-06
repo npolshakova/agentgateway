@@ -27,18 +27,6 @@ var _ = Describe("Curl", func() {
 		}
 	)
 
-	Describe("WithCurlHttpResponse", func() {
-
-		It("matches valid response", func() {
-			Expect(validHttp1dot1StringResponse).To(
-				WithTransform(transforms.WithCurlHttpResponse,
-					matchers.HaveHttpResponse(&matchers.HttpResponse{
-						StatusCode: http.StatusOK,
-						Body:       gstruct.Ignore(),
-					})))
-		})
-	})
-
 	DescribeTable("WithCurlResponse", func(curlResponse *kubectl.CurlResponse) {
 		Expect(curlResponse).To(
 			WithTransform(transforms.WithCurlResponse,

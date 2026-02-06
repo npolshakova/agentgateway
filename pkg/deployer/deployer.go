@@ -22,8 +22,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	inf "sigs.k8s.io/gateway-api-inference-extension/api/v1"
-	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/kgateway-dev/kgateway/v2/pkg/apiclient"
 	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/wellknown"
@@ -35,7 +33,6 @@ var logger = logging.New("deployer")
 
 type ControlPlaneInfo struct {
 	XdsHost      string
-	XdsPort      uint32
 	AgwXdsPort   uint32
 	XdsTLS       bool
 	XdsTlsCaPath string
@@ -55,10 +52,8 @@ type Patcher func(client apiclient.Client, fieldManager string, gvr schema.Group
 
 // A Deployer is responsible for deploying proxies and inference extensions.
 type Deployer struct {
-	controllerName                       string
 	agwControllerName                    string
 	agwGatewayClassName                  string
-	chart                                *chart.Chart
 	agentgatewayChart                    *chart.Chart
 	scheme                               *runtime.Scheme
 	client                               apiclient.Client
@@ -82,54 +77,21 @@ func WithGVKToGVRMapper(m map[schema.GroupVersionKind]schema.GroupVersionResourc
 	}
 }
 
-// NewDeployer creates a new gateway/inference pool/etc
-// TODO [danehans]: Reloading the chart for every reconciliation is inefficient.
-// See https://github.com/kgateway-dev/kgateway/issues/10672 for details.
-func NewDeployer(
-	controllerName, agwControllerName, agwGatewayClassName string,
-	scheme *runtime.Scheme,
-	client apiclient.Client,
-	chart *chart.Chart,
-	hvg HelmValuesGenerator,
-	helmReleaseNameAndNamespaceGenerator func(obj client.Object) (string, string),
-	opts ...Option,
-) *Deployer {
-	d := &Deployer{
-		controllerName:                       controllerName,
-		agwControllerName:                    agwControllerName,
-		agwGatewayClassName:                  agwGatewayClassName,
-		scheme:                               scheme,
-		client:                               client,
-		chart:                                chart,
-		agentgatewayChart:                    nil,
-		helmValues:                           hvg,
-		helmReleaseNameAndNamespaceGenerator: helmReleaseNameAndNamespaceGenerator,
-		patcher:                              applyPatch,
-	}
-	for _, o := range opts {
-		o(d)
-	}
-	return d
-}
-
 // NewDeployerWithMultipleCharts creates a new gateway deployer that supports both envoy and agentgateway charts
 func NewDeployerWithMultipleCharts(
-	controllerName, agwControllerName, agwGatewayClassName string,
+	agwControllerName, agwGatewayClassName string,
 	scheme *runtime.Scheme,
 	client apiclient.Client,
-	envoyChart *chart.Chart,
 	agentgatewayChart *chart.Chart,
 	hvg HelmValuesGenerator,
 	helmReleaseNameAndNamespaceGenerator func(obj client.Object) (string, string),
 	opts ...Option,
 ) *Deployer {
 	d := &Deployer{
-		controllerName:                       controllerName,
 		agwControllerName:                    agwControllerName,
 		agwGatewayClassName:                  agwGatewayClassName,
 		scheme:                               scheme,
 		client:                               client,
-		chart:                                envoyChart,
 		agentgatewayChart:                    agentgatewayChart,
 		helmValues:                           hvg,
 		helmReleaseNameAndNamespaceGenerator: helmReleaseNameAndNamespaceGenerator,
@@ -203,13 +165,7 @@ func (d *Deployer) RenderManifest(ns, name string, vals map[string]any) ([]byte,
 	install.ClientOnly = true
 	installCtx := context.Background()
 
-	// Select the appropriate chart based on whether agentgateway is enabled
-	chartToUse := d.chart
-	if d.agentgatewayChart != nil {
-		if _, ok := vals["agentgateway"].(map[string]any); ok {
-			chartToUse = d.agentgatewayChart
-		}
-	}
+	chartToUse := d.agentgatewayChart
 
 	release, err := install.RunWithContext(installCtx, chartToUse, vals)
 	if err != nil {
@@ -301,42 +257,12 @@ func (d *Deployer) SetNamespaceAndOwnerWithGVK(owner client.Object, ownerGVK sch
 	return objs
 }
 
-// getControllerNameForGatewayClass looks up the GatewayClass and returns the controller name
-// from its spec, falling back to class name comparison if the lookup fails.
-func (d *Deployer) getControllerNameForGatewayClass(ctx context.Context, gatewayClassName string) string {
-	gwc, err := d.client.GatewayAPI().GatewayV1().GatewayClasses().Get(ctx, gatewayClassName, metav1.GetOptions{})
-	if err != nil {
-		logger.Debug("failed to look up GatewayClass, falling back to class name comparison",
-			"gateway_class_name", gatewayClassName, "error", err)
-		if gatewayClassName == d.agwGatewayClassName {
-			return d.agwControllerName
-		}
-		return d.controllerName
-	}
-	if string(gwc.Spec.ControllerName) == d.agwControllerName {
-		return d.agwControllerName
-	}
-	return d.controllerName
-}
-
 func (d *Deployer) DeployObjs(ctx context.Context, objs []client.Object) error {
 	return d.DeployObjsWithSource(ctx, objs, nil)
 }
 
 func (d *Deployer) DeployObjsWithSource(ctx context.Context, objs []client.Object, sourceObj client.Object) error {
-	// Determine the correct controller name based on the source object
-	controllerName := d.controllerName
-	if sourceObj != nil {
-		if gw, ok := sourceObj.(*gwv1.Gateway); ok {
-			controllerName = d.getControllerNameForGatewayClass(ctx, string(gw.Spec.GatewayClassName))
-		}
-		// For InferencePool objects, use the agwControllerName if this deployer was configured
-		// with the agent gateway controller name as the primary controller
-		if _, ok := sourceObj.(*inf.InferencePool); ok && d.controllerName == d.agwControllerName {
-			controllerName = d.agwControllerName
-		}
-		// For other object types, use the default controllerName
-	}
+	controllerName := d.agwControllerName
 
 	for _, obj := range objs {
 		u, err := kubeutils.ToUnstructured(obj)

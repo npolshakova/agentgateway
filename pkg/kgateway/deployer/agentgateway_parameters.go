@@ -5,8 +5,10 @@ import (
 	"fmt"
 
 	"istio.io/istio/pkg/kube/kclient"
+	"istio.io/istio/pkg/util/smallset"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -17,6 +19,7 @@ import (
 	"github.com/kgateway-dev/kgateway/v2/pkg/deployer"
 	"github.com/kgateway-dev/kgateway/v2/pkg/deployer/strategicpatch"
 	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/wellknown"
+	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/collections"
 )
 
 // AgentgatewayParametersApplier applies AgentgatewayParameters configurations and overlays.
@@ -249,10 +252,26 @@ func (g *agentgatewayParametersHelmValuesGenerator) GetCacheSyncHandlers() []cac
 func (g *agentgatewayParametersHelmValuesGenerator) GetResolvedParametersForGateway(gw *gwv1.Gateway) (*resolvedParameters, error) {
 	return g.resolveParameters(gw)
 }
+func DefaultGatewayIRGetter(gw *gwv1.Gateway, commonCollections *collections.CommonCollections) *collections.GatewayForDeployer {
+	gwKey := collections.ObjectSource{
+		Group:     wellknown.GatewayGVK.GroupKind().Group,
+		Kind:      wellknown.GatewayGVK.GroupKind().Kind,
+		Name:      gw.GetName(),
+		Namespace: gw.GetNamespace(),
+	}
 
+	irGW := commonCollections.GatewaysForDeployer.GetKey(gwKey.ResourceName())
+	if irGW == nil {
+		// If its not in the IR we cannot tell, so need to make a guess.
+		controllerNameGuess := commonCollections.AgentgatewayControllerName
+		irGW = GatewayIRFrom(gw, controllerNameGuess)
+	}
+
+	return irGW
+}
 func (g *agentgatewayParametersHelmValuesGenerator) getDefaultAgentgatewayHelmValues(gw *gwv1.Gateway) (*deployer.HelmConfig, error) {
-	irGW := deployer.GetGatewayIR(gw, g.inputs.CommonCollections)
-	ports := deployer.GetPortsValues(irGW, nil, true) // true = agentgateway
+	irGW := DefaultGatewayIRGetter(gw, g.inputs.CommonCollections)
+	ports := deployer.GetPortsValues(irGW)
 	if len(ports) == 0 {
 		return nil, ErrNoValidPorts
 	}
@@ -293,4 +312,21 @@ func (g *agentgatewayParametersHelmValuesGenerator) getDefaultAgentgatewayHelmVa
 	}
 
 	return &deployer.HelmConfig{Agentgateway: gtw}, nil
+}
+
+func GatewayIRFrom(gw *gwv1.Gateway, controllerNameGuess string) *collections.GatewayForDeployer {
+	ports := sets.New[int32]()
+	for _, l := range gw.Spec.Listeners {
+		ports.Insert(l.Port)
+	}
+	return &collections.GatewayForDeployer{
+		ObjectSource: collections.ObjectSource{
+			Group:     gwv1.GroupVersion.Group,
+			Kind:      wellknown.GatewayKind,
+			Namespace: gw.Namespace,
+			Name:      gw.Name,
+		},
+		ControllerName: controllerNameGuess,
+		Ports:          smallset.New(ports.UnsortedList()...),
+	}
 }

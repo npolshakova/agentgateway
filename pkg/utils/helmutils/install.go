@@ -1,9 +1,5 @@
 package helmutils
 
-import (
-	"fmt"
-)
-
 // InstallOpts is a set of typical options for a helm install which can be passed in
 // instead of requiring the caller to remember the helm cli flags.
 type InstallOpts struct {
@@ -26,18 +22,8 @@ type InstallOpts struct {
 	// ReleaseName is the name of the release to install.
 	ReleaseName string
 
-	// Repository is the remote repo to use. Ignored if ChartUri is set.
-	Repository string
-
-	// ChartName is the name of the chart to use. Ignored if ChartUri is set.
-	ChartName string
-
-	// ChartUri may refer to a local chart path (e.g. to a tgz file) or a remote chart uri (e.g. oci://...) to install.
-	// If provided, then Repository and ChartName are ignored.
-	ChartUri string
-
-	// Version can be used to install a specific release version (e.g. v2.0.0)
-	Version string
+	// Chart is the name of the chart to use. Ignored if ChartUri is set.
+	Chart string
 }
 
 func (o InstallOpts) all() []string {
@@ -57,7 +43,6 @@ func (o InstallOpts) flags() []string {
 	if o.CreateNamespace {
 		args = append(args, "--create-namespace")
 	}
-	appendIfNonEmpty(o.Version, "--version")
 	for _, valsFile := range o.ValuesFiles {
 		appendIfNonEmpty(valsFile, "--values")
 	}
@@ -69,21 +54,9 @@ func (o InstallOpts) flags() []string {
 }
 
 func (o InstallOpts) chart() string {
-	if o.ChartUri != "" {
-		return o.ChartUri
-	}
-
-	if o.Repository != "" && o.ChartName != "" {
-		return fmt.Sprintf("%s/%s", o.Repository, o.ChartName)
-	}
-
-	return DefaultChartUri
+	return o.Chart
 }
 
 func (o InstallOpts) release() string {
-	if o.ReleaseName != "" {
-		return o.ReleaseName
-	}
-
-	return ChartName
+	return o.ReleaseName
 }

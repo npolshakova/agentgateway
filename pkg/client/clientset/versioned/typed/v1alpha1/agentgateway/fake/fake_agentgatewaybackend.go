@@ -11,10 +11,10 @@ import (
 // fakeAgentgatewayBackends implements AgentgatewayBackendInterface
 type fakeAgentgatewayBackends struct {
 	*gentype.FakeClientWithList[*agentgateway.AgentgatewayBackend, *agentgateway.AgentgatewayBackendList]
-	Fake *FakeGatewayAgentgateway
+	Fake *FakeAgentgatewayAgentgateway
 }
 
-func newFakeAgentgatewayBackends(fake *FakeGatewayAgentgateway, namespace string) v1alpha1agentgateway.AgentgatewayBackendInterface {
+func newFakeAgentgatewayBackends(fake *FakeAgentgatewayAgentgateway, namespace string) v1alpha1agentgateway.AgentgatewayBackendInterface {
 	return &fakeAgentgatewayBackends{
 		gentype.NewFakeClientWithList[*agentgateway.AgentgatewayBackend, *agentgateway.AgentgatewayBackendList](
 			fake.Fake,

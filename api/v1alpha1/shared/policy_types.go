@@ -43,15 +43,6 @@ const (
 	// policy has been successfully attached to all the targeted resources.
 	PolicyReasonAttached PolicyConditionReason = "Attached"
 
-	// PolicyReasonMerged is used with the "Attached" condition when the
-	// policy has been merged with other policies and attached to the targeted resources.
-	PolicyReasonMerged PolicyConditionReason = "Merged"
-
-	// PolicyReasonOverridden is used with the "Attached" condition when the
-	// policy is fully overridden on any targeted resource due to a conflict
-	// with another policy of higher priority.
-	PolicyReasonOverridden PolicyConditionReason = "Overridden"
-
 	// PolicyReasonPending is used with the "Accepted" or "Attached" condition when the policy has been referenced but not yet fully processed by the controller.
 	PolicyReasonPending PolicyConditionReason = "Pending"
 

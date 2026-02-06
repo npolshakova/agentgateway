@@ -29,8 +29,3 @@ type PortForwarder interface {
 	// WaitForStop blocks until connection closed (e.g. control-C interrupt)
 	WaitForStop()
 }
-
-// NewPortForwarder returns an implementation of a PortForwarder
-func NewPortForwarder(options ...Option) PortForwarder {
-	return NewCliPortForwarder(options...)
-}

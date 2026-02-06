@@ -56,7 +56,6 @@ type Syncer struct {
 	agwCollections *plugins.AgwCollections
 	client         apiclient.Client
 	agwPlugins     plugins.AgwPlugin
-	translator     *translator.AgwTranslator
 
 	// Configuration
 	controllerName           string
@@ -100,7 +99,6 @@ func NewAgwSyncer(
 		agwCollections:           agwCollections,
 		controllerName:           controllerName,
 		agwPlugins:               agwPlugins,
-		translator:               translator.NewAgwTranslator(agwCollections),
 		additionalGatewayClasses: additionalGatewayClasses,
 		client:                   client,
 		statusCollections:        status.NewStatusCollections(extraGVKs),
@@ -113,7 +111,6 @@ func NewAgwSyncer(
 	}
 	logger.Debug("init agentgateway Syncer", "controllername", controllerName)
 
-	syncer.translator.Init()
 	syncer.buildResourceCollections(krtopts.WithPrefix("agentgateway"))
 	return syncer
 }

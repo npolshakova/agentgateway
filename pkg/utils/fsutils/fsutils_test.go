@@ -11,19 +11,6 @@ import (
 )
 
 var _ = Describe("FSUtils", func() {
-	Describe("ToTempFile", func() {
-		It("can write content to a temporary file and read it back correctly", func() {
-			content := "test content"
-			filename, err := ToTempFile(content)
-			Expect(err).NotTo(HaveOccurred())
-			defer os.Remove(filename)
-
-			data, err := os.ReadFile(filename)
-			Expect(err).NotTo(HaveOccurred())
-			Expect(string(data)).To(Equal(content))
-		})
-	})
-
 	Describe("IsDirectory", func() {
 		It("correctly detects directories and files", func() {
 			// Test with a Temporary Directory

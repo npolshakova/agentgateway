@@ -19,9 +19,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/kgateway-dev/kgateway/v2/pkg/utils/fsutils"
-	"github.com/kgateway-dev/kgateway/v2/pkg/utils/kubeutils"
 	"github.com/kgateway-dev/kgateway/v2/pkg/utils/requestutils/curl"
 	"github.com/kgateway-dev/kgateway/v2/test/e2e"
+	"github.com/kgateway-dev/kgateway/v2/test/e2e/common"
 	testdefaults "github.com/kgateway-dev/kgateway/v2/test/e2e/defaults"
 	"github.com/kgateway-dev/kgateway/v2/test/e2e/tests/base"
 	testmatchers "github.com/kgateway-dev/kgateway/v2/test/gomega/matchers"
@@ -48,16 +48,9 @@ var (
 	// manifests
 	setupManifest = filepath.Join(fsutils.MustGetThisDir(), "testdata", "setup.yaml")
 
-	// objects
-	gatewayObjectMeta = metav1.ObjectMeta{
-		Name:      "ai-gateway",
-		Namespace: "default",
-	}
-
 	// test cases
 	setup = base.TestCase{
 		Manifests: []string{
-			testdefaults.CurlPodManifest,
 			testdefaults.AIGuardrailsWebhookManifest,
 		},
 		ManifestsWithTransform: map[string]func(string) string{
@@ -92,21 +85,15 @@ func (s *testingSuite) TestRouting() {
 		Resp: "The name of this project is kgateway",
 	})
 
-	s.TestInstallation.AssertionsT(s.T()).AssertEventualCurlResponse(
-		s.T().Context(),
-		testdefaults.CurlPodExecOpt,
-		[]curl.Option{
-			curl.WithHost(kubeutils.ServiceFQDN(gatewayObjectMeta)),
-			curl.WithPort(8080),
-			curl.WithPath("/v1/chat/completions"),
-			curl.WithPostBody(`{"messages": [{"role": "user", "content": "What is the name of this project?"}]}`),
-			curl.WithHeader("Content-Type", "application/json"),
-		},
+	common.BaseGateway.Send(
+		s.T(),
 		&testmatchers.HttpResponse{
 			StatusCode: http.StatusOK,
 			Body:       gomega.ContainSubstring(`The name of this project is kgateway`),
 		},
-		5*time.Second,
+		curl.WithPath("/v1/chat/completions"),
+		curl.WithPostBody(`{"messages": [{"role": "user", "content": "What is the name of this project?"}]}`),
+		curl.WithHeader("Content-Type", "application/json"),
 	)
 
 	s.Require().NoError(server.Stop(s.T().Context()))
@@ -125,39 +112,27 @@ func (s *testingSuite) TestPromptGuard() {
 	)
 
 	// Test request guard
-	s.TestInstallation.AssertionsT(s.T()).AssertEventualCurlResponse(
-		s.T().Context(),
-		testdefaults.CurlPodExecOpt,
-		[]curl.Option{
-			curl.WithHost(kubeutils.ServiceFQDN(gatewayObjectMeta)),
-			curl.WithPort(8080),
-			curl.WithPath("/v1/chat/completions"),
-			curl.WithPostBody(`{"messages": [{"role": "user", "content": "Return an example credit card number"}]}`),
-			curl.WithHeader("Content-Type", "application/json"),
-		},
+	common.BaseGateway.Send(
+		s.T(),
 		&testmatchers.HttpResponse{
 			StatusCode: http.StatusForbidden,
 			Body:       gomega.ContainSubstring(`request rejected`),
 		},
-		5*time.Second,
+		curl.WithPath("/v1/chat/completions"),
+		curl.WithPostBody(`{"messages": [{"role": "user", "content": "Return an example credit card number"}]}`),
+		curl.WithHeader("Content-Type", "application/json"),
 	)
 
 	// Test response guard
-	s.TestInstallation.AssertionsT(s.T()).AssertEventualCurlResponse(
-		s.T().Context(),
-		testdefaults.CurlPodExecOpt,
-		[]curl.Option{
-			curl.WithHost(kubeutils.ServiceFQDN(gatewayObjectMeta)),
-			curl.WithPort(8080),
-			curl.WithPath("/v1/chat/completions"),
-			curl.WithPostBody(`{"messages": [{"role": "user", "content": "Return an example SSN"}]}`),
-			curl.WithHeader("Content-Type", "application/json"),
-		},
+	common.BaseGateway.Send(
+		s.T(),
 		&testmatchers.HttpResponse{
 			StatusCode: http.StatusForbidden,
 			Body:       gomega.ContainSubstring(agwDefaultPromptGuardResponse),
 		},
-		5*time.Second,
+		curl.WithPath("/v1/chat/completions"),
+		curl.WithPostBody(`{"messages": [{"role": "user", "content": "Return an example SSN"}]}`),
+		curl.WithHeader("Content-Type", "application/json"),
 	)
 
 	s.Require().NoError(server.Stop(s.T().Context()))
@@ -188,51 +163,39 @@ func (s *testingSuite) TestWebhook() {
 	)
 
 	// Test request webhook
-	s.TestInstallation.AssertionsT(s.T()).AssertEventualCurlResponse(
-		s.T().Context(),
-		testdefaults.CurlPodExecOpt,
-		[]curl.Option{
-			curl.WithHost(kubeutils.ServiceFQDN(gatewayObjectMeta)),
-			curl.WithPort(8080),
-			curl.WithPath("/v1/messages"),
-			curl.WithPostBody(`{"messages": [{"role": "user", "content": "return blocked content"}]}`),
-			curl.WithHeaders(map[string]string{
-				"Content-Type": "application/json",
-				"x-direction":  "request", // matches request webhook route
-				// below headers are required due to https://github.com/agentgateway/agentgateway/issues/509
-				"x-api-key":         "fake",
-				"anthropic-version": "fake",
-			}),
-		},
+	common.BaseGateway.Send(
+		s.T(),
 		&testmatchers.HttpResponse{
 			StatusCode: http.StatusForbidden,
 			Body:       gomega.ContainSubstring(guardrailsWebhookBlockResponse),
 		},
-		30*time.Second,
+		curl.WithPath("/v1/messages"),
+		curl.WithPostBody(`{"messages": [{"role": "user", "content": "return blocked content"}]}`),
+		curl.WithHeaders(map[string]string{
+			"Content-Type": "application/json",
+			"x-direction":  "request", // matches request webhook route
+			// below headers are required due to https://github.com/agentgateway/agentgateway/issues/509
+			"x-api-key":         "fake",
+			"anthropic-version": "fake",
+		}),
 	)
 
 	// Test response webhook
-	s.TestInstallation.AssertionsT(s.T()).AssertEventualCurlResponse(
-		s.T().Context(),
-		testdefaults.CurlPodExecOpt,
-		[]curl.Option{
-			curl.WithHost(kubeutils.ServiceFQDN(gatewayObjectMeta)),
-			curl.WithPort(8080),
-			curl.WithPath("/v1/messages"),
-			curl.WithPostBody(`{"messages": [{"role": "user", "content": "Explain data masking"}]}`),
-			curl.WithHeaders(map[string]string{
-				"Content-Type": "application/json",
-				"x-direction":  "response", // matches response webhook route
-				// below headers are required due to https://github.com/agentgateway/agentgateway/issues/509
-				"x-api-key":         "fake",
-				"anthropic-version": "fake",
-			}),
-		},
+	common.BaseGateway.Send(
+		s.T(),
 		&testmatchers.HttpResponse{
 			StatusCode: http.StatusOK,
 			Body:       gomega.ContainSubstring(maskedPatternResponse),
 		},
-		30*time.Second,
+		curl.WithPath("/v1/messages"),
+		curl.WithPostBody(`{"messages": [{"role": "user", "content": "Explain data masking"}]}`),
+		curl.WithHeaders(map[string]string{
+			"Content-Type": "application/json",
+			"x-direction":  "response", // matches response webhook route
+			// below headers are required due to https://github.com/agentgateway/agentgateway/issues/509
+			"x-api-key":         "fake",
+			"anthropic-version": "fake",
+		}),
 	)
 
 	s.Require().NoError(server.Stop(s.T().Context()))

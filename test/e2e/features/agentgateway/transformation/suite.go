@@ -3,18 +3,22 @@
 package transformation
 
 import (
+	"bytes"
 	"context"
+	"crypto/tls"
+	"encoding/binary"
 	"fmt"
+	"io"
+	"net"
 	"net/http"
-	"strings"
+	"time"
 
 	"github.com/stretchr/testify/suite"
+	"golang.org/x/net/http2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
-	"github.com/kgateway-dev/kgateway/v2/pkg/utils/kubeutils/kubectl"
 	"github.com/kgateway-dev/kgateway/v2/pkg/utils/requestutils/curl"
-	"github.com/kgateway-dev/kgateway/v2/pkg/utils/requestutils/grpcurl"
 	"github.com/kgateway-dev/kgateway/v2/test/e2e"
 	"github.com/kgateway-dev/kgateway/v2/test/e2e/common"
 	"github.com/kgateway-dev/kgateway/v2/test/e2e/tests/base"
@@ -152,8 +156,8 @@ func (s *testingSuite) TestGatewayWithTransformedHTTPRoute() {
 	}
 }
 
-// TestGatewayWithTransformedGRPCRoute needs to use grpcurl to send a gRPC request to the gateway, and verifies that the
-// response includes the expected metadata header.
+// TestGatewayWithTransformedGRPCRoute sends a native HTTP/2 (h2c) request with
+// gRPC framing and verifies the transformed response metadata is present.
 func (s *testingSuite) TestGatewayWithTransformedGRPCRoute() {
 	// Wait for the agent gateway to be ready
 	s.TestInstallation.Assertions.EventuallyGatewayCondition(
@@ -184,38 +188,43 @@ func (s *testingSuite) TestGatewayWithTransformedGRPCRoute() {
 	s.TestInstallation.Assertions.EventuallyHTTPRouteCondition(s.Ctx, httpRouteName, namespace, gwv1.RouteConditionAccepted, metav1.ConditionTrue, timeout)
 	s.TestInstallation.Assertions.EventuallyHTTPRouteCondition(s.Ctx, httpRouteName, namespace, gwv1.RouteConditionResolvedRefs, metav1.ConditionTrue, timeout)
 
-	// Use grpcurl from an in-cluster client pod so we exercise the actual dataplane.
 	const (
 		expectedHostname        = "example.com"
-		gatewayPort             = 80
+		grpcMethodPath          = "/proto.EchoTestService/Echo"
 		expectedResponseMetaKey = "x-grpc-response"
 		expectedResponseMetaVal = "from-grpc"
 	)
 
-	stdout, stderr := s.TestInstallation.AssertionsT(s.T()).AssertEventualGrpcurlSuccess(
-		s.Ctx,
-		kubectl.PodExecOptions{
-			Name:      "grpcurl-client",
-			Namespace: namespace,
-			Container: "grpcurl",
-		},
-		[]grpcurl.Option{
-			grpcurl.WithAddress(common.BaseGateway.Address),
-			grpcurl.WithPort(gatewayPort),
-			grpcurl.WithAuthority(expectedHostname),
-			grpcurl.WithSymbol("yages.Echo/Ping"),
-			grpcurl.WithPlaintext(),
-			grpcurl.WithVerbose(),
-			grpcurl.WithConnectTimeout(int(timeout.Seconds())),
-		},
-		timeout,
-	)
-	combined := strings.ToLower(stdout + "\n" + stderr)
-	s.Require().Contains(
-		combined,
-		strings.ToLower(expectedResponseMetaKey)+": "+expectedResponseMetaVal,
-		"expected grpcurl verbose output to contain transformed response metadata",
-	)
+	s.Require().Eventually(func() bool {
+		resp, body, err := sendH2CGrpcRequest(
+			common.BaseGateway.Address,
+			expectedHostname,
+			grpcMethodPath,
+			[]byte{0x0a, 0x05, 'h', 'e', 'l', 'l', 'o'}, // EchoRequest{message:"hello"}
+		)
+		if err != nil {
+			s.T().Logf("grpc request failed: %v", err)
+			return false
+		}
+
+		// Ensure body is fully drained before checking trailers.
+		_ = body
+
+		grpcStatus := resp.Trailer.Get("grpc-status")
+		if resp.StatusCode != http.StatusOK || grpcStatus != "0" {
+			s.T().Logf("unexpected grpc response status=%d grpc-status=%q headers=%v trailers=%v",
+				resp.StatusCode, grpcStatus, resp.Header, resp.Trailer)
+			return false
+		}
+
+		if resp.Header.Get(expectedResponseMetaKey) != expectedResponseMetaVal {
+			s.T().Logf("missing transformed grpc response header %s=%s, got headers=%v",
+				expectedResponseMetaKey, expectedResponseMetaVal, resp.Header)
+			return false
+		}
+
+		return true
+	}, timeout, time.Second, "expected transformed response metadata on gRPC route")
 
 	// Assert the HTTPRoute response does *not* include the `x-grpc-response` header, while the GRPCRoute does.
 	common.BaseGateway.Send(
@@ -228,4 +237,50 @@ func (s *testingSuite) TestGatewayWithTransformedGRPCRoute() {
 		},
 		curl.WithHostHeader(expectedHostname),
 	)
+}
+
+func sendH2CGrpcRequest(address, authority, methodPath string, protobufPayload []byte) (*http.Response, []byte, error) {
+	grpcFrame := make([]byte, 5+len(protobufPayload))
+	grpcFrame[0] = 0 // uncompressed
+	binary.BigEndian.PutUint32(grpcFrame[1:5], uint32(len(protobufPayload)))
+	copy(grpcFrame[5:], protobufPayload)
+
+	url := fmt.Sprintf("http://%s:80%s", address, methodPath)
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(grpcFrame))
+	if err != nil {
+		return nil, nil, err
+	}
+	req.Host = authority
+	req.Header.Set("Content-Type", "application/grpc")
+	req.Header.Set("TE", "trailers")
+
+	client := &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http2.Transport{
+			AllowHTTP: true,
+			DialTLSContext: func(ctx context.Context, network, addr string, _ *tls.Config) (net.Conn, error) {
+				var d net.Dialer
+				return d.DialContext(ctx, network, addr)
+			},
+		},
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// clone the response metadata we need after body close
+	cloned := &http.Response{
+		StatusCode: resp.StatusCode,
+		Header:     resp.Header.Clone(),
+		Trailer:    resp.Trailer.Clone(),
+	}
+	return cloned, body, nil
 }

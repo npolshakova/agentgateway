@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"istio.io/api/label"
 	"istio.io/istio/pilot/pkg/features"
 	"istio.io/istio/pilot/pkg/model"
 	"istio.io/istio/pilot/pkg/serviceregistry/provider"
@@ -207,46 +206,6 @@ func (resolution Resolution) String() string {
 	default:
 		return fmt.Sprintf("%d", int(resolution))
 	}
-}
-
-const (
-	// TunnelLabel defines the label workloads describe to indicate that they support tunneling.
-	// Values are expected to be a CSV list, sorted by preference, of protocols supported.
-	// Currently supported values:
-	// * "http": indicates tunneling over HTTP over TCP. HTTP/2 vs HTTP/1.1 may be supported by ALPN negotiation.
-	// Planned future values:
-	// * "http3": indicates tunneling over HTTP over QUIC. This is distinct from "http", since we cannot do ALPN
-	//   negotiation for QUIC vs TCP.
-	// Users should appropriately parse the full list rather than doing a string literal check to
-	// ensure future-proofing against new protocols being added.
-	TunnelLabel = "networking.agentgateway.io/tunnel"
-	// TunnelLabelShortName is a short name for TunnelLabel to be used in optimized scenarios.
-	TunnelLabelShortName = "tunnel"
-	// TunnelHTTP indicates tunneling over HTTP over TCP. HTTP/2 vs HTTP/1.1 may be supported by ALPN
-	// negotiation. Note: ALPN negotiation is not currently implemented; HTTP/2 will always be used.
-	// This is future-proofed, however, because only the `h2` ALPN is exposed.
-	TunnelHTTP = "http"
-)
-
-const (
-	// DisabledTLSModeLabel implies that this endpoint should receive traffic as is (mostly plaintext)
-	DisabledTLSModeLabel = "disabled"
-
-	// MutualTLSModeLabel implies that the endpoint is ready to receive agent mTLS connections.
-	MutualTLSModeLabel = "istio"
-)
-
-func SupportsTunnel(labels map[string]string, tunnelType string) bool {
-	tl, f := labels[TunnelLabel]
-	if !f {
-		return false
-	}
-	if tl == tunnelType {
-		// Fast-path the case where we have only one label
-		return true
-	}
-	// Else check everything. Tunnel label is a comma-separated list.
-	return sets.New(strings.Split(tl, ",")...).Contains(tunnelType)
 }
 
 // Port represents a network port where a service is listening for
@@ -526,18 +485,6 @@ func (i Address) IntoProto() *workloadapi.Address {
 	return i.Service.AsAddress.Address
 }
 
-type LabelSelector struct {
-	Labels map[string]string
-}
-
-func NewSelector(l map[string]string) LabelSelector {
-	return LabelSelector{l}
-}
-
-func (l LabelSelector) GetLabelSelector() map[string]string {
-	return l.Labels
-}
-
 // MCSServiceInfo combines the name of a service with a particular Kubernetes cluster. This
 // is used for debug information regarding the state of Kubernetes Multi-Cluster Services (MCS).
 type MCSServiceInfo struct {
@@ -622,19 +569,6 @@ func (s *Service) HasAddressOrAssigned(id cluster.ID) bool {
 		return true
 	}
 	return false
-}
-
-// GetTLSModeFromEndpointLabels returns the value of the label
-// security.istio.io/tlsMode if set. Do not return Enums or constants
-// from this function as users could provide values other than istio/disabled
-// and apply custom transport socket matchers here.
-func GetTLSModeFromEndpointLabels(labels map[string]string) string {
-	if labels != nil {
-		if val, exists := labels[label.SecurityTlsMode.Name]; exists {
-			return val
-		}
-	}
-	return DisabledTLSModeLabel
 }
 
 // DeepCopy creates a clone of Service.

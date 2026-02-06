@@ -36,23 +36,6 @@ import (
 	"k8s.io/utils/ptr"
 )
 
-func TestDeleteLeveler(t *testing.T) {
-	r := require.New(t)
-	l := New("delete")
-	err := SetLevel("delete", slog.LevelInfo)
-	r.NoError(err)
-	r.True(l.Enabled(context.TODO(), slog.LevelInfo))
-	r.False(l.Enabled(context.TODO(), slog.LevelDebug))
-	err = SetLevel("delete", slog.LevelDebug)
-	r.NoError(err)
-	r.True(l.Enabled(context.TODO(), slog.LevelDebug))
-	err = DeleteLeveler("delete")
-	r.NoError(err)
-	r.True(l.Enabled(context.TODO(), slog.LevelDebug))
-	err = SetLevel("delete", slog.LevelDebug)
-	r.ErrorContains(err, "logger not found")
-}
-
 func TestDefaultLevelInheritence(t *testing.T) {
 	r := require.New(t)
 

@@ -2,7 +2,6 @@ package grpcurl
 
 import (
 	"fmt"
-	"strings"
 )
 
 // Option is a functional option for configuring a grpcurl command.
@@ -77,12 +76,7 @@ func WithAddress(address string) Option     { return func(c *Command) { c.Addres
 func WithPort(port int) Option              { return func(c *Command) { c.Port = port } }
 func WithAuthority(authority string) Option { return func(c *Command) { c.Authority = authority } }
 func WithSymbol(symbol string) Option       { return func(c *Command) { c.Symbol = symbol } }
-func WithData(data string) Option           { return func(c *Command) { c.Data = data } }
 func WithPlaintext() Option                 { return func(c *Command) { c.Plaintext = true } }
-func WithHeader(name, value string) Option {
-	return func(c *Command) {
-		c.Headers = append(c.Headers, fmt.Sprintf("%s:%s", name, strings.TrimSpace(value)))
-	}
-}
+
 func WithConnectTimeout(sec int) Option { return func(c *Command) { c.ConnectTimeout = sec } }
 func WithVerbose() Option               { return func(c *Command) { c.Verbose = true } }

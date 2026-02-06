@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"helm.sh/helm/v3/pkg/repo"
-
 	"github.com/kgateway-dev/kgateway/v2/pkg/logging"
 	"github.com/kgateway-dev/kgateway/v2/pkg/utils/fsutils"
 	"github.com/kgateway-dev/kgateway/v2/test/testutils"
+	"helm.sh/helm/v3/pkg/repo"
 )
 
 const (

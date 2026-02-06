@@ -314,19 +314,15 @@ spec:
                 resourceFieldRef:
                   divisor: "1"
                   resource: limits.cpu
-            - name: KGW_LOG_LEVEL
+            - name: AGW_LOG_LEVEL
               value: "info"
-            - name: KGW_XDS_SERVICE_NAME
+            - name: AGW_XDS_SERVICE_NAME
               value: test-release-agentgateway
-            - name: KGW_AGENTGATEWAY_XDS_SERVICE_PORT
+            - name: AGW_AGENTGATEWAY_XDS_SERVICE_PORT
               value: "9978"
-            - name: KGW_DISCOVERY_NAMESPACE_SELECTORS
+            - name: AGW_DISCOVERY_NAMESPACE_SELECTORS
               value: "[]"
-            - name: KGW_ENABLE_AGENTGATEWAY
-              value: "true"
-            - name: KGW_ENABLE_ENVOY
-              value: "false"
-            - name: KGW_GATEWAY_CLASS_PARAMETERS_REFS
+            - name: AGW_GATEWAY_CLASS_PARAMETERS_REFS
               value: "{}"
             - name: POD_NAMESPACE
               valueFrom:

@@ -50,7 +50,7 @@ metadata:
   namespace: kgateway-test-extensions
 spec:
   selector:
-    app: redis
+    app.kubernetes.io/name: redis
   ports:
   - port: 6379
     targetPort: 6379
@@ -64,11 +64,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: redis
+      app.kubernetes.io/name: redis
   template:
     metadata:
       labels:
-        app: redis
+        app.kubernetes.io/name: redis
     spec:
       containers:
       - name: redis
@@ -88,7 +88,7 @@ spec:
     targetPort: 8081
     appProtocol: kubernetes.io/h2c
   selector:
-    app: ratelimit
+    app.kubernetes.io/name: ratelimit
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -99,11 +99,10 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ratelimit
+      app.kubernetes.io/name: ratelimit
   template:
     metadata:
       labels:
-        app: ratelimit
         app.kubernetes.io/name: ratelimit
     spec:
       containers:

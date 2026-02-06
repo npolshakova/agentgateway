@@ -9,54 +9,8 @@ import (
 const (
 	PolicyAcceptedMsg = "Policy accepted"
 
-	PolicyInvalidMsg = "Policy is invalid"
-
-	PolicyConflictWithHigherPriorityMsg = "Policy conflicts with higher priority policy"
-
 	PolicyAttachedMsg = "Attached to all targets"
-
-	PolicyMergedMsg = "Merged with other policies in target(s) and attached"
-
-	PolicyOverriddenMsg = "Overridden due to conflict with higher priority policy in target(s)"
-
-	// RouteRuleDroppedReason is used with the Accepted=False condition when the route rule is dropped.
-	RouteRuleDroppedReason = "RouteRuleDropped"
-
-	// RouteRuleReplacedReason is used with the Accepted=False condition when the route rule is replaced
-	// with a direct response.
-	RouteRuleReplacedReason = "RouteRuleReplaced"
-
-	// ListenerReplacedReason is used with the Accepted=False condition when an individual listener
-	// on a Gateway or XListenerSet is replaced due to an error in a policy targeting that listener.
-	ListenerReplacedReason = "ListenerReplaced"
-
-	// GatewayReplacedReason is used with the Accepted=False condition when the entire Gateway is replaced
-	// due to an error in a policy targeting the Gateway.
-	GatewayReplacedReason = "GatewayReplaced"
 )
-
-// PolicyAttachmentState represents the state of a policy attachment
-type PolicyAttachmentState int
-
-const (
-	// PolicyAttachmentStatePending indicates that the policy is pending attachment
-	PolicyAttachmentStatePending PolicyAttachmentState = iota
-
-	// PolicyAttachmentStateSucceeded indicates that the full policy was successfully attached
-	PolicyAttachmentStateAttached PolicyAttachmentState = 1 << iota
-
-	// PolicyAttachmentStateMerged indicates that the policy was merged with other policies and attached
-	PolicyAttachmentStateMerged
-
-	// PolicyAttachmentStateOverridden indicates that the policy conflicts with higher priority policies
-	// and was fully overridden
-	PolicyAttachmentStateOverridden
-)
-
-// Has checks if the existing state has the given state
-func (a PolicyAttachmentState) Has(b PolicyAttachmentState) bool {
-	return a&b != 0
-}
 
 type PolicyCondition struct {
 	Type               string
@@ -98,22 +52,10 @@ type RouteCondition struct {
 	Message string
 }
 
-type AncestorRefReporter interface {
-	SetCondition(condition PolicyCondition)
-	SetAttachmentState(
-		state PolicyAttachmentState,
-	)
-}
-
-type PolicyReporter interface {
-	AncestorRef(parentRef gwv1.ParentReference) AncestorRefReporter
-}
-
 type Reporter interface {
 	Gateway(gateway *gwv1.Gateway) GatewayReporter
 	ListenerSet(listenerSet client.Object) ListenerSetReporter
 	Route(obj metav1.Object) RouteReporter
-	Policy(ref PolicyKey, observedGeneration int64) PolicyReporter
 }
 
 type GatewayReporter interface {

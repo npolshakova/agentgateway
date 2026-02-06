@@ -6,8 +6,7 @@ import (
 	fmt "fmt"
 	http "net/http"
 
-	gatewayagentgateway "github.com/kgateway-dev/kgateway/v2/pkg/client/clientset/versioned/typed/v1alpha1/agentgateway"
-	gatewaykgateway "github.com/kgateway-dev/kgateway/v2/pkg/client/clientset/versioned/typed/v1alpha1/kgateway"
+	agentgatewayagentgateway "github.com/kgateway-dev/kgateway/v2/pkg/client/clientset/versioned/typed/v1alpha1/agentgateway"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -15,25 +14,18 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	GatewayKgateway() gatewaykgateway.GatewayKgatewayInterface
-	GatewayAgentgateway() gatewayagentgateway.GatewayAgentgatewayInterface
+	AgentgatewayAgentgateway() agentgatewayagentgateway.AgentgatewayAgentgatewayInterface
 }
 
 // Clientset contains the clients for groups.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	gatewayKgateway     *gatewaykgateway.GatewayKgatewayClient
-	gatewayAgentgateway *gatewayagentgateway.GatewayAgentgatewayClient
+	agentgatewayAgentgateway *agentgatewayagentgateway.AgentgatewayAgentgatewayClient
 }
 
-// GatewayKgateway retrieves the GatewayKgatewayClient
-func (c *Clientset) GatewayKgateway() gatewaykgateway.GatewayKgatewayInterface {
-	return c.gatewayKgateway
-}
-
-// GatewayAgentgateway retrieves the GatewayAgentgatewayClient
-func (c *Clientset) GatewayAgentgateway() gatewayagentgateway.GatewayAgentgatewayInterface {
-	return c.gatewayAgentgateway
+// AgentgatewayAgentgateway retrieves the AgentgatewayAgentgatewayClient
+func (c *Clientset) AgentgatewayAgentgateway() agentgatewayagentgateway.AgentgatewayAgentgatewayInterface {
+	return c.agentgatewayAgentgateway
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -80,11 +72,7 @@ func NewForConfigAndClient(c *rest.Config, httpClient *http.Client) (*Clientset,
 
 	var cs Clientset
 	var err error
-	cs.gatewayKgateway, err = gatewaykgateway.NewForConfigAndClient(&configShallowCopy, httpClient)
-	if err != nil {
-		return nil, err
-	}
-	cs.gatewayAgentgateway, err = gatewayagentgateway.NewForConfigAndClient(&configShallowCopy, httpClient)
+	cs.agentgatewayAgentgateway, err = agentgatewayagentgateway.NewForConfigAndClient(&configShallowCopy, httpClient)
 	if err != nil {
 		return nil, err
 	}
@@ -109,8 +97,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.gatewayKgateway = gatewaykgateway.New(c)
-	cs.gatewayAgentgateway = gatewayagentgateway.New(c)
+	cs.agentgatewayAgentgateway = agentgatewayagentgateway.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

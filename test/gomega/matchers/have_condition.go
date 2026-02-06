@@ -31,18 +31,6 @@ func HaveCondition(conditionType string, status metav1.ConditionStatus) types.Go
 	}
 }
 
-// HaveConditionWithReason returns a matcher that checks if a slice of conditions
-// contains a condition with the specified type, status, and reason.
-func HaveConditionWithReason(conditionType string, status metav1.ConditionStatus, reason string) types.GomegaMatcher {
-	return &conditionMatcher{
-		expected: ExpectedCondition{
-			Type:   conditionType,
-			Status: status,
-			Reason: reason,
-		},
-	}
-}
-
 type conditionMatcher struct {
 	expected   ExpectedCondition
 	conditions []metav1.Condition
@@ -111,18 +99,6 @@ func HaveAnyParentCondition(conditionType string, status metav1.ConditionStatus)
 		expected: ExpectedCondition{
 			Type:   conditionType,
 			Status: status,
-		},
-	}
-}
-
-// HaveAnyParentConditionWithReason returns a matcher that checks if any parent status contains
-// a condition with the specified type, status, and reason.
-func HaveAnyParentConditionWithReason(conditionType string, status metav1.ConditionStatus, reason string) types.GomegaMatcher {
-	return &parentConditionMatcher{
-		expected: ExpectedCondition{
-			Type:   conditionType,
-			Status: status,
-			Reason: reason,
 		},
 	}
 }
@@ -201,18 +177,6 @@ func HaveAnyAncestorCondition(conditionType string, status metav1.ConditionStatu
 	}
 }
 
-// HaveAnyAncestorConditionWithReason returns a matcher that checks if any ancestor status contains
-// a condition with the specified type, status, and reason.
-func HaveAnyAncestorConditionWithReason(conditionType string, status metav1.ConditionStatus, reason string) types.GomegaMatcher {
-	return &ancestorConditionMatcher{
-		expected: ExpectedCondition{
-			Type:   conditionType,
-			Status: status,
-			Reason: reason,
-		},
-	}
-}
-
 type ancestorConditionMatcher struct {
 	expected           ExpectedCondition
 	ancestorConditions [][]metav1.Condition
@@ -272,10 +236,4 @@ func (m *ancestorConditionMatcher) formatAncestorConditions() string {
 		}
 	}
 	return sb.String()
-}
-
-// ExtractParentConditions is a helper to extract conditions from route parent statuses
-// into a [][]metav1.Condition format suitable for HaveAnyParentCondition.
-func ExtractParentConditions(parents []metav1.Condition) [][]metav1.Condition {
-	return [][]metav1.Condition{parents}
 }

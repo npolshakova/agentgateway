@@ -10,7 +10,6 @@ import (
 	"sort"
 	"time"
 
-	envoycache "github.com/envoyproxy/go-control-plane/pkg/cache/v3"
 	"istio.io/istio/pkg/kube/krt"
 
 	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/controller"
@@ -20,7 +19,7 @@ import (
 
 func RunAdminServer(ctx context.Context, setupOpts *controller.SetupOpts) error {
 	// serverHandlers defines the custom handlers that the Admin Server will support
-	serverHandlers := getServerHandlers(ctx, setupOpts.KrtDebugger, setupOpts.Cache)
+	serverHandlers := getServerHandlers(ctx, setupOpts.KrtDebugger)
 
 	startHandlers(ctx, serverHandlers)
 
@@ -33,10 +32,8 @@ type dynamicProfileDescription func() string
 
 // getServerHandlers returns the custom handlers for the Admin Server, which will be bound to the http.ServeMux
 // These endpoints serve as the basis for an Admin Interface for the Control Plane (https://github.com/kgateway-dev/kgateway/issues/6494)
-func getServerHandlers(_ context.Context, dbg *krt.DebugHandler, cache envoycache.SnapshotCache) func(mux *http.ServeMux, profiles map[string]dynamicProfileDescription) {
+func getServerHandlers(_ context.Context, dbg *krt.DebugHandler) func(mux *http.ServeMux, profiles map[string]dynamicProfileDescription) {
 	return func(m *http.ServeMux, profiles map[string]dynamicProfileDescription) {
-		addXdsSnapshotHandler("/snapshots/xds", m, profiles, cache)
-
 		addKrtSnapshotHandler("/snapshots/krt", m, profiles, dbg)
 
 		addLoggingHandler("/logging", m, profiles)

@@ -8,25 +8,25 @@ import (
 	testing "k8s.io/client-go/testing"
 )
 
-type FakeGatewayAgentgateway struct {
+type FakeAgentgatewayAgentgateway struct {
 	*testing.Fake
 }
 
-func (c *FakeGatewayAgentgateway) AgentgatewayBackends(namespace string) agentgateway.AgentgatewayBackendInterface {
+func (c *FakeAgentgatewayAgentgateway) AgentgatewayBackends(namespace string) agentgateway.AgentgatewayBackendInterface {
 	return newFakeAgentgatewayBackends(c, namespace)
 }
 
-func (c *FakeGatewayAgentgateway) AgentgatewayParameters(namespace string) agentgateway.AgentgatewayParametersInterface {
+func (c *FakeAgentgatewayAgentgateway) AgentgatewayParameters(namespace string) agentgateway.AgentgatewayParametersInterface {
 	return newFakeAgentgatewayParameters(c, namespace)
 }
 
-func (c *FakeGatewayAgentgateway) AgentgatewayPolicies(namespace string) agentgateway.AgentgatewayPolicyInterface {
+func (c *FakeAgentgatewayAgentgateway) AgentgatewayPolicies(namespace string) agentgateway.AgentgatewayPolicyInterface {
 	return newFakeAgentgatewayPolicies(c, namespace)
 }
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *FakeGatewayAgentgateway) RESTClient() rest.Interface {
+func (c *FakeAgentgatewayAgentgateway) RESTClient() rest.Interface {
 	var ret *rest.RESTClient
 	return ret
 }

@@ -5,8 +5,6 @@ import (
 	"time"
 
 	. "github.com/onsi/gomega"
-
-	"github.com/kgateway-dev/kgateway/v2/test/gomega"
 )
 
 const (
@@ -27,34 +25,6 @@ func GetTimeouts(timeout ...time.Duration) (currentTimeout, pollingInterval time
 	currentTimeout = timeoutAny.(time.Duration)
 	pollingInterval = pollingIntervalAny.(time.Duration)
 	return currentTimeout, pollingInterval
-}
-
-// GetDefaultEventuallyTimeoutsTransform returns timeout and polling interval values to use with a gomega eventually call
-// The `defaults` parameter can be used to override the default Gomega values.
-// The first value in the `defaults` slice will be used as the timeout, and the second value will be used as the polling interval (if present)
-//
-// Example usage:
-// getTimeouts := GetEventuallyTimingsTransform(5*time.Second, 100*time.Millisecond)
-// timeout, pollingInterval := getTimeouts() // returns 5*time.Second, 100*time.Millisecond
-// timeout, pollingInterval := getTimeouts(10*time.Second) // returns 10*time.Second, 100*time.Millisecond
-// timeout, pollingInterval := getTimeouts(10*time.Second, 200*time.Millisecond) // returns 10*time.Second, 200*time.Millisecond
-// See tests for more examples
-func GetEventuallyTimingsTransform(defaults ...any) func(intervals ...any) (any, any) {
-	return GetDefaultTimingsTransform(gomega.DefaultEventuallyTimeout, gomega.DefaultEventuallyPollingInterval, defaults...)
-}
-
-// GetConsistentlyTimingsTransform returns timeout and polling interval values to use with a gomega consistently call
-// The `defaults` parameter can be used to override the default Gomega values.
-// The first value in the `defaults` slice will be used as the timeout, and the second value will be used as the polling interval (if present)
-//
-// Example usage:
-// getTimeouts := GetConsistentlyTimingsTransform(5*time.Second, 100*time.Millisecond)
-// timeout, pollingInterval := getTimeouts() // returns 5*time.Second, 100*time.Millisecond
-// timeout, pollingInterval := getTimeouts(10*time.Second) // returns 10*time.Second, 100*time.Millisecond
-// timeout, pollingInterval := getTimeouts(10*time.Second, 200*time.Millisecond) // returns 10*time.Second, 200*time.Millisecond
-// See tests for more examples
-func GetConsistentlyTimingsTransform(defaults ...any) func(intervals ...any) (any, any) {
-	return GetDefaultTimingsTransform(gomega.DefaultConsistentlyDuration, gomega.DefaultConsistentlyPollingInterval, defaults...)
 }
 
 // GetDefaultTimingsTransform is used to return the timeout and polling interval values to use with a gomega eventually or consistently call
