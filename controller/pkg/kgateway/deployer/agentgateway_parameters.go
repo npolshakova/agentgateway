@@ -72,7 +72,15 @@ func (a *AgentgatewayParametersApplier) ApplyToHelmValues(vals *deployer.HelmCon
 	// when Gateway AGWP only sets some fields (e.g., GWC sets limits, GW sets requests).
 	res.Resources = DeepMergeResourceRequirements(res.Resources, configs.Resources)
 	setIfNonNil(&res.Shutdown, configs.Shutdown)
-	setIfNonNil(&res.Istio, configs.Istio)
+	// Merge Istio field-by-field to preserve values from GatewayClass AGWP
+	// when Gateway AGWP only sets some fields (e.g., GWC sets caAddress, GW sets trustDomain).
+	if configs.Istio != nil {
+		if res.Istio == nil {
+			res.Istio = &agentgateway.IstioSpec{}
+		}
+		setIfNonZero(&res.Istio.CaAddress, configs.Istio.CaAddress)
+		setIfNonZero(&res.Istio.TrustDomain, configs.Istio.TrustDomain)
+	}
 	setIfNonNil(&res.RawConfig, configs.RawConfig)
 
 	// Apply logging.level as RUST_LOG first, then merge explicit env vars on top.
@@ -332,6 +340,21 @@ func GatewayIRFrom(gw *gwv1.Gateway, controllerNameGuess string) *collections.Ga
 		ControllerName: controllerNameGuess,
 		Ports:          smallset.New(ports.UnsortedList()...),
 	}
+}
+func DeepMergeResourceRequirements(dst, src *corev1.ResourceRequirements) *corev1.ResourceRequirements {
+	// nil src override means just use dst
+	if src == nil {
+		return dst
+	}
+
+	if dst == nil {
+		return src
+	}
+
+	dst.Limits = DeepMergeMaps(dst.Limits, src.Limits)
+	dst.Requests = DeepMergeMaps(dst.Requests, src.Requests)
+
+	return dst
 }
 
 // DeepMergeMaps will use dst if src is nil, src if dest is nil, or add all entries from src into dst
