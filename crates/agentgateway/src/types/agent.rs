@@ -1498,6 +1498,10 @@ impl RouteSet {
 	pub fn is_empty(&self) -> bool {
 		self.inner.is_empty()
 	}
+
+	pub fn iter(&self) -> impl Iterator<Item = &Arc<Route>> {
+		self.all.values()
+	}
 }
 
 #[derive(Debug, Clone, Default)]
@@ -2326,5 +2330,46 @@ InvalidKeyData
 		assert_eq!(matches.len(), 2);
 		assert_eq!(matches[0], HostnameMatchRef::Exact("localhost"));
 		assert_eq!(matches[1], HostnameMatchRef::None);
+	}
+
+	#[test]
+	fn test_route_set_iter() {
+		// Create test routes with unique keys
+		let route1 = Route {
+			key: strng::new("route-1"),
+			name: RouteName::default(),
+			hostnames: vec![],
+			matches: vec![],
+			backends: vec![],
+			inline_policies: vec![],
+		};
+		let route2 = Route {
+			key: strng::new("route-2"),
+			name: RouteName::default(),
+			hostnames: vec![],
+			matches: vec![],
+			backends: vec![],
+			inline_policies: vec![],
+		};
+		let route3 = Route {
+			key: strng::new("route-3"),
+			name: RouteName::default(),
+			hostnames: vec![],
+			matches: vec![],
+			backends: vec![],
+			inline_policies: vec![],
+		};
+
+		// Build RouteSet
+		let route_set = RouteSet::from_list(vec![route1, route2, route3]);
+
+		// Call iter() and collect keys
+		let keys: std::collections::HashSet<_> = route_set.iter().map(|r| r.key.clone()).collect();
+
+		// Verify all routes are returned
+		assert_eq!(keys.len(), 3);
+		assert!(keys.contains(&strng::new("route-1")));
+		assert!(keys.contains(&strng::new("route-2")));
+		assert!(keys.contains(&strng::new("route-3")));
 	}
 }

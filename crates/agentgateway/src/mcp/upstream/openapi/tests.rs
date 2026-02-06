@@ -148,8 +148,13 @@ async fn setup() -> (MockServer, Handler) {
 			parsed.port().unwrap_or(8080),
 		),
 	);
-	let upstream_client =
-		super::super::McpHttpClient::new(client, backend, BackendPolicies::default(), false);
+	let upstream_client = super::super::McpHttpClient::new(
+		client,
+		backend,
+		BackendPolicies::default(),
+		false,
+		"test-target".to_string(),
+	);
 	let handler = Handler::new(
 		upstream_client,
 		vec![
