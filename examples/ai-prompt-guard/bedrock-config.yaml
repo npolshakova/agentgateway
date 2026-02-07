@@ -1,0 +1,29 @@
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - ai:
+          name: openai
+          provider:
+            openAI:
+              model: gpt-4o-mini
+      policies:
+        ai:
+          promptGuard:
+            request:
+            - bedrockGuardrails:
+                guardrailIdentifier: bedrock-guardrail-identifier
+                guardrailVersion: bedrock-guardrail-version
+                region: us-east-1
+                policies:
+                  backendAuth:
+                    aws: {}
+            response:
+            - bedrockGuardrails:
+                guardrailIdentifier: bedrock-guardrail-identifier
+                guardrailVersion: bedrock-guardrail-version
+                region: us-east-1
+                policies:
+                  backendAuth:
+                    aws: {}

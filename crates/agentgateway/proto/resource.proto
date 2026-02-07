@@ -816,6 +816,30 @@ message BackendPolicySpec {
       repeated BackendPolicySpec inline_policies = 2;
     }
 
+    message BedrockGuardrails {
+      // TODO: do we want defaults set on control plane or make these optional? 
+      string identifier = 1;
+      string version = 2;
+
+      // TODO: Do we want to handle during_call? 
+
+      // TODO: how to handle requiring auth (aws_region_name, aws_role_name, etc.)?  
+      repeated BackendPolicySpec inline_policies = 3;
+    }
+
+    message GoogleModelArmor {
+      string template_id = 1;
+      string project_id = 2;
+
+      // default: us-central1 
+      optional string location = 3;
+
+      // TODO: how to handle requiring auth? 
+      repeated BackendPolicySpec inline_policies = 4;
+
+      // TODO: support other fields like fail_on_error, mask vs. block
+    }
+
     // Response sent when rejecting a request
     message RequestRejection {
       bytes body = 1;

@@ -1,6 +1,5 @@
-use ::http::{HeaderName, HeaderValue};
-
 use super::*;
+use ::http::{HeaderName, HeaderValue};
 
 #[test]
 fn test_get_webhook_forward_headers() {
