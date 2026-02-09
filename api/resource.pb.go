@@ -8975,12 +8975,10 @@ func (x *BackendPolicySpec_Ai_Moderation) GetInlinePolicies() []*BackendPolicySp
 }
 
 type BackendPolicySpec_Ai_BedrockGuardrails struct {
-	state protoimpl.MessageState `protogen:"open.v1"`
-	// TODO: do we want defaults set on control plane or make these optional?
-	Identifier string `protobuf:"bytes,1,opt,name=identifier,proto3" json:"identifier,omitempty"`
-	Version    string `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
-	// TODO: how to handle requiring auth (aws_region_name, aws_role_name, etc.)?
-	InlinePolicies []*BackendPolicySpec `protobuf:"bytes,3,rep,name=inline_policies,json=inlinePolicies,proto3" json:"inline_policies,omitempty"`
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Identifier     string                 `protobuf:"bytes,1,opt,name=identifier,proto3" json:"identifier,omitempty"`
+	Version        string                 `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
+	InlinePolicies []*BackendPolicySpec   `protobuf:"bytes,3,rep,name=inline_policies,json=inlinePolicies,proto3" json:"inline_policies,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -9041,8 +9039,7 @@ type BackendPolicySpec_Ai_GoogleModelArmor struct {
 	TemplateId string                 `protobuf:"bytes,1,opt,name=template_id,json=templateId,proto3" json:"template_id,omitempty"`
 	ProjectId  string                 `protobuf:"bytes,2,opt,name=project_id,json=projectId,proto3" json:"project_id,omitempty"`
 	// default: us-central1
-	Location *string `protobuf:"bytes,3,opt,name=location,proto3,oneof" json:"location,omitempty"`
-	// TODO: how to handle requiring auth?
+	Location       *string              `protobuf:"bytes,3,opt,name=location,proto3,oneof" json:"location,omitempty"`
 	InlinePolicies []*BackendPolicySpec `protobuf:"bytes,4,rep,name=inline_policies,json=inlinePolicies,proto3" json:"inline_policies,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache

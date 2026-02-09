@@ -3,13 +3,14 @@ use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
 use crate::http::jwt::Claims;
-use crate::json;
 use crate::llm::RequestType;
+use crate::llm::bedrock::AwsRegion;
 use crate::llm::policy::BedrockGuardrails;
 use crate::proxy::httpproxy::PolicyClient;
 use crate::types::agent::{BackendPolicy, ResourceName, SimpleBackend, Target};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum GuardrailSource {
 	/// Content from user input (requests)
 	Input,
@@ -42,7 +43,7 @@ pub struct ApplyGuardrailRequest {
 
 /// Action taken by the guardrail
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum GuardrailAction {
 	/// No intervention needed
 	None,
@@ -131,15 +132,26 @@ async fn send_guardrail_request(
 	);
 	let uri = format!("https://{}{}", host, path);
 
+	tracing::debug!(
+		request_body = %serde_json::to_string_pretty(&request_body).unwrap_or_default(),
+		uri = %uri,
+		"Sending Bedrock guardrail request"
+	);
+
 	let mut pols = vec![BackendPolicy::BackendTLS(
 		crate::http::backendtls::SYSTEM_TRUST.clone(),
 	)];
 	pols.extend(guardrails.policies.iter().cloned());
 
+	// AWS requires both Content-Type and Accept headers
 	let mut rb = ::http::Request::builder()
 		.uri(&uri)
 		.method(::http::Method::POST)
-		.header(::http::header::CONTENT_TYPE, "application/json");
+		.header(::http::header::CONTENT_TYPE, "application/json")
+		.header(::http::header::ACCEPT, "application/json")
+		.extension(AwsRegion {
+			region: guardrails.region.to_string(),
+		});
 
 	if let Some(claims) = claims {
 		rb = rb.extension(claims);
@@ -156,6 +168,37 @@ async fn send_guardrail_request(
 		.call_with_explicit_policies(req, mock_be, pols)
 		.await?;
 
-	let resp: ApplyGuardrailResponse = json::from_response_body(resp).await?;
+	let status = resp.status();
+	let lim = crate::http::response_buffer_limit(&resp);
+	let (_, body) = resp.into_parts();
+	let bytes = crate::http::read_body_with_limit(body, lim).await?;
+
+	if !status.is_success() {
+		let error_body = String::from_utf8_lossy(&bytes);
+		tracing::warn!(
+			status = %status,
+			error_body = %error_body,
+			guardrail_id = %guardrails.guardrail_identifier,
+			"Bedrock guardrail API returned error"
+		);
+		anyhow::bail!(
+			"Bedrock guardrail API error: status={}, body={}",
+			status,
+			error_body
+		);
+	}
+
+	let resp: ApplyGuardrailResponse = serde_json::from_slice(&bytes)
+		.map_err(|e| anyhow::anyhow!("Failed to parse Bedrock guardrail response: {e}"))?;
+
+	if resp.is_blocked() {
+		tracing::debug!(
+			guardrail_id = %guardrails.guardrail_identifier,
+			guardrail_version = %guardrails.guardrail_version,
+			source = ?source,
+			"Bedrock guardrail blocked content"
+		);
+	}
+
 	Ok(resp)
 }
