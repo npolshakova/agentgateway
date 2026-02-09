@@ -7,6 +7,7 @@
 use agent_core::strng;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
+use tracing::{debug, warn};
 
 use crate::http::jwt::Claims;
 use crate::json;
@@ -45,6 +46,7 @@ pub struct SanitizeModelResponseRequest {
 
 /// Match state indicating whether a filter found a match
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum MatchState {
 	MatchFound,
 	NoMatchFound,
@@ -52,58 +54,60 @@ pub enum MatchState {
 	Unknown,
 }
 
+// note: model armor responses are all camelCase
+
 /// RAI (Responsible AI) filter result
 #[derive(Debug, Clone, Deserialize, Default)]
-#[serde(rename_all = "snake_case", default)]
+#[serde(rename_all = "camelCase", default)]
 pub struct RaiFilterResult {
 	pub match_state: Option<MatchState>,
 }
 
 /// Prompt Injection and Jailbreak filter result
 #[derive(Debug, Clone, Deserialize, Default)]
-#[serde(rename_all = "snake_case", default)]
+#[serde(rename_all = "camelCase", default)]
 pub struct PiAndJailbreakFilterResult {
 	pub match_state: Option<MatchState>,
 }
 
 /// Malicious URI filter result
 #[derive(Debug, Clone, Deserialize, Default)]
-#[serde(rename_all = "snake_case", default)]
+#[serde(rename_all = "camelCase", default)]
 pub struct MaliciousUriFilterResult {
 	pub match_state: Option<MatchState>,
 }
 
 /// CSAM (Child Safety) filter result
 #[derive(Debug, Clone, Deserialize, Default)]
-#[serde(rename_all = "snake_case", default)]
+#[serde(rename_all = "camelCase", default)]
 pub struct CsamFilterResult {
 	pub match_state: Option<MatchState>,
 }
 
 /// Virus scan filter result
 #[derive(Debug, Clone, Deserialize, Default)]
-#[serde(rename_all = "snake_case", default)]
+#[serde(rename_all = "camelCase", default)]
 pub struct VirusScanFilterResult {
 	pub match_state: Option<MatchState>,
 }
 
 /// Inspect result within SDP filter
 #[derive(Debug, Clone, Deserialize, Default)]
-#[serde(rename_all = "snake_case", default)]
+#[serde(rename_all = "camelCase", default)]
 pub struct InspectResult {
 	pub match_state: Option<MatchState>,
 }
 
 /// Deidentify result within SDP filter
 #[derive(Debug, Clone, Deserialize, Default)]
-#[serde(rename_all = "snake_case", default)]
+#[serde(rename_all = "camelCase", default)]
 pub struct DeidentifyResult {
 	pub match_state: Option<MatchState>,
 }
 
 /// Sensitive Data Protection filter result
 #[derive(Debug, Clone, Deserialize, Default)]
-#[serde(rename_all = "snake_case", default)]
+#[serde(rename_all = "camelCase", default)]
 pub struct SdpFilterResult {
 	pub inspect_result: Option<InspectResult>,
 	pub deidentify_result: Option<DeidentifyResult>,
@@ -111,7 +115,7 @@ pub struct SdpFilterResult {
 
 /// Individual Google Model Armor filter results
 #[derive(Debug, Clone, Deserialize, Default)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "camelCase")]
 pub struct FilterResultEntry {
 	pub rai_filter_result: Option<RaiFilterResult>,
 	pub pi_and_jailbreak_filter_result: Option<PiAndJailbreakFilterResult>,
@@ -147,14 +151,16 @@ impl FilterResults {
 
 /// Sanitization result from Model Armor
 #[derive(Debug, Clone, Deserialize, Default)]
-#[serde(rename_all = "snake_case", default)]
+// model armor response is camelCase
+#[serde(rename_all = "camelCase", default)]
 pub struct SanitizationResult {
 	pub filter_results: FilterResults,
 }
 
 /// Response from Model Armor sanitize APIs
 #[derive(Debug, Clone, Deserialize, Default)]
-#[serde(rename_all = "snake_case", default)]
+// model armor response is camelCase
+#[serde(rename_all = "camelCase", default)]
 pub struct SanitizeResponse {
 	pub sanitization_result: Option<SanitizationResult>,
 }
@@ -230,18 +236,46 @@ pub async fn send_request(
 		.collect_vec()
 		.join("\n");
 
+	debug!(
+		template_id = %model_armor.template_id,
+		project_id = %model_armor.project_id,
+		content_preview = %content.chars().take(100).collect::<String>(),
+		"[Model Armor] >>> Sending REQUEST (sanitizeUserPrompt) to Google Model Armor"
+	);
+
 	let request_body = SanitizeUserPromptRequest {
 		user_prompt_data: UserPromptData { text: content },
 	};
 
-	send_model_armor_request(
+	let response = send_model_armor_request(
 		client,
 		claims.clone(),
 		model_armor,
 		"sanitizeUserPrompt",
 		&request_body,
 	)
-	.await
+	.await?;
+
+	debug!(
+		template_id = %model_armor.template_id,
+		is_blocked = response.is_blocked(),
+		response = ?response,
+		"[Model Armor] <<< Received REQUEST response from Model Armor"
+	);
+
+	if response.is_blocked() {
+		warn!(
+			template_id = %model_armor.template_id,
+			"[Model Armor] REQUEST BLOCKED by Google Model Armor"
+		);
+	} else {
+		debug!(
+			template_id = %model_armor.template_id,
+			"[Model Armor] Request passed Google Model Armor checks"
+		);
+	}
+
+	Ok(response)
 }
 
 /// Use Model Armor sanitizeModelResponse API for response content
@@ -253,20 +287,48 @@ pub async fn send_response(
 ) -> anyhow::Result<SanitizeResponse> {
 	let combined_content = content.join("\n");
 
+	debug!(
+		template_id = %model_armor.template_id,
+		project_id = %model_armor.project_id,
+		content_preview = %combined_content.chars().take(100).collect::<String>(),
+		"[Model Armor] >>> Sending RESPONSE (sanitizeModelResponse) to Google Model Armor"
+	);
+
 	let request_body = SanitizeModelResponseRequest {
 		model_response_data: ModelResponseData {
 			text: combined_content,
 		},
 	};
 
-	send_model_armor_request(
+	let response = send_model_armor_request(
 		client,
 		claims.clone(),
 		model_armor,
 		"sanitizeModelResponse",
 		&request_body,
 	)
-	.await
+	.await?;
+
+	debug!(
+		template_id = %model_armor.template_id,
+		is_blocked = response.is_blocked(),
+		response = ?response,
+		"[Model Armor] <<< Received RESPONSE response from Model Armor"
+	);
+
+	if response.is_blocked() {
+		warn!(
+			template_id = %model_armor.template_id,
+			"[Model Armor] RESPONSE BLOCKED by Google Model Armor"
+		);
+	} else {
+		debug!(
+			template_id = %model_armor.template_id,
+			"[Model Armor] Response passed Google Model Armor checks"
+		);
+	}
+
+	Ok(response)
 }
 
 async fn send_model_armor_request<T: Serialize>(
