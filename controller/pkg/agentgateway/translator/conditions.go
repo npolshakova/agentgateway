@@ -8,16 +8,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
-	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/wellknown"
+	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/wellknown"
 )
 
 // ParentErrorReason is the error string for a ParentError (reason parent could not be referenced)
 type ParentErrorReason string
 
 const (
-	ParentErrorNotAccepted       = ParentErrorReason(gwv1.RouteReasonNoMatchingParent)
-	ParentErrorNotAllowed        = ParentErrorReason(gwv1.RouteReasonNotAllowedByListeners)
-	ParentErrorNoHostname        = ParentErrorReason(gwv1.RouteReasonNoMatchingListenerHostname)
+	ParentErrorNotAccepted = ParentErrorReason(gwv1.RouteReasonNoMatchingParent)
+	ParentErrorNotAllowed  = ParentErrorReason(gwv1.RouteReasonNotAllowedByListeners)
+	ParentErrorNoHostname  = ParentErrorReason(gwv1.RouteReasonNoMatchingListenerHostname)
 )
 
 // ConfigErrorReason is the error string for a ConfigError (reason configuration is invalid)

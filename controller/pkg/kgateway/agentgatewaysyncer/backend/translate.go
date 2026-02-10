@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/agentgateway/agentgateway/go/api"
 	"istio.io/istio/pilot/pkg/model/kstatus"
 	"istio.io/istio/pkg/kube/krt"
 	"istio.io/istio/pkg/ptr"
@@ -12,14 +11,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	apiannotations "github.com/kgateway-dev/kgateway/v2/api/annotations"
-	"github.com/kgateway-dev/kgateway/v2/api/v1alpha1/agentgateway"
-	agwir "github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/ir"
-	"github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/plugins"
-	"github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/translator"
-	"github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/utils"
-	"github.com/kgateway-dev/kgateway/v2/pkg/logging"
-	"github.com/kgateway-dev/kgateway/v2/pkg/utils/kubeutils"
+	"github.com/agentgateway/agentgateway/api"
+	apiannotations "github.com/agentgateway/agentgateway/controller/api/annotations"
+	"github.com/agentgateway/agentgateway/controller/api/v1alpha1/agentgateway"
+	agwir "github.com/agentgateway/agentgateway/controller/pkg/agentgateway/ir"
+	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/plugins"
+	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/translator"
+	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/utils"
+	"github.com/agentgateway/agentgateway/controller/pkg/logging"
+	"github.com/agentgateway/agentgateway/controller/pkg/utils/kubeutils"
 )
 
 var logger = logging.New("agentgateway/backend")

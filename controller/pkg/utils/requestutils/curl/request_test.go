@@ -1,40 +1,48 @@
 package curl_test
 
 import (
-	"github.com/onsi/gomega/types"
+	"slices"
+	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"istio.io/istio/pkg/test/util/assert"
 
-	"github.com/kgateway-dev/kgateway/v2/pkg/utils/requestutils/curl"
+	"github.com/agentgateway/agentgateway/controller/pkg/utils/requestutils/curl"
 )
 
-var _ = Describe("Curl", func() {
+func TestBuildArgs(t *testing.T) {
+	tests := []struct {
+		name     string
+		option   curl.Option
+		expected []string
+	}{
+		{
+			name:     "VerboseOutput",
+			option:   curl.VerboseOutput(),
+			expected: []string{"-v"},
+		},
+		{
+			name:     "Silent",
+			option:   curl.Silent(),
+			expected: []string{"-s"},
+		},
+		{
+			name:     "WithBody",
+			option:   curl.WithBody("body"),
+			expected: []string{"--data-binary"},
+		},
+		{
+			name:     "WithRetries",
+			option:   curl.WithRetries(1, 1, 1),
+			expected: []string{"--retry", "--retry-delay", "--retry-max-time"},
+		},
+	}
 
-	Context("BuildArgs", func() {
-
-		DescribeTable("it builds the args using the provided option",
-			func(option curl.Option, expectedMatcher types.GomegaMatcher) {
-				Expect(curl.BuildArgs(option)).To(expectedMatcher)
-			},
-			Entry("VerboseOutput",
-				curl.VerboseOutput(),
-				ContainElement("-v"),
-			),
-			Entry("Silent",
-				curl.Silent(),
-				ContainElement("-s"),
-			),
-			Entry("WithBody",
-				curl.WithBody("body"),
-				ContainElement("--data-binary"),
-			),
-			Entry("WithRetries",
-				curl.WithRetries(1, 1, 1),
-				ContainElements("--retry", "--retry-delay", "--retry-max-time"),
-			),
-		)
-
-	})
-
-})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			args := curl.BuildArgs(tt.option)
+			for _, expected := range tt.expected {
+				assert.Equal(t, true, slices.Contains(args, expected))
+			}
+		})
+	}
+}

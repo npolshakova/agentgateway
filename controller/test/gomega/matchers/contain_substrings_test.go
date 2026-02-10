@@ -1,32 +1,53 @@
 package matchers_test
 
 import (
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"testing"
 
-	"github.com/kgateway-dev/kgateway/v2/test/gomega/matchers"
+	"istio.io/istio/pkg/test/util/assert"
+
+	"github.com/agentgateway/agentgateway/controller/test/gomega/matchers"
 )
 
-var _ = Describe("ContainSubstrings", func() {
+func TestContainSubstrings(t *testing.T) {
+	actualString := "this is the string"
 
-	DescribeTable("contains substrings",
-		func(expectedSubstrings []string) {
-			actualString := "this is the string"
-			Expect(actualString).To(matchers.ContainSubstrings(expectedSubstrings))
-		},
-		Entry("empty list", []string{}),
-		Entry("empty string", []string{""}),
-		Entry("single substring", []string{"this"}),
-		Entry("multiple substrings", []string{"the", "is", "this"}),
-	)
+	t.Run("contains substrings", func(t *testing.T) {
+		tests := []struct {
+			name               string
+			expectedSubstrings []string
+		}{
+			{name: "empty list", expectedSubstrings: []string{}},
+			{name: "empty string", expectedSubstrings: []string{""}},
+			{name: "single substring", expectedSubstrings: []string{"this"}},
+			{name: "multiple substrings", expectedSubstrings: []string{"the", "is", "this"}},
+		}
 
-	DescribeTable("does not contain substrings",
-		func(expectedSubstrings []string) {
-			actualString := "this is the string"
-			Expect(actualString).NotTo(matchers.ContainSubstrings(expectedSubstrings))
-		},
-		Entry("missing substring", []string{"missing"}),
-		Entry("substring and missing substring", []string{"this", "missing"}),
-	)
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				matcher := matchers.ContainSubstrings(tt.expectedSubstrings)
+				ok, err := matcher.Match(actualString)
+				assert.NoError(t, err)
+				assert.Equal(t, true, ok)
+			})
+		}
+	})
 
-})
+	t.Run("does not contain substrings", func(t *testing.T) {
+		tests := []struct {
+			name               string
+			expectedSubstrings []string
+		}{
+			{name: "missing substring", expectedSubstrings: []string{"missing"}},
+			{name: "substring and missing substring", expectedSubstrings: []string{"this", "missing"}},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				matcher := matchers.ContainSubstrings(tt.expectedSubstrings)
+				ok, err := matcher.Match(actualString)
+				assert.NoError(t, err)
+				assert.Equal(t, false, ok)
+			})
+		}
+	})
+}

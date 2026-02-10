@@ -5,7 +5,6 @@ import (
 	"net"
 	"testing"
 
-	"github.com/agentgateway/agentgateway/go/api"
 	discovery "github.com/envoyproxy/go-control-plane/envoy/service/discovery/v3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -20,10 +19,11 @@ import (
 	"istio.io/istio/pkg/workloadapi"
 	"k8s.io/apimachinery/pkg/types"
 
-	agwir "github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/ir"
-	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/agentgatewaysyncer"
-	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/agentgatewaysyncer/krtxds"
-	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/krtutil"
+	"github.com/agentgateway/agentgateway/api"
+	agwir "github.com/agentgateway/agentgateway/controller/pkg/agentgateway/ir"
+	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/agentgatewaysyncer"
+	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/agentgatewaysyncer/krtxds"
+	"github.com/agentgateway/agentgateway/controller/pkg/pluginsdk/krtutil"
 )
 
 type Fake struct {

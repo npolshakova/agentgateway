@@ -5,14 +5,7 @@ package global
 import (
 	"path/filepath"
 
-	"github.com/kgateway-dev/kgateway/v2/pkg/utils/fsutils"
-)
-
-const (
-	// test namespace for shared gateway resources
-	namespace = "agentgateway-base"
-	// test namespace for ratelimit resources
-	extensionsNamespace = "kgateway-test-extensions"
+	"github.com/agentgateway/agentgateway/controller/pkg/utils/fsutils"
 )
 
 var (

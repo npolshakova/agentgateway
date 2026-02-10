@@ -7,25 +7,21 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/kgateway-dev/kgateway/v2/pkg/utils/fsutils"
-	"github.com/kgateway-dev/kgateway/v2/test/e2e/defaults"
-	"github.com/kgateway-dev/kgateway/v2/test/e2e/tests/base"
+	"github.com/agentgateway/agentgateway/controller/pkg/utils/fsutils"
+	"github.com/agentgateway/agentgateway/controller/test/e2e/defaults"
+	"github.com/agentgateway/agentgateway/controller/test/e2e/tests/base"
 )
 
 var (
-	// kgateway managed deployment for the agentgateway with basic HTTPRoute
+	// Basic HTTPRoute test resources that target the shared e2e Gateway.
 	httpRouteManifest = filepath.Join(fsutils.MustGetThisDir(), "testdata", "agw-http-route.yaml")
-	// kgateway managed deployment for the agentgateway with basic TCPRoute
+	// Basic TCPRoute test resources that target the shared e2e Gateway.
 	tcpRouteManifest = filepath.Join(fsutils.MustGetThisDir(), "testdata", "agw-tcp-route.yaml")
 
-	// Core infrastructure objects that we need to track
-	httpGatewayObjectMeta = metav1.ObjectMeta{
-		Name:      "http-gw-for-test",
-		Namespace: "default",
-	}
-	tcpGatewayObjectMeta = metav1.ObjectMeta{
-		Name:      "tcp-gw-for-test",
-		Namespace: "default",
+	// Shared Gateway created once for the full e2e run.
+	sharedGatewayObjectMeta = metav1.ObjectMeta{
+		Name:      "gateway",
+		Namespace: "agentgateway-base",
 	}
 
 	testCases = map[string]*base.TestCase{

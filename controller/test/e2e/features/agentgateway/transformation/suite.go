@@ -18,11 +18,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
-	"github.com/kgateway-dev/kgateway/v2/pkg/utils/requestutils/curl"
-	"github.com/kgateway-dev/kgateway/v2/test/e2e"
-	"github.com/kgateway-dev/kgateway/v2/test/e2e/common"
-	"github.com/kgateway-dev/kgateway/v2/test/e2e/tests/base"
-	testmatchers "github.com/kgateway-dev/kgateway/v2/test/gomega/matchers"
+	"github.com/agentgateway/agentgateway/controller/pkg/utils/requestutils/curl"
+	"github.com/agentgateway/agentgateway/controller/test/e2e"
+	"github.com/agentgateway/agentgateway/controller/test/e2e/common"
+	"github.com/agentgateway/agentgateway/controller/test/e2e/tests/base"
+	testmatchers "github.com/agentgateway/agentgateway/controller/test/gomega/matchers"
 )
 
 var _ e2e.NewSuiteFunc = NewTestingSuite
@@ -196,7 +196,8 @@ func (s *testingSuite) TestGatewayWithTransformedGRPCRoute() {
 	)
 
 	s.Require().Eventually(func() bool {
-		resp, body, err := sendH2CGrpcRequest(
+		// nolint: bodyclose // false positive
+		resp, _, err := sendH2CGrpcRequest(
 			common.BaseGateway.Address,
 			expectedHostname,
 			grpcMethodPath,
@@ -206,9 +207,6 @@ func (s *testingSuite) TestGatewayWithTransformedGRPCRoute() {
 			s.T().Logf("grpc request failed: %v", err)
 			return false
 		}
-
-		// Ensure body is fully drained before checking trailers.
-		_ = body
 
 		grpcStatus := resp.Trailer.Get("grpc-status")
 		if resp.StatusCode != http.StatusOK || grpcStatus != "0" {
@@ -242,6 +240,7 @@ func (s *testingSuite) TestGatewayWithTransformedGRPCRoute() {
 func sendH2CGrpcRequest(address, authority, methodPath string, protobufPayload []byte) (*http.Response, []byte, error) {
 	grpcFrame := make([]byte, 5+len(protobufPayload))
 	grpcFrame[0] = 0 // uncompressed
+	// nolint: gosec // not an issue in practice
 	binary.BigEndian.PutUint32(grpcFrame[1:5], uint32(len(protobufPayload)))
 	copy(grpcFrame[5:], protobufPayload)
 

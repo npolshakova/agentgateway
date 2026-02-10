@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/agentgateway/agentgateway/go/api"
 	"istio.io/istio/pkg/ptr"
 	"istio.io/istio/pkg/slices"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
-	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/reporter"
+	"github.com/agentgateway/agentgateway/api"
+	"github.com/agentgateway/agentgateway/controller/pkg/pluginsdk/reporter"
 )
 
 // CreateAgwMethodMatch creates an agw MethodMatch from a HTTPRouteMatch.

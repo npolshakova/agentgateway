@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/agentgateway/agentgateway/go/api"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"istio.io/istio/pkg/ptr"
 	"istio.io/istio/pkg/slices"
 
-	"github.com/kgateway-dev/kgateway/v2/api/v1alpha1/agentgateway"
-	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/wellknown"
+	"github.com/agentgateway/agentgateway/api"
+	"github.com/agentgateway/agentgateway/controller/api/v1alpha1/agentgateway"
+	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/wellknown"
 )
 
 const (

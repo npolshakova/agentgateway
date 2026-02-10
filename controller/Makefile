@@ -3,7 +3,7 @@
 # https://www.gnu.org/software/make/manual/html_node/Special-Variables.html#Special-Variables
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
-
+export PATH := ../tools:$(PATH)
 #----------------------------------------------------------------------------------
 # Help
 #----------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ export VERSION
 
 SOURCES := $(shell find . -name "*.go" | grep -v test.go)
 
-export LDFLAGS := -X 'github.com/kgateway-dev/kgateway/v2/pkg/version.Version=$(VERSION)' -s -w
+export LDFLAGS := -X 'github.com/agentgateway/agentgateway/controller/pkg/version.Version=$(VERSION)' -s -w
 export GCFLAGS ?=
 
 UNAME_M := $(shell uname -m)
@@ -82,11 +82,7 @@ $(BUG_REPORT_DIR):
 # Base Alpine image used for all containers. Exported for use in goreleaser.yaml.
 export ALPINE_BASE_IMAGE ?= alpine:3.17.6
 
-GO_VERSION := $(shell cat go.mod | grep -E '^go' | awk '{print $$2}')
-GOTOOLCHAIN ?= go$(GO_VERSION)
-
 DEPSGOBIN ?= $(OUTPUT_DIR)
-GOLANGCI_LINT ?= go tool -modfile=tools/go.mod golangci-lint
 ANALYZE_ARGS ?= --fix --verbose --max-issues-per-linter 0 --max-same-issues 0
 CUSTOM_GOLANGCI_LINT_BIN ?= $(DEPSGOBIN)/golangci-lint-custom
 CUSTOM_GOLANGCI_LINT_RUN ?= $(CUSTOM_GOLANGCI_LINT_BIN) run --build-tags e2e
@@ -139,13 +135,12 @@ mod-tidy: mod-download mod-tidy-nested ## Tidy the go mod file
 analyze: $(CUSTOM_GOLANGCI_LINT_BIN)  ## Run golangci-lint. Override options with ANALYZE_ARGS.
 	$(CUSTOM_GOLANGCI_LINT_RUN) $(ANALYZE_ARGS) ./...
 
-$(CUSTOM_GOLANGCI_LINT_BIN): go.mod go.sum .custom-gcl.yml
-	GOTOOLCHAIN=$(GOTOOLCHAIN) $(GOLANGCI_LINT) custom
+$(CUSTOM_GOLANGCI_LINT_BIN): ../go.mod ../go.sum .custom-gcl.yml
+	golangci-lint custom
 
-ACTION_LINT ?= go tool -modfile=tools/go.mod github.com/rhysd/actionlint/cmd/actionlint
 .PHONY: lint-actions
 lint-actions: ## Lint the GitHub Actions workflows
-	$(ACTION_LINT)
+	actionlint
 
 #----------------------------------------------------------------------------------
 # Ginkgo Tests
@@ -163,7 +158,7 @@ TEST_PKG ?= ./... # Default to run all tests except e2e tests
 # This is a way for a user executing `make test` to be able to provide flags which we do not include by default
 # For example, you may want to run tests multiple times, or with various timeouts
 GINKGO_USER_FLAGS ?=
-GINKGO ?= go tool -modfile=tools/go.mod ginkgo
+GINKGO ?= ginkgo
 
 .PHONY: test
 test: ## Run all tests with ginkgo, or only run the test package at {TEST_PKG} if it is specified
@@ -194,7 +189,7 @@ e2e-test: GO_TEST_ARGS = $(E2E_GO_TEST_ARGS)
 .PHONY: test-with-coverage
 test-with-coverage: GINKGO_FLAGS += $(GINKGO_COVERAGE_FLAGS)
 test-with-coverage: test
-	go tool -modfile=tools/go.mod cover -html $(OUTPUT_DIR)/coverage.cov
+	cover -html $(OUTPUT_DIR)/coverage.cov
 
 .PHONY: golden-deployer
 golden-deployer:  ## Refreshes golden files for ./test/deployer snapshot testing
@@ -233,13 +228,13 @@ E2E_GO_TEST_ARGS ?= -vet=off -timeout=25m -outputdir=$(OUTPUT_DIR)
 # to 25 minutes based on the time it takes to run the longest test setup (kgateway_test).
 GO_TEST_ARGS ?= -timeout=25m -outputdir=$(OUTPUT_DIR) -race
 GO_TEST_COVERAGE_ARGS ?= --cover --covermode=atomic --coverprofile=cover.out
-GO_TEST_COVERAGE ?= go tool -modfile=tools/go.mod github.com/vladopajic/go-test-coverage/v2
+GO_TEST_COVERAGE ?= github.com/vladopajic/go-test-coverage/v2
 
 # This is a way for a user executing `make go-test` to be able to provide args which we do not include by default
 # For example, you may want to run tests multiple times, or with various timeouts
 GO_TEST_USER_ARGS ?=
 GO_TEST_RETRIES ?= 0
-GOTESTSUM ?= go tool -modfile=tools/go.mod gotestsum
+GOTESTSUM ?= gotestsum
 GOTESTSUM_ARGS ?= --format=standard-verbose
 
 .PHONY: go-test
@@ -269,7 +264,7 @@ validate-test-coverage: ## Validate the test coverage
 # https://go.dev/blog/cover#heat-maps
 .PHONY: view-test-coverage
 view-test-coverage:
-	go tool -modfile=tools/go.mod cover -html $(OUTPUT_DIR)/cover.out
+	cover -html $(OUTPUT_DIR)/cover.out
 
 #----------------------------------------------------------------------------------
 # MARK: Clean
@@ -458,7 +453,7 @@ dummy-idp-docker: $(DUMMY_IDP_OUTPUT_DIR)/.docker-stamp-$(DUMMY_IDP_VERSION)-$(G
 
 .PHONY: kind-load-dummy-idp
 kind-load-dummy-idp:
-	$(KIND) load docker-image $(IMAGE_REGISTRY)/$(DUMMY_IDP_IMAGE_REPO):$(DUMMY_IDP_VERSION) --name $(CLUSTER_NAME)
+	kind load docker-image $(IMAGE_REGISTRY)/$(DUMMY_IDP_IMAGE_REPO):$(DUMMY_IDP_VERSION) --name $(CLUSTER_NAME)
 
 #----------------------------------------------------------------------------------
 # extproc-server (used in e2e tests)
@@ -480,13 +475,13 @@ extproc-server-docker: $(EXTPROC_SERVER_OUTPUT_DIR)/.docker-stamp-$(EXTPROC_SERV
 
 .PHONY: kind-load-extproc-server
 kind-load-extproc-server:
-	$(KIND) load docker-image $(IMAGE_REGISTRY)/$(EXTPROC_SERVER_IMAGE_REPO):$(EXTPROC_SERVER_VERSION) --name $(CLUSTER_NAME)
+	kind load docker-image $(IMAGE_REGISTRY)/$(EXTPROC_SERVER_IMAGE_REPO):$(EXTPROC_SERVER_VERSION) --name $(CLUSTER_NAME)
 
 #----------------------------------------------------------------------------------
 # Helm
 #----------------------------------------------------------------------------------
 
-HELM ?= go tool -modfile=tools/go.mod helm
+HELM ?= helm
 # It would be nice to use actual semver '--version', as Helm docs clearly state
 # is intended (and yet is not enforced by 'helm lint'). Here we say '--version
 # v2.0.0', not '--version 2.0.0', e.g. To do it cleanly, you'd probably
@@ -554,7 +549,7 @@ GORELEASER_CURRENT_TAG ?= $(VERSION)
 
 .PHONY: release
 release: ## Create a release using goreleaser
-	GORELEASER_CURRENT_TAG=$(GORELEASER_CURRENT_TAG) go tool -modfile=tools/goreleaser/go.mod goreleaser release $(GORELEASER_ARGS) --timeout $(GORELEASER_TIMEOUT)
+	GORELEASER_CURRENT_TAG=$(GORELEASER_CURRENT_TAG) goreleaser release $(GORELEASER_ARGS) --timeout $(GORELEASER_TIMEOUT)
 .PHONY: release-notes
 release-notes: ## Generate release notes (PREVIOUS_TAG required, CURRENT_TAG optional)
 	./hack/generate-release-notes.sh -p $(PREVIOUS_TAG) -c $(or $(CURRENT_TAG),HEAD)
@@ -563,7 +558,6 @@ release-notes: ## Generate release notes (PREVIOUS_TAG required, CURRENT_TAG opt
 # MARK: Development
 #----------------------------------------------------------------------------------
 
-KIND ?= go tool -modfile=tools/go.mod kind
 CLUSTER_NAME ?= kind
 # TODO: This should probably change depending on if kgateway or agw is installed
 INSTALL_NAMESPACE ?= kgateway-system
@@ -574,7 +568,7 @@ CLUSTER_NODE_VERSION ?= v1.35.0@sha256:452d707d4862f52530247495d180205e029056831
 
 .PHONY: kind-create
 kind-create: ## Create a KinD cluster
-	$(KIND) get clusters | grep $(CLUSTER_NAME) || $(KIND) create cluster --name $(CLUSTER_NAME) --image kindest/node:$(CLUSTER_NODE_VERSION)
+	kind get clusters | grep $(CLUSTER_NAME) || kind create cluster --name $(CLUSTER_NAME) --image kindest/node:$(CLUSTER_NODE_VERSION)
 
 CONFORMANCE_CHANNEL ?= experimental
 CONFORMANCE_VERSION ?= v1.4.1
@@ -628,7 +622,7 @@ kind-setup: ## Set up the KinD cluster. Deprecated: use kind-create instead.
 	VERSION=${VERSION} CLUSTER_NAME=${CLUSTER_NAME} ./hack/kind/setup-kind.sh
 
 kind-load-%:
-	$(KIND) load docker-image $(IMAGE_REGISTRY)/$*:$(VERSION) --name $(CLUSTER_NAME)
+	kind load docker-image $(IMAGE_REGISTRY)/$*:$(VERSION) --name $(CLUSTER_NAME)
 
 # Build an image and load it into the KinD cluster
 # Depends on: IMAGE_REGISTRY, VERSION, CLUSTER_NAME
@@ -668,20 +662,12 @@ kind-load: kind-load-dummy-idp
 #----------------------------------------------------------------------------------
 
 # Agent Gateway conformance test configuration
-AGW_CONFORMANCE_GATEWAY_CLASS ?= agentgateway
-AGW_CONFORMANCE_REPORT_ARGS ?= -report-output=$(TEST_ASSET_DIR)/conformance/agw-$(VERSION)-report.yaml -organization=kgateway-dev -project=kgateway -version=$(VERSION) -url=github.com/kgateway-dev/kgateway -contact=github.com/kgateway-dev/kgateway/issues/new/choose
-AGW_CONFORMANCE_ARGS := -gateway-class=$(AGW_CONFORMANCE_GATEWAY_CLASS) $(AGW_CONFORMANCE_REPORT_ARGS)
-
+AGW_CONFORMANCE_REPORT_ARGS ?= -report-output=$(TEST_ASSET_DIR)/conformance/agw-$(VERSION)-report.yaml -organization=agentgateway -project=agentgateway -version=$(VERSION) -url=github.com/agentgateway/agentgateway -contact=github.com/agentgateway/agentgateway/issues/new/choose
+AGW_CONFORMANCE_ARGS := -gateway-class=agentgateway $(AGW_CONFORMANCE_REPORT_ARGS)
 .PHONY: agw-conformance ## Run the agent gateway conformance test suite
 agw-conformance:
 	@mkdir -p $(TEST_ASSET_DIR)/conformance
-	go test -mod=mod -ldflags='$(LDFLAGS)' -tags conformance -test.v $(CONFORMANCE_TEST_DIR) -args $(AGW_CONFORMANCE_ARGS)
-
-# Run only the specified agent gateway conformance test
-agw-conformance-%:
-	@mkdir -p $(TEST_ASSET_DIR)/conformance
-	go test -mod=mod -ldflags='$(LDFLAGS)' -tags conformance -test.v $(CONFORMANCE_TEST_DIR) -args $(AGW_CONFORMANCE_ARGS) \
-	-run-test=$*
+	go test -mod=mod -ldflags='$(LDFLAGS)' -tags conformance -test.v ./test/conformance/... -args $(AGW_CONFORMANCE_ARGS)
 
 #----------------------------------------------------------------------------------
 # Targets for running Gateway API Inference Extension conformance tests
@@ -690,15 +676,15 @@ agw-conformance-%:
 # Reporting flags, identical to CONFORMANCE_REPORT_ARGS but with "inference-"
 GIE_CONFORMANCE_REPORT_ARGS ?= \
     -report-output=$(TEST_ASSET_DIR)/conformance/inference-$(VERSION)-report.yaml \
-    -organization=kgateway-dev \
-    -project=kgateway \
+    -organization=agentgateway \
+    -project=agentgateway \
     -version=$(VERSION) \
-    -url=github.com/kgateway-dev/kgateway \
-    -contact=github.com/kgateway-dev/kgateway/issues/new/choose
+    -url=github.com/agentgateway/agentgateway \
+    -contact=github.com/agentgateway/agentgateway/issues/new/choose
 
 # The args to pass into the Gateway API Inference Extension conformance test suite.
 GIE_CONFORMANCE_ARGS := \
-    -gateway-class=$(AGW_CONFORMANCE_GATEWAY_CLASS) \
+    -gateway-class=agentgateway \
     $(GIE_CONFORMANCE_REPORT_ARGS)
 
 INFERENCE_CONFORMANCE_DIR := $(shell go list -m -f '{{.Dir}}' sigs.k8s.io/gateway-api-inference-extension)/conformance

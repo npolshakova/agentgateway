@@ -3,6 +3,7 @@ package deployer
 import (
 	"context"
 	"fmt"
+	"maps"
 
 	"istio.io/istio/pkg/kube/kclient"
 	"istio.io/istio/pkg/util/smallset"
@@ -14,12 +15,12 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
-	"github.com/kgateway-dev/kgateway/v2/api/v1alpha1/agentgateway"
-	"github.com/kgateway-dev/kgateway/v2/pkg/apiclient"
-	"github.com/kgateway-dev/kgateway/v2/pkg/deployer"
-	"github.com/kgateway-dev/kgateway/v2/pkg/deployer/strategicpatch"
-	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/wellknown"
-	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/collections"
+	"github.com/agentgateway/agentgateway/controller/api/v1alpha1/agentgateway"
+	"github.com/agentgateway/agentgateway/controller/pkg/apiclient"
+	"github.com/agentgateway/agentgateway/controller/pkg/deployer"
+	"github.com/agentgateway/agentgateway/controller/pkg/deployer/strategicpatch"
+	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/wellknown"
+	"github.com/agentgateway/agentgateway/controller/pkg/pluginsdk/collections"
 )
 
 // AgentgatewayParametersApplier applies AgentgatewayParameters configurations and overlays.
@@ -67,7 +68,9 @@ func (a *AgentgatewayParametersApplier) ApplyToHelmValues(vals *deployer.HelmCon
 		setIfNonNil(&res.Image.PullPolicy, configs.Image.PullPolicy)
 		setIfNonNil(&res.Image.Digest, configs.Image.Digest)
 	}
-	setIfNonNil(&res.Resources, configs.Resources)
+	// Merge resources field-by-field to preserve values from GatewayClass AGWP
+	// when Gateway AGWP only sets some fields (e.g., GWC sets limits, GW sets requests).
+	res.Resources = DeepMergeResourceRequirements(res.Resources, configs.Resources)
 	setIfNonNil(&res.Shutdown, configs.Shutdown)
 	setIfNonNil(&res.Istio, configs.Istio)
 	setIfNonNil(&res.RawConfig, configs.RawConfig)
@@ -329,4 +332,20 @@ func GatewayIRFrom(gw *gwv1.Gateway, controllerNameGuess string) *collections.Ga
 		ControllerName: controllerNameGuess,
 		Ports:          smallset.New(ports.UnsortedList()...),
 	}
+}
+
+// DeepMergeMaps will use dst if src is nil, src if dest is nil, or add all entries from src into dst
+// if neither are nil
+func DeepMergeMaps[keyT comparable, valT any](dst, src map[keyT]valT) map[keyT]valT {
+	// nil src override means just use dst
+	if src == nil {
+		return dst
+	}
+
+	if dst == nil || len(src) == 0 {
+		return src
+	}
+
+	maps.Copy(dst, src)
+	return dst
 }

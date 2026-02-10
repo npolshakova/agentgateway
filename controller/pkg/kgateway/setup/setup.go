@@ -19,23 +19,22 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
-	"github.com/kgateway-dev/kgateway/v2/api/settings"
-	apisettings "github.com/kgateway-dev/kgateway/v2/api/settings"
-	"github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/jwks"
-	"github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/jwks_url"
-	agentjwksstore "github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/jwksstore"
-	agwplugins "github.com/kgateway-dev/kgateway/v2/pkg/agentgateway/plugins"
-	"github.com/kgateway-dev/kgateway/v2/pkg/apiclient"
-	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/admin"
-	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/agentgatewaysyncer"
-	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/controller"
-	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/wellknown"
-	"github.com/kgateway-dev/kgateway/v2/pkg/logging"
-	"github.com/kgateway-dev/kgateway/v2/pkg/metrics"
-	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/collections"
-	"github.com/kgateway-dev/kgateway/v2/pkg/pluginsdk/krtutil"
-	"github.com/kgateway-dev/kgateway/v2/pkg/schemes"
-	"github.com/kgateway-dev/kgateway/v2/pkg/utils/namespaces"
+	"github.com/agentgateway/agentgateway/controller/api/settings"
+	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/jwks"
+	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/jwks_url"
+	agentjwksstore "github.com/agentgateway/agentgateway/controller/pkg/agentgateway/jwksstore"
+	agwplugins "github.com/agentgateway/agentgateway/controller/pkg/agentgateway/plugins"
+	"github.com/agentgateway/agentgateway/controller/pkg/apiclient"
+	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/admin"
+	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/agentgatewaysyncer"
+	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/controller"
+	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/wellknown"
+	"github.com/agentgateway/agentgateway/controller/pkg/logging"
+	"github.com/agentgateway/agentgateway/controller/pkg/metrics"
+	"github.com/agentgateway/agentgateway/controller/pkg/pluginsdk/collections"
+	"github.com/agentgateway/agentgateway/controller/pkg/pluginsdk/krtutil"
+	"github.com/agentgateway/agentgateway/controller/pkg/schemes"
+	"github.com/agentgateway/agentgateway/controller/pkg/utils/namespaces"
 )
 
 type Server interface {
@@ -50,7 +49,7 @@ type setup struct {
 	restConfig                   *rest.Config
 	ctrlMgrOptionsInitFunc       func(context.Context) *ctrl.Options
 	krtDebugger                  *krt.DebugHandler
-	globalSettings               *apisettings.Settings
+	globalSettings               *settings.Settings
 	leaderElectionID             string
 	extraAgwPolicyStatusHandlers map[schema.GroupVersionKind]agwplugins.AgwResourceStatusSyncHandler
 
@@ -71,7 +70,7 @@ func New() (*setup, error) {
 
 	if s.globalSettings == nil {
 		var err error
-		s.globalSettings, err = apisettings.BuildSettings()
+		s.globalSettings, err = settings.BuildSettings()
 		if err != nil {
 			slog.Error("error loading settings from env", "error", err)
 			return nil, err

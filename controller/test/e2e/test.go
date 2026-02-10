@@ -11,18 +11,14 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/kgateway-dev/kgateway/v2/pkg/utils/helmutils"
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/labels"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/kgateway-dev/kgateway/v2/test/e2e/testutils/actions"
-	"github.com/kgateway-dev/kgateway/v2/test/e2e/testutils/assertions"
-	"github.com/kgateway-dev/kgateway/v2/test/e2e/testutils/cluster"
-	"github.com/kgateway-dev/kgateway/v2/test/e2e/testutils/install"
-	testruntime "github.com/kgateway-dev/kgateway/v2/test/e2e/testutils/runtime"
-	"github.com/kgateway-dev/kgateway/v2/test/helpers"
-	"github.com/kgateway-dev/kgateway/v2/test/testutils"
+	"github.com/agentgateway/agentgateway/controller/pkg/utils/helmutils"
+	"github.com/agentgateway/agentgateway/controller/test/e2e/testutils/actions"
+	"github.com/agentgateway/agentgateway/controller/test/e2e/testutils/assertions"
+	"github.com/agentgateway/agentgateway/controller/test/e2e/testutils/cluster"
+	"github.com/agentgateway/agentgateway/controller/test/e2e/testutils/install"
+	testruntime "github.com/agentgateway/agentgateway/controller/test/e2e/testutils/runtime"
+	"github.com/agentgateway/agentgateway/controller/test/helpers"
+	"github.com/agentgateway/agentgateway/controller/test/testutils"
 )
 
 // CreateTestInstallation is the simplest way to construct a TestInstallation in kgateway.
@@ -139,8 +135,8 @@ func (i *TestInstallation) finalize() {
 // InstallFromLocalChart installs the controller and CRD chart based on the `ChartType` of the underlying
 // TestInstallation. By default `kgateway` will be installed but can be set to `agentgateway`
 func (i *TestInstallation) InstallFromLocalChart(ctx context.Context, t *testing.T) {
-		i.InstallAgentgatewayCRDsFromLocalChart(ctx, t)
-		i.InstallAgentgatewayCoreFromLocalChart(ctx, t)
+	i.InstallAgentgatewayCRDsFromLocalChart(ctx, t)
+	i.InstallAgentgatewayCoreFromLocalChart(ctx, t)
 }
 
 // InstallAgentgatewayCRDsFromLocalChart installs the agentgateway CRD chart from the local filesystem
@@ -193,7 +189,7 @@ func (i *TestInstallation) InstallAgentgatewayCoreFromLocalChart(ctx context.Con
 				ManifestPath("agent-gateway-integration.yaml"),
 			},
 			ReleaseName: helmutils.AgentgatewayChartName,
-			Chart:           "install/helm/agentgateway",
+			Chart:       "install/helm/agentgateway",
 			ExtraArgs:   i.Metadata.ExtraHelmArgs,
 		})
 	i.AssertionsT(t).Require.NoError(err)
@@ -201,9 +197,8 @@ func (i *TestInstallation) InstallAgentgatewayCoreFromLocalChart(ctx context.Con
 }
 
 func (i *TestInstallation) Uninstall(ctx context.Context, t *testing.T) {
-
-		i.UninstallAgentgatewayCore(ctx, t)
-		i.UninstallAgentgatewayCRDs(ctx, t)
+	i.UninstallAgentgatewayCore(ctx, t)
+	i.UninstallAgentgatewayCRDs(ctx, t)
 }
 
 // UninstallAgentgatewayCore uninstalls the agentgateway main chart
@@ -318,18 +313,4 @@ func MustGeneratedFiles(tmpDirId, clusterId string) GeneratedFiles {
 		TempDir:    tmpDir,
 		FailureDir: failureDir,
 	}
-}
-
-func (i *TestInstallation) releaseExists(ctx context.Context, releaseName, namespace string) bool {
-	l := &corev1.SecretList{}
-	if err := i.ClusterContext.Client.List(ctx, l, &client.ListOptions{
-		Namespace: namespace,
-		LabelSelector: labels.SelectorFromSet(map[string]string{
-			"owner": "helm",
-			"name":  releaseName,
-		}),
-	}); err != nil {
-		return false
-	}
-	return len(l.Items) > 0
 }

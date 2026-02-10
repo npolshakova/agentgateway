@@ -1,40 +1,42 @@
 package admin_test
 
 import (
+	"encoding/json"
 	"errors"
+	"testing"
 
+	"istio.io/istio/pkg/test/util/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
-
-	"github.com/kgateway-dev/kgateway/v2/pkg/kgateway/admin"
+	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/admin"
 )
 
-var _ = Describe("SnapshotResponseData", func() {
-	// TODO(tim): these tests are brittle and coupled to K8s serialization internals. we should
-	// refactor to test semantic equality (unmarshal and compare structs) rather than exact JSON
-	// string matching since this is an internal only API.
-	DescribeTable("MarshalJSONString",
-		func(response admin.SnapshotResponseData, expectedString string) {
-			responseStr := response.MarshalJSONString()
-			Expect(responseStr).To(MatchJSON(expectedString))
-		},
-		Entry("successful response can be formatted as json",
-			admin.SnapshotResponseData{
+func TestSnapshotResponseDataMarshalJSONString(t *testing.T) {
+	tests := []struct {
+		name         string
+		response     admin.SnapshotResponseData
+		expectedJSON string
+	}{
+		{
+			name: "successful response can be formatted as json",
+			response: admin.SnapshotResponseData{
 				Data:  "my data",
 				Error: nil,
 			},
-			`{"data":"my data","error":""}`),
-		Entry("errored response can be formatted as json",
-			admin.SnapshotResponseData{
+			expectedJSON: `{"data":"my data","error":""}`,
+		},
+		{
+			name: "errored response can be formatted as json",
+			response: admin.SnapshotResponseData{
 				Data:  "",
 				Error: errors.New("one error"),
 			},
-			`{"data":"","error":"one error"}`),
-		Entry("CR list can be formatted as json",
-			admin.SnapshotResponseData{
+			expectedJSON: `{"data":"","error":"one error"}`,
+		},
+		{
+			name: "CR list can be formatted as json",
+			response: admin.SnapshotResponseData{
 				Data: []corev1.Namespace{
 					{
 						ObjectMeta: metav1.ObjectMeta{
@@ -52,6 +54,24 @@ var _ = Describe("SnapshotResponseData", func() {
 				},
 				Error: nil,
 			},
-			`{"data":[{"kind":"kind","apiVersion":"version","metadata":{"name":"name","namespace":"namespace","managedFields":[{"manager":"manager"}]},"spec":{},"status":{}}],"error":""}`),
-	)
-})
+			expectedJSON: `{"data":[{"kind":"kind","apiVersion":"version","metadata":{"name":"name","namespace":"namespace","managedFields":[{"manager":"manager"}]},"spec":{},"status":{}}],"error":""}`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			responseStr := tt.response.MarshalJSONString()
+			assertJSONEqual(t, tt.expectedJSON, responseStr)
+		})
+	}
+}
+
+func assertJSONEqual(t *testing.T, expected, actual string) {
+	t.Helper()
+
+	var expectedObj any
+	var actualObj any
+	assert.NoError(t, json.Unmarshal([]byte(expected), &expectedObj))
+	assert.NoError(t, json.Unmarshal([]byte(actual), &actualObj))
+	assert.Equal(t, expectedObj, actualObj)
+}
