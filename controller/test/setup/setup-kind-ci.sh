@@ -49,7 +49,7 @@ run_timed_step() {
   local rc
 
   start_seconds="$(date +%s)"
-  echo "==> ${step_name}" >&2
+  echo "==> Step started: ${step_name}" >&2
 
   if "$@"; then
     rc=0
