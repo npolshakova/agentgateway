@@ -52,7 +52,7 @@ spec:
           ports:
             - containerPort: 8080
         - name: curl
-          image: ghcr.io/kgateway-dev/curl:7.83.1
+          image: ghcr.io/agentgateway/curl:7.83.1
           imagePullPolicy: IfNotPresent
           command:
             - "tail"
