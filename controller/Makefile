@@ -35,17 +35,13 @@ z := $(shell mkdir -p $(OUTPUT_DIR))
 
 BUILDX_BUILD ?= docker buildx build -q
 
-# Helper variable for escaping commas in Make functions
-comma := ,
-
 # A 'v'-prefixed semver used only locally. Most calling GHA jobs customize
 # this. Exported for use in goreleaser.yaml. Because our docker images are
 # tagged with a 'v' prefix, we use the prefix here and strip the 'v' prefix
 # where actual semver is desired.
 VERSION ?= v1.0.1-dev
+TAG ?= $(VERSION)
 export VERSION
-
-SOURCES := $(shell find . -name "*.go" | grep -v test.go)
 
 export LDFLAGS := -X 'github.com/agentgateway/agentgateway/controller/pkg/version.Version=$(VERSION)' -s -w
 export GCFLAGS ?=
@@ -69,7 +65,7 @@ PLATFORM := --platform=linux/$(GOARCH)
 
 GOOS ?= $(shell uname -s | tr '[:upper:]' '[:lower:]')
 
-GO_BUILD_FLAGS := GO111MODULE=on CGO_ENABLED=0 GOARCH=$(GOARCH)
+GO_BUILD_FLAGS := CGO_ENABLED=0 GOARCH=$(GOARCH)
 
 TEST_ASSET_DIR ?= $(ROOTDIR)/_test
 
@@ -406,21 +402,20 @@ generate-licenses: $(STAMP_DIR)/generate-licenses  ## Generate the licenses for 
 # Controller
 #----------------------------------------------------------------------------------
 
-K8S_GATEWAY_SOURCES=$(call get_sources,cmd/kgateway pkg/ api/)
 CONTROLLER_OUTPUT_DIR=$(OUTPUT_DIR)/pkg/kgateway
 export AGENTGATEWAY_IMAGE_REPO ?= agentgateway-controller
+
+.PHONY: agentgateway-controller
+agentgateway-controller:
+	 $(GO_BUILD_FLAGS) GOOS=linux go build -ldflags='$(LDFLAGS)' -gcflags='$(GCFLAGS)' -o $(CONTROLLER_OUTPUT_DIR)/kgateway-linux-$(GOARCH) ./cmd/kgateway
 
 $(CONTROLLER_OUTPUT_DIR)/Dockerfile.agentgateway: cmd/kgateway/Dockerfile.agentgateway
 	cp $< $@
 
-$(CONTROLLER_OUTPUT_DIR)/.docker-stamp-agentgateway-$(VERSION)-$(GOARCH): $(CONTROLLER_OUTPUT_DIR)/kgateway-linux-$(GOARCH) $(CONTROLLER_OUTPUT_DIR)/Dockerfile.agentgateway
-	$(BUILDX_BUILD) --load $(PLATFORM) $(CONTROLLER_OUTPUT_DIR) -f $(CONTROLLER_OUTPUT_DIR)/Dockerfile.agentgateway \
-		--build-arg GOARCH=$(GOARCH) \
-		-t $(IMAGE_REGISTRY)/$(AGENTGATEWAY_IMAGE_REPO):$(VERSION)
-	@touch $@
-
 .PHONY: agentgateway-controller-docker
-agentgateway-controller-docker: $(CONTROLLER_OUTPUT_DIR)/.docker-stamp-agentgateway-$(VERSION)-$(GOARCH)
+agentgateway-controller-docker: agentgateway-controller $(CONTROLLER_OUTPUT_DIR)/Dockerfile.agentgateway
+	$(BUILDX_BUILD) --push $(CONTROLLER_OUTPUT_DIR) -f $(CONTROLLER_OUTPUT_DIR)/Dockerfile.agentgateway \
+		-t localhost:5000/controller:$(TAG)
 
 #----------------------------------------------------------------------------------
 # dummy idp (used in e2e tests)

@@ -23,7 +23,7 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
     - uses: Swatinem/rust-cache@v2
       # Github cache is too tiny to handle the full matrix :-(
-      if: ${{ matrix.os == 'ubuntu-22.04-arm' || matrix.os == 'ubuntu-latest' }}
+      if: ${{ matrix.os == 'ubuntu-latest' }}
       with:
         # Github cache will restore from 'main' OR the current branch.
         # If we cache PR branches, we may evict the 'main' cache and end up with no cache hits at all.
@@ -32,6 +32,7 @@ jobs:
     - name: Test
       run: make test
     - name: Validate
+      if: ${{ matrix.os == 'ubuntu-latest' }}
       run: make validate
 
   lint:
@@ -101,3 +102,19 @@ jobs:
     - name: Gen
       # TODO: the rest of codegen
       run: make generate-apis check-clean-repo
+
+  controller-e2e:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-go@v6
+      with:
+        go-version: '1.25.7'
+        cache-dependency-path: |
+          **/*.sum
+          .github/workflows/cache-e2e
+    - name: E2E
+      run: ./controller/test/setup/setup-kind-ci.sh
+    - name: Summary
+      run: |
+        cat controller/_test/ci-step-timings.log >> $GITHUB_STEP_SUMMARY
