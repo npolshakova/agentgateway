@@ -2310,7 +2310,7 @@ InvalidKeyData
 		// Test parsing a Unix socket path
 		let target = Target::try_from("unix:/var/run/test.sock").unwrap();
 		assert!(
-			matches!(target, Target::UnixSocket(path) if path == PathBuf::from("/var/run/test.sock"))
+			matches!(target, Target::UnixSocket(ref path) if path == std::path::Path::new("/var/run/test.sock"))
 		);
 	}
 
