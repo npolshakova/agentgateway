@@ -113,23 +113,19 @@ spec:
                                     minLength: 1
                                     type: string
                                   deploymentName:
-                                    allOf:
-                                    - minLength: 1
-                                    - minLength: 1
                                     description: |-
                                       The name of the Azure OpenAI model deployment to use.
                                       For more information, see the [Azure OpenAI model docs](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models).
                                       This is required if ApiVersion is not 'v1'. For v1, the model can be set in the request.
                                     maxLength: 256
+                                    minLength: 1
                                     type: string
                                   endpoint:
-                                    allOf:
-                                    - minLength: 1
-                                    - minLength: 1
                                     description: |-
                                       The endpoint for the Azure OpenAI API to use, such as `my-endpoint.openai.azure.com`.
                                       If the scheme is included, it is stripped.
                                     maxLength: 256
+                                    minLength: 1
                                     type: string
                                 required:
                                 - endpoint
@@ -1601,20 +1597,16 @@ spec:
                                     minLength: 1
                                     type: string
                                   projectId:
-                                    allOf:
-                                    - minLength: 1
-                                    - minLength: 1
                                     description: The ID of the Google Cloud Project
                                       that you use for the Vertex AI.
                                     maxLength: 64
+                                    minLength: 1
                                     type: string
                                   region:
-                                    allOf:
-                                    - minLength: 1
-                                    - minLength: 1
                                     description: The location of the Google Cloud
                                       Project that you use for the Vertex AI.
                                     maxLength: 64
+                                    minLength: 1
                                     type: string
                                 required:
                                 - projectId
@@ -1670,23 +1662,19 @@ spec:
                             minLength: 1
                             type: string
                           deploymentName:
-                            allOf:
-                            - minLength: 1
-                            - minLength: 1
                             description: |-
                               The name of the Azure OpenAI model deployment to use.
                               For more information, see the [Azure OpenAI model docs](https://learn.microsoft.com/en-us/azure/ai-services/openai/concepts/models).
                               This is required if ApiVersion is not 'v1'. For v1, the model can be set in the request.
                             maxLength: 256
+                            minLength: 1
                             type: string
                           endpoint:
-                            allOf:
-                            - minLength: 1
-                            - minLength: 1
                             description: |-
                               The endpoint for the Azure OpenAI API to use, such as `my-endpoint.openai.azure.com`.
                               If the scheme is included, it is stripped.
                             maxLength: 256
+                            minLength: 1
                             type: string
                         required:
                         - endpoint
@@ -1792,20 +1780,16 @@ spec:
                             minLength: 1
                             type: string
                           projectId:
-                            allOf:
-                            - minLength: 1
-                            - minLength: 1
                             description: The ID of the Google Cloud Project that you
                               use for the Vertex AI.
                             maxLength: 64
+                            minLength: 1
                             type: string
                           region:
-                            allOf:
-                            - minLength: 1
-                            - minLength: 1
                             description: The location of the Google Cloud Project
                               that you use for the Vertex AI.
                             maxLength: 64
+                            minLength: 1
                             type: string
                         required:
                         - projectId
