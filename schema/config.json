@@ -2361,8 +2361,11 @@
                                                   "type": "string"
                                                 },
                                                 "policies": {
-                                                  "description": "Backend policies for AWS authentication (must include AWS auth)",
-                                                  "type": "object",
+                                                  "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                                                  "type": [
+                                                    "object",
+                                                    "null"
+                                                  ],
                                                   "properties": {
                                                     "requestHeaderModifier": {
                                                       "description": "Headers to be modified in the request.",
@@ -3031,8 +3034,7 @@
                                               "required": [
                                                 "guardrailIdentifier",
                                                 "guardrailVersion",
-                                                "region",
-                                                "policies"
+                                                "region"
                                               ]
                                             }
                                           },
@@ -3063,8 +3065,11 @@
                                                   ]
                                                 },
                                                 "policies": {
-                                                  "description": "Backend policies for GCP authentication (must include GCP auth)",
-                                                  "type": "object",
+                                                  "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                                                  "type": [
+                                                    "object",
+                                                    "null"
+                                                  ],
                                                   "properties": {
                                                     "requestHeaderModifier": {
                                                       "description": "Headers to be modified in the request.",
@@ -3732,8 +3737,7 @@
                                               "additionalProperties": false,
                                               "required": [
                                                 "templateId",
-                                                "projectId",
-                                                "policies"
+                                                "projectId"
                                               ]
                                             }
                                           },
@@ -4032,8 +4036,11 @@
                                                   "type": "string"
                                                 },
                                                 "policies": {
-                                                  "description": "Backend policies for AWS authentication (must include AWS auth)",
-                                                  "type": "object",
+                                                  "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                                                  "type": [
+                                                    "object",
+                                                    "null"
+                                                  ],
                                                   "properties": {
                                                     "requestHeaderModifier": {
                                                       "description": "Headers to be modified in the request.",
@@ -4702,8 +4709,7 @@
                                               "required": [
                                                 "guardrailIdentifier",
                                                 "guardrailVersion",
-                                                "region",
-                                                "policies"
+                                                "region"
                                               ]
                                             }
                                           },
@@ -4734,8 +4740,11 @@
                                                   ]
                                                 },
                                                 "policies": {
-                                                  "description": "Backend policies for GCP authentication (must include GCP auth)",
-                                                  "type": "object",
+                                                  "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                                                  "type": [
+                                                    "object",
+                                                    "null"
+                                                  ],
                                                   "properties": {
                                                     "requestHeaderModifier": {
                                                       "description": "Headers to be modified in the request.",
@@ -5403,8 +5412,7 @@
                                               "additionalProperties": false,
                                               "required": [
                                                 "templateId",
-                                                "projectId",
-                                                "policies"
+                                                "projectId"
                                               ]
                                             }
                                           },
@@ -7469,16 +7477,22 @@
                                                         "type": "string"
                                                       },
                                                       "policies": {
-                                                        "description": "Backend policies for AWS authentication (must include AWS auth)",
-                                                        "$ref": "#/$defs/LocalBackendPolicies"
+                                                        "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                                                        "anyOf": [
+                                                          {
+                                                            "$ref": "#/$defs/LocalBackendPolicies"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
                                                       }
                                                     },
                                                     "additionalProperties": false,
                                                     "required": [
                                                       "guardrailIdentifier",
                                                       "guardrailVersion",
-                                                      "region",
-                                                      "policies"
+                                                      "region"
                                                     ]
                                                   }
                                                 },
@@ -7509,15 +7523,21 @@
                                                         ]
                                                       },
                                                       "policies": {
-                                                        "description": "Backend policies for GCP authentication (must include GCP auth)",
-                                                        "$ref": "#/$defs/LocalBackendPolicies"
+                                                        "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                                                        "anyOf": [
+                                                          {
+                                                            "$ref": "#/$defs/LocalBackendPolicies"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
                                                       }
                                                     },
                                                     "additionalProperties": false,
                                                     "required": [
                                                       "templateId",
-                                                      "projectId",
-                                                      "policies"
+                                                      "projectId"
                                                     ]
                                                   }
                                                 },
@@ -7816,16 +7836,22 @@
                                                         "type": "string"
                                                       },
                                                       "policies": {
-                                                        "description": "Backend policies for AWS authentication (must include AWS auth)",
-                                                        "$ref": "#/$defs/LocalBackendPolicies"
+                                                        "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                                                        "anyOf": [
+                                                          {
+                                                            "$ref": "#/$defs/LocalBackendPolicies"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
                                                       }
                                                     },
                                                     "additionalProperties": false,
                                                     "required": [
                                                       "guardrailIdentifier",
                                                       "guardrailVersion",
-                                                      "region",
-                                                      "policies"
+                                                      "region"
                                                     ]
                                                   }
                                                 },
@@ -7856,15 +7882,21 @@
                                                         ]
                                                       },
                                                       "policies": {
-                                                        "description": "Backend policies for GCP authentication (must include GCP auth)",
-                                                        "$ref": "#/$defs/LocalBackendPolicies"
+                                                        "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                                                        "anyOf": [
+                                                          {
+                                                            "$ref": "#/$defs/LocalBackendPolicies"
+                                                          },
+                                                          {
+                                                            "type": "null"
+                                                          }
+                                                        ]
                                                       }
                                                     },
                                                     "additionalProperties": false,
                                                     "required": [
                                                       "templateId",
-                                                      "projectId",
-                                                      "policies"
+                                                      "projectId"
                                                     ]
                                                   }
                                                 },
@@ -9098,16 +9130,22 @@
                                                                       "type": "string"
                                                                     },
                                                                     "policies": {
-                                                                      "description": "Backend policies for AWS authentication (must include AWS auth)",
-                                                                      "$ref": "#/$defs/LocalBackendPolicies"
+                                                                      "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                                                                      "anyOf": [
+                                                                        {
+                                                                          "$ref": "#/$defs/LocalBackendPolicies"
+                                                                        },
+                                                                        {
+                                                                          "type": "null"
+                                                                        }
+                                                                      ]
                                                                     }
                                                                   },
                                                                   "additionalProperties": false,
                                                                   "required": [
                                                                     "guardrailIdentifier",
                                                                     "guardrailVersion",
-                                                                    "region",
-                                                                    "policies"
+                                                                    "region"
                                                                   ]
                                                                 }
                                                               },
@@ -9138,15 +9176,21 @@
                                                                       ]
                                                                     },
                                                                     "policies": {
-                                                                      "description": "Backend policies for GCP authentication (must include GCP auth)",
-                                                                      "$ref": "#/$defs/LocalBackendPolicies"
+                                                                      "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                                                                      "anyOf": [
+                                                                        {
+                                                                          "$ref": "#/$defs/LocalBackendPolicies"
+                                                                        },
+                                                                        {
+                                                                          "type": "null"
+                                                                        }
+                                                                      ]
                                                                     }
                                                                   },
                                                                   "additionalProperties": false,
                                                                   "required": [
                                                                     "templateId",
-                                                                    "projectId",
-                                                                    "policies"
+                                                                    "projectId"
                                                                   ]
                                                                 }
                                                               },
@@ -9445,16 +9489,22 @@
                                                                       "type": "string"
                                                                     },
                                                                     "policies": {
-                                                                      "description": "Backend policies for AWS authentication (must include AWS auth)",
-                                                                      "$ref": "#/$defs/LocalBackendPolicies"
+                                                                      "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                                                                      "anyOf": [
+                                                                        {
+                                                                          "$ref": "#/$defs/LocalBackendPolicies"
+                                                                        },
+                                                                        {
+                                                                          "type": "null"
+                                                                        }
+                                                                      ]
                                                                     }
                                                                   },
                                                                   "additionalProperties": false,
                                                                   "required": [
                                                                     "guardrailIdentifier",
                                                                     "guardrailVersion",
-                                                                    "region",
-                                                                    "policies"
+                                                                    "region"
                                                                   ]
                                                                 }
                                                               },
@@ -9485,15 +9535,21 @@
                                                                       ]
                                                                     },
                                                                     "policies": {
-                                                                      "description": "Backend policies for GCP authentication (must include GCP auth)",
-                                                                      "$ref": "#/$defs/LocalBackendPolicies"
+                                                                      "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                                                                      "anyOf": [
+                                                                        {
+                                                                          "$ref": "#/$defs/LocalBackendPolicies"
+                                                                        },
+                                                                        {
+                                                                          "type": "null"
+                                                                        }
+                                                                      ]
                                                                     }
                                                                   },
                                                                   "additionalProperties": false,
                                                                   "required": [
                                                                     "templateId",
-                                                                    "projectId",
-                                                                    "policies"
+                                                                    "projectId"
                                                                   ]
                                                                 }
                                                               },
@@ -11017,16 +11073,22 @@
                                                                     "type": "string"
                                                                   },
                                                                   "policies": {
-                                                                    "description": "Backend policies for AWS authentication (must include AWS auth)",
-                                                                    "$ref": "#/$defs/LocalBackendPolicies"
+                                                                    "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                                                                    "anyOf": [
+                                                                      {
+                                                                        "$ref": "#/$defs/LocalBackendPolicies"
+                                                                      },
+                                                                      {
+                                                                        "type": "null"
+                                                                      }
+                                                                    ]
                                                                   }
                                                                 },
                                                                 "additionalProperties": false,
                                                                 "required": [
                                                                   "guardrailIdentifier",
                                                                   "guardrailVersion",
-                                                                  "region",
-                                                                  "policies"
+                                                                  "region"
                                                                 ]
                                                               }
                                                             },
@@ -11057,15 +11119,21 @@
                                                                     ]
                                                                   },
                                                                   "policies": {
-                                                                    "description": "Backend policies for GCP authentication (must include GCP auth)",
-                                                                    "$ref": "#/$defs/LocalBackendPolicies"
+                                                                    "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                                                                    "anyOf": [
+                                                                      {
+                                                                        "$ref": "#/$defs/LocalBackendPolicies"
+                                                                      },
+                                                                      {
+                                                                        "type": "null"
+                                                                      }
+                                                                    ]
                                                                   }
                                                                 },
                                                                 "additionalProperties": false,
                                                                 "required": [
                                                                   "templateId",
-                                                                  "projectId",
-                                                                  "policies"
+                                                                  "projectId"
                                                                 ]
                                                               }
                                                             },
@@ -11364,16 +11432,22 @@
                                                                     "type": "string"
                                                                   },
                                                                   "policies": {
-                                                                    "description": "Backend policies for AWS authentication (must include AWS auth)",
-                                                                    "$ref": "#/$defs/LocalBackendPolicies"
+                                                                    "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                                                                    "anyOf": [
+                                                                      {
+                                                                        "$ref": "#/$defs/LocalBackendPolicies"
+                                                                      },
+                                                                      {
+                                                                        "type": "null"
+                                                                      }
+                                                                    ]
                                                                   }
                                                                 },
                                                                 "additionalProperties": false,
                                                                 "required": [
                                                                   "guardrailIdentifier",
                                                                   "guardrailVersion",
-                                                                  "region",
-                                                                  "policies"
+                                                                  "region"
                                                                 ]
                                                               }
                                                             },
@@ -11404,15 +11478,21 @@
                                                                     ]
                                                                   },
                                                                   "policies": {
-                                                                    "description": "Backend policies for GCP authentication (must include GCP auth)",
-                                                                    "$ref": "#/$defs/LocalBackendPolicies"
+                                                                    "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                                                                    "anyOf": [
+                                                                      {
+                                                                        "$ref": "#/$defs/LocalBackendPolicies"
+                                                                      },
+                                                                      {
+                                                                        "type": "null"
+                                                                      }
+                                                                    ]
                                                                   }
                                                                 },
                                                                 "additionalProperties": false,
                                                                 "required": [
                                                                   "templateId",
-                                                                  "projectId",
-                                                                  "policies"
+                                                                  "projectId"
                                                                 ]
                                                               }
                                                             },
@@ -12771,16 +12851,22 @@
                                                                                 "type": "string"
                                                                               },
                                                                               "policies": {
-                                                                                "description": "Backend policies for AWS authentication (must include AWS auth)",
-                                                                                "$ref": "#/$defs/LocalBackendPolicies"
+                                                                                "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                                                                                "anyOf": [
+                                                                                  {
+                                                                                    "$ref": "#/$defs/LocalBackendPolicies"
+                                                                                  },
+                                                                                  {
+                                                                                    "type": "null"
+                                                                                  }
+                                                                                ]
                                                                               }
                                                                             },
                                                                             "additionalProperties": false,
                                                                             "required": [
                                                                               "guardrailIdentifier",
                                                                               "guardrailVersion",
-                                                                              "region",
-                                                                              "policies"
+                                                                              "region"
                                                                             ]
                                                                           }
                                                                         },
@@ -12811,15 +12897,21 @@
                                                                                 ]
                                                                               },
                                                                               "policies": {
-                                                                                "description": "Backend policies for GCP authentication (must include GCP auth)",
-                                                                                "$ref": "#/$defs/LocalBackendPolicies"
+                                                                                "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                                                                                "anyOf": [
+                                                                                  {
+                                                                                    "$ref": "#/$defs/LocalBackendPolicies"
+                                                                                  },
+                                                                                  {
+                                                                                    "type": "null"
+                                                                                  }
+                                                                                ]
                                                                               }
                                                                             },
                                                                             "additionalProperties": false,
                                                                             "required": [
                                                                               "templateId",
-                                                                              "projectId",
-                                                                              "policies"
+                                                                              "projectId"
                                                                             ]
                                                                           }
                                                                         },
@@ -13118,16 +13210,22 @@
                                                                                 "type": "string"
                                                                               },
                                                                               "policies": {
-                                                                                "description": "Backend policies for AWS authentication (must include AWS auth)",
-                                                                                "$ref": "#/$defs/LocalBackendPolicies"
+                                                                                "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                                                                                "anyOf": [
+                                                                                  {
+                                                                                    "$ref": "#/$defs/LocalBackendPolicies"
+                                                                                  },
+                                                                                  {
+                                                                                    "type": "null"
+                                                                                  }
+                                                                                ]
                                                                               }
                                                                             },
                                                                             "additionalProperties": false,
                                                                             "required": [
                                                                               "guardrailIdentifier",
                                                                               "guardrailVersion",
-                                                                              "region",
-                                                                              "policies"
+                                                                              "region"
                                                                             ]
                                                                           }
                                                                         },
@@ -13158,15 +13256,21 @@
                                                                                 ]
                                                                               },
                                                                               "policies": {
-                                                                                "description": "Backend policies for GCP authentication (must include GCP auth)",
-                                                                                "$ref": "#/$defs/LocalBackendPolicies"
+                                                                                "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                                                                                "anyOf": [
+                                                                                  {
+                                                                                    "$ref": "#/$defs/LocalBackendPolicies"
+                                                                                  },
+                                                                                  {
+                                                                                    "type": "null"
+                                                                                  }
+                                                                                ]
                                                                               }
                                                                             },
                                                                             "additionalProperties": false,
                                                                             "required": [
                                                                               "templateId",
-                                                                              "projectId",
-                                                                              "policies"
+                                                                              "projectId"
                                                                             ]
                                                                           }
                                                                         },
@@ -16998,8 +17102,11 @@
                                       "type": "string"
                                     },
                                     "policies": {
-                                      "description": "Backend policies for AWS authentication (must include AWS auth)",
-                                      "type": "object",
+                                      "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ],
                                       "properties": {
                                         "requestHeaderModifier": {
                                           "description": "Headers to be modified in the request.",
@@ -17668,8 +17775,7 @@
                                   "required": [
                                     "guardrailIdentifier",
                                     "guardrailVersion",
-                                    "region",
-                                    "policies"
+                                    "region"
                                   ]
                                 }
                               },
@@ -17700,8 +17806,11 @@
                                       ]
                                     },
                                     "policies": {
-                                      "description": "Backend policies for GCP authentication (must include GCP auth)",
-                                      "type": "object",
+                                      "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ],
                                       "properties": {
                                         "requestHeaderModifier": {
                                           "description": "Headers to be modified in the request.",
@@ -18369,8 +18478,7 @@
                                   "additionalProperties": false,
                                   "required": [
                                     "templateId",
-                                    "projectId",
-                                    "policies"
+                                    "projectId"
                                   ]
                                 }
                               },
@@ -18669,8 +18777,11 @@
                                       "type": "string"
                                     },
                                     "policies": {
-                                      "description": "Backend policies for AWS authentication (must include AWS auth)",
-                                      "type": "object",
+                                      "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ],
                                       "properties": {
                                         "requestHeaderModifier": {
                                           "description": "Headers to be modified in the request.",
@@ -19339,8 +19450,7 @@
                                   "required": [
                                     "guardrailIdentifier",
                                     "guardrailVersion",
-                                    "region",
-                                    "policies"
+                                    "region"
                                   ]
                                 }
                               },
@@ -19371,8 +19481,11 @@
                                       ]
                                     },
                                     "policies": {
-                                      "description": "Backend policies for GCP authentication (must include GCP auth)",
-                                      "type": "object",
+                                      "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ],
                                       "properties": {
                                         "requestHeaderModifier": {
                                           "description": "Headers to be modified in the request.",
@@ -20040,8 +20153,7 @@
                                   "additionalProperties": false,
                                   "required": [
                                     "templateId",
-                                    "projectId",
-                                    "policies"
+                                    "projectId"
                                   ]
                                 }
                               },
@@ -22121,16 +22233,22 @@
                                       "type": "string"
                                     },
                                     "policies": {
-                                      "description": "Backend policies for AWS authentication (must include AWS auth)",
-                                      "$ref": "#/$defs/LocalBackendPolicies"
+                                      "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                                      "anyOf": [
+                                        {
+                                          "$ref": "#/$defs/LocalBackendPolicies"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
                                     }
                                   },
                                   "additionalProperties": false,
                                   "required": [
                                     "guardrailIdentifier",
                                     "guardrailVersion",
-                                    "region",
-                                    "policies"
+                                    "region"
                                   ]
                                 }
                               },
@@ -22161,15 +22279,21 @@
                                       ]
                                     },
                                     "policies": {
-                                      "description": "Backend policies for GCP authentication (must include GCP auth)",
-                                      "$ref": "#/$defs/LocalBackendPolicies"
+                                      "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                                      "anyOf": [
+                                        {
+                                          "$ref": "#/$defs/LocalBackendPolicies"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
                                     }
                                   },
                                   "additionalProperties": false,
                                   "required": [
                                     "templateId",
-                                    "projectId",
-                                    "policies"
+                                    "projectId"
                                   ]
                                 }
                               },
@@ -22468,16 +22592,22 @@
                                       "type": "string"
                                     },
                                     "policies": {
-                                      "description": "Backend policies for AWS authentication (must include AWS auth)",
-                                      "$ref": "#/$defs/LocalBackendPolicies"
+                                      "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                                      "anyOf": [
+                                        {
+                                          "$ref": "#/$defs/LocalBackendPolicies"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
                                     }
                                   },
                                   "additionalProperties": false,
                                   "required": [
                                     "guardrailIdentifier",
                                     "guardrailVersion",
-                                    "region",
-                                    "policies"
+                                    "region"
                                   ]
                                 }
                               },
@@ -22508,15 +22638,21 @@
                                       ]
                                     },
                                     "policies": {
-                                      "description": "Backend policies for GCP authentication (must include GCP auth)",
-                                      "$ref": "#/$defs/LocalBackendPolicies"
+                                      "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                                      "anyOf": [
+                                        {
+                                          "$ref": "#/$defs/LocalBackendPolicies"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
                                     }
                                   },
                                   "additionalProperties": false,
                                   "required": [
                                     "templateId",
-                                    "projectId",
-                                    "policies"
+                                    "projectId"
                                   ]
                                 }
                               },
@@ -23597,16 +23733,22 @@
                         "type": "string"
                       },
                       "policies": {
-                        "description": "Backend policies for AWS authentication (must include AWS auth)",
-                        "$ref": "#/$defs/LocalBackendPolicies"
+                        "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                        "anyOf": [
+                          {
+                            "$ref": "#/$defs/LocalBackendPolicies"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       }
                     },
                     "additionalProperties": false,
                     "required": [
                       "guardrailIdentifier",
                       "guardrailVersion",
-                      "region",
-                      "policies"
+                      "region"
                     ]
                   }
                 },
@@ -23637,15 +23779,21 @@
                         ]
                       },
                       "policies": {
-                        "description": "Backend policies for GCP authentication (must include GCP auth)",
-                        "$ref": "#/$defs/LocalBackendPolicies"
+                        "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                        "anyOf": [
+                          {
+                            "$ref": "#/$defs/LocalBackendPolicies"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
                       }
                     },
                     "additionalProperties": false,
                     "required": [
                       "templateId",
-                      "projectId",
-                      "policies"
+                      "projectId"
                     ]
                   }
                 },
@@ -23956,16 +24104,22 @@
                   "type": "string"
                 },
                 "policies": {
-                  "description": "Backend policies for AWS authentication (must include AWS auth)",
-                  "$ref": "#/$defs/LocalBackendPolicies"
+                  "description": "Backend policies for AWS authentication (optional, defaults to implicit AWS auth)",
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/LocalBackendPolicies"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               },
               "additionalProperties": false,
               "required": [
                 "guardrailIdentifier",
                 "guardrailVersion",
-                "region",
-                "policies"
+                "region"
               ]
             }
           },
@@ -23996,15 +24150,21 @@
                   ]
                 },
                 "policies": {
-                  "description": "Backend policies for GCP authentication (must include GCP auth)",
-                  "$ref": "#/$defs/LocalBackendPolicies"
+                  "description": "Backend policies for GCP authentication (optional, defaults to implicit GCP auth)",
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/LocalBackendPolicies"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               },
               "additionalProperties": false,
               "required": [
                 "templateId",
-                "projectId",
-                "policies"
+                "projectId"
               ]
             }
           },

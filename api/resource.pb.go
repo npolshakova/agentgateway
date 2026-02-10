@@ -8975,10 +8975,12 @@ func (x *BackendPolicySpec_Ai_Moderation) GetInlinePolicies() []*BackendPolicySp
 }
 
 type BackendPolicySpec_Ai_BedrockGuardrails struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	Identifier     string                 `protobuf:"bytes,1,opt,name=identifier,proto3" json:"identifier,omitempty"`
-	Version        string                 `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
-	InlinePolicies []*BackendPolicySpec   `protobuf:"bytes,3,rep,name=inline_policies,json=inlinePolicies,proto3" json:"inline_policies,omitempty"`
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	Identifier string                 `protobuf:"bytes,1,opt,name=identifier,proto3" json:"identifier,omitempty"`
+	Version    string                 `protobuf:"bytes,2,opt,name=version,proto3" json:"version,omitempty"`
+	// AWS region where the guardrail is deployed (e.g., "us-west-2")
+	Region         string               `protobuf:"bytes,3,opt,name=region,proto3" json:"region,omitempty"`
+	InlinePolicies []*BackendPolicySpec `protobuf:"bytes,4,rep,name=inline_policies,json=inlinePolicies,proto3" json:"inline_policies,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -9023,6 +9025,13 @@ func (x *BackendPolicySpec_Ai_BedrockGuardrails) GetIdentifier() string {
 func (x *BackendPolicySpec_Ai_BedrockGuardrails) GetVersion() string {
 	if x != nil {
 		return x.Version
+	}
+	return ""
+}
+
+func (x *BackendPolicySpec_Ai_BedrockGuardrails) GetRegion() string {
+	if x != nil {
+		return x.Region
 	}
 	return ""
 }
@@ -9165,6 +9174,8 @@ type BackendPolicySpec_Ai_ResponseGuard struct {
 	//
 	//	*BackendPolicySpec_Ai_ResponseGuard_Regex
 	//	*BackendPolicySpec_Ai_ResponseGuard_Webhook
+	//	*BackendPolicySpec_Ai_ResponseGuard_GoogleModelArmor
+	//	*BackendPolicySpec_Ai_ResponseGuard_BedrockGuardrails
 	Kind          isBackendPolicySpec_Ai_ResponseGuard_Kind `protobuf_oneof:"kind"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -9232,6 +9243,24 @@ func (x *BackendPolicySpec_Ai_ResponseGuard) GetWebhook() *BackendPolicySpec_Ai_
 	return nil
 }
 
+func (x *BackendPolicySpec_Ai_ResponseGuard) GetGoogleModelArmor() *BackendPolicySpec_Ai_GoogleModelArmor {
+	if x != nil {
+		if x, ok := x.Kind.(*BackendPolicySpec_Ai_ResponseGuard_GoogleModelArmor); ok {
+			return x.GoogleModelArmor
+		}
+	}
+	return nil
+}
+
+func (x *BackendPolicySpec_Ai_ResponseGuard) GetBedrockGuardrails() *BackendPolicySpec_Ai_BedrockGuardrails {
+	if x != nil {
+		if x, ok := x.Kind.(*BackendPolicySpec_Ai_ResponseGuard_BedrockGuardrails); ok {
+			return x.BedrockGuardrails
+		}
+	}
+	return nil
+}
+
 type isBackendPolicySpec_Ai_ResponseGuard_Kind interface {
 	isBackendPolicySpec_Ai_ResponseGuard_Kind()
 }
@@ -9244,9 +9273,23 @@ type BackendPolicySpec_Ai_ResponseGuard_Webhook struct {
 	Webhook *BackendPolicySpec_Ai_Webhook `protobuf:"bytes,3,opt,name=webhook,proto3,oneof"`
 }
 
+type BackendPolicySpec_Ai_ResponseGuard_GoogleModelArmor struct {
+	GoogleModelArmor *BackendPolicySpec_Ai_GoogleModelArmor `protobuf:"bytes,4,opt,name=google_model_armor,json=googleModelArmor,proto3,oneof"`
+}
+
+type BackendPolicySpec_Ai_ResponseGuard_BedrockGuardrails struct {
+	BedrockGuardrails *BackendPolicySpec_Ai_BedrockGuardrails `protobuf:"bytes,5,opt,name=bedrock_guardrails,json=bedrockGuardrails,proto3,oneof"`
+}
+
 func (*BackendPolicySpec_Ai_ResponseGuard_Regex) isBackendPolicySpec_Ai_ResponseGuard_Kind() {}
 
 func (*BackendPolicySpec_Ai_ResponseGuard_Webhook) isBackendPolicySpec_Ai_ResponseGuard_Kind() {}
+
+func (*BackendPolicySpec_Ai_ResponseGuard_GoogleModelArmor) isBackendPolicySpec_Ai_ResponseGuard_Kind() {
+}
+
+func (*BackendPolicySpec_Ai_ResponseGuard_BedrockGuardrails) isBackendPolicySpec_Ai_ResponseGuard_Kind() {
+}
 
 // Configuration for guarding/processing prompts
 type BackendPolicySpec_Ai_RequestGuard struct {
@@ -9258,6 +9301,8 @@ type BackendPolicySpec_Ai_RequestGuard struct {
 	//	*BackendPolicySpec_Ai_RequestGuard_Regex
 	//	*BackendPolicySpec_Ai_RequestGuard_Webhook
 	//	*BackendPolicySpec_Ai_RequestGuard_OpenaiModeration
+	//	*BackendPolicySpec_Ai_RequestGuard_GoogleModelArmor
+	//	*BackendPolicySpec_Ai_RequestGuard_BedrockGuardrails
 	Kind          isBackendPolicySpec_Ai_RequestGuard_Kind `protobuf_oneof:"kind"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -9334,6 +9379,24 @@ func (x *BackendPolicySpec_Ai_RequestGuard) GetOpenaiModeration() *BackendPolicy
 	return nil
 }
 
+func (x *BackendPolicySpec_Ai_RequestGuard) GetGoogleModelArmor() *BackendPolicySpec_Ai_GoogleModelArmor {
+	if x != nil {
+		if x, ok := x.Kind.(*BackendPolicySpec_Ai_RequestGuard_GoogleModelArmor); ok {
+			return x.GoogleModelArmor
+		}
+	}
+	return nil
+}
+
+func (x *BackendPolicySpec_Ai_RequestGuard) GetBedrockGuardrails() *BackendPolicySpec_Ai_BedrockGuardrails {
+	if x != nil {
+		if x, ok := x.Kind.(*BackendPolicySpec_Ai_RequestGuard_BedrockGuardrails); ok {
+			return x.BedrockGuardrails
+		}
+	}
+	return nil
+}
+
 type isBackendPolicySpec_Ai_RequestGuard_Kind interface {
 	isBackendPolicySpec_Ai_RequestGuard_Kind()
 }
@@ -9350,11 +9413,25 @@ type BackendPolicySpec_Ai_RequestGuard_OpenaiModeration struct {
 	OpenaiModeration *BackendPolicySpec_Ai_Moderation `protobuf:"bytes,4,opt,name=openai_moderation,json=openaiModeration,proto3,oneof"`
 }
 
+type BackendPolicySpec_Ai_RequestGuard_GoogleModelArmor struct {
+	GoogleModelArmor *BackendPolicySpec_Ai_GoogleModelArmor `protobuf:"bytes,5,opt,name=google_model_armor,json=googleModelArmor,proto3,oneof"`
+}
+
+type BackendPolicySpec_Ai_RequestGuard_BedrockGuardrails struct {
+	BedrockGuardrails *BackendPolicySpec_Ai_BedrockGuardrails `protobuf:"bytes,6,opt,name=bedrock_guardrails,json=bedrockGuardrails,proto3,oneof"`
+}
+
 func (*BackendPolicySpec_Ai_RequestGuard_Regex) isBackendPolicySpec_Ai_RequestGuard_Kind() {}
 
 func (*BackendPolicySpec_Ai_RequestGuard_Webhook) isBackendPolicySpec_Ai_RequestGuard_Kind() {}
 
 func (*BackendPolicySpec_Ai_RequestGuard_OpenaiModeration) isBackendPolicySpec_Ai_RequestGuard_Kind() {
+}
+
+func (*BackendPolicySpec_Ai_RequestGuard_GoogleModelArmor) isBackendPolicySpec_Ai_RequestGuard_Kind() {
+}
+
+func (*BackendPolicySpec_Ai_RequestGuard_BedrockGuardrails) isBackendPolicySpec_Ai_RequestGuard_Kind() {
 }
 
 type BackendPolicySpec_Ai_PromptGuard struct {
@@ -10695,7 +10772,7 @@ const file_resource_proto_rawDesc = "" +
 	"\vPolicyPhase\x12\t\n" +
 	"\x05ROUTE\x10\x00\x12\v\n" +
 	"\aGATEWAY\x10\x01B\x06\n" +
-	"\x04kind\"\xbf5\n" +
+	"\x04kind\"\xa39\n" +
 	"\x11BackendPolicySpec\x12D\n" +
 	"\x03a2a\x18\x01 \x01(\v20.agentgateway.dev.resource.BackendPolicySpec.A2aH\x00R\x03a2a\x12l\n" +
 	"\x11inference_routing\x18\x02 \x01(\v2=.agentgateway.dev.resource.BackendPolicySpec.InferenceRoutingH\x00R\x10inferenceRouting\x12Z\n" +
@@ -10712,7 +10789,7 @@ const file_resource_proto_rawDesc = "" +
 	"\x0erequest_mirror\x18\v \x01(\v2).agentgateway.dev.resource.RequestMirrorsH\x00R\rrequestMirror\x12]\n" +
 	"\fbackend_http\x18\f \x01(\v28.agentgateway.dev.resource.BackendPolicySpec.BackendHTTPH\x00R\vbackendHttp\x12Z\n" +
 	"\vbackend_tcp\x18\r \x01(\v27.agentgateway.dev.resource.BackendPolicySpec.BackendTCPH\x00R\n" +
-	"backendTcp\x1a\xef\x1c\n" +
+	"backendTcp\x1a\xd3 \n" +
 	"\x02Ai\x12^\n" +
 	"\fprompt_guard\x18\x01 \x01(\v2;.agentgateway.dev.resource.BackendPolicySpec.Ai.PromptGuardR\vpromptGuard\x12Y\n" +
 	"\bdefaults\x18\x02 \x03(\v2=.agentgateway.dev.resource.BackendPolicySpec.Ai.DefaultsEntryR\bdefaults\x12\\\n" +
@@ -10742,13 +10819,14 @@ const file_resource_proto_rawDesc = "" +
 	"Moderation\x12\x19\n" +
 	"\x05model\x18\x01 \x01(\tH\x00R\x05model\x88\x01\x01\x12U\n" +
 	"\x0finline_policies\x18\x02 \x03(\v2,.agentgateway.dev.resource.BackendPolicySpecR\x0einlinePoliciesB\b\n" +
-	"\x06_model\x1a\xa4\x01\n" +
+	"\x06_model\x1a\xbc\x01\n" +
 	"\x11BedrockGuardrails\x12\x1e\n" +
 	"\n" +
 	"identifier\x18\x01 \x01(\tR\n" +
 	"identifier\x12\x18\n" +
-	"\aversion\x18\x02 \x01(\tR\aversion\x12U\n" +
-	"\x0finline_policies\x18\x03 \x03(\v2,.agentgateway.dev.resource.BackendPolicySpecR\x0einlinePolicies\x1a\xd7\x01\n" +
+	"\aversion\x18\x02 \x01(\tR\aversion\x12\x16\n" +
+	"\x06region\x18\x03 \x01(\tR\x06region\x12U\n" +
+	"\x0finline_policies\x18\x04 \x03(\v2,.agentgateway.dev.resource.BackendPolicySpecR\x0einlinePolicies\x1a\xd7\x01\n" +
 	"\x10GoogleModelArmor\x12\x1f\n" +
 	"\vtemplate_id\x18\x01 \x01(\tR\n" +
 	"templateId\x12\x1d\n" +
@@ -10759,17 +10837,21 @@ const file_resource_proto_rawDesc = "" +
 	"\t_location\x1a>\n" +
 	"\x10RequestRejection\x12\x12\n" +
 	"\x04body\x18\x01 \x01(\fR\x04body\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\rR\x06status\x1a\xa0\x02\n" +
+	"\x06status\x18\x02 \x01(\rR\x06status\x1a\x86\x04\n" +
 	"\rResponseGuard\x12^\n" +
 	"\trejection\x18\x01 \x01(\v2@.agentgateway.dev.resource.BackendPolicySpec.Ai.RequestRejectionR\trejection\x12R\n" +
 	"\x05regex\x18\x02 \x01(\v2:.agentgateway.dev.resource.BackendPolicySpec.Ai.RegexRulesH\x00R\x05regex\x12S\n" +
-	"\awebhook\x18\x03 \x01(\v27.agentgateway.dev.resource.BackendPolicySpec.Ai.WebhookH\x00R\awebhookB\x06\n" +
-	"\x04kind\x1a\x8a\x03\n" +
+	"\awebhook\x18\x03 \x01(\v27.agentgateway.dev.resource.BackendPolicySpec.Ai.WebhookH\x00R\awebhook\x12p\n" +
+	"\x12google_model_armor\x18\x04 \x01(\v2@.agentgateway.dev.resource.BackendPolicySpec.Ai.GoogleModelArmorH\x00R\x10googleModelArmor\x12r\n" +
+	"\x12bedrock_guardrails\x18\x05 \x01(\v2A.agentgateway.dev.resource.BackendPolicySpec.Ai.BedrockGuardrailsH\x00R\x11bedrockGuardrailsB\x06\n" +
+	"\x04kind\x1a\xf0\x04\n" +
 	"\fRequestGuard\x12^\n" +
 	"\trejection\x18\x01 \x01(\v2@.agentgateway.dev.resource.BackendPolicySpec.Ai.RequestRejectionR\trejection\x12R\n" +
 	"\x05regex\x18\x02 \x01(\v2:.agentgateway.dev.resource.BackendPolicySpec.Ai.RegexRulesH\x00R\x05regex\x12S\n" +
 	"\awebhook\x18\x03 \x01(\v27.agentgateway.dev.resource.BackendPolicySpec.Ai.WebhookH\x00R\awebhook\x12i\n" +
-	"\x11openai_moderation\x18\x04 \x01(\v2:.agentgateway.dev.resource.BackendPolicySpec.Ai.ModerationH\x00R\x10openaiModerationB\x06\n" +
+	"\x11openai_moderation\x18\x04 \x01(\v2:.agentgateway.dev.resource.BackendPolicySpec.Ai.ModerationH\x00R\x10openaiModeration\x12p\n" +
+	"\x12google_model_armor\x18\x05 \x01(\v2@.agentgateway.dev.resource.BackendPolicySpec.Ai.GoogleModelArmorH\x00R\x10googleModelArmor\x12r\n" +
+	"\x12bedrock_guardrails\x18\x06 \x01(\v2A.agentgateway.dev.resource.BackendPolicySpec.Ai.BedrockGuardrailsH\x00R\x11bedrockGuardrailsB\x06\n" +
 	"\x04kind\x1a\xc0\x01\n" +
 	"\vPromptGuard\x12V\n" +
 	"\arequest\x18\x01 \x03(\v2<.agentgateway.dev.resource.BackendPolicySpec.Ai.RequestGuardR\arequest\x12Y\n" +
@@ -11361,29 +11443,33 @@ var file_resource_proto_depIdxs = []int32{
 	140, // 193: agentgateway.dev.resource.BackendPolicySpec.Ai.ResponseGuard.rejection:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.RequestRejection
 	135, // 194: agentgateway.dev.resource.BackendPolicySpec.Ai.ResponseGuard.regex:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.RegexRules
 	136, // 195: agentgateway.dev.resource.BackendPolicySpec.Ai.ResponseGuard.webhook:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.Webhook
-	140, // 196: agentgateway.dev.resource.BackendPolicySpec.Ai.RequestGuard.rejection:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.RequestRejection
-	135, // 197: agentgateway.dev.resource.BackendPolicySpec.Ai.RequestGuard.regex:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.RegexRules
-	136, // 198: agentgateway.dev.resource.BackendPolicySpec.Ai.RequestGuard.webhook:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.Webhook
-	137, // 199: agentgateway.dev.resource.BackendPolicySpec.Ai.RequestGuard.openai_moderation:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.Moderation
-	142, // 200: agentgateway.dev.resource.BackendPolicySpec.Ai.PromptGuard.request:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.RequestGuard
-	141, // 201: agentgateway.dev.resource.BackendPolicySpec.Ai.PromptGuard.response:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.ResponseGuard
-	17,  // 202: agentgateway.dev.resource.BackendPolicySpec.Ai.RoutesEntry.value:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.RouteType
-	150, // 203: agentgateway.dev.resource.BackendPolicySpec.McpAuthentication.ResourceMetadata.extra:type_name -> agentgateway.dev.resource.BackendPolicySpec.McpAuthentication.ResourceMetadata.ExtraEntry
-	165, // 204: agentgateway.dev.resource.BackendPolicySpec.McpAuthentication.ResourceMetadata.ExtraEntry.value:type_name -> google.protobuf.Value
-	151, // 205: agentgateway.dev.resource.AIBackend.Provider.host_override:type_name -> agentgateway.dev.resource.AIBackend.HostOverride
-	152, // 206: agentgateway.dev.resource.AIBackend.Provider.openai:type_name -> agentgateway.dev.resource.AIBackend.OpenAI
-	153, // 207: agentgateway.dev.resource.AIBackend.Provider.gemini:type_name -> agentgateway.dev.resource.AIBackend.Gemini
-	154, // 208: agentgateway.dev.resource.AIBackend.Provider.vertex:type_name -> agentgateway.dev.resource.AIBackend.Vertex
-	155, // 209: agentgateway.dev.resource.AIBackend.Provider.anthropic:type_name -> agentgateway.dev.resource.AIBackend.Anthropic
-	156, // 210: agentgateway.dev.resource.AIBackend.Provider.bedrock:type_name -> agentgateway.dev.resource.AIBackend.Bedrock
-	157, // 211: agentgateway.dev.resource.AIBackend.Provider.azureopenai:type_name -> agentgateway.dev.resource.AIBackend.AzureOpenAI
-	70,  // 212: agentgateway.dev.resource.AIBackend.Provider.inline_policies:type_name -> agentgateway.dev.resource.BackendPolicySpec
-	158, // 213: agentgateway.dev.resource.AIBackend.ProviderGroup.providers:type_name -> agentgateway.dev.resource.AIBackend.Provider
-	214, // [214:214] is the sub-list for method output_type
-	214, // [214:214] is the sub-list for method input_type
-	214, // [214:214] is the sub-list for extension type_name
-	214, // [214:214] is the sub-list for extension extendee
-	0,   // [0:214] is the sub-list for field type_name
+	139, // 196: agentgateway.dev.resource.BackendPolicySpec.Ai.ResponseGuard.google_model_armor:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.GoogleModelArmor
+	138, // 197: agentgateway.dev.resource.BackendPolicySpec.Ai.ResponseGuard.bedrock_guardrails:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.BedrockGuardrails
+	140, // 198: agentgateway.dev.resource.BackendPolicySpec.Ai.RequestGuard.rejection:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.RequestRejection
+	135, // 199: agentgateway.dev.resource.BackendPolicySpec.Ai.RequestGuard.regex:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.RegexRules
+	136, // 200: agentgateway.dev.resource.BackendPolicySpec.Ai.RequestGuard.webhook:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.Webhook
+	137, // 201: agentgateway.dev.resource.BackendPolicySpec.Ai.RequestGuard.openai_moderation:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.Moderation
+	139, // 202: agentgateway.dev.resource.BackendPolicySpec.Ai.RequestGuard.google_model_armor:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.GoogleModelArmor
+	138, // 203: agentgateway.dev.resource.BackendPolicySpec.Ai.RequestGuard.bedrock_guardrails:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.BedrockGuardrails
+	142, // 204: agentgateway.dev.resource.BackendPolicySpec.Ai.PromptGuard.request:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.RequestGuard
+	141, // 205: agentgateway.dev.resource.BackendPolicySpec.Ai.PromptGuard.response:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.ResponseGuard
+	17,  // 206: agentgateway.dev.resource.BackendPolicySpec.Ai.RoutesEntry.value:type_name -> agentgateway.dev.resource.BackendPolicySpec.Ai.RouteType
+	150, // 207: agentgateway.dev.resource.BackendPolicySpec.McpAuthentication.ResourceMetadata.extra:type_name -> agentgateway.dev.resource.BackendPolicySpec.McpAuthentication.ResourceMetadata.ExtraEntry
+	165, // 208: agentgateway.dev.resource.BackendPolicySpec.McpAuthentication.ResourceMetadata.ExtraEntry.value:type_name -> google.protobuf.Value
+	151, // 209: agentgateway.dev.resource.AIBackend.Provider.host_override:type_name -> agentgateway.dev.resource.AIBackend.HostOverride
+	152, // 210: agentgateway.dev.resource.AIBackend.Provider.openai:type_name -> agentgateway.dev.resource.AIBackend.OpenAI
+	153, // 211: agentgateway.dev.resource.AIBackend.Provider.gemini:type_name -> agentgateway.dev.resource.AIBackend.Gemini
+	154, // 212: agentgateway.dev.resource.AIBackend.Provider.vertex:type_name -> agentgateway.dev.resource.AIBackend.Vertex
+	155, // 213: agentgateway.dev.resource.AIBackend.Provider.anthropic:type_name -> agentgateway.dev.resource.AIBackend.Anthropic
+	156, // 214: agentgateway.dev.resource.AIBackend.Provider.bedrock:type_name -> agentgateway.dev.resource.AIBackend.Bedrock
+	157, // 215: agentgateway.dev.resource.AIBackend.Provider.azureopenai:type_name -> agentgateway.dev.resource.AIBackend.AzureOpenAI
+	70,  // 216: agentgateway.dev.resource.AIBackend.Provider.inline_policies:type_name -> agentgateway.dev.resource.BackendPolicySpec
+	158, // 217: agentgateway.dev.resource.AIBackend.ProviderGroup.providers:type_name -> agentgateway.dev.resource.AIBackend.Provider
+	218, // [218:218] is the sub-list for method output_type
+	218, // [218:218] is the sub-list for method input_type
+	218, // [218:218] is the sub-list for extension type_name
+	218, // [218:218] is the sub-list for extension extendee
+	0,   // [0:218] is the sub-list for field type_name
 }
 
 func init() { file_resource_proto_init() }
@@ -11549,11 +11635,15 @@ func file_resource_proto_init() {
 	file_resource_proto_msgTypes[115].OneofWrappers = []any{
 		(*BackendPolicySpec_Ai_ResponseGuard_Regex)(nil),
 		(*BackendPolicySpec_Ai_ResponseGuard_Webhook)(nil),
+		(*BackendPolicySpec_Ai_ResponseGuard_GoogleModelArmor)(nil),
+		(*BackendPolicySpec_Ai_ResponseGuard_BedrockGuardrails)(nil),
 	}
 	file_resource_proto_msgTypes[116].OneofWrappers = []any{
 		(*BackendPolicySpec_Ai_RequestGuard_Regex)(nil),
 		(*BackendPolicySpec_Ai_RequestGuard_Webhook)(nil),
 		(*BackendPolicySpec_Ai_RequestGuard_OpenaiModeration)(nil),
+		(*BackendPolicySpec_Ai_RequestGuard_GoogleModelArmor)(nil),
+		(*BackendPolicySpec_Ai_RequestGuard_BedrockGuardrails)(nil),
 	}
 	file_resource_proto_msgTypes[118].OneofWrappers = []any{}
 	file_resource_proto_msgTypes[126].OneofWrappers = []any{}

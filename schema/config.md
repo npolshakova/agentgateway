@@ -255,7 +255,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.region`|AWS region where the guardrail is deployed|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (must include AWS auth)|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.requestHeaderModifier`|Headers to be modified in the request.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.requestHeaderModifier.add`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.requestHeaderModifier.set`||
@@ -329,7 +329,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.projectId`|The GCP project ID|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.location`|The GCP region (default: us-central1)|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (must include GCP auth)|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.requestHeaderModifier`|Headers to be modified in the request.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.requestHeaderModifier.add`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.requestHeaderModifier.set`||
@@ -430,7 +430,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.region`|AWS region where the guardrail is deployed|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (must include AWS auth)|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.requestHeaderModifier`|Headers to be modified in the request.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.requestHeaderModifier.add`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.requestHeaderModifier.set`||
@@ -504,7 +504,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.projectId`|The GCP project ID|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.location`|The GCP region (default: us-central1)|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (must include GCP auth)|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.requestHeaderModifier`|Headers to be modified in the request.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.requestHeaderModifier.add`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.requestHeaderModifier.set`||
@@ -813,12 +813,12 @@
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.region`|AWS region where the guardrail is deployed|
-|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (must include AWS auth)|
+|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.request[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.request[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.request[].(1)googleModelArmor.projectId`|The GCP project ID|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.request[].(1)googleModelArmor.location`|The GCP region (default: us-central1)|
-|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (must include GCP auth)|
+|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.request[].rejection`||
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.request[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.request[].rejection.status`||
@@ -850,12 +850,12 @@
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.region`|AWS region where the guardrail is deployed|
-|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (must include AWS auth)|
+|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.response[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.response[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.response[].(1)googleModelArmor.projectId`|The GCP project ID|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.response[].(1)googleModelArmor.location`|The GCP region (default: us-central1)|
-|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (must include GCP auth)|
+|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.response[].rejection`||
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.response[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.ai.promptGuard.response[].rejection.status`||
@@ -1004,12 +1004,12 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.region`|AWS region where the guardrail is deployed|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (must include AWS auth)|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.projectId`|The GCP project ID|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.location`|The GCP region (default: us-central1)|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (must include GCP auth)|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].rejection`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].rejection.status`||
@@ -1041,12 +1041,12 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.region`|AWS region where the guardrail is deployed|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (must include AWS auth)|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.projectId`|The GCP project ID|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.location`|The GCP region (default: us-central1)|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (must include GCP auth)|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].rejection`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].rejection.status`||
@@ -1194,12 +1194,12 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.region`|AWS region where the guardrail is deployed|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (must include AWS auth)|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.projectId`|The GCP project ID|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.location`|The GCP region (default: us-central1)|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (must include GCP auth)|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].rejection`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].rejection.status`||
@@ -1231,12 +1231,12 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.region`|AWS region where the guardrail is deployed|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (must include AWS auth)|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.projectId`|The GCP project ID|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.location`|The GCP region (default: us-central1)|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (must include GCP auth)|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].rejection`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].rejection.status`||
@@ -1359,12 +1359,12 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.region`|AWS region where the guardrail is deployed|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (must include AWS auth)|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.projectId`|The GCP project ID|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.location`|The GCP region (default: us-central1)|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (must include GCP auth)|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].rejection`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].rejection.status`||
@@ -1396,12 +1396,12 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.region`|AWS region where the guardrail is deployed|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (must include AWS auth)|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.projectId`|The GCP project ID|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.location`|The GCP region (default: us-central1)|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (must include GCP auth)|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].rejection`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].rejection.status`||
@@ -1807,7 +1807,7 @@
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.region`|AWS region where the guardrail is deployed|
-|`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (must include AWS auth)|
+|`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.requestHeaderModifier`|Headers to be modified in the request.|
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.requestHeaderModifier.add`||
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.requestHeaderModifier.set`||
@@ -1881,7 +1881,7 @@
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.projectId`|The GCP project ID|
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.location`|The GCP region (default: us-central1)|
-|`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (must include GCP auth)|
+|`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.requestHeaderModifier`|Headers to be modified in the request.|
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.requestHeaderModifier.add`||
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.requestHeaderModifier.set`||
@@ -1982,7 +1982,7 @@
 |`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
 |`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.region`|AWS region where the guardrail is deployed|
-|`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (must include AWS auth)|
+|`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
 |`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.requestHeaderModifier`|Headers to be modified in the request.|
 |`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.requestHeaderModifier.add`||
 |`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.requestHeaderModifier.set`||
@@ -2056,7 +2056,7 @@
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.projectId`|The GCP project ID|
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.location`|The GCP region (default: us-central1)|
-|`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (must include GCP auth)|
+|`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.requestHeaderModifier`|Headers to be modified in the request.|
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.requestHeaderModifier.add`||
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.requestHeaderModifier.set`||
@@ -2342,12 +2342,12 @@
 |`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
 |`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.region`|AWS region where the guardrail is deployed|
-|`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (must include AWS auth)|
+|`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.projectId`|The GCP project ID|
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.location`|The GCP region (default: us-central1)|
-|`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (must include GCP auth)|
+|`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
 |`backends[].policies.ai.promptGuard.request[].rejection`||
 |`backends[].policies.ai.promptGuard.request[].rejection.body`||
 |`backends[].policies.ai.promptGuard.request[].rejection.status`||
@@ -2379,12 +2379,12 @@
 |`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
 |`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.region`|AWS region where the guardrail is deployed|
-|`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (must include AWS auth)|
+|`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies`|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.projectId`|The GCP project ID|
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.location`|The GCP region (default: us-central1)|
-|`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (must include GCP auth)|
+|`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies`|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
 |`backends[].policies.ai.promptGuard.response[].rejection`||
 |`backends[].policies.ai.promptGuard.response[].rejection.body`||
 |`backends[].policies.ai.promptGuard.response[].rejection.status`||

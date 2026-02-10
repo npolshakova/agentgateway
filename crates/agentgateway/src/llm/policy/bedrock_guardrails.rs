@@ -2,6 +2,7 @@ use agent_core::strng;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
+use crate::http::auth::{AwsAuth, BackendAuth};
 use crate::http::jwt::Claims;
 use crate::llm::RequestType;
 use crate::llm::bedrock::AwsRegion;
@@ -138,9 +139,11 @@ async fn send_guardrail_request(
 		"Sending Bedrock guardrail request"
 	);
 
-	let mut pols = vec![BackendPolicy::BackendTLS(
-		crate::http::backendtls::SYSTEM_TRUST.clone(),
-	)];
+	let mut pols = vec![
+		BackendPolicy::BackendTLS(crate::http::backendtls::SYSTEM_TRUST.clone()),
+		// Default to implicit AWS auth
+		BackendPolicy::BackendAuth(BackendAuth::Aws(AwsAuth::Implicit {})),
+	];
 	pols.extend(guardrails.policies.iter().cloned());
 
 	// AWS requires both Content-Type and Accept headers

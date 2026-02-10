@@ -9,6 +9,7 @@ use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use tracing::{debug, warn};
 
+use crate::http::auth::{BackendAuth, GcpAuth};
 use crate::http::jwt::Claims;
 use crate::json;
 use crate::llm::RequestType;
@@ -120,7 +121,7 @@ pub struct FilterResultEntry {
 	pub rai_filter_result: Option<RaiFilterResult>,
 	pub pi_and_jailbreak_filter_result: Option<PiAndJailbreakFilterResult>,
 	pub malicious_uri_filter_result: Option<MaliciousUriFilterResult>,
-	pub csam_filter_filter_result: Option<CsamFilterResult>,
+	pub csam_filter_result: Option<CsamFilterResult>,
 	pub virus_scan_filter_result: Option<VirusScanFilterResult>,
 	pub sdp_filter_result: Option<SdpFilterResult>,
 }
@@ -191,7 +192,7 @@ impl SanitizeResponse {
 				return true;
 			}
 
-			if let Some(csam) = &entry.csam_filter_filter_result
+			if let Some(csam) = &entry.csam_filter_result
 				&& csam.match_state == Some(MatchState::MatchFound)
 			{
 				return true;
@@ -236,13 +237,6 @@ pub async fn send_request(
 		.collect_vec()
 		.join("\n");
 
-	debug!(
-		template_id = %model_armor.template_id,
-		project_id = %model_armor.project_id,
-		content_preview = %content.chars().take(100).collect::<String>(),
-		"[Model Armor] >>> Sending REQUEST (sanitizeUserPrompt) to Google Model Armor"
-	);
-
 	let request_body = SanitizeUserPromptRequest {
 		user_prompt_data: UserPromptData { text: content },
 	};
@@ -286,13 +280,6 @@ pub async fn send_response(
 	model_armor: &GoogleModelArmor,
 ) -> anyhow::Result<SanitizeResponse> {
 	let combined_content = content.join("\n");
-
-	debug!(
-		template_id = %model_armor.template_id,
-		project_id = %model_armor.project_id,
-		content_preview = %combined_content.chars().take(100).collect::<String>(),
-		"[Model Armor] >>> Sending RESPONSE (sanitizeModelResponse) to Google Model Armor"
-	);
 
 	let request_body = SanitizeModelResponseRequest {
 		model_response_data: ModelResponseData {
@@ -353,9 +340,11 @@ async fn send_model_armor_request<T: Serialize>(
 	);
 	let uri = format!("https://{}{}", host, path);
 
-	let mut pols = vec![BackendPolicy::BackendTLS(
-		crate::http::backendtls::SYSTEM_TRUST.clone(),
-	)];
+	let mut pols = vec![
+		BackendPolicy::BackendTLS(crate::http::backendtls::SYSTEM_TRUST.clone()),
+		// Default to implicit GCP auth
+		BackendPolicy::BackendAuth(BackendAuth::Gcp(GcpAuth::default())),
+	];
 	pols.extend(model_armor.policies.iter().cloned());
 
 	let mut rb = ::http::Request::builder()

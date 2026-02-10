@@ -1044,9 +1044,13 @@ pub struct BedrockGuardrails {
 	pub guardrail_version: Strng,
 	/// AWS region where the guardrail is deployed
 	pub region: Strng,
-	/// Backend policies for AWS authentication (must include AWS auth)
-	#[serde(deserialize_with = "de_from_local_backend_policy")]
-	#[cfg_attr(feature = "schema", schemars(with = "LocalBackendPolicies"))]
+	/// Backend policies for AWS authentication (optional, defaults to implicit AWS auth)
+	#[serde(
+		default,
+		deserialize_with = "de_from_local_backend_policy_opt",
+		skip_serializing_if = "Vec::is_empty"
+	)]
+	#[cfg_attr(feature = "schema", schemars(with = "Option<LocalBackendPolicies>"))]
 	pub policies: Vec<BackendPolicy>,
 }
 
@@ -1060,9 +1064,13 @@ pub struct GoogleModelArmor {
 	/// The GCP region (default: us-central1)
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub location: Option<Strng>,
-	/// Backend policies for GCP authentication (must include GCP auth)
-	#[serde(deserialize_with = "de_from_local_backend_policy")]
-	#[cfg_attr(feature = "schema", schemars(with = "LocalBackendPolicies"))]
+	/// Backend policies for GCP authentication (optional, defaults to implicit GCP auth)
+	#[serde(
+		default,
+		deserialize_with = "de_from_local_backend_policy_opt",
+		skip_serializing_if = "Vec::is_empty"
+	)]
+	#[cfg_attr(feature = "schema", schemars(with = "Option<LocalBackendPolicies>"))]
 	pub policies: Vec<BackendPolicy>,
 }
 
@@ -1074,6 +1082,19 @@ where
 {
 	let s = LocalBackendPolicies::deserialize(deserializer)?;
 	s.translate().map_err(serde::de::Error::custom)
+}
+
+pub fn de_from_local_backend_policy_opt<'de: 'a, 'a, D>(
+	deserializer: D,
+) -> Result<Vec<BackendPolicy>, D::Error>
+where
+	D: Deserializer<'de>,
+{
+	let s = Option::<LocalBackendPolicies>::deserialize(deserializer)?;
+	match s {
+		Some(policies) => policies.translate().map_err(serde::de::Error::custom),
+		None => Ok(Vec::new()),
+	}
 }
 
 #[apply(schema!)]
