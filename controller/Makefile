@@ -404,14 +404,14 @@ generate-licenses: $(STAMP_DIR)/generate-licenses  ## Generate the licenses for 
 #----------------------------------------------------------------------------------
 
 # TODO: rename to agentgateway-controller
-CONTROLLER_OUTPUT_DIR=$(OUTPUT_DIR)/pkg/kgateway
+CONTROLLER_OUTPUT_DIR=$(OUTPUT_DIR)/pkg/agentgateway
 export AGENTGATEWAY_IMAGE_REPO ?= agentgateway-controller
 
 .PHONY: agentgateway-controller
 agentgateway-controller:
-	 $(GO_BUILD_FLAGS) GOOS=linux go build -ldflags='$(LDFLAGS)' -gcflags='$(GCFLAGS)' -o $(CONTROLLER_OUTPUT_DIR)/kgateway-linux-$(GOARCH) ./cmd/kgateway
+	 $(GO_BUILD_FLAGS) GOOS=linux go build -ldflags='$(LDFLAGS)' -gcflags='$(GCFLAGS)' -o $(CONTROLLER_OUTPUT_DIR)/agentgateway-linux-$(GOARCH) ./cmd/agentgateway
 
-$(CONTROLLER_OUTPUT_DIR)/Dockerfile.agentgateway: cmd/kgateway/Dockerfile.agentgateway
+$(CONTROLLER_OUTPUT_DIR)/Dockerfile.agentgateway: cmd/agentgateway/Dockerfile.agentgateway
 	cp $< $@
 
 .PHONY: agentgateway-controller-docker

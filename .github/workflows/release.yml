@@ -329,11 +329,11 @@ jobs:
       run: |
         CGO_ENABLED=0 GOARCH=${{ matrix.goarch }} GOOS=linux go build \
           -ldflags="-X github.com/agentgateway/agentgateway/controller/pkg/version.Version=${{ env.VERSION }} -s -w" \
-          -o _output/pkg/kgateway/kgateway-linux-${{ matrix.goarch }} \
-          ./cmd/kgateway
+          -o _output/pkg/agentgateway/agentgateway-linux-${{ matrix.goarch }} \
+          ./cmd/agentgateway
 
     - name: Copy Dockerfile
-      run: cp cmd/kgateway/Dockerfile.agentgateway _output/pkg/kgateway/
+      run: cp cmd/agentgateway/Dockerfile.agentgateway _output/pkg/agentgateway/
 
     - name: Docker meta
       id: meta
@@ -348,8 +348,8 @@ jobs:
       id: build
       uses: docker/build-push-action@v6
       with:
-        context: controller/_output/pkg/kgateway
-        file: controller/_output/pkg/kgateway/Dockerfile.agentgateway
+        context: controller/_output/pkg/agentgateway
+        file: controller/_output/pkg/agentgateway/Dockerfile.agentgateway
         build-args: |
           GOARCH=${{ matrix.goarch }}
         platforms: ${{ matrix.platform }}

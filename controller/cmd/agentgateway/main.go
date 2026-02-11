@@ -11,18 +11,18 @@ import (
 )
 
 func main() {
-	var kgatewayVersion bool
+	var agentgatewayVersion bool
 	cmd := &cobra.Command{
-		Use:   "kgateway",
-		Short: "Runs the kgateway controller",
+		Use:   "agentgateway",
+		Short: "Runs the agentgateway controller",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if kgatewayVersion {
+			if agentgatewayVersion {
 				fmt.Println(version.String())
 				return nil
 			}
 			s, err := setup.New()
 			if err != nil {
-				return fmt.Errorf("error setting up kgateway: %w", err)
+				return fmt.Errorf("error setting up agentgateway: %w", err)
 			}
 			if err := s.Start(cmd.Context()); err != nil {
 				return fmt.Errorf("err in main: %w", err)
@@ -31,7 +31,7 @@ func main() {
 			return nil
 		},
 	}
-	cmd.Flags().BoolVarP(&kgatewayVersion, "version", "v", false, "Print the version of kgateway")
+	cmd.Flags().BoolVarP(&agentgatewayVersion, "version", "v", false, "Print the version of agentgateway")
 
 	if err := cmd.Execute(); err != nil {
 		log.Fatal(err)
