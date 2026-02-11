@@ -1043,7 +1043,7 @@ spec:
     spec:
       containers:
         - name: a2a-agent
-          image: ghcr.io/kgateway-dev/test-a2a-server:0.0.3
+          image: ghcr.io/agentgateway/test-a2a-server:0.0.3
           ports:
             - containerPort: 9090
 ---
