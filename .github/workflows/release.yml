@@ -434,7 +434,6 @@ jobs:
           docker buildx imagetools inspect ${{ env.CONTROLLER_REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
 
   build:
-    if: ${{ github.event_name == 'push' || ! github.event.inputs.skip_gh_release }}
     needs:
       - setup
     runs-on: ${{ matrix.os }}
