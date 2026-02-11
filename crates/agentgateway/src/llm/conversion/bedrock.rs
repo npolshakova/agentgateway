@@ -100,11 +100,23 @@ pub mod from_completions {
 			None
 		};
 
-		// Build metadata from user field and x-bedrock-metadata header
+		// Build metadata from:
+		// - OpenAI `user` field (normalized as user_id)
+		// - OpenAI `metadata` field (agentgateway uses this to carry guardrail/model-armor knobs through Messages→Completions)
+		// - x-bedrock-metadata header (set by ExtAuthz or transformation policy)
 		let mut metadata = req
 			.user
 			.map(|user| HashMap::from([("user_id".to_string(), user)]))
 			.unwrap_or_default();
+
+		// Merge OpenAI request `metadata` when it is an object of string values
+		if let Some(serde_json::Value::Object(obj)) = &req.metadata {
+			for (k, v) in obj {
+				if let serde_json::Value::String(s) = v {
+					metadata.insert(k.clone(), s.clone());
+				}
+			}
+		}
 
 		// Extract metadata from x-bedrock-metadata header (set by ExtAuthz or transformation policy)
 		if let Some(header_metadata) = super::helpers::extract_metadata_from_headers(headers) {

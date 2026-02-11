@@ -4,6 +4,7 @@ use serde_json::json;
 
 use super::*;
 use crate::llm::bedrock::Provider;
+use crate::llm::types;
 
 #[test]
 fn test_extract_beta_headers_variants() {
@@ -120,4 +121,77 @@ fn test_metadata_from_header() {
 
 	assert_eq!(metadata.get("user_id"), Some(&"user123".to_string()));
 	assert_eq!(metadata.get("department"), Some(&"engineering".to_string()));
+}
+
+#[test]
+fn test_metadata_from_completions_metadata_field() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	// OpenAI-style request metadata (agentgateway uses this to carry request-scoped guardrail knobs)
+	let req = types::completions::typed::Request {
+		model: Some("anthropic.claude-3-sonnet".to_string()),
+		messages: vec![types::completions::typed::RequestMessage::User(
+			types::completions::typed::RequestUserMessage {
+				content: types::completions::typed::RequestUserMessageContent::Text("Hello".to_string()),
+				name: None,
+			},
+		)],
+		stream: None,
+		temperature: None,
+		top_p: None,
+		max_completion_tokens: Some(16),
+		stop: None,
+		tools: None,
+		tool_choice: None,
+		parallel_tool_calls: None,
+		user: Some("user456".to_string()),
+		vendor_extensions: Default::default(),
+		frequency_penalty: None,
+		logit_bias: None,
+		logprobs: None,
+		top_logprobs: None,
+		n: None,
+		modalities: None,
+		prediction: None,
+		audio: None,
+		presence_penalty: None,
+		response_format: None,
+		seed: None,
+		#[allow(deprecated)]
+		function_call: None,
+		#[allow(deprecated)]
+		functions: None,
+		metadata: Some(json!({
+			"user_id": "user123",
+			"department": "engineering",
+			// Non-string values should be ignored by the Bedrock metadata bridge
+			"nonstr": 123
+		})),
+		#[allow(deprecated)]
+		max_tokens: None,
+		service_tier: None,
+		web_search_options: None,
+		stream_options: None,
+		store: None,
+		reasoning_effort: None,
+	};
+
+	let out = super::from_completions::translate_internal(
+		req,
+		"anthropic.claude-3-sonnet".to_string(),
+		&provider,
+		None,
+		None,
+	);
+	let md = out.request_metadata.unwrap();
+
+	// `metadata.user_id` should win over the `user`-derived value.
+	assert_eq!(md.get("user_id"), Some(&"user123".to_string()));
+	assert_eq!(md.get("department"), Some(&"engineering".to_string()));
+	assert!(!md.contains_key("nonstr"));
 }
