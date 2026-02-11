@@ -74,8 +74,6 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - uses: actions/checkout@v4
-    - name: Prep Runner
-      uses: ./.github/actions/prep-runner
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
@@ -197,8 +195,6 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - uses: actions/checkout@v4
-    - name: Prep Runner
-      uses: ./.github/actions/prep-runner
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
@@ -399,6 +395,13 @@ jobs:
           pattern: controller-digests-*
           merge-multiple: true
 
+      - name: Display structure of downloaded digests
+        working-directory: ${{ runner.temp }}/controller-digests
+        run: |
+          ls -R
+          echo "Found digest files:"
+          find . -type f
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -421,7 +424,7 @@ jobs:
         working-directory: ${{ runner.temp }}/controller-digests
         run: |
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.CONTROLLER_REGISTRY_IMAGE }}@sha256:%s ' *)
+            $(find . -type f -exec sh -c 'printf "${{ env.CONTROLLER_REGISTRY_IMAGE }}@sha256:%s " "$(basename "$1")"' _ {} \;)
 
       - name: Sign the container image
         run: cosign sign --yes ${{ env.CONTROLLER_REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
