@@ -5,7 +5,6 @@ import (
 	"istio.io/istio/pkg/kube/krt"
 	"istio.io/istio/pkg/ptr"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/ir"
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/plugins"
@@ -14,7 +13,7 @@ import (
 	"github.com/agentgateway/agentgateway/controller/pkg/pluginsdk/krtutil"
 )
 
-type PolicyStatusCollections = map[schema.GroupKind]krt.StatusCollection[controllers.Object, gwv1.PolicyStatus]
+type PolicyStatusCollections = map[schema.GroupKind]krt.StatusCollection[controllers.Object, any]
 
 func AgwPolicyCollection(agwPlugins plugins.AgwPlugin, ancestors krt.Collection[*utils.AncestorBackend], krtopts krtutil.KrtOptions) (krt.Collection[ir.AgwResource], PolicyStatusCollections) {
 	var allPolicies []krt.Collection[plugins.AgwPolicy]

@@ -8,7 +8,6 @@ import (
 	"istio.io/istio/pkg/kube/controllers"
 	"istio.io/istio/pkg/kube/krt"
 	"k8s.io/apimachinery/pkg/types"
-	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/agentgateway/agentgateway/api"
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/ir"
@@ -24,11 +23,11 @@ type PolicyPluginInput struct {
 }
 
 type PolicyPlugin struct {
-	Build func(PolicyPluginInput) (krt.StatusCollection[controllers.Object, gwv1.PolicyStatus], krt.Collection[AgwPolicy])
+	Build func(PolicyPluginInput) (krt.StatusCollection[controllers.Object, any], krt.Collection[AgwPolicy])
 }
 
 // ApplyPolicies extracts all policies from the collection
-func (p *PolicyPlugin) ApplyPolicies(inputs PolicyPluginInput) (krt.Collection[AgwPolicy], krt.StatusCollection[controllers.Object, gwv1.PolicyStatus]) {
+func (p *PolicyPlugin) ApplyPolicies(inputs PolicyPluginInput) (krt.Collection[AgwPolicy], krt.StatusCollection[controllers.Object, any]) {
 	status, col := p.Build(inputs)
 	return col, status
 }

@@ -8,7 +8,6 @@ import (
 	"istio.io/istio/pkg/ptr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/agentgateway/agentgateway/api"
 	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/wellknown"
@@ -27,7 +26,7 @@ func NewA2APlugin(agw *AgwCollections) AgwPlugin {
 	return AgwPlugin{
 		ContributesPolicies: map[schema.GroupKind]PolicyPlugin{
 			wellknown.ServiceGVK.GroupKind(): {
-				Build: func(input PolicyPluginInput) (krt.StatusCollection[controllers.Object, gwv1.PolicyStatus], krt.Collection[AgwPolicy]) {
+				Build: func(input PolicyPluginInput) (krt.StatusCollection[controllers.Object, any], krt.Collection[AgwPolicy]) {
 					return nil, policyCol
 				},
 			},
