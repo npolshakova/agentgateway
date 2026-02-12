@@ -9,6 +9,7 @@ import (
 
 	"istio.io/istio/pkg/kube/krt"
 	istiolog "istio.io/istio/pkg/log"
+	"istio.io/istio/pkg/ptr"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
@@ -18,6 +19,7 @@ import (
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	apisettings "github.com/agentgateway/agentgateway/controller/api/settings"
+	"github.com/agentgateway/agentgateway/controller/api/v1alpha1/agentgateway"
 	agwplugins "github.com/agentgateway/agentgateway/controller/pkg/agentgateway/plugins"
 	"github.com/agentgateway/agentgateway/controller/pkg/apiclient"
 	"github.com/agentgateway/agentgateway/controller/pkg/deployer"
@@ -27,6 +29,7 @@ import (
 	"github.com/agentgateway/agentgateway/controller/pkg/pluginsdk/krtutil"
 	"github.com/agentgateway/agentgateway/controller/pkg/utils/kubeutils"
 	"github.com/agentgateway/agentgateway/controller/pkg/utils/namespaces"
+	"github.com/agentgateway/agentgateway/controller/pkg/version"
 )
 
 // TLSRootCAPath is the path to the TLS root CA
@@ -134,6 +137,7 @@ func NewControllerBuilder(ctx context.Context, cfg StartConfig) (*ControllerBuil
 		agwSyncer.StatusCollections(),
 		agwSyncer.CacheSyncs(),
 		cfg.ExtraAgwResourceStatusHandlers,
+		cfg.CommonCollections.Settings.EnableInferExt,
 	)
 	if err := cfg.Manager.Add(agwStatusSyncer); err != nil {
 		setupLog.Error(err, "unable to add agentgateway StatusSyncer runnable")
@@ -188,10 +192,28 @@ func (c *ControllerBuilder) Build(ctx context.Context) (*agentgatewaysyncer.Sync
 	agwXdsPort := globalSettings.AgentgatewayXdsServicePort
 	slog.Info("got agentgateway xds address for deployer", "agw_xds_host", xdsHost, "agw_xds_port", agwXdsPort)
 
+	// Best case: they explicit set at runtime
+	defaultTag := globalSettings.ProxyImageTag
+	if defaultTag == nil {
+		// Else, the binary is built with an explicit version
+		if version.Version != "" {
+			defaultTag = ptr.Of("v" + version.Version)
+		} else {
+			// Else, detect automatically based on the build.
+			// TODO: probably what we really want here is to have a file in the repo that has a floating version like v1.0.0-dev
+			// that is used here + for nightly builds.
+			defaultTag = ptr.Of(version.GitVersion)
+		}
+	}
 	gwCfg := GatewayConfig{
 		Client:            c.cfg.Client,
 		Mgr:               c.mgr,
 		AgwControllerName: c.cfg.AgwControllerName,
+		ImageDefaults: &agentgateway.Image{
+			Registry:   &globalSettings.ProxyImageRegistry,
+			Repository: &globalSettings.ProxyImageRepository,
+			Tag:        defaultTag,
+		},
 		ControlPlane: deployer.ControlPlaneInfo{
 			XdsHost:      xdsHost,
 			AgwXdsPort:   agwXdsPort,

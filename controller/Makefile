@@ -420,6 +420,12 @@ agentgateway-controller-docker: agentgateway-controller $(CONTROLLER_OUTPUT_DIR)
 		--build-arg GOARCH=$(GOARCH) \
 		-t $(IMAGE_REGISTRY)/$(AGENTGATEWAY_IMAGE_REPO):$(VERSION)
 
+.PHONY: agentgateway-controller-docker-local
+agentgateway-controller-docker-local: agentgateway-controller $(CONTROLLER_OUTPUT_DIR)/Dockerfile.agentgateway
+	docker buildx build --push $(PLATFORM) $(CONTROLLER_OUTPUT_DIR) -f $(CONTROLLER_OUTPUT_DIR)/Dockerfile.agentgateway \
+		--build-arg GOARCH=$(GOARCH) \
+		-t localhost:5000/$(AGENTGATEWAY_IMAGE_REPO):$(TAG)
+
 #----------------------------------------------------------------------------------
 # dummy idp (used in e2e tests)
 #----------------------------------------------------------------------------------
@@ -659,7 +665,7 @@ AGW_CONFORMANCE_ARGS := -gateway-class=agentgateway $(AGW_CONFORMANCE_REPORT_ARG
 .PHONY: agw-conformance ## Run the agent gateway conformance test suite
 agw-conformance:
 	@mkdir -p $(TEST_ASSET_DIR)/conformance
-	go test -mod=mod -ldflags='$(LDFLAGS)' -tags conformance -test.v ./test/conformance/... -args $(AGW_CONFORMANCE_ARGS)
+	CGO_ENABLED=0 go test -mod=mod -ldflags='$(LDFLAGS)' -tags conformance -test.v ./test/conformance/... -args $(AGW_CONFORMANCE_ARGS)
 
 #----------------------------------------------------------------------------------
 # Targets for running Gateway API Inference Extension conformance tests
@@ -677,31 +683,23 @@ GIE_CONFORMANCE_REPORT_ARGS ?= \
 # The args to pass into the Gateway API Inference Extension conformance test suite.
 GIE_CONFORMANCE_ARGS := \
     -gateway-class=agentgateway \
-    $(GIE_CONFORMANCE_REPORT_ARGS)
+    $(GIE_CONFORMANCE_REPORT_ARGS) \
+    -skip-tests GatewayWeightedAcrossTwoInferencePools # We can pass this test but its broke (in the test, not our code) so it takes forever
 
 INFERENCE_CONFORMANCE_DIR := $(shell go list -m -f '{{.Dir}}' sigs.k8s.io/gateway-api-inference-extension)/conformance
 
 .PHONY: gie-conformance
 gie-conformance: gie-crds ## Run the Gateway API Inference Extension conformance suite
 	@mkdir -p $(TEST_ASSET_DIR)/conformance
-	go test -mod=mod -ldflags='$(LDFLAGS)' \
+	CGO_ENABLED=0 go test -mod=mod -ldflags='$(LDFLAGS)' \
 	    -tags conformance \
 	    -timeout=25m \
 	    -v $(INFERENCE_CONFORMANCE_DIR) \
 	    -args $(GIE_CONFORMANCE_ARGS)
 
-.PHONY: gie-conformance-%
-gie-conformance-%: gie-crds ## Run only the specified Gateway API Inference Extension conformance test by ShortName
-	@mkdir -p $(TEST_ASSET_DIR)/conformance
-	go test -mod=mod -ldflags='$(LDFLAGS)' \
-	    -tags conformance \
-	    -timeout=25m \
-	    -v $(INFERENCE_CONFORMANCE_DIR) \
-	    -args $(GIE_CONFORMANCE_ARGS) -run-test=$*
-
 # An alias to run both Gateway API and Inference Extension conformance tests.
 .PHONY: all-conformance
-all-conformance: conformance gie-conformance agw-conformance ## Run all conformance test suites
+all-conformance: gie-conformance agw-conformance ## Run all conformance test suites
 	@echo "All conformance suites have completed."
 
 #----------------------------------------------------------------------------------
