@@ -342,7 +342,7 @@ impl AIProvider {
 			AIProvider::Gemini(_) => http::modify_req(req, |req| {
 				http::modify_uri(req, |uri| {
 					if override_path {
-						Self::set_path_and_query(uri, gemini::DEFAULT_PATH)?;
+						Self::set_path_and_query(uri, gemini::path(route_type))?;
 					}
 					uri.authority = Some(Authority::from_static(gemini::DEFAULT_HOST_STR));
 					Ok(())
@@ -591,8 +591,15 @@ impl AIProvider {
 			) => {
 				// Anthropic supports count_tokens natively (Bedrock & Vertex assumes its serving Anthropic models)
 			},
-			(AIProvider::OpenAI(_) | AIProvider::AzureOpenAI(_), InputFormat::Embeddings) => {
-				// passthrough
+			(
+				AIProvider::OpenAI(_)
+				| AIProvider::Gemini(_)
+				| AIProvider::AzureOpenAI(_)
+				| AIProvider::Bedrock(_)
+				| AIProvider::Vertex(_),
+				InputFormat::Embeddings,
+			) => {
+				// OpenAI compatible, Gemini, Bedrock, or Vertex
 			},
 			(p, m) => {
 				// Messages with OpenAI compatible: currently only supports translating the request
@@ -629,6 +636,7 @@ impl AIProvider {
 		let mut llm_info = req.to_llm_request(self.provider(), tokenize)?;
 		if let Some(log) = log
 			&& log.cel.cel_context.needs_llm_prompt()
+			&& original_format.supports_prompt_guard()
 		{
 			llm_info.prompt = Some(req.get_messages().into());
 		}
@@ -655,10 +663,10 @@ impl AIProvider {
 					let body = req.to_anthropic()?;
 					provider.prepare_anthropic_request_body(body)?
 				},
-				AIProvider::OpenAI(_)
-				| AIProvider::Gemini(_)
-				| AIProvider::Vertex(_)
-				| AIProvider::AzureOpenAI(_) => req.to_openai()?,
+				AIProvider::OpenAI(_) | AIProvider::Gemini(_) | AIProvider::AzureOpenAI(_) => {
+					req.to_openai()?
+				},
+				AIProvider::Vertex(p) => req.to_vertex(p)?,
 				AIProvider::Anthropic(_) => req.to_anthropic()?,
 				AIProvider::Bedrock(p) => req.to_bedrock(
 					p,
@@ -721,10 +729,40 @@ impl AIProvider {
 			return Ok(resp);
 		}
 
-		// embeddings has simplified response handling (currently nothing; no translation needed)
+		// embeddings has simplified response handling
 		if req.input_format == InputFormat::Embeddings {
+			if !parts.status.is_success() {
+				let body = self.process_error(&req, &bytes)?;
+				parts.headers.remove(header::CONTENT_LENGTH);
+				let resp = Response::from_parts(parts, body.into());
+				let llm_info = LLMInfo::new(req, LLMResponse::default());
+				log.store(Some(llm_info));
+				return Ok(resp);
+			}
+
+			let (llm_resp, bytes) = match self {
+				AIProvider::Bedrock(_) => {
+					let translated = conversion::bedrock::from_embeddings::translate_response(
+						&bytes,
+						&parts.headers,
+						&req.request_model,
+					)?;
+					let llm_resp = translated.to_llm_response(false);
+					let body = translated.serialize().map_err(AIError::ResponseParsing)?;
+					(llm_resp, Bytes::from(body))
+				},
+				AIProvider::Vertex(p) if !p.is_anthropic_model(Some(&req.request_model)) => {
+					let translated =
+						conversion::vertex::from_embeddings::translate_response(&bytes, &req.request_model)?;
+					let llm_resp = translated.to_llm_response(false);
+					let body = translated.serialize().map_err(AIError::ResponseParsing)?;
+					(llm_resp, Bytes::from(body))
+				},
+				_ => (LLMResponse::default(), bytes),
+			};
+
+			parts.headers.remove(header::CONTENT_LENGTH);
 			let resp = Response::from_parts(parts, bytes.into());
-			let llm_resp = LLMResponse::default();
 			let llm_info = LLMInfo::new(req, llm_resp);
 			log.store(Some(llm_info));
 			return Ok(resp);
@@ -979,7 +1017,7 @@ impl AIProvider {
 				| AIProvider::Gemini(_)
 				| AIProvider::AzureOpenAI(_)
 				| AIProvider::Vertex(_),
-				InputFormat::Completions | InputFormat::Responses,
+				InputFormat::Completions | InputFormat::Responses | InputFormat::Embeddings,
 			) => {
 				// Passthrough; nothing needed
 				Ok(bytes.clone())
@@ -999,6 +1037,9 @@ impl AIProvider {
 			},
 			(AIProvider::Bedrock(_), InputFormat::Responses) => {
 				conversion::bedrock::from_responses::translate_error(bytes)
+			},
+			(AIProvider::Bedrock(_), InputFormat::Embeddings) => {
+				conversion::bedrock::from_embeddings::translate_error(bytes)
 			},
 			(_, _) => Err(AIError::UnsupportedConversion(strng::literal!(
 				"this provider and format is not supported"

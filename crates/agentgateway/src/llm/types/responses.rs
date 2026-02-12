@@ -351,6 +351,10 @@ impl RequestType for Request {
 	) -> Result<Vec<u8>, AIError> {
 		conversion::bedrock::from_responses::translate(self, provider, headers, prompt_caching)
 	}
+
+	fn to_vertex(&self, _provider: &crate::llm::vertex::Provider) -> Result<Vec<u8>, AIError> {
+		self.to_openai()
+	}
 }
 
 impl ResponseType for Response {

@@ -211,6 +211,15 @@ impl RequestType for Request {
 	) -> Result<Vec<u8>, AIError> {
 		conversion::bedrock::from_messages::translate(self, provider, headers)
 	}
+
+	fn to_vertex(&self, provider: &crate::llm::vertex::Provider) -> Result<Vec<u8>, AIError> {
+		if provider.is_anthropic_model(self.model.as_deref()) {
+			let body = self.to_anthropic()?;
+			provider.prepare_anthropic_request_body(body)
+		} else {
+			self.to_openai()
+		}
+	}
 }
 
 pub fn prepend_prompts_helper(

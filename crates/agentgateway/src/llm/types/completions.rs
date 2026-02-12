@@ -173,6 +173,15 @@ impl super::RequestType for Request {
 		serde_json::to_vec(&self).map_err(AIError::RequestMarshal)
 	}
 
+	fn to_vertex(&self, provider: &crate::llm::vertex::Provider) -> Result<Vec<u8>, AIError> {
+		if provider.is_anthropic_model(self.model.as_deref()) {
+			let body = self.to_anthropic()?;
+			provider.prepare_anthropic_request_body(body)
+		} else {
+			self.to_openai()
+		}
+	}
+
 	fn to_llm_request(&self, provider: Strng, tokenize: bool) -> Result<LLMRequest, AIError> {
 		let model = strng::new(self.model.as_deref().unwrap_or_default());
 		let input_tokens = if tokenize {

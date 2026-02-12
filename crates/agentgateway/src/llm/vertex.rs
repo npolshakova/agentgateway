@@ -78,13 +78,19 @@ impl Provider {
 				),
 			};
 		}
-		let t = if route == RouteType::Embeddings {
-			strng::literal!("embeddings")
-		} else {
-			strng::literal!("chat/completions")
-		};
+
+		if route == RouteType::Embeddings {
+			let model = self.configured_model(request_model).unwrap_or_default();
+			return strng::format!(
+				"/v1/projects/{}/locations/{}/publishers/google/models/{}:predict",
+				self.project_id,
+				location,
+				model
+			);
+		}
+
 		strng::format!(
-			"/v1/projects/{}/locations/{}/endpoints/openapi/{t}",
+			"/v1/projects/{}/locations/{}/endpoints/openapi/chat/completions",
 			self.project_id,
 			location
 		)
