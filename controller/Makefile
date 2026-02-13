@@ -584,7 +584,9 @@ endif
 
 # The version of the k8s gateway api inference extension CRDs to install.
 # Managed by `make bump-gie`.
-GIE_CRD_VERSION ?= v1.1.0
+GIE_CRD_VERSION ?= v1.3.0
+# When we are back on a release version instead of `main`, we can do this
+#GIE_CRD_VERSION ?= $(shell go list -m -f '{{.Version}}' sigs.k8s.io/gateway-api-inference-extension)
 
 .PHONY: gie-crds
 gie-crds: ## Install the Gateway API Inference Extension CRDs
@@ -683,10 +685,7 @@ GIE_CONFORMANCE_REPORT_ARGS ?= \
 # The args to pass into the Gateway API Inference Extension conformance test suite.
 GIE_CONFORMANCE_ARGS := \
     -gateway-class=agentgateway \
-    $(GIE_CONFORMANCE_REPORT_ARGS) \
-    -skip-tests GatewayWeightedAcrossTwoInferencePools # We can pass this test but its broke (in the test, not our code) so it takes forever
-
-INFERENCE_CONFORMANCE_DIR := $(shell go list -m -f '{{.Dir}}' sigs.k8s.io/gateway-api-inference-extension)/conformance
+    $(GIE_CONFORMANCE_REPORT_ARGS)
 
 .PHONY: gie-conformance
 gie-conformance: gie-crds ## Run the Gateway API Inference Extension conformance suite
@@ -694,7 +693,7 @@ gie-conformance: gie-crds ## Run the Gateway API Inference Extension conformance
 	CGO_ENABLED=0 go test -mod=mod -ldflags='$(LDFLAGS)' \
 	    -tags conformance \
 	    -timeout=25m \
-	    -v $(INFERENCE_CONFORMANCE_DIR) \
+	    -v $(shell go mod download && go list -m -f '{{.Dir}}' sigs.k8s.io/gateway-api-inference-extension/conformance) \
 	    -args $(GIE_CONFORMANCE_ARGS)
 
 # An alias to run both Gateway API and Inference Extension conformance tests.
