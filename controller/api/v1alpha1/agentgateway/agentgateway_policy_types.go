@@ -129,6 +129,10 @@ type BackendSimple struct {
 	// +optional
 	HTTP *BackendHTTP `json:"http,omitempty"`
 
+	// transformation is used to mutate and transform requests and responses sent to and from the backend.
+	// +optional
+	Transformation *Transformation `json:"transformation,omitempty"`
+
 	// auth defines settings for managing authentication to the backend
 	// +optional
 	Auth *BackendAuth `json:"auth,omitempty"`
@@ -1367,16 +1371,23 @@ const (
 	TracingProtocolGrpc TracingProtocol = "GRPC"
 )
 
+// +kubebuilder:validation:XValidation:rule="!has(self.path) || !has(self.protocol) || self.protocol == 'HTTP'",message="path is only valid with protocol HTTP"
+// +kubebuilder:validation:XValidation:rule="!has(self.path) || self.path.startsWith('/')",message="path must start with /"
 type Tracing struct {
 	// backendRef references the OTLP server to reach.
 	// Supported types: Service and AgentgatewayBackend.
 	// +required
 	BackendRef gwv1.BackendObjectReference `json:"backendRef"`
 	// protocol specifies the OTLP protocol variant to use.
-	// +kubebuilder:default=HTTP
+	// +kubebuilder:default=GRPC
 	// +kubebuilder:validation:Enum=HTTP;GRPC
 	// +optional
 	Protocol TracingProtocol `json:"protocol,omitempty"`
+
+	// path specifies the OTLP path to use. This is only applicable when protocol is HTTP.
+	// If unset, this defaults to /v1/traces.
+	// +optional
+	Path *LongString `json:"path,omitempty"`
 
 	// attributes specify customizations to the key-value pairs that are included in the trace.
 	// +optional

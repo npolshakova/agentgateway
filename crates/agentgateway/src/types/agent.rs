@@ -1674,8 +1674,8 @@ where
 #[cfg_attr(feature = "schema", derive(crate::JsonSchema))]
 pub enum TracingProtocol {
 	#[default]
-	Http,
 	Grpc,
+	Http,
 }
 
 /// TracingPolicy holds both the configuration and the compiled OpenTelemetry tracer
@@ -1897,6 +1897,7 @@ pub enum BackendPolicy {
 	#[serde(rename = "ai")]
 	AI(Arc<llm::Policy>),
 	SessionPersistence(http::sessionpersistence::Policy),
+	Transformation(crate::http::transformation_cel::Transformation),
 
 	RequestHeaderModifier(filters::HeaderModifier),
 	ResponseHeaderModifier(filters::HeaderModifier),

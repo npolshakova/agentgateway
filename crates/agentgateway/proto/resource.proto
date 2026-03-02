@@ -521,7 +521,7 @@ message FrontendPolicySpec {
     // or a boolean (true/false). If unspecified, client sampling is 100% enabled.
     optional string client_sampling = 5;
 
-    // OTLP path. Default is /v1/traces
+    // OTLP/HTTP path. Only applicable when protocol is HTTP. Default is /v1/traces
     optional string path = 6;
 
     // protocol specifies the OTLP protocol variant to use. Default is HTTP
@@ -1038,6 +1038,7 @@ message BackendPolicySpec {
     RequestMirrors request_mirror = 11;
     BackendHTTP backend_http = 12;
     BackendTCP backend_tcp = 13;
+    TrafficPolicySpec.TransformationPolicy transformation = 14;
   }
 }
 
