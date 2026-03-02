@@ -664,7 +664,22 @@ impl AIProvider {
 					provider.prepare_anthropic_request_body(body)?
 				},
 				AIProvider::OpenAI(_) | AIProvider::Gemini(_) | AIProvider::AzureOpenAI(_) => {
-					req.to_openai()?
+					let mut body = req.to_openai()?;
+					// Ensure provider model override is in the body (e.g. on failover the selected provider's model must be sent).
+					if let Some(override_model) = self.override_model() {
+						if let Ok(mut v) = serde_json::from_slice::<serde_json::Value>(&body) {
+							if let Some(obj) = v.as_object_mut() {
+								obj.insert(
+									"model".to_string(),
+									serde_json::Value::String(override_model.to_string()),
+								);
+								if let Ok(patched) = serde_json::to_vec(&v) {
+									body = patched;
+								}
+							}
+						}
+					}
+					body
 				},
 				AIProvider::Vertex(p) => req.to_vertex(p)?,
 				AIProvider::Anthropic(_) => req.to_anthropic()?,
@@ -996,10 +1011,45 @@ impl AIProvider {
 		let Ok(bytes) = http::read_body_with_limit(body, buffer).await else {
 			return Err(AIError::RequestTooLarge);
 		};
-		let mut req: T = if let Some(p) = policies {
-			p.unmarshal_request(&bytes)?
+		let parse_result: Result<T, AIError> = if let Some(p) = policies {
+			p.unmarshal_request(&bytes)
 		} else {
-			serde_json::from_slice(bytes.as_ref()).map_err(AIError::RequestParsing)?
+			serde_json::from_slice::<T>(bytes.as_ref()).map_err(AIError::RequestParsing)
+		};
+
+		let mut req: T = match parse_result {
+			Ok(parsed) => parsed,
+			Err(AIError::RequestParsing(e)) => {
+				let body_str = String::from_utf8_lossy(bytes.as_ref());
+				let len = body_str.len();
+				let err_str = e.to_string();
+				let column = err_str
+					.split("column ")
+					.nth(1)
+					.and_then(|s| s.split_whitespace().next())
+					.and_then(|s| s.parse::<usize>().ok());
+				if let Some(col) = column {
+					let start = col.saturating_sub(150);
+					let snippet: String = body_str.chars().skip(start).take(1000).collect();
+					tracing::warn!(
+						parse_error = %e,
+						body_len = len,
+						error_column = col,
+						body_snippet_around_error = %snippet,
+						"request body parse failed: inspect body_snippet_around_error for JSON at error column"
+					);
+				} else {
+					let preview: String = body_str.chars().take(1000).collect();
+					tracing::warn!(
+						parse_error = %e,
+						body_len = len,
+						body_preview = %preview,
+						"request body parse failed"
+					);
+				}
+				return Err(AIError::RequestParsing(e));
+			},
+			Err(e) => return Err(e),
 		};
 
 		if let Some(provider_model) = &self.override_model() {
