@@ -1045,7 +1045,7 @@ pub struct SimpleLocalBackendPolicies {
 
 	/// Evict this backend (outlier detection) on unhealthy responses; duration and CEL configurable.
 	#[serde(default)]
-	pub eviction: Option<eviction::LocalPolicy>,
+	pub eviction: Option<eviction::LocalEvictionPolicy>,
 }
 
 #[apply(schema_de!)]
