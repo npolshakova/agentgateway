@@ -79,6 +79,11 @@ async fn test_aws_config() {
 	test_config_parsing("aws").await;
 }
 
+#[tokio::test]
+async fn test_eviction_config() {
+	test_config_parsing("eviction").await;
+}
+
 #[test]
 fn test_llm_model_name_header_match_valid_patterns() {
 	match super::llm_model_name_header_match("*").unwrap() {
