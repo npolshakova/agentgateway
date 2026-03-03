@@ -1893,7 +1893,11 @@ pub mod from_responses {
 	fn responses_text_format_to_bedrock_output_config(
 		text: &responses::ResponseTextParam,
 	) -> Option<bedrock::OutputConfig> {
-		let (name, description, schema) = match &text.format {
+		let (name, description, schema): (
+			Option<String>,
+			Option<String>,
+			std::borrow::Cow<'_, serde_json::Value>,
+		) = match &text.format {
 			responses::TextResponseFormatConfiguration::Text => return None,
 			responses::TextResponseFormatConfiguration::JsonObject => (
 				None,
