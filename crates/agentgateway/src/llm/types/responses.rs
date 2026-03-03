@@ -12,75 +12,54 @@ use crate::llm::{
 	conversion,
 };
 
-/// Normalize input array elements so they match async-openai's InputItem: the crate's
-/// untagged enum tries `Item` (which requires `"type"`) before `EasyMessage`. SDKs often
-/// send `{"role":"user","content":"hi"}` without `"type"`. Convert those to the
-/// structured form Item::Message expects: `"type":"message"` and content as
-/// `[{"type":"input_text","text":"..."}]`.
-fn normalize_input_items(v: serde_json::Value) -> serde_json::Value {
-	let arr = match v {
-		serde_json::Value::Array(a) => a,
-		_ => return v,
-	};
-	let normalized: Vec<serde_json::Value> = arr
-		.into_iter()
-		.map(|elem| {
-			let mut obj = match elem {
-				serde_json::Value::Object(o) => o,
-				_ => return elem,
-			};
-			if obj.contains_key("type") {
-				return serde_json::Value::Object(obj);
-			}
-			let Some(content_val) = obj.get("content").cloned() else {
-				return serde_json::Value::Object(obj);
-			};
-			// String content -> structured form so Item::Message(Input(InputMessage)) parses
-			let content = match content_val {
-				serde_json::Value::String(s) => serde_json::Value::Array(vec![
-					serde_json::json!({"type": "input_text", "text": s}),
-				]),
-				other => other,
-			};
-			obj.insert("type".to_string(), serde_json::Value::String("message".to_string()));
-			obj.insert("content".to_string(), content);
-			serde_json::Value::Object(obj)
-		})
-		.collect();
-	serde_json::Value::Array(normalized)
+// Responses API can accept messages without the type specified but rust sdk requires it
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+enum LenientInput {
+	StrictSdk(Input),
+	MessagesWithoutType(Vec<MessageWithoutType>),
+	SingleMessageWithoutType(MessageWithoutType),
 }
 
-/// Deserializes `input` leniently: (1) single object -> one-element array; (2) array of
-/// simple messages without `"type"` (e.g. `{"role":"user","content":"hi"}`) are normalized
-/// so they parse as Item::Message.
+#[derive(Debug, Deserialize)]
+struct MessageWithoutType {
+	role: Strng,
+	content: Strng,
+}
+
+impl From<MessageWithoutType> for InputItem {
+	fn from(msg: MessageWithoutType) -> Self {
+		InputItem::from(SimpleChatCompletionMessage {
+			role: msg.role,
+			content: msg.content,
+		})
+	}
+}
+
+impl TryFrom<LenientInput> for Input {
+	type Error = String;
+
+	fn try_from(value: LenientInput) -> Result<Self, Self::Error> {
+		match value {
+			LenientInput::StrictSdk(input) => Ok(input),
+			LenientInput::MessagesWithoutType(messages) => {
+				Ok(Input::Items(messages.into_iter().map(Into::into).collect()))
+			},
+			LenientInput::SingleMessageWithoutType(message) => Ok(Input::Items(vec![message.into()])),
+		}
+	}
+}
+
 fn deserialize_input_lenient<'de, D>(d: D) -> Result<Input, D::Error>
 where
 	D: Deserializer<'de>,
 {
-	let v = serde_json::Value::deserialize(d)?;
-	match v {
-		// Fast path: plain text input is valid Responses API input.
-		serde_json::Value::String(text) => Ok(Input::Text(text)),
-		// Accept historical single-message object form by coercing to an array.
-		serde_json::Value::Object(_) => {
-			let normalized = normalize_input_items(serde_json::Value::Array(vec![v]));
-			serde_json::from_value(normalized).map_err(|e| serde::de::Error::custom(e.to_string()))
-		},
-		// Standard items form.
-		serde_json::Value::Array(_) => {
-			let normalized = normalize_input_items(v);
-			serde_json::from_value(normalized).map_err(|e| serde::de::Error::custom(e.to_string()))
-		},
-		other => Err(serde::de::Error::custom(format!(
-			"invalid `input`: expected string, object, or array; got {}",
-			other
-		))),
-	}
+	crate::serdes::de_as::<LenientInput, Input, _>(d)
 }
 
 #[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct Request {
-	/// Input to the model: string or array of items. Deserialized so a single object is accepted as one item.
+	/// Input to the model: string or array of items.
 	#[serde(deserialize_with = "deserialize_input_lenient")]
 	pub input: Input,
 
@@ -578,9 +557,9 @@ pub mod typed {
 		ReasoningEffort, Response, ResponseCompletedEvent, ResponseContentPartAddedEvent,
 		ResponseContentPartDoneEvent, ResponseCreatedEvent, ResponseErrorEvent, ResponseFailedEvent,
 		ResponseFunctionCallArgumentsDeltaEvent, ResponseFunctionCallArgumentsDoneEvent,
-		ResponseIncompleteEvent, ResponseOutputItemAddedEvent, ResponseOutputItemDoneEvent, ResponseTextParam,
-		ResponseTextDeltaEvent, ResponseUsage, Role, Status, TextResponseFormatConfiguration, Tool,
-		ToolChoiceFunction, ToolChoiceOptions, ToolChoiceParam,
+		ResponseIncompleteEvent, ResponseOutputItemAddedEvent, ResponseOutputItemDoneEvent,
+		ResponseTextDeltaEvent, ResponseTextParam, ResponseUsage, Role, Status,
+		TextResponseFormatConfiguration, Tool, ToolChoiceFunction, ToolChoiceOptions, ToolChoiceParam,
 	};
 	use serde::{Deserialize, Serialize};
 
@@ -631,6 +610,7 @@ pub mod typed {
 #[cfg(test)]
 mod tests {
 	use super::{Input, Request};
+	use crate::llm::RequestType;
 
 	#[test]
 	fn request_input_accepts_string() {
@@ -661,6 +641,29 @@ mod tests {
 	}
 
 	#[test]
+	fn request_input_accepts_array_without_type() {
+		let req: Request = serde_json::from_value(serde_json::json!({
+			"input": [
+				{
+					"role": "system",
+					"content": "test1"
+				},
+				{
+					"role": "system",
+					"content": "test2"
+				},
+				{
+					"role": "user",
+					"content": "test3"
+				}
+			]
+		}))
+		.expect("array input without type should deserialize");
+
+		assert!(matches!(req.input, Input::Items(_)));
+	}
+
+	#[test]
 	fn request_input_accepts_single_object_message() {
 		let req: Request = serde_json::from_value(serde_json::json!({
 			"input": {
@@ -671,5 +674,30 @@ mod tests {
 		.expect("single object message should deserialize");
 
 		assert!(matches!(req.input, Input::Items(_)));
+	}
+
+	#[test]
+	fn canonical_and_fallback_message_inputs_produce_same_messages() {
+		let canonical: Request = serde_json::from_value(serde_json::json!({
+			"model": "llama3.1",
+			"input": [
+				{ "type": "message", "role": "system", "content": "test1" },
+				{ "type": "message", "role": "system", "content": "test2" },
+				{ "type": "message", "role": "user", "content": "test3" }
+			]
+		}))
+		.expect("canonical message input should deserialize");
+
+		let fallback: Request = serde_json::from_value(serde_json::json!({
+			"model": "llama3.1",
+			"input": [
+				{ "role": "system", "content": "test1" },
+				{ "role": "system", "content": "test2" },
+				{ "role": "user", "content": "test3" }
+			]
+		}))
+		.expect("fallback message input should deserialize");
+
+		assert_eq!(canonical.get_messages(), fallback.get_messages());
 	}
 }
