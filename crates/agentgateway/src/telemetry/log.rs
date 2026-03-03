@@ -447,7 +447,7 @@ impl DropOnLog {
 
 	/// Computes (health, eviction_duration, health_on_unevict) for finish_request.
 	/// When eviction_policy is set, uses CEL for unhealthy and policy for duration/threshold/health_on_unevict.
-	/// When not set, keeps backward compatibility: 5xx => unhealthy, eviction = retry_after or 30s.
+	/// When not set, keeps backward compatibility: 5xx => unhealthy, eviction = retry_after only.
 	fn eviction_decision(
 		log: &RequestLog,
 		_duration: Duration,
@@ -481,8 +481,14 @@ impl DropOnLog {
 				.as_ref()
 				.and_then(|p| p.eviction_duration)
 				.or(log.retry_after)
-				.or(log.retry_backoff)
-				.or(Some(Duration::from_secs(DEFAULT_EVICTION_SECS)));
+				.or(log.retry_backoff);
+			// Only apply 30s default when an eviction policy IS configured
+			let duration = if log.eviction_policy.is_some() {
+				duration.or(Some(Duration::from_secs(DEFAULT_EVICTION_SECS)))
+			} else {
+				// None → no eviction without explicit policy
+				duration
+			};
 			// Apply health threshold: only evict when current health is below threshold
 			let below_threshold = log
 				.eviction_policy
