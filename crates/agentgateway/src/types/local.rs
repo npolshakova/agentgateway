@@ -1131,7 +1131,7 @@ impl LocalBackendPolicies {
 		}
 		if let Some(p) = eviction {
 			pols.push(BackendPolicy::Eviction(p.try_into().map_err(
-				|e: crate::cel::Error| anyhow::anyhow!("eviction.unhealthy_expression: {}", e),
+				|e: crate::cel::Error| anyhow::anyhow!("eviction.unhealthyExpression: {}", e),
 			)?));
 		}
 		Ok(pols)

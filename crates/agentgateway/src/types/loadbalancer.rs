@@ -337,7 +337,8 @@ impl<T: Clone + Sync + Send + 'static> EndpointSet<T> {
 				if let Some(ep) = eps.rejected.swap_remove(&key) {
 					ep.info.evicted_until.store(None);
 					if let Some(h) = health_on_unevict {
-						ep.info.health.set(h);
+						// Health scoring assumes normalized values in [0.0, 1.0].
+						ep.info.health.set(h.clamp(0.0, 1.0));
 					}
 					eps.active.insert(key, ep);
 				}

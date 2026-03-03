@@ -1,8 +1,9 @@
 //! Configurable backend eviction (outlier detection) policy.
 //!
 //! When a response is considered unhealthy (by CEL or default 5xx), the backend can be
-//! evicted for a configurable duration. Optional health threshold and health-on-unevict
-//! support multi-request and recovery behavior.
+//! evicted for a configurable duration. If no eviction policy is configured, no eviction
+//! is applied. Optional health threshold and health-on-unevict support multi-request and
+//! recovery behavior.
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -15,7 +16,8 @@ use crate::{serde_dur_option, *};
 #[serde(rename_all = "camelCase")]
 pub struct Policy {
 	/// CEL expression evaluated per response; `true` means this response is unhealthy (evict).
-	/// When absent, default is to treat 5xx (and missing response) as unhealthy.
+	/// When absent, default is to treat 5xx (and missing response) as unhealthy, but only
+	/// when eviction policy is configured.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub unhealthy_expression: Option<Arc<Expression>>,
 
@@ -44,7 +46,7 @@ pub struct Policy {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct LocalEvictionPolicy {
-	/// CEL expression; `true` means unhealthy (evict). E.g. `response.status >= 500`.
+	/// CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub unhealthy_expression: Option<String>,
 	#[serde(
@@ -63,6 +65,19 @@ pub struct LocalEvictionPolicy {
 impl TryFrom<LocalEvictionPolicy> for Policy {
 	type Error = crate::cel::Error;
 	fn try_from(local: LocalEvictionPolicy) -> Result<Self, Self::Error> {
+		let validate_score = |field: &str, value: Option<f64>| -> Result<(), crate::cel::Error> {
+			if let Some(v) = value
+				&& !(0.0..=1.0).contains(&v)
+			{
+				return Err(crate::cel::Error::Variable(format!(
+					"eviction.{field} must be between 0.0 and 1.0"
+				)));
+			}
+			Ok(())
+		};
+		validate_score("healthThreshold", local.health_threshold)?;
+		validate_score("healthOnUnevict", local.health_on_unevict)?;
+
 		let unhealthy_expression = match local.unhealthy_expression {
 			Some(s) if !s.trim().is_empty() => Some(Arc::new(Expression::new_strict(&s)?)),
 			_ => None,

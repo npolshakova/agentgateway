@@ -2153,6 +2153,18 @@
             }
           ],
           "default": null
+        },
+        "eviction": {
+          "description": "Evict this backend (outlier detection) on unhealthy responses; duration and CEL configurable.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalEvictionPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "additionalProperties": false
@@ -2646,6 +2658,40 @@
         "secs",
         "nanos"
       ]
+    },
+    "LocalEvictionPolicy": {
+      "description": "Local/config eviction policy with CEL as string; converted to Policy by compiling the expression.",
+      "type": "object",
+      "properties": {
+        "unhealthyExpression": {
+          "description": "CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evictionDuration": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "healthThreshold": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "healthOnUnevict": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        }
+      },
+      "additionalProperties": false
     },
     "BedrockGuardrails": {
       "description": "Configuration for AWS Bedrock Guardrails integration.",
@@ -4122,6 +4168,18 @@
           ],
           "default": null
         },
+        "eviction": {
+          "description": "Evict this backend (outlier detection) on unhealthy responses; duration and CEL configurable.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalEvictionPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "mcpAuthorization": {
           "description": "Authorization policies for MCP access.",
           "anyOf": [
@@ -4495,6 +4553,18 @@
           "anyOf": [
             {
               "$ref": "#/$defs/TCP"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "eviction": {
+          "description": "Evict this backend (outlier detection) on unhealthy responses; duration and CEL configurable.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalEvictionPolicy"
             },
             {
               "type": "null"
