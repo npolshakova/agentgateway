@@ -269,8 +269,8 @@ pub fn parse_config(contents: String, filename: Option<PathBuf>) -> anyhow::Resu
 			.clone()
 			.map(|t| {
 				Ok::<_, anyhow::Error>(trc::DeprecatedConfig {
-					endpoint: otlp,
-					headers: otlp_headers,
+					endpoint: otlp.clone(),
+					headers: otlp_headers.clone(),
 					protocol: otlp_protocol,
 
 					fields: t

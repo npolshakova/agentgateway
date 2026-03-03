@@ -66,6 +66,7 @@ pub struct FrontendPolices {
 	pub tcp: Option<frontend::TCP>,
 	pub access_log: Option<frontend::LoggingPolicy>,
 	pub tracing: Option<Arc<crate::types::agent::TracingPolicy>>,
+	pub access_log_otlp: Option<Arc<crate::types::agent::AccessLogPolicy>>,
 }
 
 impl FrontendPolices {
@@ -82,6 +83,14 @@ impl FrontendPolices {
 			},
 			FrontendPolicy::AccessLog(p) => {
 				self.access_log.get_or_insert_with(|| p.clone());
+				if let Some(otlp_cfg) = &p.otlp {
+					self.access_log_otlp.get_or_insert_with(|| {
+						Arc::new(crate::types::agent::AccessLogPolicy {
+							config: otlp_cfg.clone(),
+							logger: once_cell::sync::OnceCell::new(),
+						})
+					});
+				}
 			},
 			FrontendPolicy::Tracing(p) => {
 				self.tracing.get_or_insert_with(|| p.clone());
@@ -93,6 +102,7 @@ impl FrontendPolices {
 			filter,
 			add: fields_add,
 			remove: _,
+			otlp: _,
 		}) = &self.access_log
 		else {
 			return;
@@ -682,7 +692,6 @@ impl Store {
 		pol
 	}
 
-	// All policies that need to be shutdown
 	pub fn all_shutdown_policies(&self) -> Vec<Arc<TracingPolicy>> {
 		self
 			.policies_by_key
@@ -692,6 +701,20 @@ impl Store {
 				FrontendPolicy::Tracing(t) => Some(t.clone()),
 				_ => None,
 			})
+			.collect_vec()
+	}
+	pub fn all_access_log_policies(&self) -> Vec<Arc<crate::types::agent::AccessLogPolicy>> {
+		self
+			.binds
+			.values()
+			.flat_map(|bind| {
+				bind
+					.listeners
+					.iter()
+					.map(|listener| self.listener_frontend_policies(&listener.name))
+			})
+			.filter_map(|fp| fp.access_log_otlp)
+			.unique_by(|p| Arc::as_ptr(p) as usize)
 			.collect_vec()
 	}
 	pub fn frontend_policies(&self, gateway: PolicyTargetRef) -> FrontendPolices {
@@ -746,6 +769,10 @@ impl Store {
 
 	pub fn all(&self) -> Vec<Arc<Bind>> {
 		self.binds.values().cloned().collect()
+	}
+
+	pub fn all_policies(&self) -> Vec<Arc<TargetedPolicy>> {
+		self.policies_by_key.values().cloned().collect()
 	}
 
 	pub fn backend(&self, r: &BackendKey) -> Option<Arc<BackendWithPolicies>> {
@@ -1295,6 +1322,7 @@ mod tests {
 			filter: None,
 			add: Arc::new(OrderedStringMap::default()),
 			remove: Arc::new(FzHashSet::new(vec![remove_item.into()])),
+			otlp: None,
 		})
 	}
 

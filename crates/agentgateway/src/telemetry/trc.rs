@@ -331,7 +331,7 @@ impl opentelemetry_sdk::trace::SpanExporter for PolicyGrpcSpanExporter {
 	}
 }
 
-fn to_otel(v: &ValueBag) -> opentelemetry::Value {
+pub(crate) fn to_otel(v: &ValueBag) -> opentelemetry::Value {
 	if let Some(b) = v.to_str() {
 		opentelemetry::Value::String(b.to_string().into())
 	} else if let Some(b) = v.to_i64() {
@@ -344,11 +344,11 @@ fn to_otel(v: &ValueBag) -> opentelemetry::Value {
 }
 
 #[derive(Clone, Debug)]
-struct PolicyOtelHttpClient {
-	policy_client: crate::proxy::httpproxy::PolicyClient,
-	backend_ref: SimpleBackendReference,
-	runtime: tokio::runtime::Handle,
-	policies: Vec<BackendPolicy>,
+pub(crate) struct PolicyOtelHttpClient {
+	pub(crate) policy_client: crate::proxy::httpproxy::PolicyClient,
+	pub(crate) backend_ref: SimpleBackendReference,
+	pub(crate) runtime: tokio::runtime::Handle,
+	pub(crate) policies: Vec<BackendPolicy>,
 }
 
 #[async_trait::async_trait]
@@ -388,12 +388,16 @@ impl opentelemetry_http::HttpClient for PolicyOtelHttpClient {
 }
 
 #[derive(Clone, Debug)]
-struct GlobalResourceDefaults {
-	service_name: Option<String>,
-	attrs: Vec<KeyValue>,
+pub(crate) struct GlobalResourceDefaults {
+	pub(crate) service_name: Option<String>,
+	pub(crate) attrs: Vec<KeyValue>,
 }
 
 static GLOBAL_RESOURCE_DEFAULTS: OnceCell<GlobalResourceDefaults> = OnceCell::new();
+
+pub(crate) fn global_resource_defaults() -> Option<&'static GlobalResourceDefaults> {
+	GLOBAL_RESOURCE_DEFAULTS.get()
+}
 
 /// Build a tonic ResourceSpans payload from SDK SpanData.
 /// Unblock exports for our custom exporter until https://github.com/open-telemetry/opentelemetry-rust/issues/3147 is addressed.

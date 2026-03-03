@@ -16,6 +16,7 @@ pub async fn run(config: Arc<Config>) -> anyhow::Result<Bound> {
 
 	// Initialize OpenTelemetry resource defaults from gateway + proxy metadata
 	trc::set_resource_defaults_from_config(config.as_ref());
+
 	let shutdown = signal::Shutdown::new();
 	// Setup a drain channel. drain_tx is used to trigger a drain, which will complete
 	// once all drain_rx handlers are dropped.
@@ -79,13 +80,14 @@ pub async fn run(config: Arc<Config>) -> anyhow::Result<Bound> {
 	let state_mgr =
 		state_manager::StateManager::new(config.clone(), control_client.clone(), xds_metrics, xds_tx)
 			.await?;
+	let stores = state_mgr.stores();
+
 	let mut xds_rx_for_task = xds_rx.clone();
 	tokio::spawn(async move {
 		// When we get the initial XDS state, unblock readiness
 		let _ = xds_rx_for_task.changed().await;
 		std::mem::drop(state_mgr_task);
 	});
-	let stores = state_mgr.stores();
 	// Run the XDS state manager in the current tokio worker pool.
 	tokio::spawn(state_mgr.run());
 
@@ -172,6 +174,16 @@ impl Bound {
 		for p in sdp {
 			if let Some(t) = p.tracer.get() {
 				t.shutdown()
+			}
+		}
+
+		let access_log_policies = {
+			let b = self.stores.binds.read();
+			b.all_access_log_policies()
+		};
+		for p in access_log_policies {
+			if let Some(logger) = p.logger.get() {
+				logger.shutdown()
 			}
 		}
 
