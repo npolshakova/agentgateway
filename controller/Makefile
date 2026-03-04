@@ -579,7 +579,7 @@ setup-base: kind-create gw-api-crds gie-crds metallb ## Setup the base infrastru
 # Creates a functional kind cluster, builds and loads all images, and packages charts
 # Does NOT deploy anything to the cluster
 .PHONY: setup
-setup: setup-base kind-build-and-load package-agentgateway-charts  ## Setup the complete infrastructure (base setup plus images and charts)
+setup: setup-base kind-build-and-load package-agentgateway-charts  ## Setup base infra, build/load images, and package charts (without deployment)
 
 .PHONY: run
 run: setup deploy-agentgateway ## Set up complete development environment

@@ -53,6 +53,10 @@ func (s *testingSuite) TestAgentgatewayTCPRoute() {
 	)
 
 	gateway := common.Gateway{
+		NamespacedName: types.NamespacedName{
+			Name:      sharedGatewayObjectMeta.Name,
+			Namespace: sharedGatewayObjectMeta.Namespace,
+		},
 		Address: common.ResolveGatewayAddress(
 			s.Ctx,
 			s.TestInstallation,
@@ -67,7 +71,7 @@ func (s *testingSuite) TestAgentgatewayTCPRoute() {
 		&matchers.HttpResponse{
 			StatusCode: http.StatusOK,
 		},
-		curl.WithPort(9090),
+		curl.WithPort(gateway.PortForRemote(9090)),
 	)
 }
 
@@ -95,6 +99,10 @@ func (s *testingSuite) TestAgentgatewayHTTPRoute() {
 	)
 
 	gateway := common.Gateway{
+		NamespacedName: types.NamespacedName{
+			Name:      sharedGatewayObjectMeta.Name,
+			Namespace: sharedGatewayObjectMeta.Namespace,
+		},
 		Address: common.ResolveGatewayAddress(
 			s.Ctx,
 			s.TestInstallation,

@@ -212,7 +212,7 @@ function step_push_go_controller_to_local_registry() {
 
 function step_build_proxy_binary() {
    if [[ "$(uname -s)" == "Darwin" ]]; then
-      make -C "${REPO_ROOT}" docker IMAGE_TAG="${TAG}"
+      make -C "${REPO_ROOT}" docker-ci IMAGE_TAG="${TAG}"
    else
       (cd "${REPO_ROOT}" && TIMINGS=true DRY_RUN=true ./tools/proxy-dev-build ci)
    fi
@@ -265,6 +265,12 @@ function step_warm_test() {
 
 function await() {
   for pid in "$@"; do
+    if [[ "$(uname -s)" != "Darwin" ]]; then
+      # GNU tail can block on an arbitrary pid without polling.
+      tail --pid="$pid" -f /dev/null
+      continue
+    fi
+
     while true; do
       if ! state="$(ps -o stat= -p "$pid" 2>/dev/null)"; then
         break

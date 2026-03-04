@@ -33,6 +33,7 @@ func SetupBaseConfig(ctx context.Context, t *testing.T, installation *e2e.TestIn
 
 func SetupBaseGateway(ctx context.Context, installation *e2e.TestInstallation, name types.NamespacedName) {
 	baseInstallation = installation
+	baseContext = ctx
 	BaseGateway = Gateway{
 		NamespacedName: name,
 		Address:        ResolveGatewayAddress(ctx, installation, name),
@@ -42,7 +43,9 @@ func SetupBaseGateway(ctx context.Context, installation *e2e.TestInstallation, n
 var (
 	gatewayAddressMu sync.Mutex
 	gatewayAddresses = map[types.NamespacedName]string{}
+	gatewayPorts     = map[types.NamespacedName]map[int]int{}
 	baseInstallation *e2e.TestInstallation
+	baseContext      context.Context
 )
 
 // ResolveGatewayAddress returns a reachable gateway address for e2e traffic.
@@ -58,7 +61,7 @@ func ResolveGatewayAddress(ctx context.Context, installation *e2e.TestInstallati
 		return addr
 	}
 
-	addr, err := setupGatewayPortForwards(ctx, installation, name)
+	addr, portMap, err := setupGatewayPortForwards(ctx, installation, name)
 	if err != nil {
 		log.Printf(
 			"WARN: USE_PORTFORWARD is set but port-forward setup failed for Gateway %s/%s: %v; falling back to LoadBalancer address",
@@ -70,7 +73,47 @@ func ResolveGatewayAddress(ctx context.Context, installation *e2e.TestInstallati
 		return installation.Assertions.EventuallyGatewayAddress(ctx, name.Name, name.Namespace)
 	}
 	gatewayAddresses[name] = addr
+	gatewayPorts[name] = portMap
 	return addr
+}
+
+// ResolveGatewayPort resolves the local forwarded port for a remote gateway service port.
+// If USE_PORTFORWARD is not set, it returns remotePort unchanged.
+func ResolveGatewayPort(ctx context.Context, installation *e2e.TestInstallation, name types.NamespacedName, remotePort int) int {
+	if !shouldUsePortForward() {
+		return remotePort
+	}
+
+	gatewayAddressMu.Lock()
+	defer gatewayAddressMu.Unlock()
+
+	if ports, ok := gatewayPorts[name]; ok {
+		if localPort, ok := ports[remotePort]; ok {
+			return localPort
+		}
+	}
+	// Ensure cached port-forwards are initialized for this gateway.
+	if _, ok := gatewayAddresses[name]; !ok {
+		addr, portMap, err := setupGatewayPortForwards(ctx, installation, name)
+		if err != nil {
+			log.Printf(
+				"WARN: USE_PORTFORWARD is set but port-forward setup failed for Gateway %s/%s: %v; using remote port %d",
+				name.Namespace,
+				name.Name,
+				err,
+				remotePort,
+			)
+			return remotePort
+		}
+		gatewayAddresses[name] = addr
+		gatewayPorts[name] = portMap
+	}
+	if ports, ok := gatewayPorts[name]; ok {
+		if localPort, ok := ports[remotePort]; ok {
+			return localPort
+		}
+	}
+	return remotePort
 }
 
 func shouldUsePortForward() bool {
@@ -78,27 +121,23 @@ func shouldUsePortForward() bool {
 	return set
 }
 
-func setupGatewayPortForwards(ctx context.Context, installation *e2e.TestInstallation, name types.NamespacedName) (string, error) {
+func setupGatewayPortForwards(ctx context.Context, installation *e2e.TestInstallation, name types.NamespacedName) (string, map[int]int, error) {
 	svc := &corev1.Service{}
 	if err := installation.ClusterContext.Client.Get(ctx, name, svc); err != nil {
-		return "", fmt.Errorf("failed to get gateway service %s/%s: %w", name.Namespace, name.Name, err)
+		return "", nil, fmt.Errorf("failed to get gateway service %s/%s: %w", name.Namespace, name.Name, err)
 	}
 	if len(svc.Spec.Ports) == 0 {
-		return "", fmt.Errorf("gateway service %s/%s has no ports", name.Namespace, name.Name)
+		return "", nil, fmt.Errorf("gateway service %s/%s has no ports", name.Namespace, name.Name)
 	}
 
 	forwarders := make([]portforward.PortForwarder, 0, len(svc.Spec.Ports))
+	portMap := make(map[int]int, len(svc.Spec.Ports))
 	defaultAddress := ""
 	for _, port := range svc.Spec.Ports {
 		remotePort := int(port.Port)
 		options := []portforward.Option{
 			portforward.WithService(name.Name, name.Namespace),
-		}
-		// Privileged ports like 80 cannot be bound locally without elevation.
-		if remotePort < 1024 {
-			options = append(options, portforward.WithRemotePort(remotePort))
-		} else {
-			options = append(options, portforward.WithPorts(remotePort, remotePort))
+			portforward.WithRemotePort(remotePort),
 		}
 
 		forwarder, err := installation.Actions.Kubectl().StartPortForward(ctx, options...)
@@ -106,9 +145,24 @@ func setupGatewayPortForwards(ctx context.Context, installation *e2e.TestInstall
 			for _, started := range forwarders {
 				started.Close()
 			}
-			return "", fmt.Errorf("failed to port-forward service %s/%s on port %d: %w", name.Namespace, name.Name, remotePort, err)
+			return "", nil, fmt.Errorf("failed to port-forward service %s/%s on port %d: %w", name.Namespace, name.Name, remotePort, err)
+		}
+		_, localPort, err := net.SplitHostPort(forwarder.Address())
+		if err != nil {
+			for _, started := range forwarders {
+				started.Close()
+			}
+			return "", nil, fmt.Errorf("failed to parse local port-forward address %q for service %s/%s port %d: %w", forwarder.Address(), name.Namespace, name.Name, remotePort, err)
+		}
+		parsedLocalPort, err := strconv.Atoi(localPort)
+		if err != nil {
+			for _, started := range forwarders {
+				started.Close()
+			}
+			return "", nil, fmt.Errorf("failed to parse local port-forward port %q for service %s/%s port %d: %w", localPort, name.Namespace, name.Name, remotePort, err)
 		}
 		forwarders = append(forwarders, forwarder)
+		portMap[remotePort] = parsedLocalPort
 
 		if defaultAddress == "" || port.Port == 80 || strings.EqualFold(port.Name, "http") {
 			defaultAddress = forwarder.Address()
@@ -122,7 +176,7 @@ func setupGatewayPortForwards(ctx context.Context, installation *e2e.TestInstall
 		}
 	}()
 
-	return defaultAddress, nil
+	return defaultAddress, portMap, nil
 }
 
 type Gateway struct {
@@ -165,9 +219,23 @@ func (g *Gateway) SendWithResponse(t *testing.T, match *matchers.HttpResponse, o
 func (g *Gateway) ResolvedAddress() string {
 	address := g.Address
 	if shouldUsePortForward() && g.NamespacedName.Name != "" && !addressHasPort(address) && baseInstallation != nil {
-		return ResolveGatewayAddress(context.Background(), baseInstallation, g.NamespacedName)
+		return ResolveGatewayAddress(resolveBaseGatewayContext(), baseInstallation, g.NamespacedName)
 	}
 	return address
+}
+
+func (g *Gateway) PortForRemote(remotePort int) int {
+	if shouldUsePortForward() && g.NamespacedName.Name != "" && baseInstallation != nil {
+		return ResolveGatewayPort(resolveBaseGatewayContext(), baseInstallation, g.NamespacedName, remotePort)
+	}
+	return remotePort
+}
+
+func resolveBaseGatewayContext() context.Context {
+	if baseContext != nil {
+		return baseContext
+	}
+	return context.Background()
 }
 
 func GatewayAddressOptions(address string) []curl.Option {
