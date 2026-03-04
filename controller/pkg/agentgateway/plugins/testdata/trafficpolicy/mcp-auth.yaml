@@ -52,7 +52,7 @@ metadata:
   labels:
     app.kubernetes.io/component: jwks-store
   name: jwks-store-1ede70d6c818eff6121a0625c628681a
-  namespace: kgateway-system
+  namespace: agentgateway-system
 ---
 # Output
 output:

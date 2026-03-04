@@ -62,7 +62,7 @@ type AgwCollections struct {
 
 	// ControllerName is the name of the Gateway controller.
 	ControllerName string
-	// SystemNamespace is control plane system namespace (default is kgateway-system)
+	// SystemNamespace is control plane system namespace (default is agentgateway-system)
 	SystemNamespace string
 	// IstioNamespace is the Istio control plane namespace (default is istio-system)
 	IstioNamespace string
