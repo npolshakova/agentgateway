@@ -24,11 +24,19 @@ if [[ "${DRY_RUN}" == "" ]]; then
 fi
 tag="$(get-tag)"
 dest="localhost:5000/agentgateway:${tag}"
-crane mutate --platform linux/amd64 $(
-  crane append --platform linux/amd64 \
-    -f <(tar -f - -c ./target/${platform:+$platform/}${tgt}/agentgateway --transform "s|./target/${platform:+$platform/}${tgt}/|/usr/bin/|") \
-    -t ${dest} \
-    -b istio/base
-) --entrypoint /usr/bin/agentgateway -t ${dest} 1>&2
+
+if [[ "$(uname -s)" != "Linux" ]]; then
+  # On non-Linux (e.g., Mac), use docker build to produce a linux/amd64 image
+  # instead of crane append which would bundle the native (ARM64) binary.
+  docker build --platform linux/amd64 --build-arg PROFILE="${profile}" -t "${dest}" .
+  docker push "${dest}"
+else
+  crane mutate --platform linux/amd64 $(
+    crane append --platform linux/amd64 \
+      -f <(tar -f - -c -s "|./target/${platform:+$platform/}${tgt}/|/usr/bin/|" ./target/${platform:+$platform/}${tgt}/agentgateway) \
+      -t ${dest} \
+      -b istio/base
+  ) --entrypoint /usr/bin/agentgateway -t ${dest} 1>&2
+fi
 echo ${tag}
 echo ${dest} 1>&2
