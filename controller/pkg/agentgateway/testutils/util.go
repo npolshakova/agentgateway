@@ -223,7 +223,7 @@ func BuildMockCollection(t test.Failer, inputs []any) *plugins.AgwCollections {
 		Backends:             krttest.GetMockCollection[*agwv1alpha1.AgentgatewayBackend](mock),
 		AgentgatewayPolicies: krttest.GetMockCollection[*agwv1alpha1.AgentgatewayPolicy](mock),
 		ControllerName:       wellknown.DefaultAgwControllerName,
-		SystemNamespace:      "kgateway-system",
+		SystemNamespace:      "agentgateway-system",
 		IstioNamespace:       "istio-system",
 		ClusterID:            "Kubernetes",
 	}

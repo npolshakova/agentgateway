@@ -15,6 +15,7 @@ Name|Version|License
 [grpc-ecosystem/go-grpc-middleware](https://github.com/grpc-ecosystem/go-grpc-middleware)|v1.4.0|Apache License 2.0
 [kagent-dev/mockllm](https://github.com/kagent-dev/mockllm)|v0.0.3|Apache License 2.0
 [kelseyhightower/envconfig](https://github.com/kelseyhightower/envconfig)|v1.4.0|MIT License
+[modelcontextprotocol/go-sdk](https://github.com/modelcontextprotocol/go-sdk)|v1.4.0|Apache License 2.0
 [ginkgo/v2](https://github.com/onsi/ginkgo)|v2.28.1|MIT License
 [onsi/gomega](https://github.com/onsi/gomega)|v1.39.1|MIT License
 [openai-go/v3](https://github.com/openai/openai-go)|v3.21.0|Apache License 2.0
@@ -30,6 +31,7 @@ Name|Version|License
 [x/sync](https://golang.org/x/sync)|v0.19.0|BSD 3-clause "New" or "Revised" License
 [x/time](https://golang.org/x/time)|v0.14.0|BSD 3-clause "New" or "Revised" License
 [x/tools](https://golang.org/x/tools)|v0.41.0|BSD 3-clause "New" or "Revised" License
+[googleapis/rpc](https://google.golang.org/genproto/googleapis/rpc)|v0.0.0-20260128011058-8636f8732409|Apache License 2.0
 [google.golang.org/grpc](https://google.golang.org/grpc)|v1.79.0|Apache License 2.0
 [google.golang.org/protobuf](https://google.golang.org/protobuf)|v1.36.11|BSD 3-clause "New" or "Revised" License
 [helm/v3](https://helm.sh/helm/v3)|v3.20.0|Apache License 2.0
