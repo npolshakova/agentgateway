@@ -564,9 +564,11 @@ else
 	kubectl apply --kustomize "https://github.com/kubernetes-sigs/gateway-api-inference-extension/config/crd?ref=$(GIE_CRD_VERSION)"
 endif
 
-.PHONY: kind-metallb
+.PHONY: metallb
 metallb: ## Install the MetalLB load balancer
-	./hack/kind/setup-metalllb-on-kind.sh
+	kubectl apply -f ./test/setup/metallb.yaml
+	kubectl rollout status -n metallb-system deployment/controller --timeout=120s
+	kubectl rollout status -n metallb-system daemonset/speaker --timeout=120s
 
 .PHONY: deploy-agentgateway
 deploy-agentgateway: package-agentgateway-charts deploy-agentgateway-crd-chart deploy-agentgateway-chart ## Deploy the agentgateway chart and CRDs
@@ -577,7 +579,7 @@ setup-base: kind-create gw-api-crds gie-crds metallb ## Setup the base infrastru
 # Creates a functional kind cluster, builds and loads all images, and packages charts
 # Does NOT deploy anything to the cluster
 .PHONY: setup
-setup: setup-base kind-build-and-load package-agentgateway-charts  ## Setup the complete infrastructure (base setup plus images and charts)
+setup: setup-base kind-build-and-load package-agentgateway-charts  ## Setup base infra, build/load images, and package charts (without deployment)
 
 .PHONY: run
 run: setup deploy-agentgateway ## Set up complete development environment
