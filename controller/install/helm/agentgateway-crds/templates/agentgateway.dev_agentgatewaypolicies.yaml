@@ -696,6 +696,20 @@ spec:
                                                   maxLength: 16384
                                                   minLength: 1
                                                   type: string
+                                                metadata:
+                                                  additionalProperties:
+                                                    description: CELExpression represents
+                                                      a Common Expression Language
+                                                      (CEL) expression.
+                                                    maxLength: 16384
+                                                    minLength: 1
+                                                    type: string
+                                                  description: |-
+                                                    metadata stores CEL-evaluated values under the `metadata` CEL variable for subsequent policy evaluations.
+                                                    metadata is evaluated before header or body transformations.
+                                                  maxProperties: 16
+                                                  minProperties: 1
+                                                  type: object
                                                 remove:
                                                   description: Remove is a list of
                                                     header names to remove from the
@@ -761,9 +775,9 @@ spec:
                                               type: object
                                               x-kubernetes-validations:
                                               - message: at least one of the fields
-                                                  in [add body remove set] must be
-                                                  set
-                                                rule: '[has(self.add),has(self.body),has(self.remove),has(self.set)].filter(x,x==true).size()
+                                                  in [add body metadata remove set]
+                                                  must be set
+                                                rule: '[has(self.add),has(self.body),has(self.metadata),has(self.remove),has(self.set)].filter(x,x==true).size()
                                                   >= 1'
                                             response:
                                               description: response is used to modify
@@ -815,6 +829,20 @@ spec:
                                                   maxLength: 16384
                                                   minLength: 1
                                                   type: string
+                                                metadata:
+                                                  additionalProperties:
+                                                    description: CELExpression represents
+                                                      a Common Expression Language
+                                                      (CEL) expression.
+                                                    maxLength: 16384
+                                                    minLength: 1
+                                                    type: string
+                                                  description: |-
+                                                    metadata stores CEL-evaluated values under the `metadata` CEL variable for subsequent policy evaluations.
+                                                    metadata is evaluated before header or body transformations.
+                                                  maxProperties: 16
+                                                  minProperties: 1
+                                                  type: object
                                                 remove:
                                                   description: Remove is a list of
                                                     header names to remove from the
@@ -880,9 +908,9 @@ spec:
                                               type: object
                                               x-kubernetes-validations:
                                               - message: at least one of the fields
-                                                  in [add body remove set] must be
-                                                  set
-                                                rule: '[has(self.add),has(self.body),has(self.remove),has(self.set)].filter(x,x==true).size()
+                                                  in [add body metadata remove set]
+                                                  must be set
+                                                rule: '[has(self.add),has(self.body),has(self.metadata),has(self.remove),has(self.set)].filter(x,x==true).size()
                                                   >= 1'
                                           type: object
                                           x-kubernetes-validations:
@@ -1304,6 +1332,20 @@ spec:
                                                   maxLength: 16384
                                                   minLength: 1
                                                   type: string
+                                                metadata:
+                                                  additionalProperties:
+                                                    description: CELExpression represents
+                                                      a Common Expression Language
+                                                      (CEL) expression.
+                                                    maxLength: 16384
+                                                    minLength: 1
+                                                    type: string
+                                                  description: |-
+                                                    metadata stores CEL-evaluated values under the `metadata` CEL variable for subsequent policy evaluations.
+                                                    metadata is evaluated before header or body transformations.
+                                                  maxProperties: 16
+                                                  minProperties: 1
+                                                  type: object
                                                 remove:
                                                   description: Remove is a list of
                                                     header names to remove from the
@@ -1369,9 +1411,9 @@ spec:
                                               type: object
                                               x-kubernetes-validations:
                                               - message: at least one of the fields
-                                                  in [add body remove set] must be
-                                                  set
-                                                rule: '[has(self.add),has(self.body),has(self.remove),has(self.set)].filter(x,x==true).size()
+                                                  in [add body metadata remove set]
+                                                  must be set
+                                                rule: '[has(self.add),has(self.body),has(self.metadata),has(self.remove),has(self.set)].filter(x,x==true).size()
                                                   >= 1'
                                             response:
                                               description: response is used to modify
@@ -1423,6 +1465,20 @@ spec:
                                                   maxLength: 16384
                                                   minLength: 1
                                                   type: string
+                                                metadata:
+                                                  additionalProperties:
+                                                    description: CELExpression represents
+                                                      a Common Expression Language
+                                                      (CEL) expression.
+                                                    maxLength: 16384
+                                                    minLength: 1
+                                                    type: string
+                                                  description: |-
+                                                    metadata stores CEL-evaluated values under the `metadata` CEL variable for subsequent policy evaluations.
+                                                    metadata is evaluated before header or body transformations.
+                                                  maxProperties: 16
+                                                  minProperties: 1
+                                                  type: object
                                                 remove:
                                                   description: Remove is a list of
                                                     header names to remove from the
@@ -1488,9 +1544,9 @@ spec:
                                               type: object
                                               x-kubernetes-validations:
                                               - message: at least one of the fields
-                                                  in [add body remove set] must be
-                                                  set
-                                                rule: '[has(self.add),has(self.body),has(self.remove),has(self.set)].filter(x,x==true).size()
+                                                  in [add body metadata remove set]
+                                                  must be set
+                                                rule: '[has(self.add),has(self.body),has(self.metadata),has(self.remove),has(self.set)].filter(x,x==true).size()
                                                   >= 1'
                                           type: object
                                           x-kubernetes-validations:
@@ -1908,6 +1964,20 @@ spec:
                                                   maxLength: 16384
                                                   minLength: 1
                                                   type: string
+                                                metadata:
+                                                  additionalProperties:
+                                                    description: CELExpression represents
+                                                      a Common Expression Language
+                                                      (CEL) expression.
+                                                    maxLength: 16384
+                                                    minLength: 1
+                                                    type: string
+                                                  description: |-
+                                                    metadata stores CEL-evaluated values under the `metadata` CEL variable for subsequent policy evaluations.
+                                                    metadata is evaluated before header or body transformations.
+                                                  maxProperties: 16
+                                                  minProperties: 1
+                                                  type: object
                                                 remove:
                                                   description: Remove is a list of
                                                     header names to remove from the
@@ -1973,9 +2043,9 @@ spec:
                                               type: object
                                               x-kubernetes-validations:
                                               - message: at least one of the fields
-                                                  in [add body remove set] must be
-                                                  set
-                                                rule: '[has(self.add),has(self.body),has(self.remove),has(self.set)].filter(x,x==true).size()
+                                                  in [add body metadata remove set]
+                                                  must be set
+                                                rule: '[has(self.add),has(self.body),has(self.metadata),has(self.remove),has(self.set)].filter(x,x==true).size()
                                                   >= 1'
                                             response:
                                               description: response is used to modify
@@ -2027,6 +2097,20 @@ spec:
                                                   maxLength: 16384
                                                   minLength: 1
                                                   type: string
+                                                metadata:
+                                                  additionalProperties:
+                                                    description: CELExpression represents
+                                                      a Common Expression Language
+                                                      (CEL) expression.
+                                                    maxLength: 16384
+                                                    minLength: 1
+                                                    type: string
+                                                  description: |-
+                                                    metadata stores CEL-evaluated values under the `metadata` CEL variable for subsequent policy evaluations.
+                                                    metadata is evaluated before header or body transformations.
+                                                  maxProperties: 16
+                                                  minProperties: 1
+                                                  type: object
                                                 remove:
                                                   description: Remove is a list of
                                                     header names to remove from the
@@ -2092,9 +2176,9 @@ spec:
                                               type: object
                                               x-kubernetes-validations:
                                               - message: at least one of the fields
-                                                  in [add body remove set] must be
-                                                  set
-                                                rule: '[has(self.add),has(self.body),has(self.remove),has(self.set)].filter(x,x==true).size()
+                                                  in [add body metadata remove set]
+                                                  must be set
+                                                rule: '[has(self.add),has(self.body),has(self.metadata),has(self.remove),has(self.set)].filter(x,x==true).size()
                                                   >= 1'
                                           type: object
                                           x-kubernetes-validations:
@@ -2729,6 +2813,20 @@ spec:
                                                   maxLength: 16384
                                                   minLength: 1
                                                   type: string
+                                                metadata:
+                                                  additionalProperties:
+                                                    description: CELExpression represents
+                                                      a Common Expression Language
+                                                      (CEL) expression.
+                                                    maxLength: 16384
+                                                    minLength: 1
+                                                    type: string
+                                                  description: |-
+                                                    metadata stores CEL-evaluated values under the `metadata` CEL variable for subsequent policy evaluations.
+                                                    metadata is evaluated before header or body transformations.
+                                                  maxProperties: 16
+                                                  minProperties: 1
+                                                  type: object
                                                 remove:
                                                   description: Remove is a list of
                                                     header names to remove from the
@@ -2794,9 +2892,9 @@ spec:
                                               type: object
                                               x-kubernetes-validations:
                                               - message: at least one of the fields
-                                                  in [add body remove set] must be
-                                                  set
-                                                rule: '[has(self.add),has(self.body),has(self.remove),has(self.set)].filter(x,x==true).size()
+                                                  in [add body metadata remove set]
+                                                  must be set
+                                                rule: '[has(self.add),has(self.body),has(self.metadata),has(self.remove),has(self.set)].filter(x,x==true).size()
                                                   >= 1'
                                             response:
                                               description: response is used to modify
@@ -2848,6 +2946,20 @@ spec:
                                                   maxLength: 16384
                                                   minLength: 1
                                                   type: string
+                                                metadata:
+                                                  additionalProperties:
+                                                    description: CELExpression represents
+                                                      a Common Expression Language
+                                                      (CEL) expression.
+                                                    maxLength: 16384
+                                                    minLength: 1
+                                                    type: string
+                                                  description: |-
+                                                    metadata stores CEL-evaluated values under the `metadata` CEL variable for subsequent policy evaluations.
+                                                    metadata is evaluated before header or body transformations.
+                                                  maxProperties: 16
+                                                  minProperties: 1
+                                                  type: object
                                                 remove:
                                                   description: Remove is a list of
                                                     header names to remove from the
@@ -2913,9 +3025,9 @@ spec:
                                               type: object
                                               x-kubernetes-validations:
                                               - message: at least one of the fields
-                                                  in [add body remove set] must be
-                                                  set
-                                                rule: '[has(self.add),has(self.body),has(self.remove),has(self.set)].filter(x,x==true).size()
+                                                  in [add body metadata remove set]
+                                                  must be set
+                                                rule: '[has(self.add),has(self.body),has(self.metadata),has(self.remove),has(self.set)].filter(x,x==true).size()
                                                   >= 1'
                                           type: object
                                           x-kubernetes-validations:
@@ -3337,6 +3449,20 @@ spec:
                                                   maxLength: 16384
                                                   minLength: 1
                                                   type: string
+                                                metadata:
+                                                  additionalProperties:
+                                                    description: CELExpression represents
+                                                      a Common Expression Language
+                                                      (CEL) expression.
+                                                    maxLength: 16384
+                                                    minLength: 1
+                                                    type: string
+                                                  description: |-
+                                                    metadata stores CEL-evaluated values under the `metadata` CEL variable for subsequent policy evaluations.
+                                                    metadata is evaluated before header or body transformations.
+                                                  maxProperties: 16
+                                                  minProperties: 1
+                                                  type: object
                                                 remove:
                                                   description: Remove is a list of
                                                     header names to remove from the
@@ -3402,9 +3528,9 @@ spec:
                                               type: object
                                               x-kubernetes-validations:
                                               - message: at least one of the fields
-                                                  in [add body remove set] must be
-                                                  set
-                                                rule: '[has(self.add),has(self.body),has(self.remove),has(self.set)].filter(x,x==true).size()
+                                                  in [add body metadata remove set]
+                                                  must be set
+                                                rule: '[has(self.add),has(self.body),has(self.metadata),has(self.remove),has(self.set)].filter(x,x==true).size()
                                                   >= 1'
                                             response:
                                               description: response is used to modify
@@ -3456,6 +3582,20 @@ spec:
                                                   maxLength: 16384
                                                   minLength: 1
                                                   type: string
+                                                metadata:
+                                                  additionalProperties:
+                                                    description: CELExpression represents
+                                                      a Common Expression Language
+                                                      (CEL) expression.
+                                                    maxLength: 16384
+                                                    minLength: 1
+                                                    type: string
+                                                  description: |-
+                                                    metadata stores CEL-evaluated values under the `metadata` CEL variable for subsequent policy evaluations.
+                                                    metadata is evaluated before header or body transformations.
+                                                  maxProperties: 16
+                                                  minProperties: 1
+                                                  type: object
                                                 remove:
                                                   description: Remove is a list of
                                                     header names to remove from the
@@ -3521,9 +3661,9 @@ spec:
                                               type: object
                                               x-kubernetes-validations:
                                               - message: at least one of the fields
-                                                  in [add body remove set] must be
-                                                  set
-                                                rule: '[has(self.add),has(self.body),has(self.remove),has(self.set)].filter(x,x==true).size()
+                                                  in [add body metadata remove set]
+                                                  must be set
+                                                rule: '[has(self.add),has(self.body),has(self.metadata),has(self.remove),has(self.set)].filter(x,x==true).size()
                                                   >= 1'
                                           type: object
                                           x-kubernetes-validations:
@@ -4382,6 +4522,19 @@ spec:
                             maxLength: 16384
                             minLength: 1
                             type: string
+                          metadata:
+                            additionalProperties:
+                              description: CELExpression represents a Common Expression
+                                Language (CEL) expression.
+                              maxLength: 16384
+                              minLength: 1
+                              type: string
+                            description: |-
+                              metadata stores CEL-evaluated values under the `metadata` CEL variable for subsequent policy evaluations.
+                              metadata is evaluated before header or body transformations.
+                            maxProperties: 16
+                            minProperties: 1
+                            type: object
                           remove:
                             description: Remove is a list of header names to remove
                               from the request/response.
@@ -4434,9 +4587,9 @@ spec:
                             x-kubernetes-list-type: map
                         type: object
                         x-kubernetes-validations:
-                        - message: at least one of the fields in [add body remove
-                            set] must be set
-                          rule: '[has(self.add),has(self.body),has(self.remove),has(self.set)].filter(x,x==true).size()
+                        - message: at least one of the fields in [add body metadata
+                            remove set] must be set
+                          rule: '[has(self.add),has(self.body),has(self.metadata),has(self.remove),has(self.set)].filter(x,x==true).size()
                             >= 1'
                       response:
                         description: response is used to modify the response path.
@@ -4479,6 +4632,19 @@ spec:
                             maxLength: 16384
                             minLength: 1
                             type: string
+                          metadata:
+                            additionalProperties:
+                              description: CELExpression represents a Common Expression
+                                Language (CEL) expression.
+                              maxLength: 16384
+                              minLength: 1
+                              type: string
+                            description: |-
+                              metadata stores CEL-evaluated values under the `metadata` CEL variable for subsequent policy evaluations.
+                              metadata is evaluated before header or body transformations.
+                            maxProperties: 16
+                            minProperties: 1
+                            type: object
                           remove:
                             description: Remove is a list of header names to remove
                               from the request/response.
@@ -4531,9 +4697,9 @@ spec:
                             x-kubernetes-list-type: map
                         type: object
                         x-kubernetes-validations:
-                        - message: at least one of the fields in [add body remove
-                            set] must be set
-                          rule: '[has(self.add),has(self.body),has(self.remove),has(self.set)].filter(x,x==true).size()
+                        - message: at least one of the fields in [add body metadata
+                            remove set] must be set
+                          rule: '[has(self.add),has(self.body),has(self.metadata),has(self.remove),has(self.set)].filter(x,x==true).size()
                             >= 1'
                     type: object
                     x-kubernetes-validations:
@@ -6746,6 +6912,19 @@ spec:
                             maxLength: 16384
                             minLength: 1
                             type: string
+                          metadata:
+                            additionalProperties:
+                              description: CELExpression represents a Common Expression
+                                Language (CEL) expression.
+                              maxLength: 16384
+                              minLength: 1
+                              type: string
+                            description: |-
+                              metadata stores CEL-evaluated values under the `metadata` CEL variable for subsequent policy evaluations.
+                              metadata is evaluated before header or body transformations.
+                            maxProperties: 16
+                            minProperties: 1
+                            type: object
                           remove:
                             description: Remove is a list of header names to remove
                               from the request/response.
@@ -6798,9 +6977,9 @@ spec:
                             x-kubernetes-list-type: map
                         type: object
                         x-kubernetes-validations:
-                        - message: at least one of the fields in [add body remove
-                            set] must be set
-                          rule: '[has(self.add),has(self.body),has(self.remove),has(self.set)].filter(x,x==true).size()
+                        - message: at least one of the fields in [add body metadata
+                            remove set] must be set
+                          rule: '[has(self.add),has(self.body),has(self.metadata),has(self.remove),has(self.set)].filter(x,x==true).size()
                             >= 1'
                       response:
                         description: response is used to modify the response path.
@@ -6843,6 +7022,19 @@ spec:
                             maxLength: 16384
                             minLength: 1
                             type: string
+                          metadata:
+                            additionalProperties:
+                              description: CELExpression represents a Common Expression
+                                Language (CEL) expression.
+                              maxLength: 16384
+                              minLength: 1
+                              type: string
+                            description: |-
+                              metadata stores CEL-evaluated values under the `metadata` CEL variable for subsequent policy evaluations.
+                              metadata is evaluated before header or body transformations.
+                            maxProperties: 16
+                            minProperties: 1
+                            type: object
                           remove:
                             description: Remove is a list of header names to remove
                               from the request/response.
@@ -6895,9 +7087,9 @@ spec:
                             x-kubernetes-list-type: map
                         type: object
                         x-kubernetes-validations:
-                        - message: at least one of the fields in [add body remove
-                            set] must be set
-                          rule: '[has(self.add),has(self.body),has(self.remove),has(self.set)].filter(x,x==true).size()
+                        - message: at least one of the fields in [add body metadata
+                            remove set] must be set
+                          rule: '[has(self.add),has(self.body),has(self.metadata),has(self.remove),has(self.set)].filter(x,x==true).size()
                             >= 1'
                     type: object
                     x-kubernetes-validations:

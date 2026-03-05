@@ -1062,6 +1062,14 @@ type Transform struct {
 	// body controls manipulation of the HTTP body.
 	// +optional
 	Body *shared.CELExpression `json:"body,omitempty"`
+
+	// metadata stores CEL-evaluated values under the `metadata` CEL variable for subsequent policy evaluations.
+	// metadata is evaluated before header or body transformations.
+	//
+	// +kubebuilder:validation:MinProperties=1
+	// +kubebuilder:validation:MaxProperties=16
+	// +optional
+	Metadata map[string]shared.CELExpression `json:"metadata,omitempty"`
 }
 
 // An HTTP Header Name.
