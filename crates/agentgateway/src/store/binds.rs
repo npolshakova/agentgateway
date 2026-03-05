@@ -12,7 +12,7 @@ use crate::http::auth::BackendAuth;
 use crate::http::authorization::HTTPAuthorizationSet;
 use crate::http::backendtls::BackendTLS;
 use crate::http::ext_proc::InferenceRouting;
-use crate::http::{eviction, ext_authz, ext_proc, filters, remoteratelimit, retry, timeout};
+use crate::http::{ext_authz, ext_proc, filters, health, remoteratelimit, retry, timeout};
 use crate::llm::policy::ResponseGuard;
 use crate::mcp::McpAuthorizationSet;
 use crate::proxy::httpproxy::PolicyClient;
@@ -139,7 +139,7 @@ pub struct BackendPolicies {
 
 	pub session_persistence: Option<http::sessionpersistence::Policy>,
 
-	pub eviction: Option<eviction::Policy>,
+	pub health: Option<health::Policy>,
 
 	/// Internal-only override for destination endpoint selection.
 	/// Used for stateful MCP routing (session affinity).
@@ -175,7 +175,7 @@ impl BackendPolicies {
 			},
 			transformation: other.transformation.or(self.transformation),
 			session_persistence: other.session_persistence.or(self.session_persistence),
-			eviction: other.eviction.or(self.eviction),
+			health: other.health.or(self.health),
 			override_dest: other.override_dest.or(self.override_dest),
 		}
 	}
@@ -675,8 +675,8 @@ impl Store {
 				BackendPolicy::SessionPersistence(p) => {
 					pol.session_persistence.get_or_insert_with(|| p.clone());
 				},
-				BackendPolicy::Eviction(p) => {
-					pol.eviction.get_or_insert_with(|| p.clone());
+				BackendPolicy::Health(p) => {
+					pol.health.get_or_insert_with(|| p.clone());
 				},
 				BackendPolicy::RequestMirror(p) => {
 					if pol.request_mirror.is_empty() {

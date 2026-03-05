@@ -1,5 +1,5 @@
-pub mod eviction;
 pub mod filters;
+pub mod health;
 pub mod timeout;
 
 mod buflist;

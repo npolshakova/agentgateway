@@ -11,7 +11,7 @@ use crate::http::backendtls::LocalBackendTLS;
 use crate::http::filters::HeaderModifier;
 use crate::http::transformation_cel::{LocalTransformationConfig, Transformation};
 use crate::http::{
-	HeaderName, HeaderOrPseudo, eviction, filters, retry, timeout, transformation_cel,
+	HeaderName, HeaderOrPseudo, filters, health, retry, timeout, transformation_cel,
 };
 use crate::llm::policy::PromptGuard;
 use crate::llm::{AIBackend, AIProvider, LocalModelAIProvider, NamedAIProvider};
@@ -1043,9 +1043,9 @@ pub struct SimpleLocalBackendPolicies {
 	#[serde(default)]
 	pub tcp: Option<backend::TCP>,
 
-	/// Evict this backend (outlier detection) on unhealthy responses; duration and CEL configurable.
+	/// Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.
 	#[serde(default)]
-	pub eviction: Option<eviction::LocalEvictionPolicy>,
+	pub health: Option<health::LocalHealthPolicy>,
 }
 
 #[apply(schema_de!)]
@@ -1088,7 +1088,7 @@ impl LocalBackendPolicies {
 					backend_auth,
 					http,
 					tcp,
-					eviction,
+					health,
 				},
 			mcp_authorization,
 			a2a,
@@ -1129,9 +1129,9 @@ impl LocalBackendPolicies {
 			p.compile_model_alias_patterns();
 			pols.push(BackendPolicy::AI(Arc::new(p)))
 		}
-		if let Some(p) = eviction {
-			pols.push(BackendPolicy::Eviction(p.try_into().map_err(
-				|e: crate::cel::Error| anyhow::anyhow!("eviction.unhealthyExpression: {}", e),
+		if let Some(p) = health {
+			pols.push(BackendPolicy::Health(p.try_into().map_err(
+				|e: crate::cel::Error| anyhow::anyhow!("health.unhealthyExpression: {}", e),
 			)?));
 		}
 		Ok(pols)

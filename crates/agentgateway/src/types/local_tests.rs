@@ -80,8 +80,8 @@ async fn test_aws_config() {
 }
 
 #[tokio::test]
-async fn test_eviction_config() {
-	test_config_parsing("eviction").await;
+async fn test_health_config() {
+	test_config_parsing("health").await;
 }
 
 #[test]

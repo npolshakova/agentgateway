@@ -2154,11 +2154,11 @@
           ],
           "default": null
         },
-        "eviction": {
-          "description": "Evict this backend (outlier detection) on unhealthy responses; duration and CEL configurable.",
+        "health": {
+          "description": "Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.",
           "anyOf": [
             {
-              "$ref": "#/$defs/LocalEvictionPolicy"
+              "$ref": "#/$defs/LocalHealthPolicy"
             },
             {
               "type": "null"
@@ -2659,8 +2659,8 @@
         "nanos"
       ]
     },
-    "LocalEvictionPolicy": {
-      "description": "Local/config eviction policy with CEL as string; converted to Policy by compiling the expression.",
+    "LocalHealthPolicy": {
+      "description": "Local/config health policy with CEL as string; converted to Policy by compiling the expression.\nMirrors the proto `Health` message structure.",
       "type": "object",
       "properties": {
         "unhealthyExpression": {
@@ -2670,10 +2670,14 @@
             "null"
           ]
         },
-        "evictionDuration": {
-          "type": [
-            "string",
-            "null"
+        "eviction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalEviction"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "healthThreshold": {
@@ -2689,6 +2693,19 @@
             "null"
           ],
           "format": "double"
+        }
+      },
+      "additionalProperties": false
+    },
+    "LocalEviction": {
+      "description": "Local/config eviction sub-policy with duration as string; mirrors `Eviction`.",
+      "type": "object",
+      "properties": {
+        "duration": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -4168,11 +4185,11 @@
           ],
           "default": null
         },
-        "eviction": {
-          "description": "Evict this backend (outlier detection) on unhealthy responses; duration and CEL configurable.",
+        "health": {
+          "description": "Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.",
           "anyOf": [
             {
-              "$ref": "#/$defs/LocalEvictionPolicy"
+              "$ref": "#/$defs/LocalHealthPolicy"
             },
             {
               "type": "null"
@@ -4560,11 +4577,11 @@
           ],
           "default": null
         },
-        "eviction": {
-          "description": "Evict this backend (outlier detection) on unhealthy responses; duration and CEL configurable.",
+        "health": {
+          "description": "Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.",
           "anyOf": [
             {
-              "$ref": "#/$defs/LocalEvictionPolicy"
+              "$ref": "#/$defs/LocalHealthPolicy"
             },
             {
               "type": "null"

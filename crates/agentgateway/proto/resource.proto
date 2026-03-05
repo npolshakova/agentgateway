@@ -963,12 +963,15 @@ message BackendPolicySpec {
     FailureMode failure_mode = 2;
   }
   message Eviction {
+    // specify the time to evict (e.g. 30s, 60s).
+    google.protobuf.Duration duration = 1;
+  }
+  message Health {
     // cel expression evaluated per request to determine if eviction should be triggered
     // `true`: treat this response as **unhealthy** (candidate for eviction).
     // `false`: treat as healthy (no eviction from this response alone).
-    string condition = 1;
-    // specify the time to evict (e.g. 30s, 60s).
-    google.protobuf.Duration duration = 2;
+    string unhealthy_condition = 1;
+    Eviction eviction = 2;
   }
   message BackendTLS {
     enum VerificationMode {
@@ -1057,7 +1060,7 @@ message BackendPolicySpec {
     BackendHTTP backend_http = 12;
     BackendTCP backend_tcp = 13;
     TrafficPolicySpec.TransformationPolicy transformation = 14;
-    Eviction eviction = 15;
+    Health health = 15;
   }
 }
 

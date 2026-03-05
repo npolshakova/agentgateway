@@ -11,7 +11,7 @@ use llm::{AIBackend, AIProvider, NamedAIProvider};
 use super::agent::*;
 use crate::http::auth::{AwsAuth, BackendAuth, GcpAuth};
 use crate::http::transformation_cel::{LocalTransform, LocalTransformationConfig, Transformation};
-use crate::http::{HeaderOrPseudo, Scheme, auth, authorization, eviction};
+use crate::http::{HeaderOrPseudo, Scheme, auth, authorization, health};
 use crate::mcp::McpAuthorization;
 use crate::telemetry::log::OrderedStringMap;
 use crate::types::discovery::NamespacedHostname;
@@ -1170,24 +1170,28 @@ impl TryFrom<&proto::agent::BackendPolicySpec> for BackendPolicy {
 					.collect::<Result<Vec<_>, _>>()?;
 				BackendPolicy::RequestMirror(mirrors)
 			},
-			Some(bps::Kind::Eviction(ev)) => BackendPolicy::Eviction(convert_eviction(ev)?),
+			Some(bps::Kind::Health(h)) => BackendPolicy::Health(convert_health(h)?),
 			None => return Err(ProtoError::MissingRequiredField),
 		})
 	}
 }
 
-fn convert_eviction(
-	ev: &proto::agent::backend_policy_spec::Eviction,
-) -> Result<eviction::Policy, ProtoError> {
-	let unhealthy_expression = if ev.condition.is_empty() {
+fn convert_health(
+	h: &proto::agent::backend_policy_spec::Health,
+) -> Result<health::Policy, ProtoError> {
+	let unhealthy_expression = if h.unhealthy_condition.is_empty() {
 		None
 	} else {
-		Some(Arc::new(cel::Expression::new_permissive(&ev.condition)))
+		Some(Arc::new(cel::Expression::new_permissive(
+			&h.unhealthy_condition,
+		)))
 	};
-	let eviction_duration = ev.duration.map(convert_duration);
-	Ok(eviction::Policy {
+	let eviction = h.eviction.as_ref().map(|ev| health::Eviction {
+		duration: ev.duration.map(convert_duration),
+	});
+	Ok(health::Policy {
 		unhealthy_expression,
-		eviction_duration,
+		eviction,
 		health_threshold: None,
 		health_on_unevict: None,
 	})

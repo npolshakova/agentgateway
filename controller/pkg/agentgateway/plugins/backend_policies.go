@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	jsonpb "google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -34,7 +33,7 @@ const (
 	backendHttpPolicySuffix       = ":backend-http"
 	mcpAuthorizationPolicySuffix  = ":mcp-authorization"
 	mcpAuthenticationPolicySuffix = ":mcp-authentication"
-	evictionPolicySuffix          = ":eviction"
+	healthPolicySuffix            = ":health"
 )
 
 func TranslateInlineBackendPolicy(
@@ -92,10 +91,10 @@ func translateBackendPolicyToAgw(
 		agwPolicies = append(agwPolicies, pol...)
 	}
 
-	if s := backend.Eviction; s != nil {
-		pol, err := translateBackendEviction(policy, policyTarget)
+	if s := backend.Health; s != nil {
+		pol, err := translateBackendHealthPolicy(policy, policyTarget)
 		if err != nil {
-			logger.Error("error processing backend eviction", "err", err)
+			logger.Error("error processing backend health policy", "err", err)
 			errs = append(errs, err)
 		}
 		agwPolicies = append(agwPolicies, pol...)
@@ -147,27 +146,30 @@ func translateBackendPolicyToAgw(
 	return agwPolicies, errors.Join(errs...)
 }
 
-func translateBackendEviction(policy *agentgateway.AgentgatewayPolicy, target *api.PolicyTarget) ([]AgwPolicy, error) {
+func translateBackendHealthPolicy(policy *agentgateway.AgentgatewayPolicy, target *api.PolicyTarget) ([]AgwPolicy, error) {
 	var errs []error
 
-	eviction := policy.Spec.Backend.Eviction
+	healthPolicy := policy.Spec.Backend.Health
 
-	evictionDur := 30 * time.Second // default
-	if eviction.Duration != nil {
-		evictionDur = eviction.Duration.Duration
+	var evictionProto *api.BackendPolicySpec_Eviction
+	if healthPolicy.Eviction != nil && healthPolicy.Eviction.Duration != nil {
+		evictionProto = &api.BackendPolicySpec_Eviction{
+			Duration: durationpb.New(healthPolicy.Eviction.Duration.Duration),
+		}
 	}
-	p := &api.BackendPolicySpec_Eviction{
-		Condition: string(eviction.Condition),
-		Duration:  durationpb.New(evictionDur),
+
+	p := &api.BackendPolicySpec_Health{
+		UnhealthyCondition: string(healthPolicy.UnhealthyCondition),
+		Eviction:           evictionProto,
 	}
 	evictPolicy := &api.Policy{
-		Key:    policy.Namespace + "/" + policy.Name + evictionPolicySuffix + attachmentName(target),
+		Key:    policy.Namespace + "/" + policy.Name + healthPolicySuffix + attachmentName(target),
 		Name:   TypedResourceName(wellknown.AgentgatewayPolicyGVK.Kind, policy),
 		Target: target,
 		Kind: &api.Policy_Backend{
 			Backend: &api.BackendPolicySpec{
-				Kind: &api.BackendPolicySpec_Eviction_{
-					Eviction: p,
+				Kind: &api.BackendPolicySpec_Health_{
+					Health: p,
 				},
 			},
 		},

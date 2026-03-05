@@ -12,6 +12,7 @@ binds:
               cmd: npx
               args: ["@modelcontextprotocol/server-everything"]
         policies:
-          eviction:
+          health:
             unhealthyExpression: "response.code >= 500 || response.code == 429"
-            evictionDuration: 30s
+            eviction:
+              duration: 30s

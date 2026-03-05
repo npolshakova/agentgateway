@@ -26,7 +26,7 @@ use tracing::{Level, trace};
 
 use crate::cel::{ContextBuilder, Expression, LLMContext};
 use crate::http::Request;
-use crate::http::eviction;
+use crate::http::health;
 use crate::llm::InputFormat;
 use crate::mcp::{MCPOperation, ResourceId, ResourceType};
 use crate::proxy::ProxyResponseReason;
@@ -450,7 +450,7 @@ impl DropOnLog {
 	/// When not set, eviction is disabled.
 	fn eviction_unhealthy(log: &RequestLog, cel_exec: Option<&CelLoggingExecutor<'_>>) -> bool {
 		let default_unhealthy = log.status.is_none_or(|s| s.is_server_error());
-		let Some(policy) = &log.eviction_policy else {
+		let Some(policy) = &log.health_policy else {
 			return default_unhealthy;
 		};
 		let Some(expr) = &policy.unhealthy_expression else {
@@ -468,14 +468,14 @@ impl DropOnLog {
 		unhealthy: bool,
 	) -> (bool, Option<Duration>, Option<f64>) {
 		const DEFAULT_EVICTION_SECS: u64 = 30;
-		let Some(policy) = &log.eviction_policy else {
+		let Some(policy) = &log.health_policy else {
 			let health = !unhealthy;
 			return (health, None, None);
 		};
 		let health = !unhealthy;
 		let eviction_duration = if unhealthy {
 			let duration = policy
-				.eviction_duration
+				.eviction_duration()
 				.or(log.retry_after)
 				.or(log.retry_backoff)
 				.or(Some(Duration::from_secs(DEFAULT_EVICTION_SECS)));
@@ -591,7 +591,7 @@ impl RequestLog {
 			status: None,
 			reason: None,
 			retry_after: None,
-			eviction_policy: None,
+			health_policy: None,
 			retry_backoff: None,
 			jwt_sub: None,
 			retry_attempt: None,
@@ -666,9 +666,9 @@ pub struct RequestLog {
 	pub reason: Option<ProxyResponseReason>,
 	pub retry_after: Option<Duration>,
 
-	/// Eviction policy for backend (e.g. AI provider) failover. Set from route policies when request_handle is used.
-	pub eviction_policy: Option<eviction::Policy>,
-	/// Retry backoff from route policy; used as fallback eviction duration when eviction_policy has no explicit duration.
+	/// Health policy for backend (e.g. AI provider) failover. Set from route policies when request_handle is used.
+	pub health_policy: Option<health::Policy>,
+	/// Retry backoff from route policy; used as fallback eviction duration when health_policy has no explicit duration.
 	pub retry_backoff: Option<Duration>,
 
 	pub jwt_sub: Option<String>,
@@ -763,7 +763,7 @@ impl Drop for DropOnLog {
 		});
 		let needs_cel_for_outputs = maybe_enable_log || enable_trace || enable_custom_metrics;
 		let needs_cel_for_eviction = log
-			.eviction_policy
+			.health_policy
 			.as_ref()
 			.is_some_and(|p| p.unhealthy_expression.is_some());
 		let end_time_str = (needs_cel_for_outputs || needs_cel_for_eviction)

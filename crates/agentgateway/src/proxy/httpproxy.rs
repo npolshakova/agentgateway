@@ -198,7 +198,7 @@ async fn apply_backend_policies(
 		// Applied elsewhere
 		override_dest: _,
 		// Applied elsewhere
-		eviction: _,
+		health: _,
 	} = &backend_call.backend_policies;
 	response_policies.backend_response_header = response_header_modifier.clone();
 	response_policies.backend_transformation = transformation.clone();
@@ -680,8 +680,8 @@ impl HTTPProxy {
 		);
 		backend_policies.register_cel_expressions(log.cel.ctx());
 		log.cel.ctx().maybe_buffer_request_body(&mut req).await;
-		log.eviction_policy = backend_policies.eviction.clone();
-		if let Some(ev) = &backend_policies.eviction
+		log.health_policy = backend_policies.health.clone();
+		if let Some(ev) = &backend_policies.health
 			&& let Some(expr) = &ev.unhealthy_expression
 		{
 			log.cel.ctx().register_expression(expr.as_ref());
