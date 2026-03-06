@@ -465,36 +465,46 @@ impl DropOnLog {
 	fn eviction_decision(
 		log: &RequestLog,
 		current_health: f64,
+		consecutive_failures: u64,
+		times_ejected: u64,
 		unhealthy: bool,
 	) -> (bool, Option<Duration>, Option<f64>) {
 		const DEFAULT_EVICTION_SECS: u64 = 30;
-		/// EWMA alpha used by EndpointInfo health tracking (must match loadbalancer::ALPHA).
-		const HEALTH_EWMA_ALPHA: f64 = 0.3;
+		const MAX_EJECTION_SECS: u64 = 300;
 		let Some(policy) = &log.health_policy else {
 			let health = !unhealthy;
 			return (health, None, None);
 		};
 		let health = !unhealthy;
 		let eviction_duration = if unhealthy {
-			let duration = policy
+			let base_duration = policy
 				.eviction_duration()
 				.or(log.retry_after)
 				.or(log.retry_backoff)
 				.or(Some(Duration::from_secs(DEFAULT_EVICTION_SECS)));
+			// +1 because the current failure hasn't been recorded yet.
+			let failures_including_current = consecutive_failures + 1;
 			let below_threshold = if let Some(t) = policy.health_threshold {
 				current_health < t
 			} else if let Some(eviction) = &policy.eviction
 				&& let Some(threshold) = eviction.threshold
 				&& threshold > 0
 			{
-				// Convert consecutive-failure count to an approximate EWMA health score:
-				// after N consecutive failures the EWMA health is roughly (1 - alpha)^N.
-				let ewma_threshold = (1.0 - HEALTH_EWMA_ALPHA).powi(threshold);
-				current_health < ewma_threshold
+				failures_including_current >= threshold as u64
 			} else {
 				true
 			};
-			if below_threshold { duration } else { None }
+			if below_threshold {
+				// Envoy-style multiplicative backoff: base_duration * (times_ejected + 1),
+				// capped at MAX_EJECTION_SECS.
+				let multiplier = times_ejected.saturating_add(1);
+				base_duration.map(|d| {
+					let scaled = d.saturating_mul(multiplier as u32);
+					scaled.min(Duration::from_secs(MAX_EJECTION_SECS))
+				})
+			} else {
+				None
+			}
 		} else {
 			None
 		};
@@ -804,9 +814,16 @@ impl Drop for DropOnLog {
 
 		if let Some(rh) = log.request_handle.take() {
 			let current_health = rh.health_score();
+			let consecutive_failures = rh.consecutive_failures();
+			let times_ejected = rh.times_ejected();
 			let unhealthy = Self::eviction_unhealthy(&log, cel_exec.as_ref());
-			let (health, eviction_duration, health_on_unevict) =
-				Self::eviction_decision(&log, current_health, unhealthy);
+			let (health, eviction_duration, health_on_unevict) = Self::eviction_decision(
+				&log,
+				current_health,
+				consecutive_failures,
+				times_ejected,
+				unhealthy,
+			);
 			rh.finish_request(health, duration, eviction_duration, health_on_unevict);
 		}
 		if !maybe_enable_log && !enable_trace && !enable_custom_metrics {
