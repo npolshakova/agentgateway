@@ -2680,6 +2680,13 @@
             }
           ]
         },
+        "consecutiveFailures": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int32"
+        },
         "healthThreshold": {
           "type": [
             "number",
@@ -2693,6 +2700,28 @@
             "null"
           ],
           "format": "double"
+        },
+        "maxEjectionPercent": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "enforcingPercentage": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "interval": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -2702,6 +2731,12 @@
       "type": "object",
       "properties": {
         "duration": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "maxEjectionTime": {
           "type": [
             "string",
             "null"

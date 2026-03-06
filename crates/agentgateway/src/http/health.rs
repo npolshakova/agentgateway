@@ -2,8 +2,8 @@
 //!
 //! When a response is considered unhealthy (by CEL or default 5xx), the backend can be
 //! evicted for a configurable duration. If no health policy is configured, no eviction
-//! is applied. Optional health threshold and health-on-unevict support multi-request and
-//! recovery behavior.
+//! is applied. Optional health/failure thresholds and recovery health support multi-request
+//! and recovery behavior.
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -15,7 +15,7 @@ use crate::{serde_dur_option, *};
 #[derive(Debug, Clone, Default, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Eviction {
-	/// How long to evict the backend. When absent, falls back to `Retry-After` header (e.g. 429)
+	/// Base ejection time. When absent, falls back to `Retry-After` header (e.g. 429)
 	/// or retry policy backoff, then a default (e.g. 30s).
 	#[serde(
 		default,
@@ -23,6 +23,14 @@ pub struct Eviction {
 		with = "serde_dur_option"
 	)]
 	pub duration: Option<Duration>,
+
+	/// Upper bound on ejection time after multiplicative backoff. Defaults to 300s.
+	#[serde(
+		default,
+		skip_serializing_if = "Option::is_none",
+		with = "serde_dur_option"
+	)]
+	pub max_ejection_time: Option<Duration>,
 }
 
 /// Health policy: determines when a backend is unhealthy and how to evict it.
@@ -42,21 +50,51 @@ pub struct Policy {
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub eviction: Option<Eviction>,
 
+	/// Number of consecutive unhealthy responses required before evicting the backend.
+	/// When both this and `health_threshold` are set, eviction triggers when either condition is met.
+	/// When neither is set, a single unhealthy response can trigger eviction.
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub consecutive_failures: Option<i32>,
+
 	/// Evict only when endpoint health (EWMA) is below this threshold (0.0–1.0).
-	/// When absent, eviction is driven only by the per-response unhealthy signal.
+	/// When both this and `consecutive_failures` are set, eviction triggers when either condition is met.
+	/// When neither is set, a single unhealthy response triggers eviction.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub health_threshold: Option<f64>,
 
 	/// Health score to set when the endpoint is unevicted (e.g. 0.2 to give it a chance to recover).
-	/// When absent, health is left unchanged on unevict.
+	/// When absent, health is left unchanged on uneviction.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub health_on_unevict: Option<f64>,
+
+	/// Maximum percentage (0–100) of endpoints in a priority group that may be ejected
+	/// simultaneously. When absent, all endpoints may be ejected.
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub max_ejection_percent: Option<u32>,
+
+	/// Probability (0–100) that a qualifying eviction is actually enforced.
+	/// When absent, eviction is always enforced (100%).
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub enforcing_percentage: Option<u32>,
+
+	/// Time between outlier detection sweeps. When absent, detection is per-request.
+	#[serde(
+		default,
+		skip_serializing_if = "Option::is_none",
+		with = "serde_dur_option"
+	)]
+	pub interval: Option<Duration>,
 }
 
 impl Policy {
-	/// Returns the configured eviction duration, if any.
+	/// Returns the configured base eviction duration, if any.
 	pub fn eviction_duration(&self) -> Option<Duration> {
 		self.eviction.as_ref().and_then(|e| e.duration)
+	}
+
+	/// Returns the configured max ejection time cap, if any.
+	pub fn max_ejection_time(&self) -> Option<Duration> {
+		self.eviction.as_ref().and_then(|e| e.max_ejection_time)
 	}
 }
 
@@ -72,6 +110,14 @@ pub struct LocalEviction {
 	)]
 	#[cfg_attr(feature = "schema", schemars(with = "Option<String>"))]
 	pub duration: Option<Duration>,
+
+	#[serde(
+		default,
+		skip_serializing_if = "Option::is_none",
+		with = "serde_dur_option"
+	)]
+	#[cfg_attr(feature = "schema", schemars(with = "Option<String>"))]
+	pub max_ejection_time: Option<Duration>,
 }
 
 /// Local/config health policy with CEL as string; converted to Policy by compiling the expression.
@@ -86,9 +132,22 @@ pub struct LocalHealthPolicy {
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub eviction: Option<LocalEviction>,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub consecutive_failures: Option<i32>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub health_threshold: Option<f64>,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub health_on_unevict: Option<f64>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub max_ejection_percent: Option<u32>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub enforcing_percentage: Option<u32>,
+	#[serde(
+		default,
+		skip_serializing_if = "Option::is_none",
+		with = "serde_dur_option"
+	)]
+	#[cfg_attr(feature = "schema", schemars(with = "Option<String>"))]
+	pub interval: Option<Duration>,
 }
 
 impl TryFrom<LocalHealthPolicy> for Policy {
@@ -113,12 +172,17 @@ impl TryFrom<LocalHealthPolicy> for Policy {
 		};
 		let eviction = local.eviction.map(|e| Eviction {
 			duration: e.duration,
+			max_ejection_time: e.max_ejection_time,
 		});
 		Ok(Policy {
 			unhealthy_expression,
 			eviction,
+			consecutive_failures: local.consecutive_failures,
 			health_threshold: local.health_threshold,
 			health_on_unevict: local.health_on_unevict,
+			max_ejection_percent: local.max_ejection_percent,
+			enforcing_percentage: local.enforcing_percentage,
+			interval: local.interval,
 		})
 	}
 }

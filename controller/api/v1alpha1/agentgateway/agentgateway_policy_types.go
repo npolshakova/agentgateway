@@ -154,16 +154,88 @@ type Health struct {
 	// Eviction defines settings for evicting unhealthy backends.
 	// +optional
 	Eviction *BackendEviction `json:"eviction,omitempty"`
+
+	// ConsecutiveFailures is the number of consecutive unhealthy responses required before the backend is evicted.
+	// For example, a value of 5 means the backend must receive 5 unhealthy responses in a row before being evicted.
+	// When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.
+	// When neither is set, a single unhealthy response can trigger eviction.
+	//
+	// +kubebuilder:validation:Minimum=0
+	// +optional
+	ConsecutiveFailures *int32 `json:"consecutiveFailures,omitempty"`
+
+	// HealthThreshold is the EWMA (exponentially-weighted moving average) health score threshold, expressed as 0–100.
+	// When set, a backend is only evicted if its computed health drops below this value after an unhealthy response.
+	// For example, 50 means the backend is evicted when its EWMA health falls below 50% following failures.
+	// Unlike consecutiveFailures (which counts consecutive failures), this uses a sliding-window average
+	// so a single success in a stream of failures can delay eviction.
+	// When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.
+	// When neither is set, a single unhealthy response triggers eviction.
+	//
+	// +kubebuilder:validation:Minimum=0
+	// +kubebuilder:validation:Maximum=100
+	// +optional
+	HealthThreshold *int32 `json:"healthThreshold,omitempty"`
+
+	// HealthOnUnevict is the health score (0–100) assigned to a backend when it returns from eviction.
+	// For gradual recovery, set below 100; for full recovery immediately, set 100.
+	// If unset, the backend resumes with the health it had when evicted.
+	//
+	// +kubebuilder:validation:Minimum=0
+	// +kubebuilder:validation:Maximum=100
+	// +optional
+	HealthOnUnevict *int32 `json:"healthOnUnevict,omitempty"`
+
+	// MaxEjectionPercent is the maximum percentage (0–100) of backends in a priority group
+	// that may be evicted simultaneously. Prevents cascading failures by ensuring at least
+	// (100 - maxEjectionPercent)% of backends remain active.
+	// When unset, all backends may be evicted (effectively 100%).
+	//
+	// +kubebuilder:validation:Minimum=0
+	// +kubebuilder:validation:Maximum=100
+	// +optional
+	MaxEjectionPercent *int32 `json:"maxEjectionPercent,omitempty"`
+
+	// EnforcingPercentage is the probability (0–100) that an unhealthy backend will actually
+	// be evicted when eviction criteria are met. For example, 50 means there is a 50% chance
+	// the backend will be evicted on each qualifying failure.
+	// When unset, eviction is always enforced (effectively 100%).
+	//
+	// +kubebuilder:validation:Minimum=0
+	// +kubebuilder:validation:Maximum=100
+	// +optional
+	EnforcingPercentage *int32 `json:"enforcingPercentage,omitempty"`
+
+	// Interval is the time between outlier detection analysis sweeps.
+	// When set, unhealthy-response tracking and eviction decisions are batched on this interval
+	// rather than evaluated per-request.
+	// When unset, detection is passive and evaluated on every response.
+	//
+	// +kubebuilder:validation:XValidation:rule="matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')",message="invalid duration value"
+	// +kubebuilder:validation:XValidation:rule="duration(self) >= duration('1s')",message="interval must be at least 1 second"
+	// +optional
+	Interval *metav1.Duration `json:"interval,omitempty"`
 }
 
-// BackendEviction defines settings for evicting unhealthy backends based on response characteristics.
+// BackendEviction defines settings for evicting unhealthy backends.
 type BackendEviction struct {
-	// duration specifies how long a backend should be evicted after being marked unhealthy. If unset, defaults to 30s.
+	// Duration specifies the base time a backend should be evicted after being marked unhealthy.
+	// Subsequent evictions use multiplicative backoff (duration * times_ejected), capped by maxEjectionTime.
+	// If unset, defaults to 30s.
 	// +kubebuilder:validation:XValidation:rule="matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')",message="invalid duration value"
 	// +kubebuilder:validation:XValidation:rule="duration(self) >= duration('1s')",message="evictionDuration must be at least 1 second"
 	// +kubebuilder:default="30s"
 	// +optional
 	Duration *metav1.Duration `json:"duration,omitempty"`
+
+	// MaxEjectionTime is the upper bound on ejection time after multiplicative backoff.
+	// The actual ejection time is min(duration * times_ejected, maxEjectionTime).
+	// If unset, defaults to 300s.
+	// +kubebuilder:validation:XValidation:rule="matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')",message="invalid duration value"
+	// +kubebuilder:validation:XValidation:rule="duration(self) >= duration('1s')",message="maxEjectionTime must be at least 1 second"
+	// +kubebuilder:default="300s"
+	// +optional
+	MaxEjectionTime *metav1.Duration `json:"maxEjectionTime,omitempty"`
 }
 
 // +kubebuilder:validation:AtLeastOneFieldSet

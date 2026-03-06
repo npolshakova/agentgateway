@@ -164,7 +164,12 @@ pub enum EndpointEvent<T> {
 
 #[derive(Debug)]
 pub enum EvictionEvent {
-	Evict(EndpointKey, Instant, Option<f64>),
+	Evict {
+		key: EndpointKey,
+		until: Instant,
+		health_on_unevict: Option<f64>,
+		max_ejection_percent: Option<u32>,
+	},
 }
 
 /// Entry for the uneviction heap. Ordered so the earliest `until` is popped first (min-heap via reversed Ord).
@@ -350,13 +355,33 @@ impl<T: Clone + Sync + Send + 'static> EndpointSet<T> {
 					return;
 				};
 
-				let EvictionEvent::Evict(key, timer, health_on_unevict) = item;
+				let EvictionEvent::Evict {
+					key,
+					until,
+					health_on_unevict,
+					max_ejection_percent,
+				} = item;
 
 				let Some(bucket) = Self::find_bucket_atomic(buckets.as_slice(), &key) else {
 					return;
 				};
 				let mut eps = Arc::unwrap_or_clone(bucket.load_full());
-				uneviction_heap.push(UnevictEntry(timer, key.clone(), health_on_unevict));
+
+				if let Some(max_pct) = max_ejection_percent {
+					let total = eps.active.len() + eps.rejected.len();
+					let rejected_after = eps.rejected.len() + 1;
+					if total > 0 && rejected_after * 100 > (max_pct as usize) * total {
+						// Evicting would exceed the cap; undo the optimistic evicted_until mark.
+						if let Some(ep) = eps.active.get(&key) {
+							ep.info.evicted_until.store(None);
+						}
+						trace!(%key, max_pct, "eviction skipped: would exceed max_ejection_percent");
+						bucket.store(Arc::new(eps));
+						return;
+					}
+				}
+
+				uneviction_heap.push(UnevictEntry(until, key.clone(), health_on_unevict));
 				if let Some(ep) = eps.active.swap_remove(&key) {
 					eps.rejected.insert(key, ep);
 				}
@@ -379,16 +404,21 @@ impl<T: Clone + Sync + Send + 'static> EndpointSet<T> {
 			return;
 		};
 		if let Some(cur) = bucket.active.get(&key) {
-			// Immediately store in the endpoint the eviction time, if its not already been evicted
 			let prev = cur
 				.info
 				.evicted_until
 				.compare_and_swap(&None::<Arc<_>>, Some(Arc::new(time)));
 			if prev.is_none() {
 				let tx = self.tx_eviction.clone();
-				// If we were the one to evict it, trigger the real eviction async
 				tokio::spawn(async move {
-					let _ = tx.send(EvictionEvent::Evict(key, time, None)).await;
+					let _ = tx
+						.send(EvictionEvent::Evict {
+							key,
+							until: time,
+							health_on_unevict: None,
+							max_ejection_percent: None,
+						})
+						.await;
 				});
 			}
 		}
@@ -407,6 +437,12 @@ pub struct EndpointInfo {
 	pending_requests: ActiveCounter,
 	/// total_requests keeps track of the total number of requests.
 	total_requests: AtomicU64,
+	/// Number of consecutive unhealthy responses (reset to 0 on success).
+	consecutive_failures: AtomicU64,
+	/// Number of times this endpoint has been ejected. Used as a multiplier on
+	/// the base ejection duration so repeatedly-failing hosts stay out longer.
+	/// Reset to 0 when the endpoint handles a successful request.
+	times_ejected: AtomicU64,
 	#[serde(with = "serde_instant_option")]
 	/// evicted_until is the time at which the endpoint will be evicted.
 	evicted_until: AtomicOption<Instant>,
@@ -420,6 +456,8 @@ impl Default for EndpointInfo {
 			request_latency: Default::default(),
 			pending_requests: Default::default(),
 			total_requests: Default::default(),
+			consecutive_failures: Default::default(),
+			times_ejected: Default::default(),
 			evicted_until: Arc::new(Default::default()),
 		}
 	}
@@ -432,6 +470,12 @@ impl EndpointInfo {
 	/// Current health score (0.0–1.0) for threshold-based eviction.
 	pub fn health_score(&self) -> f64 {
 		self.health.load()
+	}
+	pub fn consecutive_failures(&self) -> u64 {
+		self.consecutive_failures.load(AtomicOrdering::Relaxed)
+	}
+	pub fn times_ejected(&self) -> u64 {
+		self.times_ejected.load(AtomicOrdering::Relaxed)
 	}
 	// Todo: fine-tune the algorithm here
 	pub fn score(&self) -> f64 {
@@ -507,23 +551,41 @@ impl ActiveHandle {
 	pub fn health_score(&self) -> f64 {
 		self.info.health_score()
 	}
+	pub fn consecutive_failures(&self) -> u64 {
+		self.info.consecutive_failures()
+	}
+	pub fn times_ejected(&self) -> u64 {
+		self.info.times_ejected()
+	}
 	pub fn finish_request(
 		self,
 		success: bool,
 		latency: Duration,
 		eviction_time: Option<Duration>,
 		health_on_unevict: Option<f64>,
+		max_ejection_percent: Option<u32>,
 	) {
 		if success {
 			self.info.request_latency.record(latency.as_secs_f64());
 			self.info.health.record(1.0);
+			self
+				.info
+				.consecutive_failures
+				.store(0, AtomicOrdering::Relaxed);
+			self.info.times_ejected.store(0, AtomicOrdering::Relaxed);
 		} else {
-			// Do not record request_latency on failure; its common for failures to be fast and skew results.
-			self.info.health.record(0.0)
+			self.info.health.record(0.0);
+			self
+				.info
+				.consecutive_failures
+				.fetch_add(1, AtomicOrdering::Relaxed);
 		};
 		if let Some(eviction_time) = eviction_time {
+			self
+				.info
+				.times_ejected
+				.fetch_add(1, AtomicOrdering::Relaxed);
 			let time = Instant::now() + eviction_time;
-			// Immediately store in the endpoint the eviction time, if its not already been evicted
 			let prev = self
 				.info
 				.evicted_until
@@ -531,10 +593,14 @@ impl ActiveHandle {
 			if prev.is_none() {
 				let tx = self.tx.clone();
 				let key = self.key.clone();
-				// If we were the one to evict it, trigger the real eviction async
 				tokio::spawn(async move {
 					let _ = tx
-						.send(EvictionEvent::Evict(key, time, health_on_unevict))
+						.send(EvictionEvent::Evict {
+							key,
+							until: time,
+							health_on_unevict,
+							max_ejection_percent,
+						})
 						.await;
 				});
 			}

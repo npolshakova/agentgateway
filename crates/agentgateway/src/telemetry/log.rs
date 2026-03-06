@@ -6,6 +6,8 @@ use std::sync::{Arc, Mutex};
 use std::task::{Context, Poll, ready};
 use std::time::{Duration, Instant, SystemTime};
 
+use rand::RngExt;
+
 use agent_core::metrics::CustomField;
 use agent_core::strng;
 use agent_core::strng::{RichStrng, Strng};
@@ -462,31 +464,76 @@ impl DropOnLog {
 		}
 	}
 
+	/// Returns (health, eviction_duration, health_on_unevict, max_ejection_percent).
 	fn eviction_decision(
 		log: &RequestLog,
 		current_health: f64,
+		consecutive_failure_count: u64,
+		times_ejected: u64,
 		unhealthy: bool,
-	) -> (bool, Option<Duration>, Option<f64>) {
+	) -> (bool, Option<Duration>, Option<f64>, Option<u32>) {
 		const DEFAULT_EVICTION_SECS: u64 = 30;
+		const DEFAULT_MAX_EJECTION_SECS: u64 = 300;
 		let Some(policy) = &log.health_policy else {
 			let health = !unhealthy;
-			return (health, None, None);
+			return (health, None, None, None);
 		};
 		let health = !unhealthy;
 		let eviction_duration = if unhealthy {
-			let duration = policy
+			let base_duration = policy
 				.eviction_duration()
 				.or(log.retry_after)
 				.or(log.retry_backoff)
 				.or(Some(Duration::from_secs(DEFAULT_EVICTION_SECS)));
-			// Apply health threshold: only evict when current health is below threshold
-			let below_threshold = policy.health_threshold.is_none_or(|t| current_health < t);
-			if below_threshold { duration } else { None }
+			let max_ejection_time = policy
+				.max_ejection_time()
+				.unwrap_or(Duration::from_secs(DEFAULT_MAX_EJECTION_SECS));
+			// +1 because the current failure hasn't been recorded yet.
+			let failures_including_current = consecutive_failure_count + 1;
+			let health_below = policy
+				.health_threshold
+				.is_some_and(|t| current_health < t);
+			let consecutive_exceeded = policy
+				.consecutive_failures
+				.is_some_and(|count| count > 0 && failures_including_current >= count as u64);
+			let below_threshold = if policy.health_threshold.is_some()
+				|| policy.consecutive_failures.is_some()
+			{
+				health_below || consecutive_exceeded
+			} else {
+				true
+			};
+			if below_threshold {
+				// Probabilistic enforcement: skip eviction randomly based on enforcing_percentage.
+				let enforced = match policy.enforcing_percentage {
+					Some(pct) => rand::rng().random_range(0..100) < pct,
+					None => true,
+				};
+				if enforced {
+					// Multiplicative backoff: base_duration * (times_ejected + 1),
+					// capped by max_ejection_time.
+					let multiplier = times_ejected.saturating_add(1);
+					base_duration.map(|d| {
+						let scaled = d.saturating_mul(multiplier as u32);
+						scaled.min(max_ejection_time)
+					})
+				} else {
+					None
+				}
+			} else {
+				None
+			}
 		} else {
 			None
 		};
 		let health_on_unevict = policy.health_on_unevict;
-		(health, eviction_duration, health_on_unevict)
+		let max_ejection_percent = policy.max_ejection_percent;
+		(
+			health,
+			eviction_duration,
+			health_on_unevict,
+			max_ejection_percent,
+		)
 	}
 
 	fn add_llm_metrics(
@@ -806,10 +853,24 @@ impl Drop for DropOnLog {
 
 		if let Some(rh) = log.request_handle.take() {
 			let current_health = rh.health_score();
+			let consecutive_failures = rh.consecutive_failures();
+			let times_ejected = rh.times_ejected();
 			let unhealthy = Self::eviction_unhealthy(&log, cel_exec.as_ref());
-			let (health, eviction_duration, health_on_unevict) =
-				Self::eviction_decision(&log, current_health, unhealthy);
-			rh.finish_request(health, duration, eviction_duration, health_on_unevict);
+			let (health, eviction_duration, health_on_unevict, max_ejection_percent) =
+				Self::eviction_decision(
+					&log,
+					current_health,
+					consecutive_failures,
+					times_ejected,
+					unhealthy,
+				);
+			rh.finish_request(
+				health,
+				duration,
+				eviction_duration,
+				health_on_unevict,
+				max_ejection_percent,
+			);
 		}
 		if !maybe_enable_log && !enable_trace && !enable_custom_metrics {
 			// Report our non-customized metrics

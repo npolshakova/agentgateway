@@ -965,8 +965,13 @@ message BackendPolicySpec {
     FailureMode failure_mode = 2;
   }
   message Eviction {
-    // specify the time to evict (e.g. 30s, 60s).
+    // Base time to evict (e.g. 30s, 60s). The actual ejection time equals
+    // base * times_ejected and is capped by max_ejection_time.
     google.protobuf.Duration duration = 1;
+
+    // Upper bound on the ejection time after multiplicative backoff.
+    // Defaults to 300s when unset.
+    google.protobuf.Duration max_ejection_time = 2;
   }
   message Health {
     // cel expression evaluated per request to determine if eviction should be triggered
@@ -974,6 +979,43 @@ message BackendPolicySpec {
     // `false`: treat as healthy (no eviction from this response alone).
     string unhealthy_condition = 1;
     Eviction eviction = 2;
+
+    // EWMA health score threshold (0.0–1.0) below which an unhealthy backend is evicted.
+    // When set, the backend is only evicted if its exponentially-weighted moving average health
+    // score drops below this value. Unlike consecutive_failures (which counts consecutive failures),
+    // this uses a sliding-window average so a single success can delay eviction.
+    // When both health_threshold and consecutive_failures are set, eviction triggers when
+    // either condition is met. When neither is set, a single unhealthy response triggers eviction.
+    optional double health_threshold = 3;
+
+    // Health score (0.0–1.0) to assign to a backend when it returns from eviction.
+    // For example, 0.5 brings the backend back at half-health so it recovers gradually,
+    // while 1.0 restores it to full health immediately.
+    // When unset, the health score is left unchanged on recovery (i.e. the backend
+    // returns at whatever score it had when it was evicted).
+    optional double health_on_unevict = 4;
+
+    // Number of consecutive unhealthy responses required before evicting the backend.
+    // For example, 3 means the backend must fail 3 times in a row before being evicted.
+    // When both consecutive_failures and health_threshold are set, eviction triggers when
+    // either condition is met. When neither is set, a single unhealthy response triggers eviction.
+    optional int32 consecutive_failures = 5;
+
+    // Maximum percentage (0–100) of endpoints in a priority group that may be evicted simultaneously.
+    // Prevents cascading failures by keeping at least (100 - max_ejection_percent)% of backends active.
+    // When unset, all endpoints may be evicted (effectively 100%).
+    optional uint32 max_ejection_percent = 6;
+
+    // Probability (0–100) that an endpoint will actually be evicted when eviction criteria are met.
+    // For example, 50 means only half the qualifying eviction decisions will be enforced.
+    // When unset, eviction is always enforced (effectively 100%).
+    optional uint32 enforcing_percentage = 7;
+
+    // Time between outlier detection analysis sweeps.
+    // When set, unhealthy-response tracking and eviction decisions are batched on this interval
+    // rather than evaluated per-request.
+    // When unset, detection is passive and evaluated on every response.
+    google.protobuf.Duration interval = 8;
   }
   message BackendTLS {
     enum VerificationMode {

@@ -218,6 +218,8 @@ backends:
                     request_latency: 0
                     pending_requests: 0
                     total_requests: 0
+                    consecutive_failures: 0
+                    times_ejected: 0
                     evicted_until: ~
               rejected: {}
     inlinePolicies:
@@ -251,6 +253,8 @@ backends:
                     request_latency: 0
                     pending_requests: 0
                     total_requests: 0
+                    consecutive_failures: 0
+                    times_ejected: 0
                     evicted_until: ~
               rejected: {}
     inlinePolicies:
@@ -281,6 +285,8 @@ backends:
                     request_latency: 0
                     pending_requests: 0
                     total_requests: 0
+                    consecutive_failures: 0
+                    times_ejected: 0
                     evicted_until: ~
               rejected: {}
     inlinePolicies:
@@ -308,6 +314,8 @@ backends:
                     request_latency: 0
                     pending_requests: 0
                     total_requests: 0
+                    consecutive_failures: 0
+                    times_ejected: 0
                     evicted_until: ~
               rejected: {}
     inlinePolicies:
