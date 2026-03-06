@@ -1,18 +1,17 @@
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
-  name: mcp-backend
   namespace: default
+  name: mcp-static-streamable
 spec:
   mcp:
     targets:
-      - name: mcp-target
-        static:
-          host: mcp-app.default.svc.cluster.local
-          port: 8000
-          protocol: StreamableHTTP
-          path: override-sse
-
+    - name: streamable-target
+      static:
+        host: mcp.example.com
+        port: 9090
+        path: /mcp-endpoint
+        protocol: StreamableHTTP
 ---
 # Output
 output:
@@ -21,34 +20,34 @@ output:
     Namespace: default
   resource:
     backend:
-      key: default/mcp-backend
+      key: default/mcp-static-streamable
       mcp:
         targets:
         - backend:
-            backend: default/mcp-backend/mcp-target
-          name: mcp-target
-          path: override-sse
+            backend: default/mcp-static-streamable/streamable-target
+          name: streamable-target
+          path: /mcp-endpoint
           protocol: STREAMABLE_HTTP
       name:
-        name: mcp-backend
+        name: mcp-static-streamable
         namespace: default
 - gateway:
     Name: basic
     Namespace: default
   resource:
     backend:
-      key: default/mcp-backend/mcp-target
+      key: default/mcp-static-streamable/streamable-target
       name:
-        name: mcp-backend
+        name: mcp-static-streamable
         namespace: default
       static:
-        host: mcp-app.default.svc.cluster.local
-        port: 8000
+        host: mcp.example.com
+        port: 9090
 status:
 - apiVersion: agentgateway.dev/v1alpha1
   kind: AgentgatewayBackend
   metadata:
-    name: mcp-backend
+    name: mcp-static-streamable
     namespace: default
   spec: null
   status:

@@ -1,12 +1,10 @@
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
-  name: example-backend
   namespace: default
+  name: dynamic-backend
 spec:
-  static:
-    host: example.com
-    port: 8080
+  dynamicForwardProxy: {}
 ---
 # Output
 output:
@@ -15,18 +13,16 @@ output:
     Namespace: default
   resource:
     backend:
-      key: default/example-backend
+      dynamic: {}
+      key: default/dynamic-backend
       name:
-        name: example-backend
+        name: dynamic-backend
         namespace: default
-      static:
-        host: example.com
-        port: 8080
 status:
 - apiVersion: agentgateway.dev/v1alpha1
   kind: AgentgatewayBackend
   metadata:
-    name: example-backend
+    name: dynamic-backend
     namespace: default
   spec: null
   status:

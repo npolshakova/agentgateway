@@ -1,26 +1,16 @@
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
-  name: openai
   namespace: default
+  name: static-backend
 spec:
-  ai:
-    provider:
-      openai:
-        model: "gpt-4o-mini"
+  static:
+    host: example.com
+    port: 8888
   policies:
     auth:
-      secretRef:
-        name: openai-secret
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: openai-secret
-  namespace: default
-type: Opaque
-data:
-  Authorization: bXlzZWNyZXRrZXk=
+      # TODO: kubebuilder:validate allows this but `translateBackendAuth` exepects "inline key or secretRef"
+      passthrough: {}
 ---
 # Output
 output:
@@ -29,25 +19,21 @@ output:
     Namespace: default
   resource:
     backend:
-      ai:
-        providerGroups:
-        - providers:
-          - name: backend
-            openai:
-              model: gpt-4o-mini
       inlinePolicies:
       - auth:
-          key:
-            secret: mysecretkey
-      key: default/openai
+          passthrough: {}
+      key: default/static-backend
       name:
-        name: openai
+        name: static-backend
         namespace: default
+      static:
+        host: example.com
+        port: 8888
 status:
 - apiVersion: agentgateway.dev/v1alpha1
   kind: AgentgatewayBackend
   metadata:
-    name: openai
+    name: static-backend
     namespace: default
   spec: null
   status:

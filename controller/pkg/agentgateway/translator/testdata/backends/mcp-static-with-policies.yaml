@@ -1,18 +1,19 @@
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
-  name: mcp-backend
   namespace: default
+  name: mcp-static-with-auth
 spec:
   mcp:
     targets:
-      - name: mcp-target
-        static:
-          host: mcp-app.default.svc.cluster.local
-          port: 8000
-          protocol: StreamableHTTP
-          path: override-sse
-
+    - name: auth-target
+      static:
+        host: mcp-server.example.com
+        port: 8080
+        protocol: SSE
+        policies:
+          auth:
+            key: mcp-api-token
 ---
 # Output
 output:
@@ -21,34 +22,37 @@ output:
     Namespace: default
   resource:
     backend:
-      key: default/mcp-backend
+      key: default/mcp-static-with-auth
       mcp:
         targets:
         - backend:
-            backend: default/mcp-backend/mcp-target
-          name: mcp-target
-          path: override-sse
-          protocol: STREAMABLE_HTTP
+            backend: default/mcp-static-with-auth/auth-target
+          name: auth-target
+          protocol: SSE
       name:
-        name: mcp-backend
+        name: mcp-static-with-auth
         namespace: default
 - gateway:
     Name: basic
     Namespace: default
   resource:
     backend:
-      key: default/mcp-backend/mcp-target
+      inlinePolicies:
+      - auth:
+          key:
+            secret: mcp-api-token
+      key: default/mcp-static-with-auth/auth-target
       name:
-        name: mcp-backend
+        name: mcp-static-with-auth
         namespace: default
       static:
-        host: mcp-app.default.svc.cluster.local
-        port: 8000
+        host: mcp-server.example.com
+        port: 8080
 status:
 - apiVersion: agentgateway.dev/v1alpha1
   kind: AgentgatewayBackend
   metadata:
-    name: mcp-backend
+    name: mcp-static-with-auth
     namespace: default
   spec: null
   status:

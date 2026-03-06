@@ -1,18 +1,16 @@
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
-  name: mcp-backend
   namespace: default
+  name: mcp-static-no-protocol
 spec:
   mcp:
     targets:
-      - name: mcp-target
-        static:
-          host: mcp-app.default.svc.cluster.local
-          port: 8000
-          protocol: StreamableHTTP
-          path: override-sse
-
+    - name: default-target
+      static:
+        host: mcp-server.example.com
+        port: 8080
+    sessionRouting: Stateless
 ---
 # Output
 output:
@@ -21,34 +19,33 @@ output:
     Namespace: default
   resource:
     backend:
-      key: default/mcp-backend
+      key: default/mcp-static-no-protocol
       mcp:
+        statefulMode: STATELESS
         targets:
         - backend:
-            backend: default/mcp-backend/mcp-target
-          name: mcp-target
-          path: override-sse
-          protocol: STREAMABLE_HTTP
+            backend: default/mcp-static-no-protocol/default-target
+          name: default-target
       name:
-        name: mcp-backend
+        name: mcp-static-no-protocol
         namespace: default
 - gateway:
     Name: basic
     Namespace: default
   resource:
     backend:
-      key: default/mcp-backend/mcp-target
+      key: default/mcp-static-no-protocol/default-target
       name:
-        name: mcp-backend
+        name: mcp-static-no-protocol
         namespace: default
       static:
-        host: mcp-app.default.svc.cluster.local
-        port: 8000
+        host: mcp-server.example.com
+        port: 8080
 status:
 - apiVersion: agentgateway.dev/v1alpha1
   kind: AgentgatewayBackend
   metadata:
-    name: mcp-backend
+    name: mcp-static-no-protocol
     namespace: default
   spec: null
   status:
