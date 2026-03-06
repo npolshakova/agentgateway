@@ -610,6 +610,51 @@ spec:
                                                               gcp] must be set
                                                             rule: '[has(self.key),has(self.secretRef),has(self.passthrough),has(self.aws),has(self.azure),has(self.gcp)].filter(x,x==true).size()
                                                               == 1'
+                                                        health:
+                                                          description: health defines
+                                                            settings for passive and
+                                                            active health checking.
+                                                          properties:
+                                                            eviction:
+                                                              description: Eviction
+                                                                defines settings for
+                                                                evicting unhealthy
+                                                                backends.
+                                                              properties:
+                                                                duration:
+                                                                  default: 30s
+                                                                  description: duration
+                                                                    specifies how
+                                                                    long a backend
+                                                                    should be evicted
+                                                                    after being marked
+                                                                    unhealthy. If
+                                                                    unset, defaults
+                                                                    to 30s.
+                                                                  type: string
+                                                                  x-kubernetes-validations:
+                                                                  - message: invalid
+                                                                      duration value
+                                                                    rule: matches(self,
+                                                                      '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
+                                                                  - message: evictionDuration
+                                                                      must be at least
+                                                                      1 second
+                                                                    rule: duration(self)
+                                                                      >= duration('1s')
+                                                              type: object
+                                                            unhealthyCondition:
+                                                              description: |-
+                                                                UnhealthyCondition is a CEL expression that determines whether a response indicates an unhealthy backend.
+                                                                When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
+
+                                                                For example, to evict on 5xx responses: `response.code >= 500`.
+                                                              maxLength: 16384
+                                                              minLength: 1
+                                                              type: string
+                                                          required:
+                                                          - unhealthyCondition
+                                                          type: object
                                                         http:
                                                           description: http defines
                                                             settings for managing
@@ -1374,6 +1419,51 @@ spec:
                                                               gcp] must be set
                                                             rule: '[has(self.key),has(self.secretRef),has(self.passthrough),has(self.aws),has(self.azure),has(self.gcp)].filter(x,x==true).size()
                                                               == 1'
+                                                        health:
+                                                          description: health defines
+                                                            settings for passive and
+                                                            active health checking.
+                                                          properties:
+                                                            eviction:
+                                                              description: Eviction
+                                                                defines settings for
+                                                                evicting unhealthy
+                                                                backends.
+                                                              properties:
+                                                                duration:
+                                                                  default: 30s
+                                                                  description: duration
+                                                                    specifies how
+                                                                    long a backend
+                                                                    should be evicted
+                                                                    after being marked
+                                                                    unhealthy. If
+                                                                    unset, defaults
+                                                                    to 30s.
+                                                                  type: string
+                                                                  x-kubernetes-validations:
+                                                                  - message: invalid
+                                                                      duration value
+                                                                    rule: matches(self,
+                                                                      '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
+                                                                  - message: evictionDuration
+                                                                      must be at least
+                                                                      1 second
+                                                                    rule: duration(self)
+                                                                      >= duration('1s')
+                                                              type: object
+                                                            unhealthyCondition:
+                                                              description: |-
+                                                                UnhealthyCondition is a CEL expression that determines whether a response indicates an unhealthy backend.
+                                                                When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
+
+                                                                For example, to evict on 5xx responses: `response.code >= 500`.
+                                                              maxLength: 16384
+                                                              minLength: 1
+                                                              type: string
+                                                          required:
+                                                          - unhealthyCondition
+                                                          type: object
                                                         http:
                                                           description: http defines
                                                             settings for managing
@@ -2133,6 +2223,51 @@ spec:
                                                               gcp] must be set
                                                             rule: '[has(self.key),has(self.secretRef),has(self.passthrough),has(self.aws),has(self.azure),has(self.gcp)].filter(x,x==true).size()
                                                               == 1'
+                                                        health:
+                                                          description: health defines
+                                                            settings for passive and
+                                                            active health checking.
+                                                          properties:
+                                                            eviction:
+                                                              description: Eviction
+                                                                defines settings for
+                                                                evicting unhealthy
+                                                                backends.
+                                                              properties:
+                                                                duration:
+                                                                  default: 30s
+                                                                  description: duration
+                                                                    specifies how
+                                                                    long a backend
+                                                                    should be evicted
+                                                                    after being marked
+                                                                    unhealthy. If
+                                                                    unset, defaults
+                                                                    to 30s.
+                                                                  type: string
+                                                                  x-kubernetes-validations:
+                                                                  - message: invalid
+                                                                      duration value
+                                                                    rule: matches(self,
+                                                                      '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
+                                                                  - message: evictionDuration
+                                                                      must be at least
+                                                                      1 second
+                                                                    rule: duration(self)
+                                                                      >= duration('1s')
+                                                              type: object
+                                                            unhealthyCondition:
+                                                              description: |-
+                                                                UnhealthyCondition is a CEL expression that determines whether a response indicates an unhealthy backend.
+                                                                When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
+
+                                                                For example, to evict on 5xx responses: `response.code >= 500`.
+                                                              maxLength: 16384
+                                                              minLength: 1
+                                                              type: string
+                                                          required:
+                                                          - unhealthyCondition
+                                                          type: object
                                                         http:
                                                           description: http defines
                                                             settings for managing
@@ -3118,6 +3253,51 @@ spec:
                                                               gcp] must be set
                                                             rule: '[has(self.key),has(self.secretRef),has(self.passthrough),has(self.aws),has(self.azure),has(self.gcp)].filter(x,x==true).size()
                                                               == 1'
+                                                        health:
+                                                          description: health defines
+                                                            settings for passive and
+                                                            active health checking.
+                                                          properties:
+                                                            eviction:
+                                                              description: Eviction
+                                                                defines settings for
+                                                                evicting unhealthy
+                                                                backends.
+                                                              properties:
+                                                                duration:
+                                                                  default: 30s
+                                                                  description: duration
+                                                                    specifies how
+                                                                    long a backend
+                                                                    should be evicted
+                                                                    after being marked
+                                                                    unhealthy. If
+                                                                    unset, defaults
+                                                                    to 30s.
+                                                                  type: string
+                                                                  x-kubernetes-validations:
+                                                                  - message: invalid
+                                                                      duration value
+                                                                    rule: matches(self,
+                                                                      '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
+                                                                  - message: evictionDuration
+                                                                      must be at least
+                                                                      1 second
+                                                                    rule: duration(self)
+                                                                      >= duration('1s')
+                                                              type: object
+                                                            unhealthyCondition:
+                                                              description: |-
+                                                                UnhealthyCondition is a CEL expression that determines whether a response indicates an unhealthy backend.
+                                                                When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
+
+                                                                For example, to evict on 5xx responses: `response.code >= 500`.
+                                                              maxLength: 16384
+                                                              minLength: 1
+                                                              type: string
+                                                          required:
+                                                          - unhealthyCondition
+                                                          type: object
                                                         http:
                                                           description: http defines
                                                             settings for managing
@@ -3882,6 +4062,51 @@ spec:
                                                               gcp] must be set
                                                             rule: '[has(self.key),has(self.secretRef),has(self.passthrough),has(self.aws),has(self.azure),has(self.gcp)].filter(x,x==true).size()
                                                               == 1'
+                                                        health:
+                                                          description: health defines
+                                                            settings for passive and
+                                                            active health checking.
+                                                          properties:
+                                                            eviction:
+                                                              description: Eviction
+                                                                defines settings for
+                                                                evicting unhealthy
+                                                                backends.
+                                                              properties:
+                                                                duration:
+                                                                  default: 30s
+                                                                  description: duration
+                                                                    specifies how
+                                                                    long a backend
+                                                                    should be evicted
+                                                                    after being marked
+                                                                    unhealthy. If
+                                                                    unset, defaults
+                                                                    to 30s.
+                                                                  type: string
+                                                                  x-kubernetes-validations:
+                                                                  - message: invalid
+                                                                      duration value
+                                                                    rule: matches(self,
+                                                                      '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
+                                                                  - message: evictionDuration
+                                                                      must be at least
+                                                                      1 second
+                                                                    rule: duration(self)
+                                                                      >= duration('1s')
+                                                              type: object
+                                                            unhealthyCondition:
+                                                              description: |-
+                                                                UnhealthyCondition is a CEL expression that determines whether a response indicates an unhealthy backend.
+                                                                When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
+
+                                                                For example, to evict on 5xx responses: `response.code >= 500`.
+                                                              maxLength: 16384
+                                                              minLength: 1
+                                                              type: string
+                                                          required:
+                                                          - unhealthyCondition
+                                                          type: object
                                                         http:
                                                           description: http defines
                                                             settings for managing
@@ -4914,6 +5139,40 @@ spec:
                                         passthrough aws azure gcp] must be set
                                       rule: '[has(self.key),has(self.secretRef),has(self.passthrough),has(self.aws),has(self.azure),has(self.gcp)].filter(x,x==true).size()
                                         == 1'
+                                  health:
+                                    description: health defines settings for passive
+                                      and active health checking.
+                                    properties:
+                                      eviction:
+                                        description: Eviction defines settings for
+                                          evicting unhealthy backends.
+                                        properties:
+                                          duration:
+                                            default: 30s
+                                            description: duration specifies how long
+                                              a backend should be evicted after being
+                                              marked unhealthy. If unset, defaults
+                                              to 30s.
+                                            type: string
+                                            x-kubernetes-validations:
+                                            - message: invalid duration value
+                                              rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
+                                            - message: evictionDuration must be at
+                                                least 1 second
+                                              rule: duration(self) >= duration('1s')
+                                        type: object
+                                      unhealthyCondition:
+                                        description: |-
+                                          UnhealthyCondition is a CEL expression that determines whether a response indicates an unhealthy backend.
+                                          When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
+
+                                          For example, to evict on 5xx responses: `response.code >= 500`.
+                                        maxLength: 16384
+                                        minLength: 1
+                                        type: string
+                                    required:
+                                    - unhealthyCondition
+                                    type: object
                                   http:
                                     description: http defines settings for managing
                                       HTTP requests to the backend.
@@ -5373,8 +5632,8 @@ spec:
                                 type: object
                                 x-kubernetes-validations:
                                 - message: at least one of the fields in [ai auth
-                                    http tcp tls transformation] must be set
-                                  rule: '[has(self.ai),has(self.auth),has(self.http),has(self.tcp),has(self.tls),has(self.transformation)].filter(x,x==true).size()
+                                    health http tcp tls transformation] must be set
+                                  rule: '[has(self.ai),has(self.auth),has(self.health),has(self.http),has(self.tcp),has(self.tls),has(self.transformation)].filter(x,x==true).size()
                                     >= 1'
                               port:
                                 description: Port specifies the port to send the requests
@@ -5916,6 +6175,40 @@ spec:
                                       passthrough aws azure gcp] must be set
                                     rule: '[has(self.key),has(self.secretRef),has(self.passthrough),has(self.aws),has(self.azure),has(self.gcp)].filter(x,x==true).size()
                                       == 1'
+                                health:
+                                  description: health defines settings for passive
+                                    and active health checking.
+                                  properties:
+                                    eviction:
+                                      description: Eviction defines settings for evicting
+                                        unhealthy backends.
+                                      properties:
+                                        duration:
+                                          default: 30s
+                                          description: duration specifies how long
+                                            a backend should be evicted after being
+                                            marked unhealthy. If unset, defaults to
+                                            30s.
+                                          type: string
+                                          x-kubernetes-validations:
+                                          - message: invalid duration value
+                                            rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
+                                          - message: evictionDuration must be at least
+                                              1 second
+                                            rule: duration(self) >= duration('1s')
+                                      type: object
+                                    unhealthyCondition:
+                                      description: |-
+                                        UnhealthyCondition is a CEL expression that determines whether a response indicates an unhealthy backend.
+                                        When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
+
+                                        For example, to evict on 5xx responses: `response.code >= 500`.
+                                      maxLength: 16384
+                                      minLength: 1
+                                      type: string
+                                  required:
+                                  - unhealthyCondition
+                                  type: object
                                 http:
                                   description: http defines settings for managing
                                     HTTP requests to the backend.
@@ -6562,9 +6855,9 @@ spec:
                                       >= 1'
                               type: object
                               x-kubernetes-validations:
-                              - message: at least one of the fields in [auth http
-                                  mcp tcp tls transformation] must be set
-                                rule: '[has(self.auth),has(self.http),has(self.mcp),has(self.tcp),has(self.tls),has(self.transformation)].filter(x,x==true).size()
+                              - message: at least one of the fields in [auth health
+                                  http mcp tcp tls transformation] must be set
+                                rule: '[has(self.auth),has(self.health),has(self.http),has(self.mcp),has(self.tcp),has(self.tls),has(self.transformation)].filter(x,x==true).size()
                                   >= 1'
                             port:
                               description: Port is the port number of the MCPBackend
@@ -6977,6 +7270,40 @@ spec:
                                               gcp] must be set
                                             rule: '[has(self.key),has(self.secretRef),has(self.passthrough),has(self.aws),has(self.azure),has(self.gcp)].filter(x,x==true).size()
                                               == 1'
+                                        health:
+                                          description: health defines settings for
+                                            passive and active health checking.
+                                          properties:
+                                            eviction:
+                                              description: Eviction defines settings
+                                                for evicting unhealthy backends.
+                                              properties:
+                                                duration:
+                                                  default: 30s
+                                                  description: duration specifies
+                                                    how long a backend should be evicted
+                                                    after being marked unhealthy.
+                                                    If unset, defaults to 30s.
+                                                  type: string
+                                                  x-kubernetes-validations:
+                                                  - message: invalid duration value
+                                                    rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
+                                                  - message: evictionDuration must
+                                                      be at least 1 second
+                                                    rule: duration(self) >= duration('1s')
+                                              type: object
+                                            unhealthyCondition:
+                                              description: |-
+                                                UnhealthyCondition is a CEL expression that determines whether a response indicates an unhealthy backend.
+                                                When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
+
+                                                For example, to evict on 5xx responses: `response.code >= 500`.
+                                              maxLength: 16384
+                                              minLength: 1
+                                              type: string
+                                          required:
+                                          - unhealthyCondition
+                                          type: object
                                         http:
                                           description: http defines settings for managing
                                             HTTP requests to the backend.
@@ -7613,6 +7940,40 @@ spec:
                                               gcp] must be set
                                             rule: '[has(self.key),has(self.secretRef),has(self.passthrough),has(self.aws),has(self.azure),has(self.gcp)].filter(x,x==true).size()
                                               == 1'
+                                        health:
+                                          description: health defines settings for
+                                            passive and active health checking.
+                                          properties:
+                                            eviction:
+                                              description: Eviction defines settings
+                                                for evicting unhealthy backends.
+                                              properties:
+                                                duration:
+                                                  default: 30s
+                                                  description: duration specifies
+                                                    how long a backend should be evicted
+                                                    after being marked unhealthy.
+                                                    If unset, defaults to 30s.
+                                                  type: string
+                                                  x-kubernetes-validations:
+                                                  - message: invalid duration value
+                                                    rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
+                                                  - message: evictionDuration must
+                                                      be at least 1 second
+                                                    rule: duration(self) >= duration('1s')
+                                              type: object
+                                            unhealthyCondition:
+                                              description: |-
+                                                UnhealthyCondition is a CEL expression that determines whether a response indicates an unhealthy backend.
+                                                When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
+
+                                                For example, to evict on 5xx responses: `response.code >= 500`.
+                                              maxLength: 16384
+                                              minLength: 1
+                                              type: string
+                                          required:
+                                          - unhealthyCondition
+                                          type: object
                                         http:
                                           description: http defines settings for managing
                                             HTTP requests to the backend.
@@ -8245,6 +8606,40 @@ spec:
                                               gcp] must be set
                                             rule: '[has(self.key),has(self.secretRef),has(self.passthrough),has(self.aws),has(self.azure),has(self.gcp)].filter(x,x==true).size()
                                               == 1'
+                                        health:
+                                          description: health defines settings for
+                                            passive and active health checking.
+                                          properties:
+                                            eviction:
+                                              description: Eviction defines settings
+                                                for evicting unhealthy backends.
+                                              properties:
+                                                duration:
+                                                  default: 30s
+                                                  description: duration specifies
+                                                    how long a backend should be evicted
+                                                    after being marked unhealthy.
+                                                    If unset, defaults to 30s.
+                                                  type: string
+                                                  x-kubernetes-validations:
+                                                  - message: invalid duration value
+                                                    rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
+                                                  - message: evictionDuration must
+                                                      be at least 1 second
+                                                    rule: duration(self) >= duration('1s')
+                                              type: object
+                                            unhealthyCondition:
+                                              description: |-
+                                                UnhealthyCondition is a CEL expression that determines whether a response indicates an unhealthy backend.
+                                                When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
+
+                                                For example, to evict on 5xx responses: `response.code >= 500`.
+                                              maxLength: 16384
+                                              minLength: 1
+                                              type: string
+                                          required:
+                                          - unhealthyCondition
+                                          type: object
                                         http:
                                           description: http defines settings for managing
                                             HTTP requests to the backend.
@@ -9094,6 +9489,40 @@ spec:
                                               gcp] must be set
                                             rule: '[has(self.key),has(self.secretRef),has(self.passthrough),has(self.aws),has(self.azure),has(self.gcp)].filter(x,x==true).size()
                                               == 1'
+                                        health:
+                                          description: health defines settings for
+                                            passive and active health checking.
+                                          properties:
+                                            eviction:
+                                              description: Eviction defines settings
+                                                for evicting unhealthy backends.
+                                              properties:
+                                                duration:
+                                                  default: 30s
+                                                  description: duration specifies
+                                                    how long a backend should be evicted
+                                                    after being marked unhealthy.
+                                                    If unset, defaults to 30s.
+                                                  type: string
+                                                  x-kubernetes-validations:
+                                                  - message: invalid duration value
+                                                    rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
+                                                  - message: evictionDuration must
+                                                      be at least 1 second
+                                                    rule: duration(self) >= duration('1s')
+                                              type: object
+                                            unhealthyCondition:
+                                              description: |-
+                                                UnhealthyCondition is a CEL expression that determines whether a response indicates an unhealthy backend.
+                                                When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
+
+                                                For example, to evict on 5xx responses: `response.code >= 500`.
+                                              maxLength: 16384
+                                              minLength: 1
+                                              type: string
+                                          required:
+                                          - unhealthyCondition
+                                          type: object
                                         http:
                                           description: http defines settings for managing
                                             HTTP requests to the backend.
@@ -9730,6 +10159,40 @@ spec:
                                               gcp] must be set
                                             rule: '[has(self.key),has(self.secretRef),has(self.passthrough),has(self.aws),has(self.azure),has(self.gcp)].filter(x,x==true).size()
                                               == 1'
+                                        health:
+                                          description: health defines settings for
+                                            passive and active health checking.
+                                          properties:
+                                            eviction:
+                                              description: Eviction defines settings
+                                                for evicting unhealthy backends.
+                                              properties:
+                                                duration:
+                                                  default: 30s
+                                                  description: duration specifies
+                                                    how long a backend should be evicted
+                                                    after being marked unhealthy.
+                                                    If unset, defaults to 30s.
+                                                  type: string
+                                                  x-kubernetes-validations:
+                                                  - message: invalid duration value
+                                                    rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
+                                                  - message: evictionDuration must
+                                                      be at least 1 second
+                                                    rule: duration(self) >= duration('1s')
+                                              type: object
+                                            unhealthyCondition:
+                                              description: |-
+                                                UnhealthyCondition is a CEL expression that determines whether a response indicates an unhealthy backend.
+                                                When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
+
+                                                For example, to evict on 5xx responses: `response.code >= 500`.
+                                              maxLength: 16384
+                                              minLength: 1
+                                              type: string
+                                          required:
+                                          - unhealthyCondition
+                                          type: object
                                         http:
                                           description: http defines settings for managing
                                             HTTP requests to the backend.
@@ -10632,6 +11095,38 @@ spec:
                         aws azure gcp] must be set
                       rule: '[has(self.key),has(self.secretRef),has(self.passthrough),has(self.aws),has(self.azure),has(self.gcp)].filter(x,x==true).size()
                         == 1'
+                  health:
+                    description: health defines settings for passive and active health
+                      checking.
+                    properties:
+                      eviction:
+                        description: Eviction defines settings for evicting unhealthy
+                          backends.
+                        properties:
+                          duration:
+                            default: 30s
+                            description: duration specifies how long a backend should
+                              be evicted after being marked unhealthy. If unset, defaults
+                              to 30s.
+                            type: string
+                            x-kubernetes-validations:
+                            - message: invalid duration value
+                              rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
+                            - message: evictionDuration must be at least 1 second
+                              rule: duration(self) >= duration('1s')
+                        type: object
+                      unhealthyCondition:
+                        description: |-
+                          UnhealthyCondition is a CEL expression that determines whether a response indicates an unhealthy backend.
+                          When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
+
+                          For example, to evict on 5xx responses: `response.code >= 500`.
+                        maxLength: 16384
+                        minLength: 1
+                        type: string
+                    required:
+                    - unhealthyCondition
+                    type: object
                   http:
                     description: http defines settings for managing HTTP requests
                       to the backend.
@@ -11244,9 +11739,9 @@ spec:
                         >= 1'
                 type: object
                 x-kubernetes-validations:
-                - message: at least one of the fields in [ai auth http mcp tcp tls
-                    transformation] must be set
-                  rule: '[has(self.ai),has(self.auth),has(self.http),has(self.mcp),has(self.tcp),has(self.tls),has(self.transformation)].filter(x,x==true).size()
+                - message: at least one of the fields in [ai auth health http mcp
+                    tcp tls transformation] must be set
+                  rule: '[has(self.ai),has(self.auth),has(self.health),has(self.http),has(self.mcp),has(self.tcp),has(self.tls),has(self.transformation)].filter(x,x==true).size()
                     >= 1'
               static:
                 description: static represents a static hostname.

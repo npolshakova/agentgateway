@@ -10,7 +10,9 @@ use crate::http::auth::BackendAuth;
 use crate::http::backendtls::LocalBackendTLS;
 use crate::http::filters::HeaderModifier;
 use crate::http::transformation_cel::{LocalTransformationConfig, Transformation};
-use crate::http::{HeaderName, HeaderOrPseudo, filters, retry, timeout, transformation_cel};
+use crate::http::{
+	HeaderName, HeaderOrPseudo, filters, health, retry, timeout, transformation_cel,
+};
 use crate::llm::policy::PromptGuard;
 use crate::llm::{AIBackend, AIProvider, LocalModelAIProvider, NamedAIProvider};
 use crate::llm::{anthropic, openai};
@@ -1040,6 +1042,10 @@ pub struct SimpleLocalBackendPolicies {
 	/// Specify TCP settings for the backend
 	#[serde(default)]
 	pub tcp: Option<backend::TCP>,
+
+	/// Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.
+	#[serde(default)]
+	pub health: Option<health::LocalHealthPolicy>,
 }
 
 #[apply(schema_de!)]
@@ -1082,6 +1088,7 @@ impl LocalBackendPolicies {
 					backend_auth,
 					http,
 					tcp,
+					health,
 				},
 			mcp_authorization,
 			a2a,
@@ -1121,6 +1128,11 @@ impl LocalBackendPolicies {
 		if let Some(mut p) = ai {
 			p.compile_model_alias_patterns();
 			pols.push(BackendPolicy::AI(Arc::new(p)))
+		}
+		if let Some(p) = health {
+			pols.push(BackendPolicy::Health(p.try_into().map_err(
+				|e: crate::cel::Error| anyhow::anyhow!("health.unhealthyExpression: {}", e),
+			)?));
 		}
 		Ok(pols)
 	}

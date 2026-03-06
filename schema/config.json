@@ -2153,6 +2153,18 @@
             }
           ],
           "default": null
+        },
+        "health": {
+          "description": "Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalHealthPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "additionalProperties": false
@@ -2646,6 +2658,57 @@
         "secs",
         "nanos"
       ]
+    },
+    "LocalHealthPolicy": {
+      "description": "Local/config health policy with CEL as string; converted to Policy by compiling the expression.\nMirrors the proto `Health` message structure.",
+      "type": "object",
+      "properties": {
+        "unhealthyExpression": {
+          "description": "CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "eviction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalEviction"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "healthThreshold": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "healthOnUnevict": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        }
+      },
+      "additionalProperties": false
+    },
+    "LocalEviction": {
+      "description": "Local/config eviction sub-policy with duration as string; mirrors `Eviction`.",
+      "type": "object",
+      "properties": {
+        "duration": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
     },
     "BedrockGuardrails": {
       "description": "Configuration for AWS Bedrock Guardrails integration.",
@@ -4122,6 +4185,18 @@
           ],
           "default": null
         },
+        "health": {
+          "description": "Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalHealthPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "mcpAuthorization": {
           "description": "Authorization policies for MCP access.",
           "anyOf": [
@@ -4495,6 +4570,18 @@
           "anyOf": [
             {
               "$ref": "#/$defs/TCP"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "health": {
+          "description": "Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalHealthPolicy"
             },
             {
               "type": "null"

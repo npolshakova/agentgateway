@@ -33,6 +33,7 @@ const (
 	backendHttpPolicySuffix       = ":backend-http"
 	mcpAuthorizationPolicySuffix  = ":mcp-authorization"
 	mcpAuthenticationPolicySuffix = ":mcp-authentication"
+	healthPolicySuffix            = ":health"
 )
 
 func TranslateInlineBackendPolicy(
@@ -90,6 +91,15 @@ func translateBackendPolicyToAgw(
 		agwPolicies = append(agwPolicies, pol...)
 	}
 
+	if s := backend.Health; s != nil {
+		pol, err := translateBackendHealthPolicy(policy, policyTarget)
+		if err != nil {
+			logger.Error("error processing backend health policy", "err", err)
+			errs = append(errs, err)
+		}
+		agwPolicies = append(agwPolicies, pol...)
+	}
+
 	if s := backend.Transformation; s != nil {
 		pol, err := translateBackendTransformation(policy, policyTarget)
 		if err != nil {
@@ -134,6 +144,38 @@ func translateBackendPolicyToAgw(
 	}
 
 	return agwPolicies, errors.Join(errs...)
+}
+
+func translateBackendHealthPolicy(policy *agentgateway.AgentgatewayPolicy, target *api.PolicyTarget) ([]AgwPolicy, error) {
+	var errs []error
+
+	healthPolicy := policy.Spec.Backend.Health
+
+	var evictionProto *api.BackendPolicySpec_Eviction
+	if healthPolicy.Eviction != nil && healthPolicy.Eviction.Duration != nil {
+		evictionProto = &api.BackendPolicySpec_Eviction{
+			Duration: durationpb.New(healthPolicy.Eviction.Duration.Duration),
+		}
+	}
+
+	p := &api.BackendPolicySpec_Health{
+		UnhealthyCondition: string(healthPolicy.UnhealthyCondition),
+		Eviction:           evictionProto,
+	}
+	evictPolicy := &api.Policy{
+		Key:    policy.Namespace + "/" + policy.Name + healthPolicySuffix + attachmentName(target),
+		Name:   TypedResourceName(wellknown.AgentgatewayPolicyGVK.Kind, policy),
+		Target: target,
+		Kind: &api.Policy_Backend{
+			Backend: &api.BackendPolicySpec{
+				Kind: &api.BackendPolicySpec_Health_{
+					Health: p,
+				},
+			},
+		},
+	}
+
+	return []AgwPolicy{{Policy: evictPolicy}}, errors.Join(errs...)
 }
 
 func translateBackendTCP(ctx PolicyCtx, policy *agentgateway.AgentgatewayPolicy, name string, target *api.PolicyTarget) ([]AgwPolicy, error) {

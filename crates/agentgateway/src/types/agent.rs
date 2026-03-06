@@ -24,7 +24,8 @@ use serde_json::Value;
 use crate::http::auth::BackendAuth;
 use crate::http::authorization::RuleSet;
 use crate::http::{
-	HeaderOrPseudo, HeaderValue, ext_authz, ext_proc, filters, remoteratelimit, retry, timeout,
+	HeaderOrPseudo, HeaderValue, ext_authz, ext_proc, filters, health, remoteratelimit, retry,
+	timeout,
 };
 use crate::mcp::McpAuthorization;
 use crate::telemetry::log::OrderedStringMap;
@@ -2016,6 +2017,7 @@ pub enum BackendPolicy {
 	AI(Arc<llm::Policy>),
 	SessionPersistence(http::sessionpersistence::Policy),
 	Transformation(crate::http::transformation_cel::Transformation),
+	Health(health::Policy),
 
 	RequestHeaderModifier(filters::HeaderModifier),
 	ResponseHeaderModifier(filters::HeaderModifier),

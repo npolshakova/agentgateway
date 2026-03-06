@@ -79,6 +79,11 @@ async fn test_aws_config() {
 	test_config_parsing("aws").await;
 }
 
+#[tokio::test]
+async fn test_health_config() {
+	test_config_parsing("health").await;
+}
+
 #[test]
 fn test_llm_model_name_header_match_valid_patterns() {
 	match super::llm_model_name_header_match("*").unwrap() {
