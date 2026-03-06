@@ -152,6 +152,7 @@ type Health struct {
 	UnhealthyCondition shared.CELExpression `json:"unhealthyCondition"`
 
 	// Eviction defines settings for evicting unhealthy backends.
+	// +optional
 	Eviction *BackendEviction `json:"eviction,omitempty"`
 }
 
