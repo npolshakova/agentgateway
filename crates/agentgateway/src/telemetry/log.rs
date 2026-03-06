@@ -468,6 +468,8 @@ impl DropOnLog {
 		unhealthy: bool,
 	) -> (bool, Option<Duration>, Option<f64>) {
 		const DEFAULT_EVICTION_SECS: u64 = 30;
+		/// EWMA alpha used by EndpointInfo health tracking (must match loadbalancer::ALPHA).
+		const HEALTH_EWMA_ALPHA: f64 = 0.3;
 		let Some(policy) = &log.health_policy else {
 			let health = !unhealthy;
 			return (health, None, None);
@@ -479,13 +481,29 @@ impl DropOnLog {
 				.or(log.retry_after)
 				.or(log.retry_backoff)
 				.or(Some(Duration::from_secs(DEFAULT_EVICTION_SECS)));
-			// Apply health threshold: only evict when current health is below threshold
-			let below_threshold = policy.health_threshold.is_none_or(|t| current_health < t);
+			let below_threshold = if let Some(t) = policy.health_threshold {
+				current_health < t
+			} else if let Some(eviction) = &policy.eviction
+				&& let Some(threshold) = eviction.threshold
+				&& threshold > 0
+			{
+				// Convert consecutive-failure count to an approximate EWMA health score:
+				// after N consecutive failures the EWMA health is roughly (1 - alpha)^N.
+				let ewma_threshold = (1.0 - HEALTH_EWMA_ALPHA).powi(threshold);
+				current_health < ewma_threshold
+			} else {
+				true
+			};
 			if below_threshold { duration } else { None }
 		} else {
 			None
 		};
-		let health_on_unevict = policy.health_on_unevict;
+		let health_on_unevict = policy.health_on_unevict.or_else(|| {
+			policy
+				.eviction
+				.as_ref()
+				.and_then(|ev| if ev.health_on_return { Some(1.0) } else { None })
+		});
 		(health, eviction_duration, health_on_unevict)
 	}
 
