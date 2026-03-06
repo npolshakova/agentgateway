@@ -161,8 +161,11 @@ mod requests {
 		("tools", &[COMPLETIONS, BEDROCK, VERTEX]),
 		("reasoning", &[COMPLETIONS, BEDROCK, VERTEX]),
 	];
-	const RESPONSES_REQUESTS: &[(&str, &[&str])] =
-		&[("basic", &[BEDROCK]), ("instructions", &[BEDROCK])];
+	const RESPONSES_REQUESTS: &[(&str, &[&str])] = &[
+		("basic", &[BEDROCK]),
+		("instructions", &[BEDROCK]),
+		("input-list", &[BEDROCK]),
+	];
 	pub const COUNT_TOKENS_REQUESTS: &[(&str, &[&str])] = &[
 		("basic", &[ANTHROPIC, BEDROCK, VERTEX]),
 		("with_system", &[ANTHROPIC, BEDROCK, VERTEX]),
