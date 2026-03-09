@@ -1189,23 +1189,15 @@ fn convert_health(
 	};
 	let eviction = h.eviction.as_ref().map(|ev| health::Eviction {
 		duration: ev.duration.map(convert_duration),
-		max_ejection_time: ev.max_ejection_time.map(convert_duration),
+		max_eviction_time: ev.max_eviction_time.map(convert_duration),
+		restore_health: ev.restore_health,
+		max_eviction_percent: ev.max_eviction_percent,
+		consecutive_failures: ev.consecutive_failures,
+		health_threshold: ev.health_threshold,
 	});
-	let consecutive_failures = h.consecutive_failures;
-	let health_threshold = h.health_threshold;
-	let health_on_unevict = h.health_on_unevict;
-	let max_ejection_percent = h.max_ejection_percent;
-	let enforcing_percentage = h.enforcing_percentage;
-	let interval = h.interval.map(convert_duration);
 	Ok(health::Policy {
 		unhealthy_expression,
 		eviction,
-		consecutive_failures,
-		health_threshold,
-		health_on_unevict,
-		max_ejection_percent,
-		enforcing_percentage,
-		interval,
 	})
 }
 

@@ -167,8 +167,8 @@ pub enum EvictionEvent {
 	Evict {
 		key: EndpointKey,
 		until: Instant,
-		health_on_unevict: Option<f64>,
-		max_ejection_percent: Option<u32>,
+		restore_health: Option<f64>,
+		max_eviction_percent: Option<u32>,
 	},
 }
 
@@ -331,7 +331,7 @@ impl<T: Clone + Sync + Send + 'static> EndpointSet<T> {
 		tokio::task::spawn(async move {
 			let mut uneviction_heap: BinaryHeap<UnevictEntry> = Default::default();
 			let handle_eviction = |uneviction_heap: &mut BinaryHeap<UnevictEntry>| {
-				let UnevictEntry(_until, key, health_on_unevict) =
+				let UnevictEntry(_until, key, restore_health) =
 					uneviction_heap.pop().expect("heap is empty");
 
 				trace!(%key, "unevict");
@@ -341,7 +341,7 @@ impl<T: Clone + Sync + Send + 'static> EndpointSet<T> {
 				let mut eps = Arc::unwrap_or_clone(bucket.load_full());
 				if let Some(ep) = eps.rejected.swap_remove(&key) {
 					ep.info.evicted_until.store(None);
-					if let Some(h) = health_on_unevict {
+					if let Some(h) = restore_health {
 						// Health scoring assumes normalized values in [0.0, 1.0].
 						ep.info.health.set(h.clamp(0.0, 1.0));
 					}
@@ -358,8 +358,8 @@ impl<T: Clone + Sync + Send + 'static> EndpointSet<T> {
 				let EvictionEvent::Evict {
 					key,
 					until,
-					health_on_unevict,
-					max_ejection_percent,
+					restore_health,
+					max_eviction_percent,
 				} = item;
 
 				let Some(bucket) = Self::find_bucket_atomic(buckets.as_slice(), &key) else {
@@ -367,7 +367,7 @@ impl<T: Clone + Sync + Send + 'static> EndpointSet<T> {
 				};
 				let mut eps = Arc::unwrap_or_clone(bucket.load_full());
 
-				if let Some(max_pct) = max_ejection_percent {
+				if let Some(max_pct) = max_eviction_percent {
 					let total = eps.active.len() + eps.rejected.len();
 					let rejected_after = eps.rejected.len() + 1;
 					if total > 0 && rejected_after * 100 > (max_pct as usize) * total {
@@ -375,13 +375,13 @@ impl<T: Clone + Sync + Send + 'static> EndpointSet<T> {
 						if let Some(ep) = eps.active.get(&key) {
 							ep.info.evicted_until.store(None);
 						}
-						trace!(%key, max_pct, "eviction skipped: would exceed max_ejection_percent");
+						trace!(%key, max_pct, "eviction skipped: would exceed max_eviction_percent");
 						bucket.store(Arc::new(eps));
 						return;
 					}
 				}
 
-				uneviction_heap.push(UnevictEntry(until, key.clone(), health_on_unevict));
+				uneviction_heap.push(UnevictEntry(until, key.clone(), restore_health));
 				if let Some(ep) = eps.active.swap_remove(&key) {
 					eps.rejected.insert(key, ep);
 				}
@@ -415,8 +415,8 @@ impl<T: Clone + Sync + Send + 'static> EndpointSet<T> {
 						.send(EvictionEvent::Evict {
 							key,
 							until: time,
-							health_on_unevict: None,
-							max_ejection_percent: None,
+							restore_health: None,
+							max_eviction_percent: None,
 						})
 						.await;
 				});
@@ -562,8 +562,8 @@ impl ActiveHandle {
 		success: bool,
 		latency: Duration,
 		eviction_time: Option<Duration>,
-		health_on_unevict: Option<f64>,
-		max_ejection_percent: Option<u32>,
+		restore_health: Option<f64>,
+		max_eviction_percent: Option<u32>,
 	) {
 		if success {
 			self.info.request_latency.record(latency.as_secs_f64());
@@ -598,8 +598,8 @@ impl ActiveHandle {
 						.send(EvictionEvent::Evict {
 							key,
 							until: time,
-							health_on_unevict,
-							max_ejection_percent,
+							restore_health,
+							max_eviction_percent,
 						})
 						.await;
 				});
@@ -719,7 +719,7 @@ mod tests {
 	}
 
 	#[test]
-	fn ewma_health_on_unevict_full_reset() {
+	fn ewma_restore_health_full_reset() {
 		let ewma = Ewma::new(1.0);
 		// 3 failures: 1.0 → 0.7 → 0.49 → 0.343
 		ewma.record(0.0);
@@ -727,7 +727,7 @@ mod tests {
 		ewma.record(0.0);
 		assert!((ewma.load() - 0.343).abs() < 1e-10);
 
-		// Simulate uneviction with healthOnUnevict = 1.0
+		// Simulate uneviction with restoreHealth = 1.0
 		ewma.set(1.0);
 		assert_eq!(ewma.load(), 1.0);
 
@@ -739,13 +739,13 @@ mod tests {
 	}
 
 	#[test]
-	fn ewma_health_on_unevict_zero() {
+	fn ewma_restore_health_zero() {
 		let ewma = Ewma::new(1.0);
 		ewma.record(0.0);
 		ewma.record(0.0);
 		ewma.record(0.0);
 
-		// Simulate uneviction with healthOnUnevict = 0.0
+		// Simulate uneviction with restoreHealth = 0.0
 		ewma.set(0.0);
 		assert_eq!(ewma.load(), 0.0);
 
@@ -755,13 +755,13 @@ mod tests {
 	}
 
 	#[test]
-	fn ewma_health_on_unevict_partial() {
+	fn ewma_restore_health_partial() {
 		let ewma = Ewma::new(1.0);
 		ewma.record(0.0);
 		ewma.record(0.0);
 		ewma.record(0.0);
 
-		// Simulate uneviction with healthOnUnevict = 0.5
+		// Simulate uneviction with restoreHealth = 0.5
 		ewma.set(0.5);
 		assert_eq!(ewma.load(), 0.5);
 
@@ -800,7 +800,6 @@ mod tests {
 			Duration::from_millis(10),
 			Some(Duration::from_millis(100)),
 			Some(1.0),
-			None,
 		);
 
 		// Give the eviction event time to be processed
@@ -827,7 +826,7 @@ mod tests {
 	}
 
 	#[tokio::test]
-	async fn endpoint_set_uneviction_health_on_unevict_zero() {
+	async fn endpoint_set_uneviction_restore_health_zero() {
 		let key: Strng = "ep1".into();
 		let eps = EndpointSet::new(vec![vec![(key.clone(), "backend1")]]);
 
@@ -838,8 +837,7 @@ mod tests {
 			false,
 			Duration::from_millis(10),
 			Some(Duration::from_millis(100)),
-			Some(0.0), // healthOnUnevict = 0.0
-			None,
+			Some(0.0),
 		);
 
 		tokio::time::sleep(Duration::from_millis(50)).await;
@@ -860,7 +858,7 @@ mod tests {
 	}
 
 	#[tokio::test]
-	async fn endpoint_set_uneviction_no_health_on_unevict() {
+	async fn endpoint_set_uneviction_no_restore_health() {
 		let key: Strng = "ep1".into();
 		let eps = EndpointSet::new(vec![vec![(key.clone(), "backend1")]]);
 
@@ -875,7 +873,6 @@ mod tests {
 			false,
 			Duration::from_millis(10),
 			Some(Duration::from_millis(100)),
-			None, // no healthOnUnevict
 			None,
 		);
 

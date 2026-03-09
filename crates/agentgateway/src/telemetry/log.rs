@@ -445,7 +445,7 @@ impl DropOnLog {
 		}
 	}
 
-	/// Computes (health, eviction_duration, health_on_unevict) for finish_request.
+	/// Computes (health, eviction_duration, restore_health) for finish_request.
 	/// `unhealthy` should already be evaluated (preferably with the shared CEL executor when available).
 	/// When no CEL expression is set, the default treats 4xx, 5xx, or connection failures as unhealthy.
 	fn eviction_unhealthy(log: &RequestLog, cel_exec: Option<&CelLoggingExecutor<'_>>) -> bool {
@@ -464,7 +464,7 @@ impl DropOnLog {
 		}
 	}
 
-	/// Returns (health, eviction_duration, health_on_unevict, max_ejection_percent).
+	/// Returns (health, eviction_duration, restore_health, max_eviction_percent).
 	fn eviction_decision(
 		log: &RequestLog,
 		current_health: f64,
@@ -806,7 +806,7 @@ impl Drop for DropOnLog {
 			let consecutive_failures = rh.consecutive_failures();
 			let times_ejected = rh.times_ejected();
 			let unhealthy = Self::eviction_unhealthy(&log, cel_exec.as_ref());
-			let (health, eviction_duration, health_on_unevict, max_ejection_percent) =
+			let (health, eviction_duration, restore_health, max_eviction_percent) =
 				Self::eviction_decision(
 					&log,
 					current_health,
@@ -818,8 +818,8 @@ impl Drop for DropOnLog {
 				health,
 				duration,
 				eviction_duration,
-				health_on_unevict,
-				max_ejection_percent,
+				restore_health,
+				max_eviction_percent,
 			);
 		}
 		if !maybe_enable_log && !enable_trace && !enable_custom_metrics {

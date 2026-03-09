@@ -99,5 +99,5 @@ spec:
       unhealthyCondition: "response.code >= 500"
       eviction:
         duration: 60s
-      consecutiveFailures: 3
-      healthOnUnevict: 100
+        consecutiveFailures: 3
+        restoreHealth: 100

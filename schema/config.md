@@ -267,12 +267,10 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.interval`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails`|Configuration for AWS Bedrock Guardrails integration.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
@@ -361,12 +359,10 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.interval`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -455,12 +451,10 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.interval`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].rejection`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].rejection.body`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].rejection.status`||
@@ -576,12 +570,10 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.interval`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -670,12 +662,10 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.interval`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].rejection`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].rejection.body`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].rejection.status`||
@@ -833,12 +823,10 @@
 |`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.interval`||
+|`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].policies.remoteRateLimit.(any)descriptors`||
 |`binds[].listeners[].routes[].policies.remoteRateLimit.(any)descriptors[].entries`||
 |`binds[].listeners[].routes[].policies.remoteRateLimit.(any)descriptors[].entries[].key`||
@@ -965,12 +953,10 @@
 |`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.interval`||
+|`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].policies.extAuthz.(any)protocol`|The ext_authz protocol to use. Unless you need to integrate with an HTTP-only server, gRPC is recommended.|
 |`binds[].listeners[].routes[].policies.extAuthz.(any)protocol.(1)grpc`||
 |`binds[].listeners[].routes[].policies.extAuthz.(any)protocol.(1)grpc.context`|Additional context to send to the authorization service.<br>This maps to the `context_extensions` field of the request, and only allows static values.|
@@ -1080,12 +1066,10 @@
 |`binds[].listeners[].routes[].policies.extProc.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.extProc.(any)policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.extProc.(any)policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].policies.extProc.(any)policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].policies.extProc.(any)policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].policies.extProc.(any)policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].policies.extProc.(any)policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].policies.extProc.(any)policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].policies.extProc.(any)policies.health.interval`||
+|`binds[].listeners[].routes[].policies.extProc.(any)policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].policies.extProc.(any)policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].policies.extProc.(any)policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].policies.extProc.(any)policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].policies.extProc.(any)failureMode`|Behavior when the ext_proc service is unavailable or returns an error|
 |`binds[].listeners[].routes[].policies.extProc.(any)metadataContext`|Additional metadata to send to the external processing service.<br>Maps to the `metadata_context.filter_metadata` field in ProcessingRequest, and allows dynamic CEL expressions.|
 |`binds[].listeners[].routes[].policies.extProc.(any)requestAttributes`|Maps to the request `attributes` field in ProcessingRequest, and allows dynamic CEL expressions.|
@@ -1227,12 +1211,10 @@
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.mcpAuthorization`|Authorization policies for MCP access.|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.mcpAuthorization.rules`||
 |`binds[].listeners[].routes[].backends[].(1)mcp.statefulMode`||
@@ -1346,12 +1328,10 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.mcpAuthorization`|Authorization policies for MCP access.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.mcpAuthorization.rules`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.a2a`|Mark this traffic as A2A to enable A2A processing and telemetry.|
@@ -1463,12 +1443,10 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails`|Configuration for AWS Bedrock Guardrails integration.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
@@ -1557,12 +1535,10 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -1651,12 +1627,10 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].rejection`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].rejection.status`||
@@ -1772,12 +1746,10 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -1866,12 +1838,10 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].rejection`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].rejection.status`||
@@ -2006,12 +1976,10 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.mcpAuthorization`|Authorization policies for MCP access.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.mcpAuthorization.rules`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.a2a`|Mark this traffic as A2A to enable A2A processing and telemetry.|
@@ -2123,12 +2091,10 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails`|Configuration for AWS Bedrock Guardrails integration.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
@@ -2217,12 +2183,10 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -2311,12 +2275,10 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].rejection`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].rejection.status`||
@@ -2432,12 +2394,10 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -2526,12 +2486,10 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].rejection`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].rejection.status`||
@@ -2645,12 +2603,10 @@
 |`binds[].listeners[].routes[].backends[].policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].policies.mcpAuthorization`|Authorization policies for MCP access.|
 |`binds[].listeners[].routes[].backends[].policies.mcpAuthorization.rules`||
 |`binds[].listeners[].routes[].backends[].policies.a2a`|Mark this traffic as A2A to enable A2A processing and telemetry.|
@@ -2762,12 +2718,10 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails`|Configuration for AWS Bedrock Guardrails integration.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
@@ -2856,12 +2810,10 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -2950,12 +2902,10 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].rejection`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].rejection.status`||
@@ -3071,12 +3021,10 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -3165,12 +3113,10 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.interval`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].rejection`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].rejection.body`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].rejection.status`||
@@ -3340,12 +3286,10 @@
 |`binds[].listeners[].policies.extAuthz.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].policies.extAuthz.(any)policies.health.eviction.duration`||
 |`binds[].listeners[].policies.extAuthz.(any)policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].policies.extAuthz.(any)policies.health.consecutiveFailures`||
-|`binds[].listeners[].policies.extAuthz.(any)policies.health.healthThreshold`||
-|`binds[].listeners[].policies.extAuthz.(any)policies.health.healthOnUnevict`||
-|`binds[].listeners[].policies.extAuthz.(any)policies.health.maxEjectionPercent`||
-|`binds[].listeners[].policies.extAuthz.(any)policies.health.enforcingPercentage`||
-|`binds[].listeners[].policies.extAuthz.(any)policies.health.interval`||
+|`binds[].listeners[].policies.extAuthz.(any)policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].policies.extAuthz.(any)policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].policies.extAuthz.(any)policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].policies.extAuthz.(any)policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].policies.extAuthz.(any)protocol`|The ext_authz protocol to use. Unless you need to integrate with an HTTP-only server, gRPC is recommended.|
 |`binds[].listeners[].policies.extAuthz.(any)protocol.(1)grpc`||
 |`binds[].listeners[].policies.extAuthz.(any)protocol.(1)grpc.context`|Additional context to send to the authorization service.<br>This maps to the `context_extensions` field of the request, and only allows static values.|
@@ -3455,12 +3399,10 @@
 |`binds[].listeners[].policies.extProc.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].policies.extProc.(any)policies.health.eviction.duration`||
 |`binds[].listeners[].policies.extProc.(any)policies.health.eviction.maxEjectionTime`||
-|`binds[].listeners[].policies.extProc.(any)policies.health.consecutiveFailures`||
-|`binds[].listeners[].policies.extProc.(any)policies.health.healthThreshold`||
-|`binds[].listeners[].policies.extProc.(any)policies.health.healthOnUnevict`||
-|`binds[].listeners[].policies.extProc.(any)policies.health.maxEjectionPercent`||
-|`binds[].listeners[].policies.extProc.(any)policies.health.enforcingPercentage`||
-|`binds[].listeners[].policies.extProc.(any)policies.health.interval`||
+|`binds[].listeners[].policies.extProc.(any)policies.health.eviction.restoreHealth`||
+|`binds[].listeners[].policies.extProc.(any)policies.health.eviction.maxEjectionPercent`||
+|`binds[].listeners[].policies.extProc.(any)policies.health.eviction.consecutiveFailures`||
+|`binds[].listeners[].policies.extProc.(any)policies.health.eviction.healthThreshold`||
 |`binds[].listeners[].policies.extProc.(any)failureMode`|Behavior when the ext_proc service is unavailable or returns an error|
 |`binds[].listeners[].policies.extProc.(any)metadataContext`|Additional metadata to send to the external processing service.<br>Maps to the `metadata_context.filter_metadata` field in ProcessingRequest, and allows dynamic CEL expressions.|
 |`binds[].listeners[].policies.extProc.(any)requestAttributes`|Maps to the request `attributes` field in ProcessingRequest, and allows dynamic CEL expressions.|
@@ -3607,12 +3549,10 @@
 |`frontendPolicies.accessLog.otlp.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`frontendPolicies.accessLog.otlp.(any)policies.health.eviction.duration`||
 |`frontendPolicies.accessLog.otlp.(any)policies.health.eviction.maxEjectionTime`||
-|`frontendPolicies.accessLog.otlp.(any)policies.health.consecutiveFailures`||
-|`frontendPolicies.accessLog.otlp.(any)policies.health.healthThreshold`||
-|`frontendPolicies.accessLog.otlp.(any)policies.health.healthOnUnevict`||
-|`frontendPolicies.accessLog.otlp.(any)policies.health.maxEjectionPercent`||
-|`frontendPolicies.accessLog.otlp.(any)policies.health.enforcingPercentage`||
-|`frontendPolicies.accessLog.otlp.(any)policies.health.interval`||
+|`frontendPolicies.accessLog.otlp.(any)policies.health.eviction.restoreHealth`||
+|`frontendPolicies.accessLog.otlp.(any)policies.health.eviction.maxEjectionPercent`||
+|`frontendPolicies.accessLog.otlp.(any)policies.health.eviction.consecutiveFailures`||
+|`frontendPolicies.accessLog.otlp.(any)policies.health.eviction.healthThreshold`||
 |`frontendPolicies.accessLog.otlp.(any)protocol`||
 |`frontendPolicies.accessLog.otlp.(any)path`||
 |`frontendPolicies.tracing`||
@@ -3707,12 +3647,10 @@
 |`frontendPolicies.tracing.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`frontendPolicies.tracing.(any)policies.health.eviction.duration`||
 |`frontendPolicies.tracing.(any)policies.health.eviction.maxEjectionTime`||
-|`frontendPolicies.tracing.(any)policies.health.consecutiveFailures`||
-|`frontendPolicies.tracing.(any)policies.health.healthThreshold`||
-|`frontendPolicies.tracing.(any)policies.health.healthOnUnevict`||
-|`frontendPolicies.tracing.(any)policies.health.maxEjectionPercent`||
-|`frontendPolicies.tracing.(any)policies.health.enforcingPercentage`||
-|`frontendPolicies.tracing.(any)policies.health.interval`||
+|`frontendPolicies.tracing.(any)policies.health.eviction.restoreHealth`||
+|`frontendPolicies.tracing.(any)policies.health.eviction.maxEjectionPercent`||
+|`frontendPolicies.tracing.(any)policies.health.eviction.consecutiveFailures`||
+|`frontendPolicies.tracing.(any)policies.health.eviction.healthThreshold`||
 |`frontendPolicies.tracing.(any)attributes`|Span attributes to add, keyed by attribute name.|
 |`frontendPolicies.tracing.(any)resources`|Resource attributes to add to the tracer provider (OTel `Resource`).<br>This can be used to set things like `service.name` dynamically.|
 |`frontendPolicies.tracing.(any)remove`|Attribute keys to remove from the emitted span attributes.<br><br>This is applied before `attributes` are evaluated/added, so it can be used to drop<br>default attributes or avoid duplication.|
@@ -3917,12 +3855,10 @@
 |`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
-|`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.consecutiveFailures`||
-|`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.healthThreshold`||
-|`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.healthOnUnevict`||
-|`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.maxEjectionPercent`||
-|`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.enforcingPercentage`||
-|`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.interval`||
+|`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.restoreHealth`||
+|`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionPercent`||
+|`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.consecutiveFailures`||
+|`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.healthThreshold`||
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails`|Configuration for AWS Bedrock Guardrails integration.|
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
@@ -4011,12 +3947,10 @@
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.interval`||
+|`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -4105,12 +4039,10 @@
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.interval`||
+|`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`policies[].policy.ai.promptGuard.request[].rejection`||
 |`policies[].policy.ai.promptGuard.request[].rejection.body`||
 |`policies[].policy.ai.promptGuard.request[].rejection.status`||
@@ -4226,12 +4158,10 @@
 |`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.interval`||
+|`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -4320,12 +4250,10 @@
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.interval`||
+|`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`policies[].policy.ai.promptGuard.response[].rejection`||
 |`policies[].policy.ai.promptGuard.response[].rejection.body`||
 |`policies[].policy.ai.promptGuard.response[].rejection.status`||
@@ -4483,12 +4411,10 @@
 |`policies[].policy.remoteRateLimit.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.remoteRateLimit.(any)policies.health.eviction.duration`||
 |`policies[].policy.remoteRateLimit.(any)policies.health.eviction.maxEjectionTime`||
-|`policies[].policy.remoteRateLimit.(any)policies.health.consecutiveFailures`||
-|`policies[].policy.remoteRateLimit.(any)policies.health.healthThreshold`||
-|`policies[].policy.remoteRateLimit.(any)policies.health.healthOnUnevict`||
-|`policies[].policy.remoteRateLimit.(any)policies.health.maxEjectionPercent`||
-|`policies[].policy.remoteRateLimit.(any)policies.health.enforcingPercentage`||
-|`policies[].policy.remoteRateLimit.(any)policies.health.interval`||
+|`policies[].policy.remoteRateLimit.(any)policies.health.eviction.restoreHealth`||
+|`policies[].policy.remoteRateLimit.(any)policies.health.eviction.maxEjectionPercent`||
+|`policies[].policy.remoteRateLimit.(any)policies.health.eviction.consecutiveFailures`||
+|`policies[].policy.remoteRateLimit.(any)policies.health.eviction.healthThreshold`||
 |`policies[].policy.remoteRateLimit.(any)descriptors`||
 |`policies[].policy.remoteRateLimit.(any)descriptors[].entries`||
 |`policies[].policy.remoteRateLimit.(any)descriptors[].entries[].key`||
@@ -4615,12 +4541,10 @@
 |`policies[].policy.extAuthz.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.extAuthz.(any)policies.health.eviction.duration`||
 |`policies[].policy.extAuthz.(any)policies.health.eviction.maxEjectionTime`||
-|`policies[].policy.extAuthz.(any)policies.health.consecutiveFailures`||
-|`policies[].policy.extAuthz.(any)policies.health.healthThreshold`||
-|`policies[].policy.extAuthz.(any)policies.health.healthOnUnevict`||
-|`policies[].policy.extAuthz.(any)policies.health.maxEjectionPercent`||
-|`policies[].policy.extAuthz.(any)policies.health.enforcingPercentage`||
-|`policies[].policy.extAuthz.(any)policies.health.interval`||
+|`policies[].policy.extAuthz.(any)policies.health.eviction.restoreHealth`||
+|`policies[].policy.extAuthz.(any)policies.health.eviction.maxEjectionPercent`||
+|`policies[].policy.extAuthz.(any)policies.health.eviction.consecutiveFailures`||
+|`policies[].policy.extAuthz.(any)policies.health.eviction.healthThreshold`||
 |`policies[].policy.extAuthz.(any)protocol`|The ext_authz protocol to use. Unless you need to integrate with an HTTP-only server, gRPC is recommended.|
 |`policies[].policy.extAuthz.(any)protocol.(1)grpc`||
 |`policies[].policy.extAuthz.(any)protocol.(1)grpc.context`|Additional context to send to the authorization service.<br>This maps to the `context_extensions` field of the request, and only allows static values.|
@@ -4730,12 +4654,10 @@
 |`policies[].policy.extProc.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.extProc.(any)policies.health.eviction.duration`||
 |`policies[].policy.extProc.(any)policies.health.eviction.maxEjectionTime`||
-|`policies[].policy.extProc.(any)policies.health.consecutiveFailures`||
-|`policies[].policy.extProc.(any)policies.health.healthThreshold`||
-|`policies[].policy.extProc.(any)policies.health.healthOnUnevict`||
-|`policies[].policy.extProc.(any)policies.health.maxEjectionPercent`||
-|`policies[].policy.extProc.(any)policies.health.enforcingPercentage`||
-|`policies[].policy.extProc.(any)policies.health.interval`||
+|`policies[].policy.extProc.(any)policies.health.eviction.restoreHealth`||
+|`policies[].policy.extProc.(any)policies.health.eviction.maxEjectionPercent`||
+|`policies[].policy.extProc.(any)policies.health.eviction.consecutiveFailures`||
+|`policies[].policy.extProc.(any)policies.health.eviction.healthThreshold`||
 |`policies[].policy.extProc.(any)failureMode`|Behavior when the ext_proc service is unavailable or returns an error|
 |`policies[].policy.extProc.(any)metadataContext`|Additional metadata to send to the external processing service.<br>Maps to the `metadata_context.filter_metadata` field in ProcessingRequest, and allows dynamic CEL expressions.|
 |`policies[].policy.extProc.(any)requestAttributes`|Maps to the request `attributes` field in ProcessingRequest, and allows dynamic CEL expressions.|
@@ -4851,12 +4773,10 @@
 |`backends[].policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`backends[].policies.health.eviction.duration`||
 |`backends[].policies.health.eviction.maxEjectionTime`||
-|`backends[].policies.health.consecutiveFailures`||
-|`backends[].policies.health.healthThreshold`||
-|`backends[].policies.health.healthOnUnevict`||
-|`backends[].policies.health.maxEjectionPercent`||
-|`backends[].policies.health.enforcingPercentage`||
-|`backends[].policies.health.interval`||
+|`backends[].policies.health.eviction.restoreHealth`||
+|`backends[].policies.health.eviction.maxEjectionPercent`||
+|`backends[].policies.health.eviction.consecutiveFailures`||
+|`backends[].policies.health.eviction.healthThreshold`||
 |`backends[].policies.mcpAuthorization`|Authorization policies for MCP access.|
 |`backends[].policies.mcpAuthorization.rules`||
 |`backends[].policies.a2a`|Mark this traffic as A2A to enable A2A processing and telemetry.|
@@ -4968,12 +4888,10 @@
 |`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
-|`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.consecutiveFailures`||
-|`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.healthThreshold`||
-|`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.healthOnUnevict`||
-|`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.maxEjectionPercent`||
-|`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.enforcingPercentage`||
-|`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.interval`||
+|`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.restoreHealth`||
+|`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionPercent`||
+|`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.consecutiveFailures`||
+|`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.healthThreshold`||
 |`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails`|Configuration for AWS Bedrock Guardrails integration.|
 |`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
@@ -5062,12 +4980,10 @@
 |`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.interval`||
+|`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -5156,12 +5072,10 @@
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.interval`||
+|`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`backends[].policies.ai.promptGuard.request[].rejection`||
 |`backends[].policies.ai.promptGuard.request[].rejection.body`||
 |`backends[].policies.ai.promptGuard.request[].rejection.status`||
@@ -5277,12 +5191,10 @@
 |`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.interval`||
+|`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -5371,12 +5283,10 @@
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.interval`||
+|`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`backends[].policies.ai.promptGuard.response[].rejection`||
 |`backends[].policies.ai.promptGuard.response[].rejection.body`||
 |`backends[].policies.ai.promptGuard.response[].rejection.status`||
@@ -5528,12 +5438,10 @@
 |`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
-|`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.consecutiveFailures`||
-|`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.healthThreshold`||
-|`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.healthOnUnevict`||
-|`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.maxEjectionPercent`||
-|`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.enforcingPercentage`||
-|`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.interval`||
+|`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.eviction.restoreHealth`||
+|`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.eviction.maxEjectionPercent`||
+|`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.eviction.consecutiveFailures`||
+|`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.eviction.healthThreshold`||
 |`llm.models[].guardrails.request[].(1)bedrockGuardrails`|Configuration for AWS Bedrock Guardrails integration.|
 |`llm.models[].guardrails.request[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`llm.models[].guardrails.request[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
@@ -5622,12 +5530,10 @@
 |`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.interval`||
+|`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`llm.models[].guardrails.request[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`llm.models[].guardrails.request[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`llm.models[].guardrails.request[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -5716,12 +5622,10 @@
 |`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.interval`||
+|`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`llm.models[].guardrails.request[].rejection`||
 |`llm.models[].guardrails.request[].rejection.body`||
 |`llm.models[].guardrails.request[].rejection.status`||
@@ -5837,12 +5741,10 @@
 |`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.interval`||
+|`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`llm.models[].guardrails.response[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`llm.models[].guardrails.response[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`llm.models[].guardrails.response[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -5931,12 +5833,10 @@
 |`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.interval`||
+|`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`llm.models[].guardrails.response[].rejection`||
 |`llm.models[].guardrails.response[].rejection.body`||
 |`llm.models[].guardrails.response[].rejection.status`||
@@ -6061,12 +5961,10 @@
 |`llm.policies.extAuthz.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`llm.policies.extAuthz.(any)policies.health.eviction.duration`||
 |`llm.policies.extAuthz.(any)policies.health.eviction.maxEjectionTime`||
-|`llm.policies.extAuthz.(any)policies.health.consecutiveFailures`||
-|`llm.policies.extAuthz.(any)policies.health.healthThreshold`||
-|`llm.policies.extAuthz.(any)policies.health.healthOnUnevict`||
-|`llm.policies.extAuthz.(any)policies.health.maxEjectionPercent`||
-|`llm.policies.extAuthz.(any)policies.health.enforcingPercentage`||
-|`llm.policies.extAuthz.(any)policies.health.interval`||
+|`llm.policies.extAuthz.(any)policies.health.eviction.restoreHealth`||
+|`llm.policies.extAuthz.(any)policies.health.eviction.maxEjectionPercent`||
+|`llm.policies.extAuthz.(any)policies.health.eviction.consecutiveFailures`||
+|`llm.policies.extAuthz.(any)policies.health.eviction.healthThreshold`||
 |`llm.policies.extAuthz.(any)protocol`|The ext_authz protocol to use. Unless you need to integrate with an HTTP-only server, gRPC is recommended.|
 |`llm.policies.extAuthz.(any)protocol.(1)grpc`||
 |`llm.policies.extAuthz.(any)protocol.(1)grpc.context`|Additional context to send to the authorization service.<br>This maps to the `context_extensions` field of the request, and only allows static values.|
@@ -6176,12 +6074,10 @@
 |`llm.policies.extProc.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`llm.policies.extProc.(any)policies.health.eviction.duration`||
 |`llm.policies.extProc.(any)policies.health.eviction.maxEjectionTime`||
-|`llm.policies.extProc.(any)policies.health.consecutiveFailures`||
-|`llm.policies.extProc.(any)policies.health.healthThreshold`||
-|`llm.policies.extProc.(any)policies.health.healthOnUnevict`||
-|`llm.policies.extProc.(any)policies.health.maxEjectionPercent`||
-|`llm.policies.extProc.(any)policies.health.enforcingPercentage`||
-|`llm.policies.extProc.(any)policies.health.interval`||
+|`llm.policies.extProc.(any)policies.health.eviction.restoreHealth`||
+|`llm.policies.extProc.(any)policies.health.eviction.maxEjectionPercent`||
+|`llm.policies.extProc.(any)policies.health.eviction.consecutiveFailures`||
+|`llm.policies.extProc.(any)policies.health.eviction.healthThreshold`||
 |`llm.policies.extProc.(any)failureMode`|Behavior when the ext_proc service is unavailable or returns an error|
 |`llm.policies.extProc.(any)metadataContext`|Additional metadata to send to the external processing service.<br>Maps to the `metadata_context.filter_metadata` field in ProcessingRequest, and allows dynamic CEL expressions.|
 |`llm.policies.extProc.(any)requestAttributes`|Maps to the request `attributes` field in ProcessingRequest, and allows dynamic CEL expressions.|
@@ -6318,12 +6214,10 @@
 |`mcp.targets[].policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.targets[].policies.health.eviction.duration`||
 |`mcp.targets[].policies.health.eviction.maxEjectionTime`||
-|`mcp.targets[].policies.health.consecutiveFailures`||
-|`mcp.targets[].policies.health.healthThreshold`||
-|`mcp.targets[].policies.health.healthOnUnevict`||
-|`mcp.targets[].policies.health.maxEjectionPercent`||
-|`mcp.targets[].policies.health.enforcingPercentage`||
-|`mcp.targets[].policies.health.interval`||
+|`mcp.targets[].policies.health.eviction.restoreHealth`||
+|`mcp.targets[].policies.health.eviction.maxEjectionPercent`||
+|`mcp.targets[].policies.health.eviction.consecutiveFailures`||
+|`mcp.targets[].policies.health.eviction.healthThreshold`||
 |`mcp.targets[].policies.mcpAuthorization`|Authorization policies for MCP access.|
 |`mcp.targets[].policies.mcpAuthorization.rules`||
 |`mcp.statefulMode`||
@@ -6501,12 +6395,10 @@
 |`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
-|`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.consecutiveFailures`||
-|`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.healthThreshold`||
-|`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.healthOnUnevict`||
-|`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.maxEjectionPercent`||
-|`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.enforcingPercentage`||
-|`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.interval`||
+|`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.restoreHealth`||
+|`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionPercent`||
+|`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.consecutiveFailures`||
+|`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.healthThreshold`||
 |`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails`|Configuration for AWS Bedrock Guardrails integration.|
 |`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailIdentifier`|The unique identifier of the guardrail|
 |`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.guardrailVersion`|The version of the guardrail|
@@ -6595,12 +6487,10 @@
 |`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.interval`||
+|`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -6689,12 +6579,10 @@
 |`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.interval`||
+|`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`mcp.policies.ai.promptGuard.request[].rejection`||
 |`mcp.policies.ai.promptGuard.request[].rejection.body`||
 |`mcp.policies.ai.promptGuard.request[].rejection.status`||
@@ -6810,12 +6698,10 @@
 |`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
-|`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.consecutiveFailures`||
-|`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.healthThreshold`||
-|`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.healthOnUnevict`||
-|`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.maxEjectionPercent`||
-|`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.enforcingPercentage`||
-|`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.interval`||
+|`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.restoreHealth`||
+|`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionPercent`||
+|`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.consecutiveFailures`||
+|`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.healthThreshold`||
 |`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor`|Configuration for Google Cloud Model Armor integration.|
 |`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.templateId`|The template ID for the Model Armor configuration|
 |`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.projectId`|The GCP project ID|
@@ -6904,12 +6790,10 @@
 |`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
-|`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.consecutiveFailures`||
-|`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.healthThreshold`||
-|`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.healthOnUnevict`||
-|`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.maxEjectionPercent`||
-|`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.enforcingPercentage`||
-|`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.interval`||
+|`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.restoreHealth`||
+|`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionPercent`||
+|`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.consecutiveFailures`||
+|`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.healthThreshold`||
 |`mcp.policies.ai.promptGuard.response[].rejection`||
 |`mcp.policies.ai.promptGuard.response[].rejection.body`||
 |`mcp.policies.ai.promptGuard.response[].rejection.status`||
@@ -7067,12 +6951,10 @@
 |`mcp.policies.remoteRateLimit.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.remoteRateLimit.(any)policies.health.eviction.duration`||
 |`mcp.policies.remoteRateLimit.(any)policies.health.eviction.maxEjectionTime`||
-|`mcp.policies.remoteRateLimit.(any)policies.health.consecutiveFailures`||
-|`mcp.policies.remoteRateLimit.(any)policies.health.healthThreshold`||
-|`mcp.policies.remoteRateLimit.(any)policies.health.healthOnUnevict`||
-|`mcp.policies.remoteRateLimit.(any)policies.health.maxEjectionPercent`||
-|`mcp.policies.remoteRateLimit.(any)policies.health.enforcingPercentage`||
-|`mcp.policies.remoteRateLimit.(any)policies.health.interval`||
+|`mcp.policies.remoteRateLimit.(any)policies.health.eviction.restoreHealth`||
+|`mcp.policies.remoteRateLimit.(any)policies.health.eviction.maxEjectionPercent`||
+|`mcp.policies.remoteRateLimit.(any)policies.health.eviction.consecutiveFailures`||
+|`mcp.policies.remoteRateLimit.(any)policies.health.eviction.healthThreshold`||
 |`mcp.policies.remoteRateLimit.(any)descriptors`||
 |`mcp.policies.remoteRateLimit.(any)descriptors[].entries`||
 |`mcp.policies.remoteRateLimit.(any)descriptors[].entries[].key`||
@@ -7199,12 +7081,10 @@
 |`mcp.policies.extAuthz.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.extAuthz.(any)policies.health.eviction.duration`||
 |`mcp.policies.extAuthz.(any)policies.health.eviction.maxEjectionTime`||
-|`mcp.policies.extAuthz.(any)policies.health.consecutiveFailures`||
-|`mcp.policies.extAuthz.(any)policies.health.healthThreshold`||
-|`mcp.policies.extAuthz.(any)policies.health.healthOnUnevict`||
-|`mcp.policies.extAuthz.(any)policies.health.maxEjectionPercent`||
-|`mcp.policies.extAuthz.(any)policies.health.enforcingPercentage`||
-|`mcp.policies.extAuthz.(any)policies.health.interval`||
+|`mcp.policies.extAuthz.(any)policies.health.eviction.restoreHealth`||
+|`mcp.policies.extAuthz.(any)policies.health.eviction.maxEjectionPercent`||
+|`mcp.policies.extAuthz.(any)policies.health.eviction.consecutiveFailures`||
+|`mcp.policies.extAuthz.(any)policies.health.eviction.healthThreshold`||
 |`mcp.policies.extAuthz.(any)protocol`|The ext_authz protocol to use. Unless you need to integrate with an HTTP-only server, gRPC is recommended.|
 |`mcp.policies.extAuthz.(any)protocol.(1)grpc`||
 |`mcp.policies.extAuthz.(any)protocol.(1)grpc.context`|Additional context to send to the authorization service.<br>This maps to the `context_extensions` field of the request, and only allows static values.|
@@ -7314,12 +7194,10 @@
 |`mcp.policies.extProc.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.extProc.(any)policies.health.eviction.duration`||
 |`mcp.policies.extProc.(any)policies.health.eviction.maxEjectionTime`||
-|`mcp.policies.extProc.(any)policies.health.consecutiveFailures`||
-|`mcp.policies.extProc.(any)policies.health.healthThreshold`||
-|`mcp.policies.extProc.(any)policies.health.healthOnUnevict`||
-|`mcp.policies.extProc.(any)policies.health.maxEjectionPercent`||
-|`mcp.policies.extProc.(any)policies.health.enforcingPercentage`||
-|`mcp.policies.extProc.(any)policies.health.interval`||
+|`mcp.policies.extProc.(any)policies.health.eviction.restoreHealth`||
+|`mcp.policies.extProc.(any)policies.health.eviction.maxEjectionPercent`||
+|`mcp.policies.extProc.(any)policies.health.eviction.consecutiveFailures`||
+|`mcp.policies.extProc.(any)policies.health.eviction.healthThreshold`||
 |`mcp.policies.extProc.(any)failureMode`|Behavior when the ext_proc service is unavailable or returns an error|
 |`mcp.policies.extProc.(any)metadataContext`|Additional metadata to send to the external processing service.<br>Maps to the `metadata_context.filter_metadata` field in ProcessingRequest, and allows dynamic CEL expressions.|
 |`mcp.policies.extProc.(any)requestAttributes`|Maps to the request `attributes` field in ProcessingRequest, and allows dynamic CEL expressions.|

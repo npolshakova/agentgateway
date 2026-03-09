@@ -949,9 +949,29 @@ func (in *BackendEviction) DeepCopyInto(out *BackendEviction) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
-	if in.MaxEjectionTime != nil {
-		in, out := &in.MaxEjectionTime, &out.MaxEjectionTime
+	if in.MaxEvictionTime != nil {
+		in, out := &in.MaxEvictionTime, &out.MaxEvictionTime
 		*out = new(v1.Duration)
+		**out = **in
+	}
+	if in.RestoreHealth != nil {
+		in, out := &in.RestoreHealth, &out.RestoreHealth
+		*out = new(int32)
+		**out = **in
+	}
+	if in.MaxEvictionPercent != nil {
+		in, out := &in.MaxEvictionPercent, &out.MaxEvictionPercent
+		*out = new(int32)
+		**out = **in
+	}
+	if in.ConsecutiveFailures != nil {
+		in, out := &in.ConsecutiveFailures, &out.ConsecutiveFailures
+		*out = new(int32)
+		**out = **in
+	}
+	if in.HealthThreshold != nil {
+		in, out := &in.HealthThreshold, &out.HealthThreshold
+		*out = new(int32)
 		**out = **in
 	}
 }
@@ -1740,36 +1760,6 @@ func (in *Health) DeepCopyInto(out *Health) {
 		in, out := &in.Eviction, &out.Eviction
 		*out = new(BackendEviction)
 		(*in).DeepCopyInto(*out)
-	}
-	if in.ConsecutiveFailures != nil {
-		in, out := &in.ConsecutiveFailures, &out.ConsecutiveFailures
-		*out = new(int32)
-		**out = **in
-	}
-	if in.HealthThreshold != nil {
-		in, out := &in.HealthThreshold, &out.HealthThreshold
-		*out = new(int32)
-		**out = **in
-	}
-	if in.HealthOnUnevict != nil {
-		in, out := &in.HealthOnUnevict, &out.HealthOnUnevict
-		*out = new(int32)
-		**out = **in
-	}
-	if in.MaxEjectionPercent != nil {
-		in, out := &in.MaxEjectionPercent, &out.MaxEjectionPercent
-		*out = new(int32)
-		**out = **in
-	}
-	if in.EnforcingPercentage != nil {
-		in, out := &in.EnforcingPercentage, &out.EnforcingPercentage
-		*out = new(int32)
-		**out = **in
-	}
-	if in.Interval != nil {
-		in, out := &in.Interval, &out.Interval
-		*out = new(v1.Duration)
-		**out = **in
 	}
 }
 

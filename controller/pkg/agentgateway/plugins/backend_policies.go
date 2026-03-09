@@ -157,40 +157,37 @@ func translateBackendHealthPolicy(policy *agentgateway.AgentgatewayPolicy, targe
 		if healthPolicy.Eviction.Duration != nil {
 			duration = durationpb.New(healthPolicy.Eviction.Duration.Duration)
 		}
-		var maxEjectionTime *durationpb.Duration
-		if healthPolicy.Eviction.MaxEjectionTime != nil {
-			maxEjectionTime = durationpb.New(healthPolicy.Eviction.MaxEjectionTime.Duration)
+		var maxEvictionTime *durationpb.Duration
+		if healthPolicy.Eviction.MaxEvictionTime != nil {
+			maxEvictionTime = durationpb.New(healthPolicy.Eviction.MaxEvictionTime.Duration)
 		}
+
+		// Convert 0–100 integer scores into 0.0–1.0 doubles for proto
+		var healthThreshold *float64
+		if healthPolicy.Eviction.HealthThreshold != nil {
+			val := float64(*healthPolicy.Eviction.HealthThreshold) / 100.0
+			healthThreshold = &val
+		}
+		var restoreHealth *float64
+		if healthPolicy.Eviction.RestoreHealth != nil {
+			val := float64(*healthPolicy.Eviction.RestoreHealth) / 100.0
+			restoreHealth = &val
+		}
+
+		var maxEvictionPercent *uint32
+		if healthPolicy.Eviction.MaxEvictionPercent != nil {
+			val := uint32(*healthPolicy.Eviction.MaxEvictionPercent) // #nosec G115 - non-negative enforced by kubebuilder validation
+			maxEvictionPercent = &val
+		}
+
 		evictionProto = &api.BackendPolicySpec_Eviction{
-			Duration:        duration,
-			MaxEjectionTime: maxEjectionTime,
+			Duration:            duration,
+			MaxEvictionTime:     maxEvictionTime,
+			RestoreHealth:       restoreHealth,
+			MaxEvictionPercent:  maxEvictionPercent,
+			ConsecutiveFailures: healthPolicy.Eviction.ConsecutiveFailures,
+			HealthThreshold:     healthThreshold,
 		}
-	}
-
-	// Convert 0–100 integer scores into 0.0–1.0 doubles for proto
-	var healthThreshold, healthOnUnevict *float64
-	if healthPolicy.HealthThreshold != nil {
-		val := float64(*healthPolicy.HealthThreshold) / 100.0
-		healthThreshold = &val
-	}
-	if healthPolicy.HealthOnUnevict != nil {
-		val := float64(*healthPolicy.HealthOnUnevict) / 100.0
-		healthOnUnevict = &val
-	}
-
-	var maxEjectionPercent *uint32
-	if healthPolicy.MaxEjectionPercent != nil {
-		val := uint32(*healthPolicy.MaxEjectionPercent) // #nosec G115 - non-negative enforced by kubebuilder validation
-		maxEjectionPercent = &val
-	}
-	var enforcingPercentage *uint32
-	if healthPolicy.EnforcingPercentage != nil {
-		val := uint32(*healthPolicy.EnforcingPercentage) // #nosec G115 - non-negative enforced by kubebuilder validation
-		enforcingPercentage = &val
-	}
-	var interval *durationpb.Duration
-	if healthPolicy.Interval != nil {
-		interval = durationpb.New(healthPolicy.Interval.Duration)
 	}
 
 	var unhealthyCondition string
@@ -199,14 +196,8 @@ func translateBackendHealthPolicy(policy *agentgateway.AgentgatewayPolicy, targe
 	}
 
 	p := &api.BackendPolicySpec_Health{
-		UnhealthyCondition:  unhealthyCondition,
-		Eviction:            evictionProto,
-		ConsecutiveFailures: healthPolicy.ConsecutiveFailures,
-		HealthThreshold:     healthThreshold,
-		HealthOnUnevict:     healthOnUnevict,
-		MaxEjectionPercent:  maxEjectionPercent,
-		EnforcingPercentage: enforcingPercentage,
-		Interval:            interval,
+		UnhealthyCondition: unhealthyCondition,
+		Eviction:           evictionProto,
 	}
 	evictPolicy := &api.Policy{
 		Key:    policy.Namespace + "/" + policy.Name + healthPolicySuffix + attachmentName(target),

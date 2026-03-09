@@ -2679,49 +2679,6 @@
               "type": "null"
             }
           ]
-        },
-        "consecutiveFailures": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "format": "int32"
-        },
-        "healthThreshold": {
-          "type": [
-            "number",
-            "null"
-          ],
-          "format": "double"
-        },
-        "healthOnUnevict": {
-          "type": [
-            "number",
-            "null"
-          ],
-          "format": "double"
-        },
-        "maxEjectionPercent": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "format": "uint32",
-          "minimum": 0
-        },
-        "enforcingPercentage": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "format": "uint32",
-          "minimum": 0
-        },
-        "interval": {
-          "type": [
-            "string",
-            "null"
-          ]
         }
       },
       "additionalProperties": false
@@ -2741,6 +2698,35 @@
             "string",
             "null"
           ]
+        },
+        "restoreHealth": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "maxEjectionPercent": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0
+        },
+        "consecutiveFailures": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "int32"
+        },
+        "healthThreshold": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
         }
       },
       "additionalProperties": false
