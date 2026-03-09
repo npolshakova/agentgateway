@@ -263,7 +263,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
@@ -357,7 +357,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -451,7 +451,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -572,7 +572,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -666,7 +666,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -829,7 +829,7 @@
 |`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.remoteRateLimit.(any)policies.health.eviction.maxEjectionTime`||
@@ -961,7 +961,7 @@
 |`binds[].listeners[].routes[].policies.extAuthz.(any)policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].policies.extAuthz.(any)policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.extAuthz.(any)policies.health.eviction.maxEjectionTime`||
@@ -1076,7 +1076,7 @@
 |`binds[].listeners[].routes[].policies.extProc.(any)policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].policies.extProc.(any)policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].policies.extProc.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].policies.extProc.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].policies.extProc.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].policies.extProc.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].policies.extProc.(any)policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].policies.extProc.(any)policies.health.eviction.maxEjectionTime`||
@@ -1223,7 +1223,7 @@
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.health.eviction.maxEjectionTime`||
@@ -1342,7 +1342,7 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.health.eviction.maxEjectionTime`||
@@ -1459,7 +1459,7 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
@@ -1553,7 +1553,7 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -1647,7 +1647,7 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -1768,7 +1768,7 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -1862,7 +1862,7 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -2002,7 +2002,7 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.health.eviction.maxEjectionTime`||
@@ -2119,7 +2119,7 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
@@ -2213,7 +2213,7 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -2307,7 +2307,7 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -2428,7 +2428,7 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -2522,7 +2522,7 @@
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)groups[].providers[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -2641,7 +2641,7 @@
 |`binds[].listeners[].routes[].backends[].policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].policies.health.eviction.maxEjectionTime`||
@@ -2758,7 +2758,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
@@ -2852,7 +2852,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -2946,7 +2946,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -3067,7 +3067,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -3161,7 +3161,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -3336,7 +3336,7 @@
 |`binds[].listeners[].policies.extAuthz.(any)policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].policies.extAuthz.(any)policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].policies.extAuthz.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].policies.extAuthz.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].policies.extAuthz.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].policies.extAuthz.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].policies.extAuthz.(any)policies.health.eviction.duration`||
 |`binds[].listeners[].policies.extAuthz.(any)policies.health.eviction.maxEjectionTime`||
@@ -3451,7 +3451,7 @@
 |`binds[].listeners[].policies.extProc.(any)policies.tcp.connectTimeout.secs`||
 |`binds[].listeners[].policies.extProc.(any)policies.tcp.connectTimeout.nanos`||
 |`binds[].listeners[].policies.extProc.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`binds[].listeners[].policies.extProc.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`binds[].listeners[].policies.extProc.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`binds[].listeners[].policies.extProc.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`binds[].listeners[].policies.extProc.(any)policies.health.eviction.duration`||
 |`binds[].listeners[].policies.extProc.(any)policies.health.eviction.maxEjectionTime`||
@@ -3603,7 +3603,7 @@
 |`frontendPolicies.accessLog.otlp.(any)policies.tcp.connectTimeout.secs`||
 |`frontendPolicies.accessLog.otlp.(any)policies.tcp.connectTimeout.nanos`||
 |`frontendPolicies.accessLog.otlp.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`frontendPolicies.accessLog.otlp.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`frontendPolicies.accessLog.otlp.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`frontendPolicies.accessLog.otlp.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`frontendPolicies.accessLog.otlp.(any)policies.health.eviction.duration`||
 |`frontendPolicies.accessLog.otlp.(any)policies.health.eviction.maxEjectionTime`||
@@ -3703,7 +3703,7 @@
 |`frontendPolicies.tracing.(any)policies.tcp.connectTimeout.secs`||
 |`frontendPolicies.tracing.(any)policies.tcp.connectTimeout.nanos`||
 |`frontendPolicies.tracing.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`frontendPolicies.tracing.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`frontendPolicies.tracing.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`frontendPolicies.tracing.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`frontendPolicies.tracing.(any)policies.health.eviction.duration`||
 |`frontendPolicies.tracing.(any)policies.health.eviction.maxEjectionTime`||
@@ -3913,7 +3913,7 @@
 |`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.tcp.connectTimeout.secs`||
 |`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.tcp.connectTimeout.nanos`||
 |`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`policies[].policy.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
@@ -4007,7 +4007,7 @@
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`policies[].policy.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -4101,7 +4101,7 @@
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`policies[].policy.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -4222,7 +4222,7 @@
 |`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`policies[].policy.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -4316,7 +4316,7 @@
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`policies[].policy.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -4479,7 +4479,7 @@
 |`policies[].policy.remoteRateLimit.(any)policies.tcp.connectTimeout.secs`||
 |`policies[].policy.remoteRateLimit.(any)policies.tcp.connectTimeout.nanos`||
 |`policies[].policy.remoteRateLimit.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`policies[].policy.remoteRateLimit.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`policies[].policy.remoteRateLimit.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`policies[].policy.remoteRateLimit.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.remoteRateLimit.(any)policies.health.eviction.duration`||
 |`policies[].policy.remoteRateLimit.(any)policies.health.eviction.maxEjectionTime`||
@@ -4611,7 +4611,7 @@
 |`policies[].policy.extAuthz.(any)policies.tcp.connectTimeout.secs`||
 |`policies[].policy.extAuthz.(any)policies.tcp.connectTimeout.nanos`||
 |`policies[].policy.extAuthz.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`policies[].policy.extAuthz.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`policies[].policy.extAuthz.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`policies[].policy.extAuthz.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.extAuthz.(any)policies.health.eviction.duration`||
 |`policies[].policy.extAuthz.(any)policies.health.eviction.maxEjectionTime`||
@@ -4726,7 +4726,7 @@
 |`policies[].policy.extProc.(any)policies.tcp.connectTimeout.secs`||
 |`policies[].policy.extProc.(any)policies.tcp.connectTimeout.nanos`||
 |`policies[].policy.extProc.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`policies[].policy.extProc.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`policies[].policy.extProc.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`policies[].policy.extProc.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`policies[].policy.extProc.(any)policies.health.eviction.duration`||
 |`policies[].policy.extProc.(any)policies.health.eviction.maxEjectionTime`||
@@ -4847,7 +4847,7 @@
 |`backends[].policies.tcp.connectTimeout.secs`||
 |`backends[].policies.tcp.connectTimeout.nanos`||
 |`backends[].policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`backends[].policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`backends[].policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`backends[].policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`backends[].policies.health.eviction.duration`||
 |`backends[].policies.health.eviction.maxEjectionTime`||
@@ -4964,7 +4964,7 @@
 |`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.tcp.connectTimeout.secs`||
 |`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.tcp.connectTimeout.nanos`||
 |`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`backends[].policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
@@ -5058,7 +5058,7 @@
 |`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`backends[].policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -5152,7 +5152,7 @@
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`backends[].policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -5273,7 +5273,7 @@
 |`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`backends[].policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -5367,7 +5367,7 @@
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`backends[].policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -5524,7 +5524,7 @@
 |`llm.models[].guardrails.request[].(1)openAIModeration.policies.tcp.connectTimeout.secs`||
 |`llm.models[].guardrails.request[].(1)openAIModeration.policies.tcp.connectTimeout.nanos`||
 |`llm.models[].guardrails.request[].(1)openAIModeration.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`llm.models[].guardrails.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
@@ -5618,7 +5618,7 @@
 |`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`llm.models[].guardrails.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -5712,7 +5712,7 @@
 |`llm.models[].guardrails.request[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`llm.models[].guardrails.request[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`llm.models[].guardrails.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -5833,7 +5833,7 @@
 |`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`llm.models[].guardrails.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -5927,7 +5927,7 @@
 |`llm.models[].guardrails.response[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`llm.models[].guardrails.response[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`llm.models[].guardrails.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -6057,7 +6057,7 @@
 |`llm.policies.extAuthz.(any)policies.tcp.connectTimeout.secs`||
 |`llm.policies.extAuthz.(any)policies.tcp.connectTimeout.nanos`||
 |`llm.policies.extAuthz.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`llm.policies.extAuthz.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`llm.policies.extAuthz.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`llm.policies.extAuthz.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`llm.policies.extAuthz.(any)policies.health.eviction.duration`||
 |`llm.policies.extAuthz.(any)policies.health.eviction.maxEjectionTime`||
@@ -6172,7 +6172,7 @@
 |`llm.policies.extProc.(any)policies.tcp.connectTimeout.secs`||
 |`llm.policies.extProc.(any)policies.tcp.connectTimeout.nanos`||
 |`llm.policies.extProc.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`llm.policies.extProc.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`llm.policies.extProc.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`llm.policies.extProc.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`llm.policies.extProc.(any)policies.health.eviction.duration`||
 |`llm.policies.extProc.(any)policies.health.eviction.maxEjectionTime`||
@@ -6314,7 +6314,7 @@
 |`mcp.targets[].policies.tcp.connectTimeout.secs`||
 |`mcp.targets[].policies.tcp.connectTimeout.nanos`||
 |`mcp.targets[].policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`mcp.targets[].policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`mcp.targets[].policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`mcp.targets[].policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.targets[].policies.health.eviction.duration`||
 |`mcp.targets[].policies.health.eviction.maxEjectionTime`||
@@ -6497,7 +6497,7 @@
 |`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.tcp.connectTimeout.secs`||
 |`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.tcp.connectTimeout.nanos`||
 |`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.duration`||
 |`mcp.policies.ai.promptGuard.request[].(1)openAIModeration.policies.health.eviction.maxEjectionTime`||
@@ -6591,7 +6591,7 @@
 |`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`mcp.policies.ai.promptGuard.request[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -6685,7 +6685,7 @@
 |`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`mcp.policies.ai.promptGuard.request[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -6806,7 +6806,7 @@
 |`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.secs`||
 |`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.tcp.connectTimeout.nanos`||
 |`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.duration`||
 |`mcp.policies.ai.promptGuard.response[].(1)bedrockGuardrails.policies.health.eviction.maxEjectionTime`||
@@ -6900,7 +6900,7 @@
 |`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.tcp.connectTimeout.secs`||
 |`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.tcp.connectTimeout.nanos`||
 |`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.duration`||
 |`mcp.policies.ai.promptGuard.response[].(1)googleModelArmor.policies.health.eviction.maxEjectionTime`||
@@ -7063,7 +7063,7 @@
 |`mcp.policies.remoteRateLimit.(any)policies.tcp.connectTimeout.secs`||
 |`mcp.policies.remoteRateLimit.(any)policies.tcp.connectTimeout.nanos`||
 |`mcp.policies.remoteRateLimit.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`mcp.policies.remoteRateLimit.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`mcp.policies.remoteRateLimit.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`mcp.policies.remoteRateLimit.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.remoteRateLimit.(any)policies.health.eviction.duration`||
 |`mcp.policies.remoteRateLimit.(any)policies.health.eviction.maxEjectionTime`||
@@ -7195,7 +7195,7 @@
 |`mcp.policies.extAuthz.(any)policies.tcp.connectTimeout.secs`||
 |`mcp.policies.extAuthz.(any)policies.tcp.connectTimeout.nanos`||
 |`mcp.policies.extAuthz.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`mcp.policies.extAuthz.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`mcp.policies.extAuthz.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`mcp.policies.extAuthz.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.extAuthz.(any)policies.health.eviction.duration`||
 |`mcp.policies.extAuthz.(any)policies.health.eviction.maxEjectionTime`||
@@ -7310,7 +7310,7 @@
 |`mcp.policies.extProc.(any)policies.tcp.connectTimeout.secs`||
 |`mcp.policies.extProc.(any)policies.tcp.connectTimeout.nanos`||
 |`mcp.policies.extProc.(any)policies.health`|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
-|`mcp.policies.extProc.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.|
+|`mcp.policies.extProc.(any)policies.health.unhealthyExpression`|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 4xx/5xx or connection failure is treated as unhealthy.|
 |`mcp.policies.extProc.(any)policies.health.eviction`|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
 |`mcp.policies.extProc.(any)policies.health.eviction.duration`||
 |`mcp.policies.extProc.(any)policies.health.eviction.maxEjectionTime`||

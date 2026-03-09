@@ -665,3 +665,264 @@ impl<T> ActiveEndpointsIter<T> {
 		}
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	// --- Ewma ---
+
+	#[test]
+	fn ewma_initial_value() {
+		let ewma = Ewma::new(1.0);
+		assert_eq!(ewma.load(), 1.0);
+	}
+
+	#[test]
+	fn ewma_default_is_zero() {
+		let ewma = Ewma::default();
+		assert_eq!(ewma.load(), 0.0);
+	}
+
+	#[test]
+	fn ewma_set_overwrites() {
+		let ewma = Ewma::new(1.0);
+		ewma.set(0.42);
+		assert_eq!(ewma.load(), 0.42);
+	}
+
+	#[test]
+	fn ewma_first_record_from_zero_sets_directly() {
+		let ewma = Ewma::default(); // 0.0
+		ewma.record(1.0);
+		// When old==0.0, result is nv directly
+		assert_eq!(ewma.load(), 1.0);
+	}
+
+	#[test]
+	fn ewma_record_sequence_failures() {
+		let ewma = Ewma::new(1.0);
+		// ALPHA = 0.3, record(0.0) simulates a failure
+		ewma.record(0.0); // 0.3*0 + 0.7*1.0 = 0.7
+		assert!((ewma.load() - 0.7).abs() < 1e-10);
+		ewma.record(0.0); // 0.3*0 + 0.7*0.7 = 0.49
+		assert!((ewma.load() - 0.49).abs() < 1e-10);
+		ewma.record(0.0); // 0.3*0 + 0.7*0.49 = 0.343
+		assert!((ewma.load() - 0.343).abs() < 1e-10);
+	}
+
+	#[test]
+	fn ewma_recovery_after_failures() {
+		let ewma = Ewma::new(0.343);
+		ewma.record(1.0); // 0.3*1.0 + 0.7*0.343 = 0.5401
+		assert!((ewma.load() - 0.5401).abs() < 1e-10);
+	}
+
+	#[test]
+	fn ewma_health_on_unevict_full_reset() {
+		let ewma = Ewma::new(1.0);
+		// 3 failures: 1.0 → 0.7 → 0.49 → 0.343
+		ewma.record(0.0);
+		ewma.record(0.0);
+		ewma.record(0.0);
+		assert!((ewma.load() - 0.343).abs() < 1e-10);
+
+		// Simulate uneviction with healthOnUnevict = 1.0
+		ewma.set(1.0);
+		assert_eq!(ewma.load(), 1.0);
+
+		// Failures start fresh from 1.0
+		ewma.record(0.0); // 0.7
+		assert!((ewma.load() - 0.7).abs() < 1e-10);
+		ewma.record(0.0); // 0.49
+		assert!((ewma.load() - 0.49).abs() < 1e-10);
+	}
+
+	#[test]
+	fn ewma_health_on_unevict_zero() {
+		let ewma = Ewma::new(1.0);
+		ewma.record(0.0);
+		ewma.record(0.0);
+		ewma.record(0.0);
+
+		// Simulate uneviction with healthOnUnevict = 0.0
+		ewma.set(0.0);
+		assert_eq!(ewma.load(), 0.0);
+
+		// record(0.0) when old==0.0: result = nv = 0.0 (stays at zero)
+		ewma.record(0.0);
+		assert_eq!(ewma.load(), 0.0);
+	}
+
+	#[test]
+	fn ewma_health_on_unevict_partial() {
+		let ewma = Ewma::new(1.0);
+		ewma.record(0.0);
+		ewma.record(0.0);
+		ewma.record(0.0);
+
+		// Simulate uneviction with healthOnUnevict = 0.5
+		ewma.set(0.5);
+		assert_eq!(ewma.load(), 0.5);
+
+		// Next failure: 0.3*0 + 0.7*0.5 = 0.35
+		ewma.record(0.0);
+		assert!((ewma.load() - 0.35).abs() < 1e-10);
+	}
+
+	// --- EndpointInfo ---
+
+	#[test]
+	fn endpoint_info_default_health() {
+		let info = EndpointInfo::default();
+		assert_eq!(info.health_score(), 1.0);
+		assert_eq!(info.consecutive_failures(), 0);
+		assert_eq!(info.times_ejected(), 0);
+	}
+
+	// --- EndpointSet eviction integration ---
+
+	#[tokio::test]
+	async fn endpoint_set_eviction_and_uneviction() {
+		let key: Strng = "ep1".into();
+		let eps = EndpointSet::new(vec![vec![(key.clone(), "backend1")]]);
+
+		// Endpoint is initially in the active set
+		let group = eps.best_bucket();
+		assert!(group.active.contains_key(&key));
+		assert!(!group.rejected.contains_key(&key));
+
+		// Start a request and finish with eviction
+		let info = group.active.get(&key).unwrap().info.clone();
+		let handle = eps.start_request(key.clone(), &info);
+		handle.finish_request(
+			false,
+			Duration::from_millis(10),
+			Some(Duration::from_millis(100)),
+			Some(1.0),
+			None,
+		);
+
+		// Give the eviction event time to be processed
+		tokio::time::sleep(Duration::from_millis(50)).await;
+
+		// Endpoint should now be rejected
+		let group = eps.best_bucket();
+		assert!(
+			group.rejected.contains_key(&key),
+			"endpoint should be evicted"
+		);
+
+		// Wait for uneviction (100ms eviction duration + buffer)
+		tokio::time::sleep(Duration::from_millis(150)).await;
+
+		// Endpoint should be back in active with health reset to 1.0
+		let group = eps.best_bucket();
+		assert!(
+			group.active.contains_key(&key),
+			"endpoint should be unevicted"
+		);
+		let ep_info = &group.active.get(&key).unwrap().info;
+		assert_eq!(ep_info.health_score(), 1.0, "health should be reset to 1.0");
+	}
+
+	#[tokio::test]
+	async fn endpoint_set_uneviction_health_on_unevict_zero() {
+		let key: Strng = "ep1".into();
+		let eps = EndpointSet::new(vec![vec![(key.clone(), "backend1")]]);
+
+		let group = eps.best_bucket();
+		let info = group.active.get(&key).unwrap().info.clone();
+		let handle = eps.start_request(key.clone(), &info);
+		handle.finish_request(
+			false,
+			Duration::from_millis(10),
+			Some(Duration::from_millis(100)),
+			Some(0.0), // healthOnUnevict = 0.0
+			None,
+		);
+
+		tokio::time::sleep(Duration::from_millis(50)).await;
+		let group = eps.best_bucket();
+		assert!(group.rejected.contains_key(&key));
+
+		// Wait for uneviction
+		tokio::time::sleep(Duration::from_millis(150)).await;
+
+		let group = eps.best_bucket();
+		assert!(group.active.contains_key(&key));
+		let ep_info = &group.active.get(&key).unwrap().info;
+		assert_eq!(
+			ep_info.health_score(),
+			0.0,
+			"health should be set to 0.0 on uneviction"
+		);
+	}
+
+	#[tokio::test]
+	async fn endpoint_set_uneviction_no_health_on_unevict() {
+		let key: Strng = "ep1".into();
+		let eps = EndpointSet::new(vec![vec![(key.clone(), "backend1")]]);
+
+		let group = eps.best_bucket();
+		let info = group.active.get(&key).unwrap().info.clone();
+
+		// Record a failure to lower health before eviction
+		info.health.record(0.0); // 0.3*0 + 0.7*1.0 = 0.7
+
+		let handle = eps.start_request(key.clone(), &info);
+		handle.finish_request(
+			false,
+			Duration::from_millis(10),
+			Some(Duration::from_millis(100)),
+			None, // no healthOnUnevict
+			None,
+		);
+
+		tokio::time::sleep(Duration::from_millis(50)).await;
+
+		// Wait for uneviction
+		tokio::time::sleep(Duration::from_millis(150)).await;
+
+		let group = eps.best_bucket();
+		assert!(group.active.contains_key(&key));
+		let ep_info = &group.active.get(&key).unwrap().info;
+		// Health was recorded as 0.0 in finish_request (failure),
+		// starting from 0.7: 0.3*0 + 0.7*0.7 = 0.49
+		assert!(
+			(ep_info.health_score() - 0.49).abs() < 1e-10,
+			"health should be unchanged from pre-eviction EWMA, got {}",
+			ep_info.health_score()
+		);
+	}
+
+	#[test]
+	fn consecutive_failures_increments_on_failure() {
+		let info = EndpointInfo::default();
+		assert_eq!(info.consecutive_failures(), 0);
+
+		info
+			.consecutive_failures
+			.fetch_add(1, AtomicOrdering::Relaxed);
+		assert_eq!(info.consecutive_failures(), 1);
+
+		info
+			.consecutive_failures
+			.fetch_add(1, AtomicOrdering::Relaxed);
+		assert_eq!(info.consecutive_failures(), 2);
+	}
+
+	#[test]
+	fn consecutive_failures_not_reset_by_uneviction() {
+		let info = EndpointInfo::default();
+		// Simulate 3 failures
+		info.consecutive_failures.store(3, AtomicOrdering::Relaxed);
+		// Simulate what uneviction does: only resets health, not consecutive_failures
+		info.health.set(1.0);
+		assert_eq!(
+			info.consecutive_failures(),
+			3,
+			"consecutive_failures should NOT be reset on uneviction"
+		);
+	}
+}

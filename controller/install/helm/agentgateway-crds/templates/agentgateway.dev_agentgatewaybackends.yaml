@@ -730,11 +730,12 @@ spec:
                                                                 When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                                                 For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                                This default lowers the backend's health score but does not trigger eviction on its own.
                                                               maxLength: 16384
                                                               minLength: 1
                                                               type: string
-                                                          required:
-                                                          - unhealthyCondition
                                                           type: object
                                                         http:
                                                           description: http defines
@@ -1620,11 +1621,12 @@ spec:
                                                                 When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                                                 For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                                This default lowers the backend's health score but does not trigger eviction on its own.
                                                               maxLength: 16384
                                                               minLength: 1
                                                               type: string
-                                                          required:
-                                                          - unhealthyCondition
                                                           type: object
                                                         http:
                                                           description: http defines
@@ -2505,11 +2507,12 @@ spec:
                                                                 When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                                                 For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                                This default lowers the backend's health score but does not trigger eviction on its own.
                                                               maxLength: 16384
                                                               minLength: 1
                                                               type: string
-                                                          required:
-                                                          - unhealthyCondition
                                                           type: object
                                                         http:
                                                           description: http defines
@@ -3616,11 +3619,12 @@ spec:
                                                                 When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                                                 For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                                This default lowers the backend's health score but does not trigger eviction on its own.
                                                               maxLength: 16384
                                                               minLength: 1
                                                               type: string
-                                                          required:
-                                                          - unhealthyCondition
                                                           type: object
                                                         http:
                                                           description: http defines
@@ -4506,11 +4510,12 @@ spec:
                                                                 When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                                                 For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                                This default lowers the backend's health score but does not trigger eviction on its own.
                                                               maxLength: 16384
                                                               minLength: 1
                                                               type: string
-                                                          required:
-                                                          - unhealthyCondition
                                                           type: object
                                                         http:
                                                           description: http defines
@@ -5649,11 +5654,12 @@ spec:
                                           When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                           For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                          When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                          This default lowers the backend's health score but does not trigger eviction on its own.
                                         maxLength: 16384
                                         minLength: 1
                                         type: string
-                                    required:
-                                    - unhealthyCondition
                                     type: object
                                   http:
                                     description: http defines settings for managing
@@ -6761,11 +6767,12 @@ spec:
                                         When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                         For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                        When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                        This default lowers the backend's health score but does not trigger eviction on its own.
                                       maxLength: 16384
                                       minLength: 1
                                       type: string
-                                  required:
-                                  - unhealthyCondition
                                   type: object
                                 http:
                                   description: http defines settings for managing
@@ -7933,11 +7940,12 @@ spec:
                                                 When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                                 For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                This default lowers the backend's health score but does not trigger eviction on its own.
                                               maxLength: 16384
                                               minLength: 1
                                               type: string
-                                          required:
-                                          - unhealthyCondition
                                           type: object
                                         http:
                                           description: http defines settings for managing
@@ -8680,11 +8688,12 @@ spec:
                                                 When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                                 For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                This default lowers the backend's health score but does not trigger eviction on its own.
                                               maxLength: 16384
                                               minLength: 1
                                               type: string
-                                          required:
-                                          - unhealthyCondition
                                           type: object
                                         http:
                                           description: http defines settings for managing
@@ -9423,11 +9432,12 @@ spec:
                                                 When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                                 For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                This default lowers the backend's health score but does not trigger eviction on its own.
                                               maxLength: 16384
                                               minLength: 1
                                               type: string
-                                          required:
-                                          - unhealthyCondition
                                           type: object
                                         http:
                                           description: http defines settings for managing
@@ -10383,11 +10393,12 @@ spec:
                                                 When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                                 For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                This default lowers the backend's health score but does not trigger eviction on its own.
                                               maxLength: 16384
                                               minLength: 1
                                               type: string
-                                          required:
-                                          - unhealthyCondition
                                           type: object
                                         http:
                                           description: http defines settings for managing
@@ -11130,11 +11141,12 @@ spec:
                                                 When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                                 For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                This default lowers the backend's health score but does not trigger eviction on its own.
                                               maxLength: 16384
                                               minLength: 1
                                               type: string
-                                          required:
-                                          - unhealthyCondition
                                           type: object
                                         http:
                                           description: http defines settings for managing
@@ -12141,11 +12153,12 @@ spec:
                           When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                           For example, to evict on 5xx responses: `response.code >= 500`.
+
+                          When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                          This default lowers the backend's health score but does not trigger eviction on its own.
                         maxLength: 16384
                         minLength: 1
                         type: string
-                    required:
-                    - unhealthyCondition
                     type: object
                   http:
                     description: http defines settings for managing HTTP requests

@@ -180,12 +180,12 @@ func translateBackendHealthPolicy(policy *agentgateway.AgentgatewayPolicy, targe
 
 	var maxEjectionPercent *uint32
 	if healthPolicy.MaxEjectionPercent != nil {
-		val := uint32(*healthPolicy.MaxEjectionPercent)
+		val := uint32(*healthPolicy.MaxEjectionPercent) // #nosec G115 - non-negative enforced by kubebuilder validation
 		maxEjectionPercent = &val
 	}
 	var enforcingPercentage *uint32
 	if healthPolicy.EnforcingPercentage != nil {
-		val := uint32(*healthPolicy.EnforcingPercentage)
+		val := uint32(*healthPolicy.EnforcingPercentage) // #nosec G115 - non-negative enforced by kubebuilder validation
 		enforcingPercentage = &val
 	}
 	var interval *durationpb.Duration
@@ -193,8 +193,13 @@ func translateBackendHealthPolicy(policy *agentgateway.AgentgatewayPolicy, targe
 		interval = durationpb.New(healthPolicy.Interval.Duration)
 	}
 
+	var unhealthyCondition string
+	if healthPolicy.UnhealthyCondition != nil {
+		unhealthyCondition = string(*healthPolicy.UnhealthyCondition)
+	}
+
 	p := &api.BackendPolicySpec_Health{
-		UnhealthyCondition:  string(healthPolicy.UnhealthyCondition),
+		UnhealthyCondition:  unhealthyCondition,
 		Eviction:            evictionProto,
 		ConsecutiveFailures: healthPolicy.ConsecutiveFailures,
 		HealthThreshold:     healthThreshold,

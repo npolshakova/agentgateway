@@ -8700,6 +8700,8 @@ type BackendPolicySpec_Health struct {
 	// cel expression evaluated per request to determine if eviction should be triggered
 	// `true`: treat this response as **unhealthy** (candidate for eviction).
 	// `false`: treat as healthy (no eviction from this response alone).
+	// When empty, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+	// This default lowers the backend's health score but does not trigger eviction on its own.
 	UnhealthyCondition string                      `protobuf:"bytes,1,opt,name=unhealthy_condition,json=unhealthyCondition,proto3" json:"unhealthy_condition,omitempty"`
 	Eviction           *BackendPolicySpec_Eviction `protobuf:"bytes,2,opt,name=eviction,proto3" json:"eviction,omitempty"`
 	// EWMA health score threshold (0.0–1.0) below which an unhealthy backend is evicted.

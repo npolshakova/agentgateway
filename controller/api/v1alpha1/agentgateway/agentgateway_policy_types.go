@@ -148,8 +148,11 @@ type Health struct {
 	//
 	// For example, to evict on 5xx responses: `response.code >= 500`.
 	//
-	// +required
-	UnhealthyCondition shared.CELExpression `json:"unhealthyCondition"`
+	// When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+	// This default lowers the backend's health score but does not trigger eviction on its own.
+	//
+	// +optional
+	UnhealthyCondition *shared.CELExpression `json:"unhealthyCondition,omitempty"`
 
 	// Eviction defines settings for evicting unhealthy backends.
 	// +optional

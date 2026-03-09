@@ -2664,7 +2664,7 @@
       "type": "object",
       "properties": {
         "unhealthyExpression": {
-          "description": "CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.",
+          "description": "CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.\nWhen unset, any 4xx/5xx or connection failure is treated as unhealthy.",
           "type": [
             "string",
             "null"

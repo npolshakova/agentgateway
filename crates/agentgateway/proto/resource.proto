@@ -977,6 +977,8 @@ message BackendPolicySpec {
     // cel expression evaluated per request to determine if eviction should be triggered
     // `true`: treat this response as **unhealthy** (candidate for eviction).
     // `false`: treat as healthy (no eviction from this response alone).
+    // When empty, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+    // This default lowers the backend's health score but does not trigger eviction on its own.
     string unhealthy_condition = 1;
     Eviction eviction = 2;
 

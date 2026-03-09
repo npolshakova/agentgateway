@@ -6,8 +6,6 @@ use std::sync::{Arc, Mutex};
 use std::task::{Context, Poll, ready};
 use std::time::{Duration, Instant, SystemTime};
 
-use rand::RngExt;
-
 use agent_core::metrics::CustomField;
 use agent_core::strng;
 use agent_core::strng::{RichStrng, Strng};
@@ -449,9 +447,11 @@ impl DropOnLog {
 
 	/// Computes (health, eviction_duration, health_on_unevict) for finish_request.
 	/// `unhealthy` should already be evaluated (preferably with the shared CEL executor when available).
-	/// When not set, eviction is disabled.
+	/// When no CEL expression is set, the default treats 4xx, 5xx, or connection failures as unhealthy.
 	fn eviction_unhealthy(log: &RequestLog, cel_exec: Option<&CelLoggingExecutor<'_>>) -> bool {
-		let default_unhealthy = log.status.is_none_or(|s| s.is_server_error());
+		let default_unhealthy = log
+			.status
+			.is_none_or(|s| s.is_client_error() || s.is_server_error());
 		let Some(policy) = &log.health_policy else {
 			return default_unhealthy;
 		};
@@ -472,67 +472,17 @@ impl DropOnLog {
 		times_ejected: u64,
 		unhealthy: bool,
 	) -> (bool, Option<Duration>, Option<f64>, Option<u32>) {
-		const DEFAULT_EVICTION_SECS: u64 = 30;
-		const DEFAULT_MAX_EJECTION_SECS: u64 = 300;
 		let Some(policy) = &log.health_policy else {
 			let health = !unhealthy;
 			return (health, None, None, None);
 		};
-		let health = !unhealthy;
-		let eviction_duration = if unhealthy {
-			let base_duration = policy
-				.eviction_duration()
-				.or(log.retry_after)
-				.or(log.retry_backoff)
-				.or(Some(Duration::from_secs(DEFAULT_EVICTION_SECS)));
-			let max_ejection_time = policy
-				.max_ejection_time()
-				.unwrap_or(Duration::from_secs(DEFAULT_MAX_EJECTION_SECS));
-			// +1 because the current failure hasn't been recorded yet.
-			let failures_including_current = consecutive_failure_count + 1;
-			let health_below = policy
-				.health_threshold
-				.is_some_and(|t| current_health < t);
-			let consecutive_exceeded = policy
-				.consecutive_failures
-				.is_some_and(|count| count > 0 && failures_including_current >= count as u64);
-			let below_threshold = if policy.health_threshold.is_some()
-				|| policy.consecutive_failures.is_some()
-			{
-				health_below || consecutive_exceeded
-			} else {
-				true
-			};
-			if below_threshold {
-				// Probabilistic enforcement: skip eviction randomly based on enforcing_percentage.
-				let enforced = match policy.enforcing_percentage {
-					Some(pct) => rand::rng().random_range(0..100) < pct,
-					None => true,
-				};
-				if enforced {
-					// Multiplicative backoff: base_duration * (times_ejected + 1),
-					// capped by max_ejection_time.
-					let multiplier = times_ejected.saturating_add(1);
-					base_duration.map(|d| {
-						let scaled = d.saturating_mul(multiplier as u32);
-						scaled.min(max_ejection_time)
-					})
-				} else {
-					None
-				}
-			} else {
-				None
-			}
-		} else {
-			None
-		};
-		let health_on_unevict = policy.health_on_unevict;
-		let max_ejection_percent = policy.max_ejection_percent;
-		(
-			health,
-			eviction_duration,
-			health_on_unevict,
-			max_ejection_percent,
+		let fallback_duration = log.retry_after.or(log.retry_backoff);
+		policy.eviction_decision(
+			current_health,
+			consecutive_failure_count,
+			times_ejected,
+			unhealthy,
+			fallback_duration,
 		)
 	}
 
