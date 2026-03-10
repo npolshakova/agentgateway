@@ -16,7 +16,7 @@ use crate::{serde_dur_option, *};
 #[serde(rename_all = "camelCase")]
 pub struct Eviction {
 	/// Base ejection time. When absent, falls back to `Retry-After` header (e.g. 429)
-	/// or retry policy backoff, then a default (e.g. 30s).
+	/// or retry policy backoff, then a default (e.g. 3s).
 	#[serde(
 		default,
 		skip_serializing_if = "Option::is_none",
@@ -24,23 +24,10 @@ pub struct Eviction {
 	)]
 	pub duration: Option<Duration>,
 
-	/// Upper bound on ejection time after multiplicative backoff. Defaults to 300s.
-	#[serde(
-		default,
-		skip_serializing_if = "Option::is_none",
-		with = "serde_dur_option"
-	)]
-	pub max_eviction_time: Option<Duration>,
-
 	/// Health score to restore when a backend returns from eviction (e.g. 0.2 for gradual recovery).
 	/// When absent, health is left unchanged on recovery.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub restore_health: Option<f64>,
-
-	/// Maximum percentage (0–100) of endpoints in a priority group that may be evicted
-	/// simultaneously. When absent, all endpoints may be evicted.
-	#[serde(skip_serializing_if = "Option::is_none")]
-	pub max_eviction_percent: Option<u32>,
 
 	/// Number of consecutive unhealthy responses required before evicting the backend.
 	/// When both this and `health_threshold` are set, eviction triggers when either condition is met.
@@ -63,7 +50,7 @@ pub struct Eviction {
 #[serde(rename_all = "camelCase")]
 pub struct Policy {
 	/// CEL expression evaluated per response; `true` means this response is unhealthy (evict).
-	/// When absent, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+	/// When absent, any 5xx response, or a connection failure, is treated as unhealthy.
 	/// This default lowers the backend's health score but does not trigger eviction on its own.
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub unhealthy_expression: Option<Arc<Expression>>,
@@ -73,18 +60,12 @@ pub struct Policy {
 	pub eviction: Option<Eviction>,
 }
 
-const DEFAULT_EVICTION_SECS: u64 = 30;
-const DEFAULT_MAX_EJECTION_SECS: u64 = 300;
+const DEFAULT_EVICTION_SECS: u64 = 3;
 
 impl Policy {
 	/// Returns the configured base eviction duration, if any.
 	pub fn eviction_duration(&self) -> Option<Duration> {
 		self.eviction.as_ref().and_then(|e| e.duration)
-	}
-
-	/// Returns the configured max ejection time cap, if any.
-	pub fn max_eviction_time(&self) -> Option<Duration> {
-		self.eviction.as_ref().and_then(|e| e.max_eviction_time)
 	}
 
 	/// Computes the eviction decision for a single request.
@@ -93,7 +74,7 @@ impl Policy {
 	/// is recorded. `fallback_duration` is used when no explicit eviction duration is configured
 	/// (e.g. from `Retry-After` headers or retry backoff).
 	///
-	/// Returns `(is_healthy, eviction_duration, restore_health, max_eviction_percent)`.
+	/// Returns `(is_healthy, eviction_duration, restore_health)`.
 	pub(crate) fn eviction_decision(
 		&self,
 		current_health: f64,
@@ -101,7 +82,7 @@ impl Policy {
 		times_ejected: u64,
 		unhealthy: bool,
 		fallback_duration: Option<Duration>,
-	) -> (bool, Option<Duration>, Option<f64>, Option<u32>) {
+	) -> (bool, Option<Duration>, Option<f64>) {
 		let health = !unhealthy;
 		let ev = self.eviction.as_ref();
 		let eviction_duration = if unhealthy {
@@ -109,9 +90,6 @@ impl Policy {
 				.eviction_duration()
 				.or(fallback_duration)
 				.or(Some(Duration::from_secs(DEFAULT_EVICTION_SECS)));
-			let max_eviction_time = self
-				.max_eviction_time()
-				.unwrap_or(Duration::from_secs(DEFAULT_MAX_EJECTION_SECS));
 			let health_threshold = ev.and_then(|e| e.health_threshold);
 			let consecutive_failures = ev.and_then(|e| e.consecutive_failures);
 			// +1 because the current failure hasn't been recorded yet.
@@ -125,25 +103,19 @@ impl Policy {
 				true
 			};
 			if below_threshold {
-				// Multiplicative backoff: base_duration * (times_ejected + 1),
-				// capped by max_eviction_time.
+				// Multiplicative backoff: base_duration * (times_ejected + 1).
+				// No cap -- if all endpoints are evicted the loadbalancer falls back
+				// to returning evicted endpoints, which is better than an arbitrary
+				// max that unevenly distributes load across equally-degraded backends.
 				let multiplier = times_ejected.saturating_add(1);
-				base_duration.map(|d| {
-					let scaled = d.saturating_mul(multiplier as u32);
-					scaled.min(max_eviction_time)
-				})
+				base_duration.map(|d| d.saturating_mul(multiplier as u32))
 			} else {
 				None
 			}
 		} else {
 			None
 		};
-		(
-			health,
-			eviction_duration,
-			ev.and_then(|e| e.restore_health),
-			ev.and_then(|e| e.max_eviction_percent),
-		)
+		(health, eviction_duration, ev.and_then(|e| e.restore_health))
 	}
 }
 
@@ -160,19 +132,8 @@ pub struct LocalEviction {
 	#[cfg_attr(feature = "schema", schemars(with = "Option<String>"))]
 	pub duration: Option<Duration>,
 
-	#[serde(
-		default,
-		skip_serializing_if = "Option::is_none",
-		with = "serde_dur_option"
-	)]
-	#[cfg_attr(feature = "schema", schemars(with = "Option<String>"))]
-	pub max_eviction_time: Option<Duration>,
-
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub restore_health: Option<f64>,
-
-	#[serde(default, skip_serializing_if = "Option::is_none")]
-	pub max_eviction_percent: Option<u32>,
 
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub consecutive_failures: Option<i32>,
@@ -188,7 +149,7 @@ pub struct LocalEviction {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub struct LocalHealthPolicy {
 	/// CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.
-	/// When unset, any 4xx/5xx or connection failure is treated as unhealthy.
+	/// When unset, any 5xx or connection failure is treated as unhealthy.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub unhealthy_expression: Option<String>,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
@@ -214,9 +175,7 @@ impl TryFrom<LocalHealthPolicy> for Policy {
 				validate_score("restoreHealth", e.restore_health)?;
 				Some(Eviction {
 					duration: e.duration,
-					max_eviction_time: e.max_eviction_time,
 					restore_health: e.restore_health,
-					max_eviction_percent: e.max_eviction_percent,
 					consecutive_failures: e.consecutive_failures,
 					health_threshold: e.health_threshold,
 				})
@@ -274,7 +233,7 @@ mod tests {
 	#[test]
 	fn healthy_response_no_eviction() {
 		let policy = Policy::default();
-		let (healthy, eviction, _, _) = policy.eviction_decision(1.0, 0, 0, false, None);
+		let (healthy, eviction, _) = policy.eviction_decision(1.0, 0, 0, false, None);
 		assert!(healthy);
 		assert!(eviction.is_none());
 	}
@@ -282,7 +241,7 @@ mod tests {
 	#[test]
 	fn healthy_response_with_threshold_no_eviction() {
 		let policy = policy_with_threshold(0.5);
-		let (healthy, eviction, _, _) = policy.eviction_decision(0.1, 10, 5, false, None);
+		let (healthy, eviction, _) = policy.eviction_decision(0.1, 10, 5, false, None);
 		assert!(healthy);
 		assert!(eviction.is_none());
 	}
@@ -292,7 +251,7 @@ mod tests {
 	#[test]
 	fn unhealthy_no_thresholds_evicts() {
 		let policy = policy_with_eviction_duration(10);
-		let (healthy, eviction, _, _) = policy.eviction_decision(1.0, 0, 0, true, None);
+		let (healthy, eviction, _) = policy.eviction_decision(1.0, 0, 0, true, None);
 		assert!(!healthy);
 		assert_eq!(eviction, Some(Duration::from_secs(10)));
 	}
@@ -300,7 +259,7 @@ mod tests {
 	#[test]
 	fn unhealthy_default_eviction_duration() {
 		let policy = Policy::default();
-		let (_, eviction, _, _) = policy.eviction_decision(1.0, 0, 0, true, None);
+		let (_, eviction, _) = policy.eviction_decision(1.0, 0, 0, true, None);
 		assert_eq!(eviction, Some(Duration::from_secs(DEFAULT_EVICTION_SECS)));
 	}
 
@@ -310,7 +269,7 @@ mod tests {
 	fn health_threshold_above_no_eviction() {
 		let policy = policy_with_threshold(0.5);
 		// current_health=0.7 > 0.5, should not evict
-		let (_, eviction, _, _) = policy.eviction_decision(0.7, 0, 0, true, None);
+		let (_, eviction, _) = policy.eviction_decision(0.7, 0, 0, true, None);
 		assert!(eviction.is_none());
 	}
 
@@ -318,7 +277,7 @@ mod tests {
 	fn health_threshold_at_boundary_no_eviction() {
 		let policy = policy_with_threshold(0.5);
 		// current_health=0.5 == 0.5, "is_some_and(|t| current_health < t)" is false
-		let (_, eviction, _, _) = policy.eviction_decision(0.5, 0, 0, true, None);
+		let (_, eviction, _) = policy.eviction_decision(0.5, 0, 0, true, None);
 		assert!(eviction.is_none());
 	}
 
@@ -326,7 +285,7 @@ mod tests {
 	fn health_threshold_below_evicts() {
 		let policy = policy_with_threshold(0.5);
 		// current_health=0.49 < 0.5
-		let (_, eviction, _, _) = policy.eviction_decision(0.49, 0, 0, true, None);
+		let (_, eviction, _) = policy.eviction_decision(0.49, 0, 0, true, None);
 		assert!(eviction.is_some());
 	}
 
@@ -336,7 +295,7 @@ mod tests {
 	fn consecutive_failures_below_count_no_eviction() {
 		let policy = policy_with_consecutive(3);
 		// consecutive_failure_count=1, failures_including_current=2 < 3
-		let (_, eviction, _, _) = policy.eviction_decision(1.0, 1, 0, true, None);
+		let (_, eviction, _) = policy.eviction_decision(1.0, 1, 0, true, None);
 		assert!(eviction.is_none());
 	}
 
@@ -344,7 +303,7 @@ mod tests {
 	fn consecutive_failures_at_count_evicts() {
 		let policy = policy_with_consecutive(3);
 		// consecutive_failure_count=2, failures_including_current=3 >= 3
-		let (_, eviction, _, _) = policy.eviction_decision(1.0, 2, 0, true, None);
+		let (_, eviction, _) = policy.eviction_decision(1.0, 2, 0, true, None);
 		assert!(eviction.is_some());
 	}
 
@@ -352,14 +311,14 @@ mod tests {
 	fn consecutive_failures_above_count_evicts() {
 		let policy = policy_with_consecutive(3);
 		// consecutive_failure_count=5, failures_including_current=6 >= 3
-		let (_, eviction, _, _) = policy.eviction_decision(1.0, 5, 0, true, None);
+		let (_, eviction, _) = policy.eviction_decision(1.0, 5, 0, true, None);
 		assert!(eviction.is_some());
 	}
 
 	#[test]
 	fn consecutive_failures_zero_threshold_never_triggers() {
 		let policy = policy_with_consecutive(0);
-		let (_, eviction, _, _) = policy.eviction_decision(1.0, 100, 0, true, None);
+		let (_, eviction, _) = policy.eviction_decision(1.0, 100, 0, true, None);
 		assert!(eviction.is_none());
 	}
 
@@ -376,7 +335,7 @@ mod tests {
 			..Default::default()
 		};
 		// health 0.3 < 0.5, but consecutive_failures=0 (1 including current < 5)
-		let (_, eviction, _, _) = policy.eviction_decision(0.3, 0, 0, true, None);
+		let (_, eviction, _) = policy.eviction_decision(0.3, 0, 0, true, None);
 		assert!(eviction.is_some());
 	}
 
@@ -391,7 +350,7 @@ mod tests {
 			..Default::default()
 		};
 		// health 0.9 > 0.5, but consecutive=2 (3 including current >= 3)
-		let (_, eviction, _, _) = policy.eviction_decision(0.9, 2, 0, true, None);
+		let (_, eviction, _) = policy.eviction_decision(0.9, 2, 0, true, None);
 		assert!(eviction.is_some());
 	}
 
@@ -406,11 +365,11 @@ mod tests {
 			..Default::default()
 		};
 		// health 0.7 > 0.5, consecutive=1 (2 including current < 5)
-		let (_, eviction, _, _) = policy.eviction_decision(0.7, 1, 0, true, None);
+		let (_, eviction, _) = policy.eviction_decision(0.7, 1, 0, true, None);
 		assert!(eviction.is_none());
 	}
 
-	// --- restore_health and max_eviction_percent passthrough ---
+	// --- restore_health passthrough ---
 
 	#[test]
 	fn returns_restore_health() {
@@ -421,28 +380,15 @@ mod tests {
 			}),
 			..Default::default()
 		};
-		let (_, _, hon, _) = policy.eviction_decision(1.0, 0, 0, true, None);
+		let (_, _, hon) = policy.eviction_decision(1.0, 0, 0, true, None);
 		assert_eq!(hon, Some(0.5));
 	}
 
 	#[test]
 	fn returns_restore_health_none_when_unset() {
 		let policy = Policy::default();
-		let (_, _, hon, _) = policy.eviction_decision(1.0, 0, 0, true, None);
+		let (_, _, hon) = policy.eviction_decision(1.0, 0, 0, true, None);
 		assert_eq!(hon, None);
-	}
-
-	#[test]
-	fn returns_max_eviction_percent() {
-		let policy = Policy {
-			eviction: Some(Eviction {
-				max_eviction_percent: Some(80),
-				..Default::default()
-			}),
-			..Default::default()
-		};
-		let (_, _, _, mep) = policy.eviction_decision(1.0, 0, 0, true, None);
-		assert_eq!(mep, Some(80));
 	}
 
 	// --- eviction duration computation ---
@@ -450,7 +396,7 @@ mod tests {
 	#[test]
 	fn explicit_eviction_duration_used() {
 		let policy = policy_with_eviction_duration(60);
-		let (_, eviction, _, _) = policy.eviction_decision(1.0, 0, 0, true, None);
+		let (_, eviction, _) = policy.eviction_decision(1.0, 0, 0, true, None);
 		assert_eq!(eviction, Some(Duration::from_secs(60)));
 	}
 
@@ -458,7 +404,7 @@ mod tests {
 	fn fallback_duration_used_when_no_explicit() {
 		let policy = Policy::default();
 		let fallback = Some(Duration::from_secs(45));
-		let (_, eviction, _, _) = policy.eviction_decision(1.0, 0, 0, true, fallback);
+		let (_, eviction, _) = policy.eviction_decision(1.0, 0, 0, true, fallback);
 		assert_eq!(eviction, Some(Duration::from_secs(45)));
 	}
 
@@ -466,7 +412,7 @@ mod tests {
 	fn explicit_duration_preferred_over_fallback() {
 		let policy = policy_with_eviction_duration(10);
 		let fallback = Some(Duration::from_secs(45));
-		let (_, eviction, _, _) = policy.eviction_decision(1.0, 0, 0, true, fallback);
+		let (_, eviction, _) = policy.eviction_decision(1.0, 0, 0, true, fallback);
 		assert_eq!(eviction, Some(Duration::from_secs(10)));
 	}
 
@@ -474,22 +420,16 @@ mod tests {
 	fn multiplicative_backoff_with_times_ejected() {
 		let policy = policy_with_eviction_duration(10);
 		// times_ejected=2 → multiplier=3 → 10*3=30s
-		let (_, eviction, _, _) = policy.eviction_decision(1.0, 0, 2, true, None);
+		let (_, eviction, _) = policy.eviction_decision(1.0, 0, 2, true, None);
 		assert_eq!(eviction, Some(Duration::from_secs(30)));
 	}
 
 	#[test]
-	fn eviction_duration_capped_at_max() {
-		let policy = Policy {
-			eviction: Some(Eviction {
-				duration: Some(Duration::from_secs(60)),
-				max_eviction_time: Some(Duration::from_secs(120)),
-			}),
-			..Default::default()
-		};
-		// times_ejected=4 → multiplier=5 → 60*5=300, capped to 120
-		let (_, eviction, _, _) = policy.eviction_decision(1.0, 0, 4, true, None);
-		assert_eq!(eviction, Some(Duration::from_secs(120)));
+	fn eviction_duration_uncapped_backoff() {
+		let policy = policy_with_eviction_duration(60);
+		// times_ejected=4 → multiplier=5 → 60*5=300s (no cap)
+		let (_, eviction, _) = policy.eviction_decision(1.0, 0, 4, true, None);
+		assert_eq!(eviction, Some(Duration::from_secs(300)));
 	}
 
 	// --- EWMA health score simulation with restoreHealth ---
@@ -512,17 +452,17 @@ mod tests {
 		let mut health = 1.0;
 
 		// Failure 1: health=1.0 > 0.5, no eviction
-		let (_, eviction, _, _) = policy.eviction_decision(health, 0, 0, true, None);
+		let (_, eviction, _) = policy.eviction_decision(health, 0, 0, true, None);
 		assert!(eviction.is_none(), "failure 1 should not evict");
 		health = ALPHA * 0.0 + (1.0 - ALPHA) * health; // 0.7
 
 		// Failure 2: health=0.7 > 0.5, no eviction
-		let (_, eviction, _, _) = policy.eviction_decision(health, 1, 0, true, None);
+		let (_, eviction, _) = policy.eviction_decision(health, 1, 0, true, None);
 		assert!(eviction.is_none(), "failure 2 should not evict");
 		health = ALPHA * 0.0 + (1.0 - ALPHA) * health; // 0.49
 
 		// Failure 3: health=0.49 < 0.5, eviction!
-		let (_, eviction, hon, _) = policy.eviction_decision(health, 2, 0, true, None);
+		let (_, eviction, hon) = policy.eviction_decision(health, 2, 0, true, None);
 		assert_eq!(
 			eviction,
 			Some(Duration::from_secs(10)),
@@ -550,17 +490,17 @@ mod tests {
 		let mut health = 1.0;
 
 		// Failure 1: 1.0 > 0.5
-		let (_, eviction, _, _) = policy.eviction_decision(health, 0, 1, true, None);
+		let (_, eviction, _) = policy.eviction_decision(health, 0, 1, true, None);
 		assert!(eviction.is_none());
 		health = ALPHA * 0.0 + (1.0 - ALPHA) * health; // 0.7
 
 		// Failure 2: 0.7 > 0.5
-		let (_, eviction, _, _) = policy.eviction_decision(health, 1, 1, true, None);
+		let (_, eviction, _) = policy.eviction_decision(health, 1, 1, true, None);
 		assert!(eviction.is_none());
 		health = ALPHA * 0.0 + (1.0 - ALPHA) * health; // 0.49
 
 		// Failure 3: 0.49 < 0.5, re-evicted
-		let (_, eviction, _, _) = policy.eviction_decision(health, 2, 1, true, None);
+		let (_, eviction, _) = policy.eviction_decision(health, 2, 1, true, None);
 		assert!(eviction.is_some(), "should re-evict after 3 failures");
 		// Backoff: 10s * (times_ejected=1 + 1) = 20s
 		assert_eq!(eviction, Some(Duration::from_secs(20)));
@@ -580,7 +520,7 @@ mod tests {
 
 		// After uneviction with restoreHealth=0.0, health is 0.0.
 		// First failure: 0.0 < 0.5 → immediately re-evicted.
-		let (_, eviction, _, _) = policy.eviction_decision(0.0, 0, 1, true, None);
+		let (_, eviction, _) = policy.eviction_decision(0.0, 0, 1, true, None);
 		assert!(
 			eviction.is_some(),
 			"should immediately re-evict with health=0.0"
@@ -602,7 +542,7 @@ mod tests {
 		// After uneviction, consecutive_failures counter is NOT reset (stays at 3).
 		// Even with restoreHealth=1.0, the first failure after uneviction
 		// sees failures_including_current=4 >= 3, so it's immediately re-evicted.
-		let (_, eviction, _, _) = policy.eviction_decision(1.0, 3, 1, true, None);
+		let (_, eviction, _) = policy.eviction_decision(1.0, 3, 1, true, None);
 		assert!(
 			eviction.is_some(),
 			"consecutive_failures=3 after uneviction → immediate re-eviction"

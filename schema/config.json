@@ -2664,7 +2664,7 @@
       "type": "object",
       "properties": {
         "unhealthyExpression": {
-          "description": "CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.\nWhen unset, any 4xx/5xx or connection failure is treated as unhealthy.",
+          "description": "CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.\nWhen unset, any 5xx or connection failure is treated as unhealthy.",
           "type": [
             "string",
             "null"
@@ -2693,26 +2693,12 @@
             "null"
           ]
         },
-        "maxEjectionTime": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
         "restoreHealth": {
           "type": [
             "number",
             "null"
           ],
           "format": "double"
-        },
-        "maxEjectionPercent": {
-          "type": [
-            "integer",
-            "null"
-          ],
-          "format": "uint32",
-          "minimum": 0
         },
         "consecutiveFailures": {
           "type": [

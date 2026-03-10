@@ -949,18 +949,8 @@ func (in *BackendEviction) DeepCopyInto(out *BackendEviction) {
 		*out = new(v1.Duration)
 		**out = **in
 	}
-	if in.MaxEvictionTime != nil {
-		in, out := &in.MaxEvictionTime, &out.MaxEvictionTime
-		*out = new(v1.Duration)
-		**out = **in
-	}
 	if in.RestoreHealth != nil {
 		in, out := &in.RestoreHealth, &out.RestoreHealth
-		*out = new(int32)
-		**out = **in
-	}
-	if in.MaxEvictionPercent != nil {
-		in, out := &in.MaxEvictionPercent, &out.MaxEvictionPercent
 		*out = new(int32)
 		**out = **in
 	}

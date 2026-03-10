@@ -631,11 +631,13 @@ spec:
                                                                   minimum: 0
                                                                   type: integer
                                                                 duration:
-                                                                  default: 30s
+                                                                  default: 3s
                                                                   description: |-
                                                                     Duration specifies the base time a backend should be evicted after being marked unhealthy.
-                                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted), capped by maxEvictionTime.
-                                                                    If unset, defaults to 30s.
+                                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                                                    If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                                                    rather than failing entirely.
+                                                                    If unset, defaults to 3s.
                                                                   type: string
                                                                   x-kubernetes-validations:
                                                                   - message: invalid
@@ -660,33 +662,6 @@ spec:
                                                                   maximum: 100
                                                                   minimum: 0
                                                                   type: integer
-                                                                maxEvictionPercent:
-                                                                  description: |-
-                                                                    MaxEvictionPercent is the maximum percentage (0–100) of backends in a priority group
-                                                                    that may be evicted simultaneously. Prevents cascading failures by ensuring at least
-                                                                    (100 - maxEvictionPercent)% of backends remain active.
-                                                                    When unset, all backends may be evicted (effectively 100%).
-                                                                  format: int32
-                                                                  maximum: 100
-                                                                  minimum: 0
-                                                                  type: integer
-                                                                maxEvictionTime:
-                                                                  default: 300s
-                                                                  description: |-
-                                                                    MaxEvictionTime is the upper bound on eviction time after multiplicative backoff.
-                                                                    The actual eviction time is min(duration * times_evicted, maxEvictionTime).
-                                                                    If unset, defaults to 300s.
-                                                                  type: string
-                                                                  x-kubernetes-validations:
-                                                                  - message: invalid
-                                                                      duration value
-                                                                    rule: matches(self,
-                                                                      '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
-                                                                  - message: maxEvictionTime
-                                                                      must be at least
-                                                                      1 second
-                                                                    rule: duration(self)
-                                                                      >= duration('1s')
                                                                 restoreHealth:
                                                                   description: |-
                                                                     RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
@@ -704,7 +679,7 @@ spec:
 
                                                                 For example, to evict on 5xx responses: `response.code >= 500`.
 
-                                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                                When unset, any 5xx response, or a connection failure, is treated as unhealthy.
                                                                 This default lowers the backend's health score but does not trigger eviction on its own.
                                                               maxLength: 16384
                                                               minLength: 1
@@ -1495,11 +1470,13 @@ spec:
                                                                   minimum: 0
                                                                   type: integer
                                                                 duration:
-                                                                  default: 30s
+                                                                  default: 3s
                                                                   description: |-
                                                                     Duration specifies the base time a backend should be evicted after being marked unhealthy.
-                                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted), capped by maxEvictionTime.
-                                                                    If unset, defaults to 30s.
+                                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                                                    If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                                                    rather than failing entirely.
+                                                                    If unset, defaults to 3s.
                                                                   type: string
                                                                   x-kubernetes-validations:
                                                                   - message: invalid
@@ -1524,33 +1501,6 @@ spec:
                                                                   maximum: 100
                                                                   minimum: 0
                                                                   type: integer
-                                                                maxEvictionPercent:
-                                                                  description: |-
-                                                                    MaxEvictionPercent is the maximum percentage (0–100) of backends in a priority group
-                                                                    that may be evicted simultaneously. Prevents cascading failures by ensuring at least
-                                                                    (100 - maxEvictionPercent)% of backends remain active.
-                                                                    When unset, all backends may be evicted (effectively 100%).
-                                                                  format: int32
-                                                                  maximum: 100
-                                                                  minimum: 0
-                                                                  type: integer
-                                                                maxEvictionTime:
-                                                                  default: 300s
-                                                                  description: |-
-                                                                    MaxEvictionTime is the upper bound on eviction time after multiplicative backoff.
-                                                                    The actual eviction time is min(duration * times_evicted, maxEvictionTime).
-                                                                    If unset, defaults to 300s.
-                                                                  type: string
-                                                                  x-kubernetes-validations:
-                                                                  - message: invalid
-                                                                      duration value
-                                                                    rule: matches(self,
-                                                                      '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
-                                                                  - message: maxEvictionTime
-                                                                      must be at least
-                                                                      1 second
-                                                                    rule: duration(self)
-                                                                      >= duration('1s')
                                                                 restoreHealth:
                                                                   description: |-
                                                                     RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
@@ -1568,7 +1518,7 @@ spec:
 
                                                                 For example, to evict on 5xx responses: `response.code >= 500`.
 
-                                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                                When unset, any 5xx response, or a connection failure, is treated as unhealthy.
                                                                 This default lowers the backend's health score but does not trigger eviction on its own.
                                                               maxLength: 16384
                                                               minLength: 1
@@ -2354,11 +2304,13 @@ spec:
                                                                   minimum: 0
                                                                   type: integer
                                                                 duration:
-                                                                  default: 30s
+                                                                  default: 3s
                                                                   description: |-
                                                                     Duration specifies the base time a backend should be evicted after being marked unhealthy.
-                                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted), capped by maxEvictionTime.
-                                                                    If unset, defaults to 30s.
+                                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                                                    If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                                                    rather than failing entirely.
+                                                                    If unset, defaults to 3s.
                                                                   type: string
                                                                   x-kubernetes-validations:
                                                                   - message: invalid
@@ -2383,33 +2335,6 @@ spec:
                                                                   maximum: 100
                                                                   minimum: 0
                                                                   type: integer
-                                                                maxEvictionPercent:
-                                                                  description: |-
-                                                                    MaxEvictionPercent is the maximum percentage (0–100) of backends in a priority group
-                                                                    that may be evicted simultaneously. Prevents cascading failures by ensuring at least
-                                                                    (100 - maxEvictionPercent)% of backends remain active.
-                                                                    When unset, all backends may be evicted (effectively 100%).
-                                                                  format: int32
-                                                                  maximum: 100
-                                                                  minimum: 0
-                                                                  type: integer
-                                                                maxEvictionTime:
-                                                                  default: 300s
-                                                                  description: |-
-                                                                    MaxEvictionTime is the upper bound on eviction time after multiplicative backoff.
-                                                                    The actual eviction time is min(duration * times_evicted, maxEvictionTime).
-                                                                    If unset, defaults to 300s.
-                                                                  type: string
-                                                                  x-kubernetes-validations:
-                                                                  - message: invalid
-                                                                      duration value
-                                                                    rule: matches(self,
-                                                                      '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
-                                                                  - message: maxEvictionTime
-                                                                      must be at least
-                                                                      1 second
-                                                                    rule: duration(self)
-                                                                      >= duration('1s')
                                                                 restoreHealth:
                                                                   description: |-
                                                                     RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
@@ -2427,7 +2352,7 @@ spec:
 
                                                                 For example, to evict on 5xx responses: `response.code >= 500`.
 
-                                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                                When unset, any 5xx response, or a connection failure, is treated as unhealthy.
                                                                 This default lowers the backend's health score but does not trigger eviction on its own.
                                                               maxLength: 16384
                                                               minLength: 1
@@ -3439,11 +3364,13 @@ spec:
                                                                   minimum: 0
                                                                   type: integer
                                                                 duration:
-                                                                  default: 30s
+                                                                  default: 3s
                                                                   description: |-
                                                                     Duration specifies the base time a backend should be evicted after being marked unhealthy.
-                                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted), capped by maxEvictionTime.
-                                                                    If unset, defaults to 30s.
+                                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                                                    If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                                                    rather than failing entirely.
+                                                                    If unset, defaults to 3s.
                                                                   type: string
                                                                   x-kubernetes-validations:
                                                                   - message: invalid
@@ -3468,33 +3395,6 @@ spec:
                                                                   maximum: 100
                                                                   minimum: 0
                                                                   type: integer
-                                                                maxEvictionPercent:
-                                                                  description: |-
-                                                                    MaxEvictionPercent is the maximum percentage (0–100) of backends in a priority group
-                                                                    that may be evicted simultaneously. Prevents cascading failures by ensuring at least
-                                                                    (100 - maxEvictionPercent)% of backends remain active.
-                                                                    When unset, all backends may be evicted (effectively 100%).
-                                                                  format: int32
-                                                                  maximum: 100
-                                                                  minimum: 0
-                                                                  type: integer
-                                                                maxEvictionTime:
-                                                                  default: 300s
-                                                                  description: |-
-                                                                    MaxEvictionTime is the upper bound on eviction time after multiplicative backoff.
-                                                                    The actual eviction time is min(duration * times_evicted, maxEvictionTime).
-                                                                    If unset, defaults to 300s.
-                                                                  type: string
-                                                                  x-kubernetes-validations:
-                                                                  - message: invalid
-                                                                      duration value
-                                                                    rule: matches(self,
-                                                                      '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
-                                                                  - message: maxEvictionTime
-                                                                      must be at least
-                                                                      1 second
-                                                                    rule: duration(self)
-                                                                      >= duration('1s')
                                                                 restoreHealth:
                                                                   description: |-
                                                                     RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
@@ -3512,7 +3412,7 @@ spec:
 
                                                                 For example, to evict on 5xx responses: `response.code >= 500`.
 
-                                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                                When unset, any 5xx response, or a connection failure, is treated as unhealthy.
                                                                 This default lowers the backend's health score but does not trigger eviction on its own.
                                                               maxLength: 16384
                                                               minLength: 1
@@ -4303,11 +4203,13 @@ spec:
                                                                   minimum: 0
                                                                   type: integer
                                                                 duration:
-                                                                  default: 30s
+                                                                  default: 3s
                                                                   description: |-
                                                                     Duration specifies the base time a backend should be evicted after being marked unhealthy.
-                                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted), capped by maxEvictionTime.
-                                                                    If unset, defaults to 30s.
+                                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                                                    If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                                                    rather than failing entirely.
+                                                                    If unset, defaults to 3s.
                                                                   type: string
                                                                   x-kubernetes-validations:
                                                                   - message: invalid
@@ -4332,33 +4234,6 @@ spec:
                                                                   maximum: 100
                                                                   minimum: 0
                                                                   type: integer
-                                                                maxEvictionPercent:
-                                                                  description: |-
-                                                                    MaxEvictionPercent is the maximum percentage (0–100) of backends in a priority group
-                                                                    that may be evicted simultaneously. Prevents cascading failures by ensuring at least
-                                                                    (100 - maxEvictionPercent)% of backends remain active.
-                                                                    When unset, all backends may be evicted (effectively 100%).
-                                                                  format: int32
-                                                                  maximum: 100
-                                                                  minimum: 0
-                                                                  type: integer
-                                                                maxEvictionTime:
-                                                                  default: 300s
-                                                                  description: |-
-                                                                    MaxEvictionTime is the upper bound on eviction time after multiplicative backoff.
-                                                                    The actual eviction time is min(duration * times_evicted, maxEvictionTime).
-                                                                    If unset, defaults to 300s.
-                                                                  type: string
-                                                                  x-kubernetes-validations:
-                                                                  - message: invalid
-                                                                      duration value
-                                                                    rule: matches(self,
-                                                                      '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
-                                                                  - message: maxEvictionTime
-                                                                      must be at least
-                                                                      1 second
-                                                                    rule: duration(self)
-                                                                      >= duration('1s')
                                                                 restoreHealth:
                                                                   description: |-
                                                                     RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
@@ -4376,7 +4251,7 @@ spec:
 
                                                                 For example, to evict on 5xx responses: `response.code >= 500`.
 
-                                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                                When unset, any 5xx response, or a connection failure, is treated as unhealthy.
                                                                 This default lowers the backend's health score but does not trigger eviction on its own.
                                                               maxLength: 16384
                                                               minLength: 1
@@ -5433,11 +5308,13 @@ spec:
                                             minimum: 0
                                             type: integer
                                           duration:
-                                            default: 30s
+                                            default: 3s
                                             description: |-
                                               Duration specifies the base time a backend should be evicted after being marked unhealthy.
-                                              Subsequent evictions use multiplicative backoff (duration * times_evicted), capped by maxEvictionTime.
-                                              If unset, defaults to 30s.
+                                              Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                              If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                              rather than failing entirely.
+                                              If unset, defaults to 3s.
                                             type: string
                                             x-kubernetes-validations:
                                             - message: invalid duration value
@@ -5458,29 +5335,6 @@ spec:
                                             maximum: 100
                                             minimum: 0
                                             type: integer
-                                          maxEvictionPercent:
-                                            description: |-
-                                              MaxEvictionPercent is the maximum percentage (0–100) of backends in a priority group
-                                              that may be evicted simultaneously. Prevents cascading failures by ensuring at least
-                                              (100 - maxEvictionPercent)% of backends remain active.
-                                              When unset, all backends may be evicted (effectively 100%).
-                                            format: int32
-                                            maximum: 100
-                                            minimum: 0
-                                            type: integer
-                                          maxEvictionTime:
-                                            default: 300s
-                                            description: |-
-                                              MaxEvictionTime is the upper bound on eviction time after multiplicative backoff.
-                                              The actual eviction time is min(duration * times_evicted, maxEvictionTime).
-                                              If unset, defaults to 300s.
-                                            type: string
-                                            x-kubernetes-validations:
-                                            - message: invalid duration value
-                                              rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
-                                            - message: maxEvictionTime must be at
-                                                least 1 second
-                                              rule: duration(self) >= duration('1s')
                                           restoreHealth:
                                             description: |-
                                               RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
@@ -5498,7 +5352,7 @@ spec:
 
                                           For example, to evict on 5xx responses: `response.code >= 500`.
 
-                                          When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                          When unset, any 5xx response, or a connection failure, is treated as unhealthy.
                                           This default lowers the backend's health score but does not trigger eviction on its own.
                                         maxLength: 16384
                                         minLength: 1
@@ -6524,11 +6378,13 @@ spec:
                                           minimum: 0
                                           type: integer
                                         duration:
-                                          default: 30s
+                                          default: 3s
                                           description: |-
                                             Duration specifies the base time a backend should be evicted after being marked unhealthy.
-                                            Subsequent evictions use multiplicative backoff (duration * times_evicted), capped by maxEvictionTime.
-                                            If unset, defaults to 30s.
+                                            Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                            If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                            rather than failing entirely.
+                                            If unset, defaults to 3s.
                                           type: string
                                           x-kubernetes-validations:
                                           - message: invalid duration value
@@ -6549,29 +6405,6 @@ spec:
                                           maximum: 100
                                           minimum: 0
                                           type: integer
-                                        maxEvictionPercent:
-                                          description: |-
-                                            MaxEvictionPercent is the maximum percentage (0–100) of backends in a priority group
-                                            that may be evicted simultaneously. Prevents cascading failures by ensuring at least
-                                            (100 - maxEvictionPercent)% of backends remain active.
-                                            When unset, all backends may be evicted (effectively 100%).
-                                          format: int32
-                                          maximum: 100
-                                          minimum: 0
-                                          type: integer
-                                        maxEvictionTime:
-                                          default: 300s
-                                          description: |-
-                                            MaxEvictionTime is the upper bound on eviction time after multiplicative backoff.
-                                            The actual eviction time is min(duration * times_evicted, maxEvictionTime).
-                                            If unset, defaults to 300s.
-                                          type: string
-                                          x-kubernetes-validations:
-                                          - message: invalid duration value
-                                            rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
-                                          - message: maxEvictionTime must be at least
-                                              1 second
-                                            rule: duration(self) >= duration('1s')
                                         restoreHealth:
                                           description: |-
                                             RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
@@ -6589,7 +6422,7 @@ spec:
 
                                         For example, to evict on 5xx responses: `response.code >= 500`.
 
-                                        When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                        When unset, any 5xx response, or a connection failure, is treated as unhealthy.
                                         This default lowers the backend's health score but does not trigger eviction on its own.
                                       maxLength: 16384
                                       minLength: 1
@@ -7674,11 +7507,13 @@ spec:
                                                   minimum: 0
                                                   type: integer
                                                 duration:
-                                                  default: 30s
+                                                  default: 3s
                                                   description: |-
                                                     Duration specifies the base time a backend should be evicted after being marked unhealthy.
-                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted), capped by maxEvictionTime.
-                                                    If unset, defaults to 30s.
+                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                                    If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                                    rather than failing entirely.
+                                                    If unset, defaults to 3s.
                                                   type: string
                                                   x-kubernetes-validations:
                                                   - message: invalid duration value
@@ -7699,29 +7534,6 @@ spec:
                                                   maximum: 100
                                                   minimum: 0
                                                   type: integer
-                                                maxEvictionPercent:
-                                                  description: |-
-                                                    MaxEvictionPercent is the maximum percentage (0–100) of backends in a priority group
-                                                    that may be evicted simultaneously. Prevents cascading failures by ensuring at least
-                                                    (100 - maxEvictionPercent)% of backends remain active.
-                                                    When unset, all backends may be evicted (effectively 100%).
-                                                  format: int32
-                                                  maximum: 100
-                                                  minimum: 0
-                                                  type: integer
-                                                maxEvictionTime:
-                                                  default: 300s
-                                                  description: |-
-                                                    MaxEvictionTime is the upper bound on eviction time after multiplicative backoff.
-                                                    The actual eviction time is min(duration * times_evicted, maxEvictionTime).
-                                                    If unset, defaults to 300s.
-                                                  type: string
-                                                  x-kubernetes-validations:
-                                                  - message: invalid duration value
-                                                    rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
-                                                  - message: maxEvictionTime must
-                                                      be at least 1 second
-                                                    rule: duration(self) >= duration('1s')
                                                 restoreHealth:
                                                   description: |-
                                                     RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
@@ -7739,7 +7551,7 @@ spec:
 
                                                 For example, to evict on 5xx responses: `response.code >= 500`.
 
-                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                When unset, any 5xx response, or a connection failure, is treated as unhealthy.
                                                 This default lowers the backend's health score but does not trigger eviction on its own.
                                               maxLength: 16384
                                               minLength: 1
@@ -8399,11 +8211,13 @@ spec:
                                                   minimum: 0
                                                   type: integer
                                                 duration:
-                                                  default: 30s
+                                                  default: 3s
                                                   description: |-
                                                     Duration specifies the base time a backend should be evicted after being marked unhealthy.
-                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted), capped by maxEvictionTime.
-                                                    If unset, defaults to 30s.
+                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                                    If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                                    rather than failing entirely.
+                                                    If unset, defaults to 3s.
                                                   type: string
                                                   x-kubernetes-validations:
                                                   - message: invalid duration value
@@ -8424,29 +8238,6 @@ spec:
                                                   maximum: 100
                                                   minimum: 0
                                                   type: integer
-                                                maxEvictionPercent:
-                                                  description: |-
-                                                    MaxEvictionPercent is the maximum percentage (0–100) of backends in a priority group
-                                                    that may be evicted simultaneously. Prevents cascading failures by ensuring at least
-                                                    (100 - maxEvictionPercent)% of backends remain active.
-                                                    When unset, all backends may be evicted (effectively 100%).
-                                                  format: int32
-                                                  maximum: 100
-                                                  minimum: 0
-                                                  type: integer
-                                                maxEvictionTime:
-                                                  default: 300s
-                                                  description: |-
-                                                    MaxEvictionTime is the upper bound on eviction time after multiplicative backoff.
-                                                    The actual eviction time is min(duration * times_evicted, maxEvictionTime).
-                                                    If unset, defaults to 300s.
-                                                  type: string
-                                                  x-kubernetes-validations:
-                                                  - message: invalid duration value
-                                                    rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
-                                                  - message: maxEvictionTime must
-                                                      be at least 1 second
-                                                    rule: duration(self) >= duration('1s')
                                                 restoreHealth:
                                                   description: |-
                                                     RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
@@ -8464,7 +8255,7 @@ spec:
 
                                                 For example, to evict on 5xx responses: `response.code >= 500`.
 
-                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                When unset, any 5xx response, or a connection failure, is treated as unhealthy.
                                                 This default lowers the backend's health score but does not trigger eviction on its own.
                                               maxLength: 16384
                                               minLength: 1
@@ -9120,11 +8911,13 @@ spec:
                                                   minimum: 0
                                                   type: integer
                                                 duration:
-                                                  default: 30s
+                                                  default: 3s
                                                   description: |-
                                                     Duration specifies the base time a backend should be evicted after being marked unhealthy.
-                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted), capped by maxEvictionTime.
-                                                    If unset, defaults to 30s.
+                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                                    If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                                    rather than failing entirely.
+                                                    If unset, defaults to 3s.
                                                   type: string
                                                   x-kubernetes-validations:
                                                   - message: invalid duration value
@@ -9145,29 +8938,6 @@ spec:
                                                   maximum: 100
                                                   minimum: 0
                                                   type: integer
-                                                maxEvictionPercent:
-                                                  description: |-
-                                                    MaxEvictionPercent is the maximum percentage (0–100) of backends in a priority group
-                                                    that may be evicted simultaneously. Prevents cascading failures by ensuring at least
-                                                    (100 - maxEvictionPercent)% of backends remain active.
-                                                    When unset, all backends may be evicted (effectively 100%).
-                                                  format: int32
-                                                  maximum: 100
-                                                  minimum: 0
-                                                  type: integer
-                                                maxEvictionTime:
-                                                  default: 300s
-                                                  description: |-
-                                                    MaxEvictionTime is the upper bound on eviction time after multiplicative backoff.
-                                                    The actual eviction time is min(duration * times_evicted, maxEvictionTime).
-                                                    If unset, defaults to 300s.
-                                                  type: string
-                                                  x-kubernetes-validations:
-                                                  - message: invalid duration value
-                                                    rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
-                                                  - message: maxEvictionTime must
-                                                      be at least 1 second
-                                                    rule: duration(self) >= duration('1s')
                                                 restoreHealth:
                                                   description: |-
                                                     RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
@@ -9185,7 +8955,7 @@ spec:
 
                                                 For example, to evict on 5xx responses: `response.code >= 500`.
 
-                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                When unset, any 5xx response, or a connection failure, is treated as unhealthy.
                                                 This default lowers the backend's health score but does not trigger eviction on its own.
                                               maxLength: 16384
                                               minLength: 1
@@ -10058,11 +9828,13 @@ spec:
                                                   minimum: 0
                                                   type: integer
                                                 duration:
-                                                  default: 30s
+                                                  default: 3s
                                                   description: |-
                                                     Duration specifies the base time a backend should be evicted after being marked unhealthy.
-                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted), capped by maxEvictionTime.
-                                                    If unset, defaults to 30s.
+                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                                    If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                                    rather than failing entirely.
+                                                    If unset, defaults to 3s.
                                                   type: string
                                                   x-kubernetes-validations:
                                                   - message: invalid duration value
@@ -10083,29 +9855,6 @@ spec:
                                                   maximum: 100
                                                   minimum: 0
                                                   type: integer
-                                                maxEvictionPercent:
-                                                  description: |-
-                                                    MaxEvictionPercent is the maximum percentage (0–100) of backends in a priority group
-                                                    that may be evicted simultaneously. Prevents cascading failures by ensuring at least
-                                                    (100 - maxEvictionPercent)% of backends remain active.
-                                                    When unset, all backends may be evicted (effectively 100%).
-                                                  format: int32
-                                                  maximum: 100
-                                                  minimum: 0
-                                                  type: integer
-                                                maxEvictionTime:
-                                                  default: 300s
-                                                  description: |-
-                                                    MaxEvictionTime is the upper bound on eviction time after multiplicative backoff.
-                                                    The actual eviction time is min(duration * times_evicted, maxEvictionTime).
-                                                    If unset, defaults to 300s.
-                                                  type: string
-                                                  x-kubernetes-validations:
-                                                  - message: invalid duration value
-                                                    rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
-                                                  - message: maxEvictionTime must
-                                                      be at least 1 second
-                                                    rule: duration(self) >= duration('1s')
                                                 restoreHealth:
                                                   description: |-
                                                     RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
@@ -10123,7 +9872,7 @@ spec:
 
                                                 For example, to evict on 5xx responses: `response.code >= 500`.
 
-                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                When unset, any 5xx response, or a connection failure, is treated as unhealthy.
                                                 This default lowers the backend's health score but does not trigger eviction on its own.
                                               maxLength: 16384
                                               minLength: 1
@@ -10783,11 +10532,13 @@ spec:
                                                   minimum: 0
                                                   type: integer
                                                 duration:
-                                                  default: 30s
+                                                  default: 3s
                                                   description: |-
                                                     Duration specifies the base time a backend should be evicted after being marked unhealthy.
-                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted), capped by maxEvictionTime.
-                                                    If unset, defaults to 30s.
+                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                                    If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                                    rather than failing entirely.
+                                                    If unset, defaults to 3s.
                                                   type: string
                                                   x-kubernetes-validations:
                                                   - message: invalid duration value
@@ -10808,29 +10559,6 @@ spec:
                                                   maximum: 100
                                                   minimum: 0
                                                   type: integer
-                                                maxEvictionPercent:
-                                                  description: |-
-                                                    MaxEvictionPercent is the maximum percentage (0–100) of backends in a priority group
-                                                    that may be evicted simultaneously. Prevents cascading failures by ensuring at least
-                                                    (100 - maxEvictionPercent)% of backends remain active.
-                                                    When unset, all backends may be evicted (effectively 100%).
-                                                  format: int32
-                                                  maximum: 100
-                                                  minimum: 0
-                                                  type: integer
-                                                maxEvictionTime:
-                                                  default: 300s
-                                                  description: |-
-                                                    MaxEvictionTime is the upper bound on eviction time after multiplicative backoff.
-                                                    The actual eviction time is min(duration * times_evicted, maxEvictionTime).
-                                                    If unset, defaults to 300s.
-                                                  type: string
-                                                  x-kubernetes-validations:
-                                                  - message: invalid duration value
-                                                    rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
-                                                  - message: maxEvictionTime must
-                                                      be at least 1 second
-                                                    rule: duration(self) >= duration('1s')
                                                 restoreHealth:
                                                   description: |-
                                                     RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
@@ -10848,7 +10576,7 @@ spec:
 
                                                 For example, to evict on 5xx responses: `response.code >= 500`.
 
-                                                When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                                                When unset, any 5xx response, or a connection failure, is treated as unhealthy.
                                                 This default lowers the backend's health score but does not trigger eviction on its own.
                                               maxLength: 16384
                                               minLength: 1
@@ -11775,11 +11503,13 @@ spec:
                             minimum: 0
                             type: integer
                           duration:
-                            default: 30s
+                            default: 3s
                             description: |-
                               Duration specifies the base time a backend should be evicted after being marked unhealthy.
-                              Subsequent evictions use multiplicative backoff (duration * times_evicted), capped by maxEvictionTime.
-                              If unset, defaults to 30s.
+                              Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                              If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                              rather than failing entirely.
+                              If unset, defaults to 3s.
                             type: string
                             x-kubernetes-validations:
                             - message: invalid duration value
@@ -11799,28 +11529,6 @@ spec:
                             maximum: 100
                             minimum: 0
                             type: integer
-                          maxEvictionPercent:
-                            description: |-
-                              MaxEvictionPercent is the maximum percentage (0–100) of backends in a priority group
-                              that may be evicted simultaneously. Prevents cascading failures by ensuring at least
-                              (100 - maxEvictionPercent)% of backends remain active.
-                              When unset, all backends may be evicted (effectively 100%).
-                            format: int32
-                            maximum: 100
-                            minimum: 0
-                            type: integer
-                          maxEvictionTime:
-                            default: 300s
-                            description: |-
-                              MaxEvictionTime is the upper bound on eviction time after multiplicative backoff.
-                              The actual eviction time is min(duration * times_evicted, maxEvictionTime).
-                              If unset, defaults to 300s.
-                            type: string
-                            x-kubernetes-validations:
-                            - message: invalid duration value
-                              rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
-                            - message: maxEvictionTime must be at least 1 second
-                              rule: duration(self) >= duration('1s')
                           restoreHealth:
                             description: |-
                               RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
@@ -11838,7 +11546,7 @@ spec:
 
                           For example, to evict on 5xx responses: `response.code >= 500`.
 
-                          When unset, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+                          When unset, any 5xx response, or a connection failure, is treated as unhealthy.
                           This default lowers the backend's health score but does not trigger eviction on its own.
                         maxLength: 16384
                         minLength: 1

@@ -449,9 +449,7 @@ impl DropOnLog {
 	/// `unhealthy` should already be evaluated (preferably with the shared CEL executor when available).
 	/// When no CEL expression is set, the default treats 4xx, 5xx, or connection failures as unhealthy.
 	fn eviction_unhealthy(log: &RequestLog, cel_exec: Option<&CelLoggingExecutor<'_>>) -> bool {
-		let default_unhealthy = log
-			.status
-			.is_none_or(|s| s.is_client_error() || s.is_server_error());
+		let default_unhealthy = log.status.is_none_or(|s| s.is_server_error());
 		let Some(policy) = &log.health_policy else {
 			return default_unhealthy;
 		};
@@ -464,17 +462,17 @@ impl DropOnLog {
 		}
 	}
 
-	/// Returns (health, eviction_duration, restore_health, max_eviction_percent).
+	/// Returns (health, eviction_duration, restore_health).
 	fn eviction_decision(
 		log: &RequestLog,
 		current_health: f64,
 		consecutive_failure_count: u64,
 		times_ejected: u64,
 		unhealthy: bool,
-	) -> (bool, Option<Duration>, Option<f64>, Option<u32>) {
+	) -> (bool, Option<Duration>, Option<f64>) {
 		let Some(policy) = &log.health_policy else {
 			let health = !unhealthy;
-			return (health, None, None, None);
+			return (health, None, None);
 		};
 		let fallback_duration = log.retry_after.or(log.retry_backoff);
 		policy.eviction_decision(
@@ -806,21 +804,14 @@ impl Drop for DropOnLog {
 			let consecutive_failures = rh.consecutive_failures();
 			let times_ejected = rh.times_ejected();
 			let unhealthy = Self::eviction_unhealthy(&log, cel_exec.as_ref());
-			let (health, eviction_duration, restore_health, max_eviction_percent) =
-				Self::eviction_decision(
-					&log,
-					current_health,
-					consecutive_failures,
-					times_ejected,
-					unhealthy,
-				);
-			rh.finish_request(
-				health,
-				duration,
-				eviction_duration,
-				restore_health,
-				max_eviction_percent,
+			let (health, eviction_duration, restore_health) = Self::eviction_decision(
+				&log,
+				current_health,
+				consecutive_failures,
+				times_ejected,
+				unhealthy,
 			);
+			rh.finish_request(health, duration, eviction_duration, restore_health);
 		}
 		if !maybe_enable_log && !enable_trace && !enable_custom_metrics {
 			// Report our non-customized metrics

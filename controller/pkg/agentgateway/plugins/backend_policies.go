@@ -157,10 +157,6 @@ func translateBackendHealthPolicy(policy *agentgateway.AgentgatewayPolicy, targe
 		if healthPolicy.Eviction.Duration != nil {
 			duration = durationpb.New(healthPolicy.Eviction.Duration.Duration)
 		}
-		var maxEvictionTime *durationpb.Duration
-		if healthPolicy.Eviction.MaxEvictionTime != nil {
-			maxEvictionTime = durationpb.New(healthPolicy.Eviction.MaxEvictionTime.Duration)
-		}
 
 		// Convert 0–100 integer scores into 0.0–1.0 doubles for proto
 		var healthThreshold *float64
@@ -174,17 +170,9 @@ func translateBackendHealthPolicy(policy *agentgateway.AgentgatewayPolicy, targe
 			restoreHealth = &val
 		}
 
-		var maxEvictionPercent *uint32
-		if healthPolicy.Eviction.MaxEvictionPercent != nil {
-			val := uint32(*healthPolicy.Eviction.MaxEvictionPercent) // #nosec G115 - non-negative enforced by kubebuilder validation
-			maxEvictionPercent = &val
-		}
-
 		evictionProto = &api.BackendPolicySpec_Eviction{
 			Duration:            duration,
-			MaxEvictionTime:     maxEvictionTime,
 			RestoreHealth:       restoreHealth,
-			MaxEvictionPercent:  maxEvictionPercent,
 			ConsecutiveFailures: healthPolicy.Eviction.ConsecutiveFailures,
 			HealthThreshold:     healthThreshold,
 		}

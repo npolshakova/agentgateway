@@ -965,13 +965,14 @@ message BackendPolicySpec {
     FailureMode failure_mode = 2;
   }
   message Eviction {
-    // Base time to evict (e.g. 30s, 60s). The actual ejection time equals
-    // base * times_ejected and is capped by max_eviction_time.
+    // Base time to evict (e.g. 3s, 10s). The actual ejection time equals
+    // base * times_ejected, growing without cap via multiplicative backoff.
+    // If all endpoints are evicted, the loadbalancer falls back to returning
+    // evicted endpoints rather than failing entirely.
     google.protobuf.Duration duration = 1;
 
-    // Upper bound on the ejection time after multiplicative backoff.
-    // Defaults to 300s when unset.
-    google.protobuf.Duration max_eviction_time = 2;
+    reserved 2;
+    reserved "max_eviction_time";
 
     // Health score (0.0–1.0) to assign to a backend when it returns from eviction.
     // For example, 0.5 brings the backend back at half-health so it recovers gradually,
@@ -980,10 +981,8 @@ message BackendPolicySpec {
     // returns at whatever score it had when it was evicted).
     optional double restore_health = 3;
 
-    // Maximum percentage (0–100) of endpoints in a priority group that may be evicted simultaneously.
-    // Prevents cascading failures by keeping at least (100 - max_eviction_percent)% of backends active.
-    // When unset, all endpoints may be evicted (effectively 100%).
-    optional uint32 max_eviction_percent = 4;
+    reserved 4;
+    reserved "max_eviction_percent";
 
     // Number of consecutive unhealthy responses required before evicting the backend.
     // For example, 3 means the backend must fail 3 times in a row before being evicted.
@@ -1003,7 +1002,7 @@ message BackendPolicySpec {
     // cel expression evaluated per request to determine if eviction should be triggered
     // `true`: treat this response as **unhealthy** (candidate for eviction).
     // `false`: treat as healthy (no eviction from this response alone).
-    // When empty, any 4xx or 5xx response, or a connection failure, is treated as unhealthy.
+    // When empty, any 5xx response, or a connection failure, is treated as unhealthy.
     // This default lowers the backend's health score but does not trigger eviction on its own.
     string unhealthy_condition = 1;
     Eviction eviction = 2;

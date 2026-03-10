@@ -1189,9 +1189,7 @@ fn convert_health(
 	};
 	let eviction = h.eviction.as_ref().map(|ev| health::Eviction {
 		duration: ev.duration.map(convert_duration),
-		max_eviction_time: ev.max_eviction_time.map(convert_duration),
 		restore_health: ev.restore_health,
-		max_eviction_percent: ev.max_eviction_percent,
 		consecutive_failures: ev.consecutive_failures,
 		health_threshold: ev.health_threshold,
 	});

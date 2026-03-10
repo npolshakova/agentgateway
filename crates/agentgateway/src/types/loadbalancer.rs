@@ -168,7 +168,6 @@ pub enum EvictionEvent {
 		key: EndpointKey,
 		until: Instant,
 		restore_health: Option<f64>,
-		max_eviction_percent: Option<u32>,
 	},
 }
 
@@ -359,27 +358,12 @@ impl<T: Clone + Sync + Send + 'static> EndpointSet<T> {
 					key,
 					until,
 					restore_health,
-					max_eviction_percent,
 				} = item;
 
 				let Some(bucket) = Self::find_bucket_atomic(buckets.as_slice(), &key) else {
 					return;
 				};
 				let mut eps = Arc::unwrap_or_clone(bucket.load_full());
-
-				if let Some(max_pct) = max_eviction_percent {
-					let total = eps.active.len() + eps.rejected.len();
-					let rejected_after = eps.rejected.len() + 1;
-					if total > 0 && rejected_after * 100 > (max_pct as usize) * total {
-						// Evicting would exceed the cap; undo the optimistic evicted_until mark.
-						if let Some(ep) = eps.active.get(&key) {
-							ep.info.evicted_until.store(None);
-						}
-						trace!(%key, max_pct, "eviction skipped: would exceed max_eviction_percent");
-						bucket.store(Arc::new(eps));
-						return;
-					}
-				}
 
 				uneviction_heap.push(UnevictEntry(until, key.clone(), restore_health));
 				if let Some(ep) = eps.active.swap_remove(&key) {
@@ -416,7 +400,6 @@ impl<T: Clone + Sync + Send + 'static> EndpointSet<T> {
 							key,
 							until: time,
 							restore_health: None,
-							max_eviction_percent: None,
 						})
 						.await;
 				});
@@ -563,7 +546,6 @@ impl ActiveHandle {
 		latency: Duration,
 		eviction_time: Option<Duration>,
 		restore_health: Option<f64>,
-		max_eviction_percent: Option<u32>,
 	) {
 		if success {
 			self.info.request_latency.record(latency.as_secs_f64());
@@ -599,7 +581,6 @@ impl ActiveHandle {
 							key,
 							until: time,
 							restore_health,
-							max_eviction_percent,
 						})
 						.await;
 				});
