@@ -450,12 +450,23 @@ spec:
                                               description: Eviction defines settings
                                                 for evicting unhealthy backends.
                                               properties:
+                                                consecutiveFailures:
+                                                  description: |-
+                                                    ConsecutiveFailures is the number of consecutive unhealthy responses required before the backend is evicted.
+                                                    For example, a value of 5 means the backend must receive 5 unhealthy responses in a row before being evicted.
+                                                    When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.
+                                                    When neither is set, a single unhealthy response can trigger eviction.
+                                                  format: int32
+                                                  minimum: 0
+                                                  type: integer
                                                 duration:
-                                                  default: 30s
-                                                  description: duration specifies
-                                                    how long a backend should be evicted
-                                                    after being marked unhealthy.
-                                                    If unset, defaults to 30s.
+                                                  default: 3s
+                                                  description: |-
+                                                    Duration specifies the base time a backend should be evicted after being marked unhealthy.
+                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                                    If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                                    rather than failing entirely.
+                                                    If unset, defaults to 3s.
                                                   type: string
                                                   x-kubernetes-validations:
                                                   - message: invalid duration value
@@ -463,6 +474,28 @@ spec:
                                                   - message: evictionDuration must
                                                       be at least 1 second
                                                     rule: duration(self) >= duration('1s')
+                                                healthThreshold:
+                                                  description: |-
+                                                    HealthThreshold is the EWMA (exponentially-weighted moving average) health score threshold, expressed as 0–100.
+                                                    When set, a backend is only evicted if its computed health drops below this value after an unhealthy response.
+                                                    For example, 50 means the backend is evicted when its EWMA health falls below 50% following failures.
+                                                    Unlike consecutiveFailures (which counts consecutive failures), this uses a sliding-window average
+                                                    so a single success in a stream of failures can delay eviction.
+                                                    When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.
+                                                    When neither is set, a single unhealthy response triggers eviction.
+                                                  format: int32
+                                                  maximum: 100
+                                                  minimum: 0
+                                                  type: integer
+                                                restoreHealth:
+                                                  description: |-
+                                                    RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
+                                                    For gradual recovery, set below 100; for full recovery immediately, set 100.
+                                                    If unset, the backend resumes with the health it had when evicted.
+                                                  format: int32
+                                                  maximum: 100
+                                                  minimum: 0
+                                                  type: integer
                                               type: object
                                             unhealthyCondition:
                                               description: |-
@@ -470,11 +503,12 @@ spec:
                                                 When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                                 For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                                When unset, any 5xx response, or a connection failure, is treated as unhealthy.
+                                                This default lowers the backend's health score but does not trigger eviction on its own.
                                               maxLength: 16384
                                               minLength: 1
                                               type: string
-                                          required:
-                                          - unhealthyCondition
                                           type: object
                                         http:
                                           description: http defines settings for managing
@@ -1120,12 +1154,23 @@ spec:
                                               description: Eviction defines settings
                                                 for evicting unhealthy backends.
                                               properties:
+                                                consecutiveFailures:
+                                                  description: |-
+                                                    ConsecutiveFailures is the number of consecutive unhealthy responses required before the backend is evicted.
+                                                    For example, a value of 5 means the backend must receive 5 unhealthy responses in a row before being evicted.
+                                                    When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.
+                                                    When neither is set, a single unhealthy response can trigger eviction.
+                                                  format: int32
+                                                  minimum: 0
+                                                  type: integer
                                                 duration:
-                                                  default: 30s
-                                                  description: duration specifies
-                                                    how long a backend should be evicted
-                                                    after being marked unhealthy.
-                                                    If unset, defaults to 30s.
+                                                  default: 3s
+                                                  description: |-
+                                                    Duration specifies the base time a backend should be evicted after being marked unhealthy.
+                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                                    If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                                    rather than failing entirely.
+                                                    If unset, defaults to 3s.
                                                   type: string
                                                   x-kubernetes-validations:
                                                   - message: invalid duration value
@@ -1133,6 +1178,28 @@ spec:
                                                   - message: evictionDuration must
                                                       be at least 1 second
                                                     rule: duration(self) >= duration('1s')
+                                                healthThreshold:
+                                                  description: |-
+                                                    HealthThreshold is the EWMA (exponentially-weighted moving average) health score threshold, expressed as 0–100.
+                                                    When set, a backend is only evicted if its computed health drops below this value after an unhealthy response.
+                                                    For example, 50 means the backend is evicted when its EWMA health falls below 50% following failures.
+                                                    Unlike consecutiveFailures (which counts consecutive failures), this uses a sliding-window average
+                                                    so a single success in a stream of failures can delay eviction.
+                                                    When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.
+                                                    When neither is set, a single unhealthy response triggers eviction.
+                                                  format: int32
+                                                  maximum: 100
+                                                  minimum: 0
+                                                  type: integer
+                                                restoreHealth:
+                                                  description: |-
+                                                    RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
+                                                    For gradual recovery, set below 100; for full recovery immediately, set 100.
+                                                    If unset, the backend resumes with the health it had when evicted.
+                                                  format: int32
+                                                  maximum: 100
+                                                  minimum: 0
+                                                  type: integer
                                               type: object
                                             unhealthyCondition:
                                               description: |-
@@ -1140,11 +1207,12 @@ spec:
                                                 When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                                 For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                                When unset, any 5xx response, or a connection failure, is treated as unhealthy.
+                                                This default lowers the backend's health score but does not trigger eviction on its own.
                                               maxLength: 16384
                                               minLength: 1
                                               type: string
-                                          required:
-                                          - unhealthyCondition
                                           type: object
                                         http:
                                           description: http defines settings for managing
@@ -1786,12 +1854,23 @@ spec:
                                               description: Eviction defines settings
                                                 for evicting unhealthy backends.
                                               properties:
+                                                consecutiveFailures:
+                                                  description: |-
+                                                    ConsecutiveFailures is the number of consecutive unhealthy responses required before the backend is evicted.
+                                                    For example, a value of 5 means the backend must receive 5 unhealthy responses in a row before being evicted.
+                                                    When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.
+                                                    When neither is set, a single unhealthy response can trigger eviction.
+                                                  format: int32
+                                                  minimum: 0
+                                                  type: integer
                                                 duration:
-                                                  default: 30s
-                                                  description: duration specifies
-                                                    how long a backend should be evicted
-                                                    after being marked unhealthy.
-                                                    If unset, defaults to 30s.
+                                                  default: 3s
+                                                  description: |-
+                                                    Duration specifies the base time a backend should be evicted after being marked unhealthy.
+                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                                    If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                                    rather than failing entirely.
+                                                    If unset, defaults to 3s.
                                                   type: string
                                                   x-kubernetes-validations:
                                                   - message: invalid duration value
@@ -1799,6 +1878,28 @@ spec:
                                                   - message: evictionDuration must
                                                       be at least 1 second
                                                     rule: duration(self) >= duration('1s')
+                                                healthThreshold:
+                                                  description: |-
+                                                    HealthThreshold is the EWMA (exponentially-weighted moving average) health score threshold, expressed as 0–100.
+                                                    When set, a backend is only evicted if its computed health drops below this value after an unhealthy response.
+                                                    For example, 50 means the backend is evicted when its EWMA health falls below 50% following failures.
+                                                    Unlike consecutiveFailures (which counts consecutive failures), this uses a sliding-window average
+                                                    so a single success in a stream of failures can delay eviction.
+                                                    When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.
+                                                    When neither is set, a single unhealthy response triggers eviction.
+                                                  format: int32
+                                                  maximum: 100
+                                                  minimum: 0
+                                                  type: integer
+                                                restoreHealth:
+                                                  description: |-
+                                                    RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
+                                                    For gradual recovery, set below 100; for full recovery immediately, set 100.
+                                                    If unset, the backend resumes with the health it had when evicted.
+                                                  format: int32
+                                                  maximum: 100
+                                                  minimum: 0
+                                                  type: integer
                                               type: object
                                             unhealthyCondition:
                                               description: |-
@@ -1806,11 +1907,12 @@ spec:
                                                 When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                                 For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                                When unset, any 5xx response, or a connection failure, is treated as unhealthy.
+                                                This default lowers the backend's health score but does not trigger eviction on its own.
                                               maxLength: 16384
                                               minLength: 1
                                               type: string
-                                          required:
-                                          - unhealthyCondition
                                           type: object
                                         http:
                                           description: http defines settings for managing
@@ -2669,12 +2771,23 @@ spec:
                                               description: Eviction defines settings
                                                 for evicting unhealthy backends.
                                               properties:
+                                                consecutiveFailures:
+                                                  description: |-
+                                                    ConsecutiveFailures is the number of consecutive unhealthy responses required before the backend is evicted.
+                                                    For example, a value of 5 means the backend must receive 5 unhealthy responses in a row before being evicted.
+                                                    When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.
+                                                    When neither is set, a single unhealthy response can trigger eviction.
+                                                  format: int32
+                                                  minimum: 0
+                                                  type: integer
                                                 duration:
-                                                  default: 30s
-                                                  description: duration specifies
-                                                    how long a backend should be evicted
-                                                    after being marked unhealthy.
-                                                    If unset, defaults to 30s.
+                                                  default: 3s
+                                                  description: |-
+                                                    Duration specifies the base time a backend should be evicted after being marked unhealthy.
+                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                                    If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                                    rather than failing entirely.
+                                                    If unset, defaults to 3s.
                                                   type: string
                                                   x-kubernetes-validations:
                                                   - message: invalid duration value
@@ -2682,6 +2795,28 @@ spec:
                                                   - message: evictionDuration must
                                                       be at least 1 second
                                                     rule: duration(self) >= duration('1s')
+                                                healthThreshold:
+                                                  description: |-
+                                                    HealthThreshold is the EWMA (exponentially-weighted moving average) health score threshold, expressed as 0–100.
+                                                    When set, a backend is only evicted if its computed health drops below this value after an unhealthy response.
+                                                    For example, 50 means the backend is evicted when its EWMA health falls below 50% following failures.
+                                                    Unlike consecutiveFailures (which counts consecutive failures), this uses a sliding-window average
+                                                    so a single success in a stream of failures can delay eviction.
+                                                    When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.
+                                                    When neither is set, a single unhealthy response triggers eviction.
+                                                  format: int32
+                                                  maximum: 100
+                                                  minimum: 0
+                                                  type: integer
+                                                restoreHealth:
+                                                  description: |-
+                                                    RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
+                                                    For gradual recovery, set below 100; for full recovery immediately, set 100.
+                                                    If unset, the backend resumes with the health it had when evicted.
+                                                  format: int32
+                                                  maximum: 100
+                                                  minimum: 0
+                                                  type: integer
                                               type: object
                                             unhealthyCondition:
                                               description: |-
@@ -2689,11 +2824,12 @@ spec:
                                                 When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                                 For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                                When unset, any 5xx response, or a connection failure, is treated as unhealthy.
+                                                This default lowers the backend's health score but does not trigger eviction on its own.
                                               maxLength: 16384
                                               minLength: 1
                                               type: string
-                                          required:
-                                          - unhealthyCondition
                                           type: object
                                         http:
                                           description: http defines settings for managing
@@ -3339,12 +3475,23 @@ spec:
                                               description: Eviction defines settings
                                                 for evicting unhealthy backends.
                                               properties:
+                                                consecutiveFailures:
+                                                  description: |-
+                                                    ConsecutiveFailures is the number of consecutive unhealthy responses required before the backend is evicted.
+                                                    For example, a value of 5 means the backend must receive 5 unhealthy responses in a row before being evicted.
+                                                    When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.
+                                                    When neither is set, a single unhealthy response can trigger eviction.
+                                                  format: int32
+                                                  minimum: 0
+                                                  type: integer
                                                 duration:
-                                                  default: 30s
-                                                  description: duration specifies
-                                                    how long a backend should be evicted
-                                                    after being marked unhealthy.
-                                                    If unset, defaults to 30s.
+                                                  default: 3s
+                                                  description: |-
+                                                    Duration specifies the base time a backend should be evicted after being marked unhealthy.
+                                                    Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                                                    If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                                                    rather than failing entirely.
+                                                    If unset, defaults to 3s.
                                                   type: string
                                                   x-kubernetes-validations:
                                                   - message: invalid duration value
@@ -3352,6 +3499,28 @@ spec:
                                                   - message: evictionDuration must
                                                       be at least 1 second
                                                     rule: duration(self) >= duration('1s')
+                                                healthThreshold:
+                                                  description: |-
+                                                    HealthThreshold is the EWMA (exponentially-weighted moving average) health score threshold, expressed as 0–100.
+                                                    When set, a backend is only evicted if its computed health drops below this value after an unhealthy response.
+                                                    For example, 50 means the backend is evicted when its EWMA health falls below 50% following failures.
+                                                    Unlike consecutiveFailures (which counts consecutive failures), this uses a sliding-window average
+                                                    so a single success in a stream of failures can delay eviction.
+                                                    When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.
+                                                    When neither is set, a single unhealthy response triggers eviction.
+                                                  format: int32
+                                                  maximum: 100
+                                                  minimum: 0
+                                                  type: integer
+                                                restoreHealth:
+                                                  description: |-
+                                                    RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
+                                                    For gradual recovery, set below 100; for full recovery immediately, set 100.
+                                                    If unset, the backend resumes with the health it had when evicted.
+                                                  format: int32
+                                                  maximum: 100
+                                                  minimum: 0
+                                                  type: integer
                                               type: object
                                             unhealthyCondition:
                                               description: |-
@@ -3359,11 +3528,12 @@ spec:
                                                 When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                                                 For example, to evict on 5xx responses: `response.code >= 500`.
+
+                                                When unset, any 5xx response, or a connection failure, is treated as unhealthy.
+                                                This default lowers the backend's health score but does not trigger eviction on its own.
                                               maxLength: 16384
                                               minLength: 1
                                               type: string
-                                          required:
-                                          - unhealthyCondition
                                           type: object
                                         http:
                                           description: http defines settings for managing
@@ -4276,17 +4446,51 @@ spec:
                         description: Eviction defines settings for evicting unhealthy
                           backends.
                         properties:
+                          consecutiveFailures:
+                            description: |-
+                              ConsecutiveFailures is the number of consecutive unhealthy responses required before the backend is evicted.
+                              For example, a value of 5 means the backend must receive 5 unhealthy responses in a row before being evicted.
+                              When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.
+                              When neither is set, a single unhealthy response can trigger eviction.
+                            format: int32
+                            minimum: 0
+                            type: integer
                           duration:
-                            default: 30s
-                            description: duration specifies how long a backend should
-                              be evicted after being marked unhealthy. If unset, defaults
-                              to 30s.
+                            default: 3s
+                            description: |-
+                              Duration specifies the base time a backend should be evicted after being marked unhealthy.
+                              Subsequent evictions use multiplicative backoff (duration * times_evicted).
+                              If all endpoints are evicted, the load balancer falls back to returning evicted endpoints
+                              rather than failing entirely.
+                              If unset, defaults to 3s.
                             type: string
                             x-kubernetes-validations:
                             - message: invalid duration value
                               rule: matches(self, '^([0-9]{1,5}(h|m|s|ms)){1,4}$')
                             - message: evictionDuration must be at least 1 second
                               rule: duration(self) >= duration('1s')
+                          healthThreshold:
+                            description: |-
+                              HealthThreshold is the EWMA (exponentially-weighted moving average) health score threshold, expressed as 0–100.
+                              When set, a backend is only evicted if its computed health drops below this value after an unhealthy response.
+                              For example, 50 means the backend is evicted when its EWMA health falls below 50% following failures.
+                              Unlike consecutiveFailures (which counts consecutive failures), this uses a sliding-window average
+                              so a single success in a stream of failures can delay eviction.
+                              When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.
+                              When neither is set, a single unhealthy response triggers eviction.
+                            format: int32
+                            maximum: 100
+                            minimum: 0
+                            type: integer
+                          restoreHealth:
+                            description: |-
+                              RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.
+                              For gradual recovery, set below 100; for full recovery immediately, set 100.
+                              If unset, the backend resumes with the health it had when evicted.
+                            format: int32
+                            maximum: 100
+                            minimum: 0
+                            type: integer
                         type: object
                       unhealthyCondition:
                         description: |-
@@ -4294,11 +4498,12 @@ spec:
                           When the expression evaluates to true, the backend is considered unhealthy and may be evicted.
 
                           For example, to evict on 5xx responses: `response.code >= 500`.
+
+                          When unset, any 5xx response, or a connection failure, is treated as unhealthy.
+                          This default lowers the backend's health score but does not trigger eviction on its own.
                         maxLength: 16384
                         minLength: 1
                         type: string
-                    required:
-                    - unhealthyCondition
                     type: object
                   http:
                     description: http defines settings for managing HTTP requests

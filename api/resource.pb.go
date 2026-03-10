@@ -8641,10 +8641,31 @@ func (x *BackendPolicySpec_InferenceRouting) GetFailureMode() BackendPolicySpec_
 
 type BackendPolicySpec_Eviction struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// specify the time to evict (e.g. 30s, 60s).
-	Duration      *durationpb.Duration `protobuf:"bytes,1,opt,name=duration,proto3" json:"duration,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// Base time to evict (e.g. 3s, 10s). The actual ejection time equals
+	// base * times_ejected, growing without cap via multiplicative backoff.
+	// If all endpoints are evicted, the loadbalancer falls back to returning
+	// evicted endpoints rather than failing entirely.
+	Duration *durationpb.Duration `protobuf:"bytes,1,opt,name=duration,proto3" json:"duration,omitempty"`
+	// Health score (0.0–1.0) to assign to a backend when it returns from eviction.
+	// For example, 0.5 brings the backend back at half-health so it recovers gradually,
+	// while 1.0 restores it to full health immediately.
+	// When unset, the health score is left unchanged on recovery (i.e. the backend
+	// returns at whatever score it had when it was evicted).
+	RestoreHealth *float64 `protobuf:"fixed64,3,opt,name=restore_health,json=restoreHealth,proto3,oneof" json:"restore_health,omitempty"`
+	// Number of consecutive unhealthy responses required before evicting the backend.
+	// For example, 3 means the backend must fail 3 times in a row before being evicted.
+	// When both consecutive_failures and health_threshold are set, eviction triggers when
+	// either condition is met. When neither is set, a single unhealthy response triggers eviction.
+	ConsecutiveFailures *int32 `protobuf:"varint,5,opt,name=consecutive_failures,json=consecutiveFailures,proto3,oneof" json:"consecutive_failures,omitempty"`
+	// EWMA health score threshold (0.0–1.0) below which an unhealthy backend is evicted.
+	// When set, the backend is only evicted if its exponentially-weighted moving average health
+	// score drops below this value. Unlike consecutive_failures (which counts consecutive failures),
+	// this uses a sliding-window average so a single success can delay eviction.
+	// When both health_threshold and consecutive_failures are set, eviction triggers when
+	// either condition is met. When neither is set, a single unhealthy response triggers eviction.
+	HealthThreshold *float64 `protobuf:"fixed64,6,opt,name=health_threshold,json=healthThreshold,proto3,oneof" json:"health_threshold,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *BackendPolicySpec_Eviction) Reset() {
@@ -8684,11 +8705,34 @@ func (x *BackendPolicySpec_Eviction) GetDuration() *durationpb.Duration {
 	return nil
 }
 
+func (x *BackendPolicySpec_Eviction) GetRestoreHealth() float64 {
+	if x != nil && x.RestoreHealth != nil {
+		return *x.RestoreHealth
+	}
+	return 0
+}
+
+func (x *BackendPolicySpec_Eviction) GetConsecutiveFailures() int32 {
+	if x != nil && x.ConsecutiveFailures != nil {
+		return *x.ConsecutiveFailures
+	}
+	return 0
+}
+
+func (x *BackendPolicySpec_Eviction) GetHealthThreshold() float64 {
+	if x != nil && x.HealthThreshold != nil {
+		return *x.HealthThreshold
+	}
+	return 0
+}
+
 type BackendPolicySpec_Health struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// cel expression evaluated per request to determine if eviction should be triggered
 	// `true`: treat this response as **unhealthy** (candidate for eviction).
 	// `false`: treat as healthy (no eviction from this response alone).
+	// When empty, any 5xx response, or a connection failure, is treated as unhealthy.
+	// This default lowers the backend's health score but does not trigger eviction on its own.
 	UnhealthyCondition string                      `protobuf:"bytes,1,opt,name=unhealthy_condition,json=unhealthyCondition,proto3" json:"unhealthy_condition,omitempty"`
 	Eviction           *BackendPolicySpec_Eviction `protobuf:"bytes,2,opt,name=eviction,proto3" json:"eviction,omitempty"`
 	unknownFields      protoimpl.UnknownFields
@@ -11246,7 +11290,7 @@ const file_resource_proto_rawDesc = "" +
 	"\vPolicyPhase\x12\t\n" +
 	"\x05ROUTE\x10\x00\x12\v\n" +
 	"\aGATEWAY\x10\x01B\x06\n" +
-	"\x04kind\"\xd8>\n" +
+	"\x04kind\"\xe3@\n" +
 	"\x11BackendPolicySpec\x12D\n" +
 	"\x03a2a\x18\x01 \x01(\v20.agentgateway.dev.resource.BackendPolicySpec.A2aH\x00R\x03a2a\x12l\n" +
 	"\x11inference_routing\x18\x02 \x01(\v2=.agentgateway.dev.resource.BackendPolicySpec.InferenceRoutingH\x00R\x10inferenceRouting\x12Z\n" +
@@ -11391,9 +11435,15 @@ const file_resource_proto_rawDesc = "" +
 	"\vFailureMode\x12\v\n" +
 	"\aUNKNOWN\x10\x00\x12\x0f\n" +
 	"\vFAIL_CLOSED\x10\x01\x12\r\n" +
-	"\tFAIL_OPEN\x10\x02\x1aA\n" +
+	"\tFAIL_OPEN\x10\x02\x1a\xcb\x02\n" +
 	"\bEviction\x125\n" +
-	"\bduration\x18\x01 \x01(\v2\x19.google.protobuf.DurationR\bduration\x1a\x8c\x01\n" +
+	"\bduration\x18\x01 \x01(\v2\x19.google.protobuf.DurationR\bduration\x12*\n" +
+	"\x0erestore_health\x18\x03 \x01(\x01H\x00R\rrestoreHealth\x88\x01\x01\x126\n" +
+	"\x14consecutive_failures\x18\x05 \x01(\x05H\x01R\x13consecutiveFailures\x88\x01\x01\x12.\n" +
+	"\x10health_threshold\x18\x06 \x01(\x01H\x02R\x0fhealthThreshold\x88\x01\x01B\x11\n" +
+	"\x0f_restore_healthB\x17\n" +
+	"\x15_consecutive_failuresB\x13\n" +
+	"\x11_health_thresholdJ\x04\b\x02\x10\x03J\x04\b\x04\x10\x05R\x11max_eviction_timeR\x14max_eviction_percent\x1a\x8c\x01\n" +
 	"\x06Health\x12/\n" +
 	"\x13unhealthy_condition\x18\x01 \x01(\tR\x12unhealthyCondition\x12Q\n" +
 	"\beviction\x18\x02 \x01(\v25.agentgateway.dev.resource.BackendPolicySpec.EvictionR\beviction\x1a\xbe\x03\n" +
@@ -12150,6 +12200,7 @@ func file_resource_proto_init() {
 	}
 	file_resource_proto_msgTypes[77].OneofWrappers = []any{}
 	file_resource_proto_msgTypes[89].OneofWrappers = []any{}
+	file_resource_proto_msgTypes[105].OneofWrappers = []any{}
 	file_resource_proto_msgTypes[107].OneofWrappers = []any{}
 	file_resource_proto_msgTypes[114].OneofWrappers = []any{
 		(*BackendPolicySpec_Ai_RegexRule_Builtin)(nil),

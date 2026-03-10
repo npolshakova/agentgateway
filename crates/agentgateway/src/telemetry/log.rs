@@ -445,9 +445,9 @@ impl DropOnLog {
 		}
 	}
 
-	/// Computes (health, eviction_duration, health_on_unevict) for finish_request.
+	/// Computes (health, eviction_duration, restore_health) for finish_request.
 	/// `unhealthy` should already be evaluated (preferably with the shared CEL executor when available).
-	/// When not set, eviction is disabled.
+	/// When no CEL expression is set, the default treats 4xx, 5xx, or connection failures as unhealthy.
 	fn eviction_unhealthy(log: &RequestLog, cel_exec: Option<&CelLoggingExecutor<'_>>) -> bool {
 		let default_unhealthy = log.status.is_none_or(|s| s.is_server_error());
 		let Some(policy) = &log.health_policy else {
@@ -462,31 +462,26 @@ impl DropOnLog {
 		}
 	}
 
+	/// Returns (health, eviction_duration, restore_health).
 	fn eviction_decision(
 		log: &RequestLog,
 		current_health: f64,
+		consecutive_failure_count: u64,
+		times_ejected: u64,
 		unhealthy: bool,
 	) -> (bool, Option<Duration>, Option<f64>) {
-		const DEFAULT_EVICTION_SECS: u64 = 30;
 		let Some(policy) = &log.health_policy else {
 			let health = !unhealthy;
 			return (health, None, None);
 		};
-		let health = !unhealthy;
-		let eviction_duration = if unhealthy {
-			let duration = policy
-				.eviction_duration()
-				.or(log.retry_after)
-				.or(log.retry_backoff)
-				.or(Some(Duration::from_secs(DEFAULT_EVICTION_SECS)));
-			// Apply health threshold: only evict when current health is below threshold
-			let below_threshold = policy.health_threshold.is_none_or(|t| current_health < t);
-			if below_threshold { duration } else { None }
-		} else {
-			None
-		};
-		let health_on_unevict = policy.health_on_unevict;
-		(health, eviction_duration, health_on_unevict)
+		let fallback_duration = log.retry_after.or(log.retry_backoff);
+		policy.eviction_decision(
+			current_health,
+			consecutive_failure_count,
+			times_ejected,
+			unhealthy,
+			fallback_duration,
+		)
 	}
 
 	fn add_llm_metrics(
@@ -806,10 +801,17 @@ impl Drop for DropOnLog {
 
 		if let Some(rh) = log.request_handle.take() {
 			let current_health = rh.health_score();
+			let consecutive_failures = rh.consecutive_failures();
+			let times_ejected = rh.times_ejected();
 			let unhealthy = Self::eviction_unhealthy(&log, cel_exec.as_ref());
-			let (health, eviction_duration, health_on_unevict) =
-				Self::eviction_decision(&log, current_health, unhealthy);
-			rh.finish_request(health, duration, eviction_duration, health_on_unevict);
+			let (health, eviction_duration, restore_health) = Self::eviction_decision(
+				&log,
+				current_health,
+				consecutive_failures,
+				times_ejected,
+				unhealthy,
+			);
+			rh.finish_request(health, duration, eviction_duration, restore_health);
 		}
 		if !maybe_enable_log && !enable_trace && !enable_custom_metrics {
 			// Report our non-customized metrics

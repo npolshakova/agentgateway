@@ -152,14 +152,39 @@ func translateBackendHealthPolicy(policy *agentgateway.AgentgatewayPolicy, targe
 	healthPolicy := policy.Spec.Backend.Health
 
 	var evictionProto *api.BackendPolicySpec_Eviction
-	if healthPolicy.Eviction != nil && healthPolicy.Eviction.Duration != nil {
+	if healthPolicy.Eviction != nil {
+		var duration *durationpb.Duration
+		if healthPolicy.Eviction.Duration != nil {
+			duration = durationpb.New(healthPolicy.Eviction.Duration.Duration)
+		}
+
+		// Convert 0–100 integer scores into 0.0–1.0 doubles for proto
+		var healthThreshold *float64
+		if healthPolicy.Eviction.HealthThreshold != nil {
+			val := float64(*healthPolicy.Eviction.HealthThreshold) / 100.0
+			healthThreshold = &val
+		}
+		var restoreHealth *float64
+		if healthPolicy.Eviction.RestoreHealth != nil {
+			val := float64(*healthPolicy.Eviction.RestoreHealth) / 100.0
+			restoreHealth = &val
+		}
+
 		evictionProto = &api.BackendPolicySpec_Eviction{
-			Duration: durationpb.New(healthPolicy.Eviction.Duration.Duration),
+			Duration:            duration,
+			RestoreHealth:       restoreHealth,
+			ConsecutiveFailures: healthPolicy.Eviction.ConsecutiveFailures,
+			HealthThreshold:     healthThreshold,
 		}
 	}
 
+	var unhealthyCondition string
+	if healthPolicy.UnhealthyCondition != nil {
+		unhealthyCondition = string(*healthPolicy.UnhealthyCondition)
+	}
+
 	p := &api.BackendPolicySpec_Health{
-		UnhealthyCondition: string(healthPolicy.UnhealthyCondition),
+		UnhealthyCondition: unhealthyCondition,
 		Eviction:           evictionProto,
 	}
 	evictPolicy := &api.Policy{
