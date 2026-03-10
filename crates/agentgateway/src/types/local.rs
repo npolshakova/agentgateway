@@ -176,6 +176,7 @@ fn merge_deprecated_frontend_policies(
 			add: log.fields.add.clone(),
 			remove: log.fields.remove.clone(),
 			otlp: None,
+			access_log_policy: None,
 		});
 	}
 	if let Some(tracing) = deprecated.tracing.clone() {
@@ -2119,7 +2120,8 @@ async fn split_frontend_policies(
 	if let Some(p) = tcp {
 		add(FrontendPolicy::TCP(p), "tcp");
 	}
-	if let Some(p) = access_log {
+	if let Some(mut p) = access_log {
+		p.init_access_log_policy();
 		add(FrontendPolicy::AccessLog(p), "accessLog");
 	}
 	if let Some(tracing_config) = tracing {

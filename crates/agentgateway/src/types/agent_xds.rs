@@ -1784,6 +1784,7 @@ impl TryFrom<&proto::agent::FrontendPolicySpec> for FrontendPolicy {
 					add: Arc::new(add),
 					remove: Arc::new(FzHashSet::new(rm)),
 					otlp: None,
+					access_log_policy: None,
 				})
 			},
 			Some(fps::Kind::Tracing(t)) => {
