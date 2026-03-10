@@ -907,6 +907,27 @@ impl From<SimpleBackendWithPolicies> for BackendWithPolicies {
 	}
 }
 
+/// A set of plain HTTP endpoints with health-aware selection and eviction.
+/// The non-AI counterpart of `AIBackend` -- uses the same `EndpointSet` machinery
+/// but proxies as opaque HTTP rather than going through LLM provider logic.
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EndpointGroupBackend {
+	pub endpoints: crate::types::loadbalancer::EndpointSet<Target>,
+}
+
+impl EndpointGroupBackend {
+	/// TODO: make endpoint selection policy configurable (currently just picking the first endpoint)
+	pub fn select_endpoint(&self) -> Option<(Arc<Target>, crate::types::loadbalancer::ActiveHandle)> {
+		let iter = self.endpoints.iter();
+		let (key, ep_with_info) = iter.index().first()?;
+		let handle = self
+			.endpoints
+			.start_request(key.clone(), &ep_with_info.info);
+		Some((ep_with_info.endpoint.clone(), handle))
+	}
+}
+
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Backend {
@@ -921,6 +942,8 @@ pub enum Backend {
 	Aws(ResourceName, crate::aws::AwsBackendConfig),
 	#[serde(serialize_with = "serialize_backend_tuple")]
 	Dynamic(ResourceName, ()),
+	#[serde(rename = "endpointGroup", serialize_with = "serialize_backend_tuple")]
+	EndpointGroup(ResourceName, EndpointGroupBackend),
 	Invalid,
 }
 
@@ -1098,7 +1121,8 @@ impl Backend {
 			| Backend::MCP(name, _)
 			| Backend::AI(name, _)
 			| Backend::Aws(name, _)
-			| Backend::Dynamic(name, _) => BackendTarget::Backend {
+			| Backend::Dynamic(name, _)
+			| Backend::EndpointGroup(name, _) => BackendTarget::Backend {
 				name: name.name.clone(),
 				namespace: name.namespace.clone(),
 				section: None,
@@ -1118,7 +1142,8 @@ impl Backend {
 			| Backend::MCP(name, _)
 			| Backend::AI(name, _)
 			| Backend::Aws(name, _)
-			| Backend::Dynamic(name, _) => BackendTargetRef::Backend {
+			| Backend::Dynamic(name, _)
+			| Backend::EndpointGroup(name, _) => BackendTargetRef::Backend {
 				name: name.name.as_ref(),
 				namespace: name.namespace.as_ref(),
 				section: None,
@@ -1134,7 +1159,8 @@ impl Backend {
 			| Backend::MCP(name, _)
 			| Backend::AI(name, _)
 			| Backend::Aws(name, _)
-			| Backend::Dynamic(name, _) => {
+			| Backend::Dynamic(name, _)
+			| Backend::EndpointGroup(name, _) => {
 				let mut s = String::with_capacity(name.namespace.len() + name.name.len() + 1);
 				s.push_str(&name.namespace);
 				s.push('/');
@@ -1153,6 +1179,7 @@ impl Backend {
 			Backend::AI(_, _) => cel::BackendType::AI,
 			Backend::Aws(_, _) => cel::BackendType::Unknown,
 			Backend::Dynamic(_, _) => cel::BackendType::Dynamic,
+			Backend::EndpointGroup(_, _) => cel::BackendType::Static,
 			Backend::Invalid => cel::BackendType::Unknown,
 		}
 	}
