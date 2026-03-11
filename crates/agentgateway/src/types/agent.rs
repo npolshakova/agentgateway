@@ -907,9 +907,7 @@ impl From<SimpleBackendWithPolicies> for BackendWithPolicies {
 	}
 }
 
-/// A set of plain HTTP endpoints with health-aware selection and eviction.
-/// The non-AI counterpart of `AIBackend` -- uses the same `EndpointSet` machinery
-/// but proxies as opaque HTTP rather than going through LLM provider logic.
+/// A list of priority endpoints that support health-aware selection and eviction.
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EndpointGroupBackend {

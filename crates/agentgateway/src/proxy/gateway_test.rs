@@ -3,6 +3,7 @@ use agent_core::strng;
 use assert_matches::assert_matches;
 use http_body_util::BodyExt;
 use hyper_util::client::legacy::Client;
+use rand::RngExt;
 use serde_json::{Value, json};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 use x509_parser::nom::AsBytes;
@@ -1293,26 +1294,6 @@ async fn dfp_defaults_to_port_443_for_https() {
 
 /// Verifies EndpointGroup failover: when the primary endpoint returns 500
 /// it is evicted, and all subsequent traffic goes to the fallback (200).
-///
-/// Equivalent local YAML config:
-/// ```yaml
-/// - port: 4000
-///   listeners:
-///   - name: neo4j-proxy
-///     protocol: HTTP
-///     routes:
-///     - name: neo4j-failover
-///       backends:
-///       - endpointGroup:
-///           endpoints:
-///           - address: localhost:17474
-///           - address: localhost:7474
-///         policies:
-///           health:
-///             unhealthyExpression: "response.code >= 500"
-///             eviction:
-///               duration: 30s
-/// ```
 #[tokio::test]
 async fn endpoint_group_failover() {
 	// Primary endpoint: always returns 500 (simulates unhealthy upstream)
