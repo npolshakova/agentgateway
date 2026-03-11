@@ -51,7 +51,11 @@ func translateFrontendPolicyToAgw(
 	}
 
 	if s := frontend.AccessLog; s != nil {
-		pol := translateFrontendAccessLog(policy, policyName, policyTarget)
+		pol, err := translateFrontendAccessLog(policyCtx, policy, policyName, policyTarget)
+		if err != nil {
+			logger.Error("error processing access log", "err", err)
+			errs = append(errs, err)
+		}
 		agwPolicies = append(agwPolicies, pol)
 	}
 
@@ -158,7 +162,7 @@ func translateFrontendTracing(ctx PolicyCtx, policy *agentgateway.AgentgatewayPo
 	return tracingPolicy, nil
 }
 
-func translateFrontendAccessLog(policy *agentgateway.AgentgatewayPolicy, name string, target *api.PolicyTarget) *api.Policy {
+func translateFrontendAccessLog(ctx PolicyCtx, policy *agentgateway.AgentgatewayPolicy, name string, target *api.PolicyTarget) (*api.Policy, error) {
 	logging := policy.Spec.Frontend.AccessLog
 	spec := &api.FrontendPolicySpec_Logging{}
 	if f := logging.Filter; f != nil {
@@ -175,6 +179,33 @@ func translateFrontendAccessLog(policy *agentgateway.AgentgatewayPolicy, name st
 			}),
 		}
 		spec.Fields = f
+	}
+	if otlp := logging.Otlp; otlp != nil {
+		provider, err := buildBackendRef(ctx, otlp.BackendRef, policy.Namespace)
+		if err != nil {
+			return nil, fmt.Errorf("failed to translate access log OTLP backend ref: %v", err)
+		}
+
+		var protocol api.FrontendPolicySpec_Logging_OtlpAccessLog_Protocol
+		switch otlp.Protocol {
+		case agentgateway.TracingProtocolGrpc:
+			protocol = api.FrontendPolicySpec_Logging_OtlpAccessLog_GRPC
+		case agentgateway.TracingProtocolHttp:
+			protocol = api.FrontendPolicySpec_Logging_OtlpAccessLog_HTTP
+		default:
+			protocol = api.FrontendPolicySpec_Logging_OtlpAccessLog_HTTP
+		}
+
+		var path *string
+		if otlp.Path != nil {
+			path = ptr.Of(string(*otlp.Path))
+		}
+
+		spec.OtlpAccessLog = &api.FrontendPolicySpec_Logging_OtlpAccessLog{
+			ProviderBackend: provider,
+			Protocol:        protocol,
+			Path:            path,
+		}
 	}
 
 	loggingPolicy := &api.Policy{
@@ -195,7 +226,7 @@ func translateFrontendAccessLog(policy *agentgateway.AgentgatewayPolicy, name st
 		"agentgateway_policy", loggingPolicy.Name,
 		"target", target)
 
-	return loggingPolicy
+	return loggingPolicy, nil
 }
 
 func translateFrontendTCP(policy *agentgateway.AgentgatewayPolicy, name string, target *api.PolicyTarget) *api.Policy {
