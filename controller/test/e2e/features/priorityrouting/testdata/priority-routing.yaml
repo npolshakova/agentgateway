@@ -20,6 +20,9 @@ spec:
         image: mccutchen/go-httpbin:v2.15.0
         ports:
         - containerPort: 8080
+        env:
+        - name: USE_REAL_HOSTNAME
+          value: "true"
 ---
 apiVersion: v1
 kind: Service
