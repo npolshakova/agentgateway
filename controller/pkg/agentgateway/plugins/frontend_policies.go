@@ -125,9 +125,9 @@ func translateFrontendTracing(ctx PolicyCtx, policy *agentgateway.AgentgatewayPo
 
 	var protocol api.FrontendPolicySpec_Tracing_Protocol
 	switch tracing.Protocol {
-	case agentgateway.TracingProtocolGrpc:
+	case agentgateway.OTLPProtocolGrpc:
 		protocol = api.FrontendPolicySpec_Tracing_GRPC
-	case agentgateway.TracingProtocolHttp:
+	case agentgateway.OTLPProtocolHttp:
 		protocol = api.FrontendPolicySpec_Tracing_HTTP
 	default:
 		// default to HTTP
@@ -188,12 +188,12 @@ func translateFrontendAccessLog(ctx PolicyCtx, policy *agentgateway.Agentgateway
 
 		var protocol api.FrontendPolicySpec_Logging_OtlpAccessLog_Protocol
 		switch otlp.Protocol {
-		case agentgateway.TracingProtocolGrpc:
+		case agentgateway.OTLPProtocolGrpc:
 			protocol = api.FrontendPolicySpec_Logging_OtlpAccessLog_GRPC
-		case agentgateway.TracingProtocolHttp:
+		case agentgateway.OTLPProtocolHttp:
 			protocol = api.FrontendPolicySpec_Logging_OtlpAccessLog_HTTP
 		default:
-			protocol = api.FrontendPolicySpec_Logging_OtlpAccessLog_HTTP
+			protocol = api.FrontendPolicySpec_Logging_OtlpAccessLog_GRPC
 		}
 
 		var path *string

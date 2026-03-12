@@ -5761,7 +5761,7 @@ spec:
                             minLength: 1
                             type: string
                           protocol:
-                            default: HTTP
+                            default: GRPC
                             description: protocol specifies the OTLP protocol variant
                               to use.
                             enum:

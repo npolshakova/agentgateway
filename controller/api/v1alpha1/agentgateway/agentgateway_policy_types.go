@@ -1445,10 +1445,10 @@ type OtlpAccessLog struct {
 	BackendRef gwv1.BackendObjectReference `json:"backendRef"`
 
 	// protocol specifies the OTLP protocol variant to use.
-	// +kubebuilder:default=HTTP
+	// +kubebuilder:default=GRPC
 	// +kubebuilder:validation:Enum=HTTP;GRPC
 	// +optional
-	Protocol TracingProtocol `json:"protocol,omitempty"`
+	Protocol OTLPProtocol `json:"protocol,omitempty"`
 
 	// path specifies the OTLP/HTTP path to use. This is only applicable when protocol is HTTP.
 	// If unset, this defaults to /v1/logs.
@@ -1478,11 +1478,11 @@ type AttributeAdd struct {
 	Expression shared.CELExpression `json:"expression"`
 }
 
-type TracingProtocol string
+type OTLPProtocol string
 
 const (
-	TracingProtocolHttp TracingProtocol = "HTTP"
-	TracingProtocolGrpc TracingProtocol = "GRPC"
+	OTLPProtocolHttp OTLPProtocol = "HTTP"
+	OTLPProtocolGrpc OTLPProtocol = "GRPC"
 )
 
 // +kubebuilder:validation:XValidation:rule="!has(self.path) || !has(self.protocol) || self.protocol == 'HTTP'",message="path is only valid with protocol HTTP"
@@ -1496,7 +1496,7 @@ type Tracing struct {
 	// +kubebuilder:default=GRPC
 	// +kubebuilder:validation:Enum=HTTP;GRPC
 	// +optional
-	Protocol TracingProtocol `json:"protocol,omitempty"`
+	Protocol OTLPProtocol `json:"protocol,omitempty"`
 
 	// path specifies the OTLP path to use. This is only applicable when protocol is HTTP.
 	// If unset, this defaults to /v1/traces.
