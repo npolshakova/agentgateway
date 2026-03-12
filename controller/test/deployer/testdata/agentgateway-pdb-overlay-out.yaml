@@ -198,6 +198,12 @@ metadata:
   annotations:
     pdb-annotation: from-overlay
   labels:
+    app.kubernetes.io/instance: gw
+    app.kubernetes.io/managed-by: agentgateway
+    app.kubernetes.io/name: gw
+    app.kubernetes.io/version: 1.0.0-ci1
+    gateway.networking.k8s.io/gateway-class-name: agentgateway
+    gateway.networking.k8s.io/gateway-name: gw
     pdb-label: from-overlay
   name: gw
 spec:
