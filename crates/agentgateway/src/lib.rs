@@ -8,7 +8,7 @@ use std::{fmt, io};
 
 use agent_core::prelude::*;
 use control::caclient::CaClient;
-use hickory_resolver::config::{ResolverConfig, ResolverOpts};
+use hickory_resolver::config::{LookupIpStrategy, ResolverConfig, ResolverOpts};
 use indexmap::IndexMap;
 #[cfg(feature = "schema")]
 pub use schemars::JsonSchema;
@@ -61,12 +61,89 @@ pub struct NestedRawConfig {
 	config: Option<RawConfig>,
 }
 
+/// Controls which IP address families the DNS resolver will query for
+/// upstream (backend) connections.
+///
+/// Mirrors Envoy's `DnsLookupFamily` semantics. Maps to hickory_resolver's
+/// `LookupIpStrategy` under the hood.
+///
+/// Can be set via the `DNS_LOOKUP_FAMILY` environment variable or the
+/// `dnsLookupFamily` field in the config file.
+///
+/// See: <https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/cluster/v3/cluster.proto#enum-config-cluster-v3-cluster-dnslookupfamily>
+#[derive(serde::Deserialize, serde::Serialize, Clone, Copy, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+pub enum DnsLookupFamily {
+	/// Query for both A and AAAA records in parallel and use all results.
+	All,
+	/// Automatically choose based on the `enable_ipv6` setting. When IPv6 is
+	/// enabled this behaves like `V4Preferred`; otherwise `V4Only`.
+	Auto,
+	/// Query for both A and AAAA, but prefer IPv4 addresses when both are
+	/// available.
+	V4Preferred,
+	/// Only query for A (IPv4) records.
+	V4Only,
+	/// Only query for AAAA (IPv6) records.
+	V6Only,
+}
+
+impl Default for DnsLookupFamily {
+	fn default() -> Self {
+		Self::Auto
+	}
+}
+
+impl std::str::FromStr for DnsLookupFamily {
+	type Err = String;
+
+	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		match s {
+			"All" | "ALL" | "all" => Ok(Self::All),
+			"Auto" | "AUTO" | "auto" => Ok(Self::Auto),
+			"V4Preferred" | "V4_PREFERRED" | "v4_preferred" => Ok(Self::V4Preferred),
+			"V4Only" | "V4_ONLY" | "v4_only" => Ok(Self::V4Only),
+			"V6Only" | "V6_ONLY" | "v6_only" => Ok(Self::V6Only),
+			_ => Err(format!(
+				"unknown DNS lookup family '{s}': expected one of \
+				 All, Auto, V4Preferred, V4Only, V6Only"
+			)),
+		}
+	}
+}
+
+impl DnsLookupFamily {
+	/// Convert to hickory_resolver's `LookupIpStrategy`, using the
+	/// `ipv6_enabled` flag to resolve the `Auto` case.
+	pub fn to_lookup_strategy(self, ipv6_enabled: bool) -> LookupIpStrategy {
+		match self {
+			Self::All | Self::V4Preferred => LookupIpStrategy::Ipv4AndIpv6,
+			Self::V4Only => LookupIpStrategy::Ipv4Only,
+			Self::V6Only => LookupIpStrategy::Ipv6Only,
+			Self::Auto => {
+				if ipv6_enabled {
+					LookupIpStrategy::Ipv4AndIpv6
+				} else {
+					LookupIpStrategy::Ipv4Only
+				}
+			},
+		}
+	}
+}
+
 #[derive(serde::Deserialize, Default, Clone, Debug)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 // RawConfig represents the inputs a user can pass in. Config represents the internal representation of this.
 pub struct RawConfig {
 	enable_ipv6: Option<bool>,
+
+	/// Controls which IP address families the DNS resolver will query for
+	/// upstream connections. Mirrors Envoy's DnsLookupFamily.
+	/// Accepted values: All, Auto, V4Preferred, V4Only, V6Only.
+	/// Can also be set via the DNS_LOOKUP_FAMILY environment variable.
+	/// Defaults to Auto (IPv4-only when enableIpv6 is false, both when true).
+	dns_lookup_family: Option<DnsLookupFamily>,
 
 	/// Local XDS path. If not specified, the current configuration file will be used.
 	local_xds_path: Option<PathBuf>,

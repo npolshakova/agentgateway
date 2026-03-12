@@ -15,8 +15,8 @@ use crate::telemetry::log::{LoggingFields, MetricFields};
 use crate::telemetry::trc;
 use crate::types::discovery::{Identity, WaypointIdentity};
 use crate::{
-	Address, Config, ConfigSource, NestedRawConfig, RawLoggingLevel, StringOrInt, ThreadingMode,
-	XDSConfig, cel, client, serdes, telemetry,
+	Address, Config, ConfigSource, DnsLookupFamily, NestedRawConfig, RawLoggingLevel, StringOrInt,
+	ThreadingMode, XDSConfig, cel, client, serdes, telemetry,
 };
 
 pub fn parse_config(contents: String, filename: Option<PathBuf>) -> anyhow::Result<Config> {
@@ -45,6 +45,9 @@ pub fn parse_config(contents: String, filename: Option<PathBuf>) -> anyhow::Resu
 		.or(filename)
 		.map(ConfigSource::File);
 
+	let dns_lookup_family = parse::<DnsLookupFamily>("DNS_LOOKUP_FAMILY")?
+		.or(raw.dns_lookup_family)
+		.unwrap_or_default();
 	let (resolver_cfg, resolver_opts) = {
 		let (cfg, opts) = hickory_resolver::system_conf::read_system_conf().unwrap_or_else(|e| {
 			warn!(err=?e, "failed to read system DNS config, using defaults");
@@ -53,7 +56,7 @@ pub fn parse_config(contents: String, filename: Option<PathBuf>) -> anyhow::Resu
 				hickory_resolver::config::ResolverOpts::default(),
 			)
 		});
-		resolve_dns_config(cfg, opts)
+		resolve_dns_config(cfg, opts, dns_lookup_family, ipv6_enabled)
 	};
 	let cluster: String = parse("CLUSTER_ID")?
 		.or(raw.cluster_id.clone())
@@ -548,10 +551,13 @@ fn parse_otlp_headers(
 }
 
 /// If the resolved config has no nameservers, fall back to defaults while
-/// preserving the original resolver options.
+/// preserving the original resolver options. Applies the configured
+/// `DnsLookupFamily` as the IP lookup strategy.
 fn resolve_dns_config(
 	cfg: hickory_resolver::config::ResolverConfig,
-	opts: hickory_resolver::config::ResolverOpts,
+	mut opts: hickory_resolver::config::ResolverOpts,
+	dns_lookup_family: DnsLookupFamily,
+	ipv6_enabled: bool,
 ) -> (
 	hickory_resolver::config::ResolverConfig,
 	hickory_resolver::config::ResolverOpts,
@@ -569,7 +575,16 @@ fn resolve_dns_config(
 		.iter()
 		.map(|ns| ns.to_string())
 		.collect();
-	info!(nameservers = ?nameservers, "using DNS nameservers");
+
+	let ip_strategy = dns_lookup_family.to_lookup_strategy(ipv6_enabled);
+	opts.ip_strategy = ip_strategy;
+	opts.edns0 = true;
+	info!(
+		nameservers = ?nameservers,
+		dns_lookup_family = ?dns_lookup_family,
+		ip_strategy = ?ip_strategy,
+		"using DNS nameservers"
+	);
 	(resolved_cfg, opts)
 }
 
@@ -704,7 +719,8 @@ config:
 		let mut custom_opts = hickory_resolver::config::ResolverOpts::default();
 		custom_opts.ndots = 42;
 
-		let (resolved_cfg, resolved_opts) = resolve_dns_config(empty_cfg, custom_opts);
+		let (resolved_cfg, resolved_opts) =
+			resolve_dns_config(empty_cfg, custom_opts, DnsLookupFamily::default(), true);
 
 		assert!(
 			!resolved_cfg.name_servers().is_empty(),
@@ -720,7 +736,8 @@ config:
 		custom_opts.ndots = 7;
 
 		let original_count = valid_cfg.name_servers().len();
-		let (resolved_cfg, resolved_opts) = resolve_dns_config(valid_cfg, custom_opts);
+		let (resolved_cfg, resolved_opts) =
+			resolve_dns_config(valid_cfg, custom_opts, DnsLookupFamily::default(), true);
 
 		assert_eq!(
 			resolved_cfg.name_servers().len(),
@@ -728,6 +745,62 @@ config:
 			"should keep original nameservers"
 		);
 		assert_eq!(resolved_opts.ndots, 7, "should preserve original opts");
+	}
+
+	#[test]
+	fn resolve_dns_config_applies_v4_only() {
+		let cfg = hickory_resolver::config::ResolverConfig::default();
+		let opts = hickory_resolver::config::ResolverOpts::default();
+
+		let (_, resolved_opts) = resolve_dns_config(cfg, opts, crate::DnsLookupFamily::V4Only, true);
+
+		assert_eq!(
+			resolved_opts.ip_strategy,
+			hickory_resolver::config::LookupIpStrategy::Ipv4Only,
+			"V4_ONLY should map to Ipv4Only"
+		);
+	}
+
+	#[test]
+	fn resolve_dns_config_applies_v6_only() {
+		let cfg = hickory_resolver::config::ResolverConfig::default();
+		let opts = hickory_resolver::config::ResolverOpts::default();
+
+		let (_, resolved_opts) = resolve_dns_config(cfg, opts, crate::DnsLookupFamily::V6Only, false);
+
+		assert_eq!(
+			resolved_opts.ip_strategy,
+			hickory_resolver::config::LookupIpStrategy::Ipv6Only,
+			"V6_ONLY should map to Ipv6Only"
+		);
+	}
+
+	#[test]
+	fn resolve_dns_config_auto_with_ipv6_disabled() {
+		let cfg = hickory_resolver::config::ResolverConfig::default();
+		let opts = hickory_resolver::config::ResolverOpts::default();
+
+		let (_, resolved_opts) = resolve_dns_config(cfg, opts, crate::DnsLookupFamily::Auto, false);
+
+		assert_eq!(
+			resolved_opts.ip_strategy,
+			hickory_resolver::config::LookupIpStrategy::Ipv4Only,
+			"AUTO with ipv6 disabled should map to Ipv4Only"
+		);
+	}
+
+	#[test]
+	fn resolve_dns_config_auto_with_ipv6_enabled() {
+		let cfg = hickory_resolver::config::ResolverConfig::default();
+		let opts = hickory_resolver::config::ResolverOpts::default();
+
+		let (_, resolved_opts) = resolve_dns_config(cfg, opts, crate::DnsLookupFamily::Auto, true);
+
+		assert_eq!(
+			resolved_opts.ip_strategy,
+			hickory_resolver::config::LookupIpStrategy::Ipv4AndIpv6,
+			"AUTO with ipv6 enabled should map to Ipv4AndIpv6"
+		);
 	}
 
 	#[test]
