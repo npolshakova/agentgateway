@@ -471,10 +471,17 @@ func (s *Syncer) buildAgwResources(gateways krt.Collection[*translator.GatewayLi
 	})
 	ancestorCollection := ancestorsIndex.AsCollection(append(krtopts.ToOptions("AncestorBackend"), utils.TypedNamespacedNameIndexCollectionFunc)...)
 	referenceIndex := plugins.BuildReferenceIndex(ancestorCollection, routeAttachmentsIndex)
-	agwPolicies, policyStatuses := AgwPolicyCollection(s.agwPlugins, referenceIndex, krtopts)
+	agwPolicies, policyReferences, policyStatuses := AgwPolicyCollection(s.agwPlugins, referenceIndex, krtopts)
+	backendPolicyReferences := s.newAgwBackendPolicyReferences(s.agwCollections.Backends, krtopts)
+	joinedPolicyReferences := krt.JoinCollection([]krt.Collection[*plugins.PolicyAttachment]{policyReferences, backendPolicyReferences}, krtopts.ToOptions("JoinPolicyAttachment")...)
+	policyReferencesIndex := krt.NewIndex(joinedPolicyReferences, "policyReferences", func(o *plugins.PolicyAttachment) []utils.TypedNamespacedName {
+		return []utils.TypedNamespacedName{o.Backend}
+	})
+	policyReferencesIndexCollection := policyReferencesIndex.AsCollection(append(krtopts.ToOptions("PolicyReferencesIndex"), utils.TypedNamespacedNameIndexCollectionFunc)...)
+	referenceIndex = referenceIndex.WithPolicyAttachments(policyReferencesIndexCollection)
 
 	// Create an agentgateway backend collection from the kgateway backend resources
-	agwBackendStatus, agwBackends := s.newAgwBackendCollection(s.agwCollections.Backends, ancestorCollection, krtopts)
+	agwBackendStatus, agwBackends := s.newAgwBackendCollection(s.agwCollections.Backends, referenceIndex, krtopts)
 
 	// Join all Agw resources
 	allAgwResources := krt.JoinCollection([]krt.Collection[agwir.AgwResource]{binds, listeners, agwRoutes, agwPolicies, agwBackends}, krtopts.ToOptions("Resources")...)
@@ -506,10 +513,21 @@ func (s *Syncer) buildListenerFromGateway(obj *translator.GatewayListener) *agwi
 	}, translator.AgwListener{l}))
 }
 
+// newAgwBackendPolicyReferences creates the ADP backend collection for agent gateway resources
+func (s *Syncer) newAgwBackendPolicyReferences(
+	finalBackends krt.Collection[*agentgateway.AgentgatewayBackend],
+	krtopts krtutil.KrtOptions,
+) krt.Collection[*plugins.PolicyAttachment] {
+	policyReferences := krt.NewManyCollection(finalBackends, func(ctx krt.HandlerContext, backend *agentgateway.AgentgatewayBackend) []*plugins.PolicyAttachment {
+		return agentgatewaybackend.BuildAgwBackendReferences(backend)
+	}, krtopts.ToOptions("BackendPolicyAttachments")...)
+	return policyReferences
+}
+
 // newAgwBackendCollection creates the ADP backend collection for agent gateway resources
 func (s *Syncer) newAgwBackendCollection(
 	finalBackends krt.Collection[*agentgateway.AgentgatewayBackend],
-	ancestors krt.IndexCollection[utils.TypedNamespacedName, *utils.AncestorBackend],
+	references plugins.ReferenceIndex,
 	krtopts krtutil.KrtOptions,
 ) (
 	krt.StatusCollection[*agentgateway.AgentgatewayBackend, agentgateway.AgentgatewayBackendStatus],
@@ -523,7 +541,7 @@ func (s *Syncer) newAgwBackendCollection(
 			Krt:         ctx,
 			Collections: s.agwCollections,
 		}
-		return agentgatewaybackend.TranslateAgwBackend(pc, backend, ancestors)
+		return agentgatewaybackend.TranslateAgwBackend(pc, backend, references)
 	}, krtopts.ToOptions("Backends")...)
 }
 
