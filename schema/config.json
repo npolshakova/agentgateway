@@ -3975,6 +3975,17 @@
               "type": "null"
             }
           ]
+        },
+        "failureMode": {
+          "description": "Behavior when one or more MCP targets fail to initialize or fail during fanout.\nDefaults to `failClosed`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FailureMode4"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false,
@@ -4296,6 +4307,20 @@
       "enum": [
         "always",
         "conditional"
+      ]
+    },
+    "FailureMode4": {
+      "oneOf": [
+        {
+          "description": "Fail the entire session if any target fails to initialize or any\nupstream fails during a fanout. This is the default and matches\ncurrent behavior.",
+          "type": "string",
+          "const": "failClosed"
+        },
+        {
+          "description": "Skip failed targets/upstreams and continue serving from healthy ones.\nIf ALL targets fail, still return an error.",
+          "type": "string",
+          "const": "failOpen"
+        }
       ]
     },
     "LocalAIBackend": {
@@ -6098,6 +6123,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/McpPrefixMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "failureMode": {
+          "description": "Behavior when one or more MCP targets fail to initialize or fail during fanout.\nDefaults to `failClosed`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FailureMode4"
             },
             {
               "type": "null"

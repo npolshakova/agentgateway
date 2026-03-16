@@ -1291,6 +1291,7 @@
 |`binds[].listeners[].routes[].backends[].(1)mcp.targets[].policies.mcpAuthorization.rules`||
 |`binds[].listeners[].routes[].backends[].(1)mcp.statefulMode`||
 |`binds[].listeners[].routes[].backends[].(1)mcp.prefixMode`||
+|`binds[].listeners[].routes[].backends[].(1)mcp.failureMode`|Behavior when one or more MCP targets fail to initialize or fail during fanout.<br>Defaults to `failClosed`.|
 |`binds[].listeners[].routes[].backends[].(1)ai`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)name`||
 |`binds[].listeners[].routes[].backends[].(1)ai.(any)provider`||
@@ -6652,6 +6653,7 @@
 |`mcp.targets[].policies.mcpAuthorization.rules`||
 |`mcp.statefulMode`||
 |`mcp.prefixMode`||
+|`mcp.failureMode`|Behavior when one or more MCP targets fail to initialize or fail during fanout.<br>Defaults to `failClosed`.|
 |`mcp.policies`||
 |`mcp.policies.requestHeaderModifier`|Headers to be modified in the request.|
 |`mcp.policies.requestHeaderModifier.add`||

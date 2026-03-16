@@ -459,16 +459,10 @@ impl SessionManager {
 			return Ok(None);
 		};
 		let relay = builder.build_new_connections()?;
-		let n = relay.count();
-		if state.sessions.len() != n {
-			warn!(
-				"failed to resume session: sessions {} did not match config {}",
-				state.sessions.len(),
-				n
-			);
+		if let Err(err) = relay.set_sessions(state.sessions) {
+			warn!("failed to resume session: {err}");
 			return Ok(None);
 		}
-		relay.set_sessions(state.sessions);
 
 		let sess = Session {
 			id: id.into(),
