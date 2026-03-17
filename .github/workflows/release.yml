@@ -482,8 +482,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Helm login to ${{ env.CHART_REGISTRY_IMAGE_BASE }}
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push helm charts
         run: make -C controller release-charts
