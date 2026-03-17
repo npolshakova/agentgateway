@@ -286,9 +286,6 @@ pub struct RawLoggingFields {
 
 #[apply(schema_de!)]
 pub struct RawDnsConfig {
-	/// Static hostname-to-IP mappings that bypass DNS resolution.
-	#[serde(default)]
-	static_hosts: HashMap<String, IpAddr>,
 	/// Custom DNS nameserver IPs. When set, these are used instead of the system DNS config.
 	#[serde(default)]
 	nameservers: Vec<IpAddr>,

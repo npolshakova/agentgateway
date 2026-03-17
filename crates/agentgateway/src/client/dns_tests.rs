@@ -2,7 +2,6 @@ use std::net::Ipv4Addr;
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
-use agent_core::strng::Strng;
 use assert_matches::assert_matches;
 
 use super::*;
@@ -47,7 +46,6 @@ async fn test_basic_resolution() {
 	let resolver = CachedResolver {
 		dns: Arc::new(Resolver::Mock(mock)),
 		entries: Arc::new(Mutex::new(HashMap::new())),
-		static_hosts: HashMap::new(),
 	};
 
 	// First resolution should work
@@ -71,7 +69,6 @@ async fn test_ip_change() {
 	let resolver = CachedResolver {
 		dns: Arc::new(Resolver::Mock(mock.clone())),
 		entries: Arc::new(Mutex::new(HashMap::new())),
-		static_hosts: HashMap::new(),
 	};
 
 	// First resolution should work
@@ -99,7 +96,6 @@ async fn test_ip_error() {
 	let resolver = CachedResolver {
 		dns: Arc::new(Resolver::Mock(mock.clone())),
 		entries: Arc::new(Mutex::new(HashMap::new())),
-		static_hosts: HashMap::new(),
 	};
 
 	// We should get an error, no IPs yet
@@ -123,7 +119,6 @@ async fn test_multiple_hostnames() {
 	let resolver = CachedResolver {
 		dns: Arc::new(Resolver::Mock(mock)),
 		entries: Arc::new(Mutex::new(HashMap::new())),
-		static_hosts: HashMap::new(),
 	};
 
 	let ip1 = resolver.resolve("host1.com".into()).await.unwrap();
@@ -141,7 +136,6 @@ async fn test_resolution_failure() {
 	let resolver = CachedResolver {
 		dns: Arc::new(Resolver::Mock(mock)),
 		entries: Arc::new(Mutex::new(HashMap::new())),
-		static_hosts: HashMap::new(),
 	};
 
 	let result = resolver.resolve("nonexistent.com".into()).await;
@@ -156,7 +150,6 @@ async fn test_concurrent_resolution() {
 	let resolver = Arc::new(CachedResolver {
 		dns: Arc::new(Resolver::Mock(mock)),
 		entries: Arc::new(Mutex::new(HashMap::new())),
-		static_hosts: HashMap::new(),
 	});
 
 	// Spawn multiple concurrent resolutions
@@ -172,29 +165,4 @@ async fn test_concurrent_resolution() {
 		let result = handle.await.unwrap();
 		assert!(result.is_ok());
 	}
-}
-
-#[tokio::test]
-async fn test_static_hosts_bypass_dns() {
-	let mock = Arc::new(Mock::new());
-
-	let mut static_hosts = HashMap::new();
-	static_hosts.insert(Strng::from("static.example.com"), IP1);
-	static_hosts.insert(Strng::from("another.local"), IP2);
-
-	let resolver = CachedResolver {
-		dns: Arc::new(Resolver::Mock(mock)),
-		entries: Arc::new(Mutex::new(HashMap::new())),
-		static_hosts,
-	};
-
-	// Static hosts resolve immediately without DNS
-	assert_eq!(
-		resolver.resolve("static.example.com".into()).await.unwrap(),
-		IP1
-	);
-	assert_eq!(resolver.resolve("another.local".into()).await.unwrap(), IP2);
-
-	// Non-static host falls through to DNS (which has no response, so fails)
-	assert_matches!(resolver.resolve("dynamic.example.com".into()).await, Err(_));
 }

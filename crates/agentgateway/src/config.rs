@@ -54,23 +54,20 @@ pub fn parse_config(contents: String, filename: Option<PathBuf>) -> anyhow::Resu
 		let cfg = hickory_resolver::config::ResolverConfig::from_parts(None, vec![], name_servers);
 		(cfg, hickory_resolver::config::ResolverOpts::default())
 	} else {
-		hickory_resolver::system_conf::read_system_conf().unwrap_or_else(|e| {
+		let (cfg, opts) = hickory_resolver::system_conf::read_system_conf().unwrap_or_else(|e| {
 			warn!("failed to read system DNS config: {e}, using defaults");
 			(
 				hickory_resolver::config::ResolverConfig::default(),
 				hickory_resolver::config::ResolverOpts::default(),
 			)
-		})
+		});
+		if cfg.name_servers().is_empty() {
+			warn!("no DNS nameservers found in system config, using defaults.");
+			(hickory_resolver::config::ResolverConfig::default(), opts)
+		} else {
+			(cfg, opts)
+		}
 	};
-	let static_hosts: std::collections::HashMap<Strng, IpAddr> = raw_dns
-		.map(|dns| {
-			dns
-				.static_hosts
-				.iter()
-				.map(|(k, v)| (Strng::from(k.as_str()), *v))
-				.collect()
-		})
-		.unwrap_or_default();
 	let cluster: String = parse("CLUSTER_ID")?
 		.or(raw.cluster_id.clone())
 		.unwrap_or("Kubernetes".to_string());
@@ -403,7 +400,6 @@ pub fn parse_config(contents: String, filename: Option<PathBuf>) -> anyhow::Resu
 		dns: client::Config {
 			resolver_cfg,
 			resolver_opts,
-			static_hosts,
 		},
 		proxy_metadata: crate::ProxyMetadata {
 			instance_ip: std::env::var("INSTANCE_IP").unwrap_or_else(|_| "1.1.1.1".to_string()),
