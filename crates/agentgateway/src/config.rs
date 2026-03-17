@@ -44,7 +44,33 @@ pub fn parse_config(contents: String, filename: Option<PathBuf>) -> anyhow::Resu
 		.or(filename)
 		.map(ConfigSource::File);
 
-	let (resolver_cfg, resolver_opts) = hickory_resolver::system_conf::read_system_conf()?;
+	let raw_dns = raw.dns.as_ref();
+	let (resolver_cfg, resolver_opts) = if let Some(dns) = raw_dns
+		&& !dns.nameservers.is_empty()
+	{
+		let ns_ips: Vec<IpAddr> = dns.nameservers.to_vec();
+		let name_servers =
+			hickory_resolver::config::NameServerConfigGroup::from_ips_clear(&ns_ips, 53, true);
+		let cfg = hickory_resolver::config::ResolverConfig::from_parts(None, vec![], name_servers);
+		(cfg, hickory_resolver::config::ResolverOpts::default())
+	} else {
+		hickory_resolver::system_conf::read_system_conf().unwrap_or_else(|e| {
+			warn!("failed to read system DNS config: {e}, using defaults");
+			(
+				hickory_resolver::config::ResolverConfig::default(),
+				hickory_resolver::config::ResolverOpts::default(),
+			)
+		})
+	};
+	let static_hosts: std::collections::HashMap<Strng, IpAddr> = raw_dns
+		.map(|dns| {
+			dns
+				.static_hosts
+				.iter()
+				.map(|(k, v)| (Strng::from(k.as_str()), *v))
+				.collect()
+		})
+		.unwrap_or_default();
 	let cluster: String = parse("CLUSTER_ID")?
 		.or(raw.cluster_id.clone())
 		.unwrap_or("Kubernetes".to_string());
@@ -375,9 +401,9 @@ pub fn parse_config(contents: String, filename: Option<PathBuf>) -> anyhow::Resu
 				.unwrap_or_default(),
 		},
 		dns: client::Config {
-			// TODO: read from file
 			resolver_cfg,
 			resolver_opts,
+			static_hosts,
 		},
 		proxy_metadata: crate::ProxyMetadata {
 			instance_ip: std::env::var("INSTANCE_IP").unwrap_or_else(|_| "1.1.1.1".to_string()),

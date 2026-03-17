@@ -44,6 +44,7 @@ impl<T: Copy> CircularBuffer<T> {
 pub struct CachedResolver {
 	dns: Arc<Resolver>,
 	entries: Arc<Mutex<HashMap<Strng, Arc<CacheEntry>>>>,
+	static_hosts: HashMap<Strng, IpAddr>,
 }
 
 #[derive(Debug)]
@@ -145,7 +146,11 @@ impl Resolver {
 }
 
 impl CachedResolver {
-	pub fn new(config: ResolverConfig, opts: ResolverOpts) -> Self {
+	pub fn new(
+		config: ResolverConfig,
+		opts: ResolverOpts,
+		static_hosts: HashMap<Strng, IpAddr>,
+	) -> Self {
 		let mut rb =
 			hickory_resolver::Resolver::builder_with_config(config, TokioConnectionProvider::default());
 		*rb.options_mut() = opts;
@@ -153,10 +158,14 @@ impl CachedResolver {
 		CachedResolver {
 			entries: Arc::new(Mutex::new(HashMap::new())),
 			dns: Arc::new(Resolver::Real(dns_resolver)),
+			static_hosts,
 		}
 	}
 
 	pub async fn resolve(&self, name: Strng) -> anyhow::Result<IpAddr> {
+		if let Some(ip) = self.static_hosts.get(&name) {
+			return Ok(*ip);
+		}
 		// Check if we already have an entry
 		let entry = {
 			let mut cache = self.entries.lock().unwrap();

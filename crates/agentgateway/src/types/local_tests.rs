@@ -18,6 +18,7 @@ async fn test_config_parsing(test_name: &str) {
 		&client::Config {
 			resolver_cfg: hickory_resolver::config::ResolverConfig::default(),
 			resolver_opts: hickory_resolver::config::ResolverOpts::default(),
+			static_hosts: Default::default(),
 		},
 		None,
 		BackendConfig::default(),

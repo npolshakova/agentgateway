@@ -106,6 +106,8 @@ pub struct RawConfig {
 	logging: Option<RawLogging>,
 	metrics: Option<RawMetrics>,
 
+	dns: Option<RawDnsConfig>,
+
 	#[serde(default)]
 	backend: BackendConfig,
 
@@ -280,6 +282,16 @@ pub struct RawLoggingFields {
 		schemars(with = "std::collections::HashMap<String, String>")
 	)]
 	add: IndexMap<String, String>,
+}
+
+#[apply(schema_de!)]
+pub struct RawDnsConfig {
+	/// Static hostname-to-IP mappings that bypass DNS resolution.
+	#[serde(default)]
+	static_hosts: HashMap<String, IpAddr>,
+	/// Custom DNS nameserver IPs. When set, these are used instead of the system DNS config.
+	#[serde(default)]
+	nameservers: Vec<IpAddr>,
 }
 
 #[derive(Clone, Debug)]

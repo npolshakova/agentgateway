@@ -35,6 +35,7 @@ async fn setup() -> (MockServer, Handler) {
 		&client::Config {
 			resolver_cfg: ResolverConfig::default(),
 			resolver_opts: ResolverOpts::default(),
+			static_hosts: Default::default(),
 		},
 		None,
 		BackendConfig::default(),
@@ -1033,6 +1034,7 @@ async fn test_openapi_from_url() {
 		&client::Config {
 			resolver_cfg: ResolverConfig::default(),
 			resolver_opts: ResolverOpts::default(),
+			static_hosts: Default::default(),
 		},
 		None,
 		BackendConfig::default(),

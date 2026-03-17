@@ -364,6 +364,8 @@ impl tower::Service<::http::Extensions> for Connector {
 pub struct Config {
 	pub resolver_cfg: ResolverConfig,
 	pub resolver_opts: ResolverOpts,
+	#[serde(skip)]
+	pub static_hosts: std::collections::HashMap<Strng, IpAddr>,
 }
 
 impl Client {
@@ -373,7 +375,11 @@ impl Client {
 		backend_config: BackendConfig,
 		metrics: Option<Arc<crate::metrics::Metrics>>,
 	) -> Client {
-		let resolver = dns::CachedResolver::new(cfg.resolver_cfg.clone(), cfg.resolver_opts.clone());
+		let resolver = dns::CachedResolver::new(
+			cfg.resolver_cfg.clone(),
+			cfg.resolver_opts.clone(),
+			cfg.static_hosts.clone(),
+		);
 		let mut b =
 			::hyper_util_fork::client::legacy::Client::builder(::hyper_util::rt::TokioExecutor::new());
 		b.pool_timer(hyper_util::rt::tokio::TokioTimer::new());
