@@ -146,6 +146,7 @@ impl Resolver {
 
 impl CachedResolver {
 	pub fn new(config: ResolverConfig, mut opts: ResolverOpts) -> Self {
+		// always consult the system's /etc/hosts file when resolving hostnames
 		opts.use_hosts_file = hickory_resolver::config::ResolveHosts::Always;
 		let mut rb =
 			hickory_resolver::Resolver::builder_with_config(config, TokioConnectionProvider::default());
