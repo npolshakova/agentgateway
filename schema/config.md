@@ -44,9 +44,6 @@
 |`config.metrics.remove`||
 |`config.metrics.fields`||
 |`config.metrics.fields.add`||
-|`config.dns`||
-|`config.dns.staticHosts`|Static hostname-to-IP mappings that bypass DNS resolution.|
-|`config.dns.nameservers`|Custom DNS nameserver IPs. When set, these are used instead of the system DNS config.|
 |`config.backend`||
 |`config.backend.keepalives`||
 |`config.backend.keepalives.enabled`||

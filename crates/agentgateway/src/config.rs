@@ -44,16 +44,7 @@ pub fn parse_config(contents: String, filename: Option<PathBuf>) -> anyhow::Resu
 		.or(filename)
 		.map(ConfigSource::File);
 
-	let raw_dns = raw.dns.as_ref();
-	let (resolver_cfg, resolver_opts) = if let Some(dns) = raw_dns
-		&& !dns.nameservers.is_empty()
-	{
-		let ns_ips: Vec<IpAddr> = dns.nameservers.to_vec();
-		let name_servers =
-			hickory_resolver::config::NameServerConfigGroup::from_ips_clear(&ns_ips, 53, true);
-		let cfg = hickory_resolver::config::ResolverConfig::from_parts(None, vec![], name_servers);
-		(cfg, hickory_resolver::config::ResolverOpts::default())
-	} else {
+	let (resolver_cfg, resolver_opts) = {
 		let (cfg, opts) = hickory_resolver::system_conf::read_system_conf().unwrap_or_else(|e| {
 			warn!("failed to read system DNS config: {e}, using defaults");
 			(
@@ -62,7 +53,9 @@ pub fn parse_config(contents: String, filename: Option<PathBuf>) -> anyhow::Resu
 			)
 		});
 		if cfg.name_servers().is_empty() {
-			warn!("no DNS nameservers found in system config, using defaults.");
+			warn!(
+				"no DNS nameservers found in system config, using defaults. /etc/hosts entries will still be resolved"
+			);
 			(hickory_resolver::config::ResolverConfig::default(), opts)
 		} else {
 			(cfg, opts)

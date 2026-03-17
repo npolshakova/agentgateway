@@ -216,16 +216,6 @@
             }
           ]
         },
-        "dns": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/RawDnsConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "backend": {
           "$ref": "#/$defs/BackendConfig",
           "default": {
@@ -456,30 +446,6 @@
             "type": "string"
           },
           "default": {}
-        }
-      },
-      "additionalProperties": false
-    },
-    "RawDnsConfig": {
-      "type": "object",
-      "properties": {
-        "staticHosts": {
-          "description": "Static hostname-to-IP mappings that bypass DNS resolution.",
-          "type": "object",
-          "additionalProperties": {
-            "type": "string",
-            "format": "ip"
-          },
-          "default": {}
-        },
-        "nameservers": {
-          "description": "Custom DNS nameserver IPs. When set, these are used instead of the system DNS config.",
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "ip"
-          },
-          "default": []
         }
       },
       "additionalProperties": false
