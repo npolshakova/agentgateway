@@ -687,7 +687,7 @@ mod serde_rfc3339 {
 	where
 		S: Serializer,
 	{
-		serializer.serialize_str(&value.to_rfc3339())
+		serializer.serialize_str(&cel::functions::format_timestamp(value))
 	}
 
 	pub fn deserialize<'de, D>(deserializer: D) -> Result<DateTime<FixedOffset>, D::Error>
@@ -1296,7 +1296,7 @@ pub fn full_example_executor() -> ExecutorSerde {
 				chrono::DateTime::parse_from_rfc3339("2000-01-01T12:00:00Z").unwrap(),
 			)),
 			end_time: Some(RequestTime(
-				chrono::DateTime::parse_from_rfc3339("2000-01-01T12:00:01Z").unwrap(),
+				chrono::DateTime::parse_from_rfc3339("2000-01-01T12:00:01.12345678Z").unwrap(),
 			)),
 		}),
 		response: Some(ResponseRefSerde {
