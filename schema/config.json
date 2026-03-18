@@ -68,7 +68,7 @@
           ]
         },
         "dnsLookupFamily": {
-          "description": "Controls which IP address families the DNS resolver will query for\nupstream connections. Mirrors Envoy's DnsLookupFamily.\nAccepted values: All, Auto, V4Preferred, V4Only, V6Only.\nCan also be set via the DNS_LOOKUP_FAMILY environment variable.\nDefaults to Auto (IPv4-only when enableIpv6 is false, both when true).",
+          "description": "Controls which IP address families the DNS resolver will query for\nupstream connections.\nAccepted values: All, Auto, V4Preferred, V4Only, V6Only.\nDefaults to Auto (IPv4-only when enableIpv6 is false, both when true).",
           "anyOf": [
             {
               "$ref": "#/$defs/DnsLookupFamily"
@@ -255,7 +255,7 @@
       "additionalProperties": false
     },
     "DnsLookupFamily": {
-      "description": "Controls which IP address families the DNS resolver will query for\nupstream (backend) connections.\n\nMirrors Envoy's `DnsLookupFamily` semantics. Maps to hickory_resolver's\n`LookupIpStrategy` under the hood.\n\nCan be set via the `DNS_LOOKUP_FAMILY` environment variable or the\n`dnsLookupFamily` field in the config file.\n\nSee: <https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/cluster/v3/cluster.proto#enum-config-cluster-v3-cluster-dnslookupfamily>",
+      "description": "Controls which IP address families the DNS resolver will query for\nupstream (backend) connections.\n\n Maps to hickory_resolver's `LookupIpStrategy` under the hood.\n\nCan be set via the `DNS_LOOKUP_FAMILY` environment variable or the\n`dnsLookupFamily` field in the config file.\n\nSee: <https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/cluster/v3/cluster.proto#enum-config-cluster-v3-cluster-dnslookupfamily>",
       "oneOf": [
         {
           "description": "Query for both A and AAAA records in parallel and use all results.",

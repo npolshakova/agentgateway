@@ -64,8 +64,7 @@ pub struct NestedRawConfig {
 /// Controls which IP address families the DNS resolver will query for
 /// upstream (backend) connections.
 ///
-/// Mirrors Envoy's `DnsLookupFamily` semantics. Maps to hickory_resolver's
-/// `LookupIpStrategy` under the hood.
+///  Maps to hickory_resolver's `LookupIpStrategy` under the hood.
 ///
 /// Can be set via the `DNS_LOOKUP_FAMILY` environment variable or the
 /// `dnsLookupFamily` field in the config file.
@@ -94,35 +93,23 @@ impl Default for DnsLookupFamily {
 	}
 }
 
-impl std::str::FromStr for DnsLookupFamily {
-	type Err = String;
-
-	fn from_str(s: &str) -> Result<Self, Self::Err> {
-		match s {
-			"All" | "ALL" | "all" => Ok(Self::All),
-			"Auto" | "AUTO" | "auto" => Ok(Self::Auto),
-			"V4Preferred" | "V4_PREFERRED" | "v4_preferred" => Ok(Self::V4Preferred),
-			"V4Only" | "V4_ONLY" | "v4_only" => Ok(Self::V4Only),
-			"V6Only" | "V6_ONLY" | "v6_only" => Ok(Self::V6Only),
-			_ => Err(format!(
-				"unknown DNS lookup family '{s}': expected one of \
-				 All, Auto, V4Preferred, V4Only, V6Only"
-			)),
-		}
-	}
-}
-
 impl DnsLookupFamily {
+	pub fn from_env_str(s: &str) -> anyhow::Result<Self> {
+		serde_json::from_value(serde_json::Value::String(s.to_owned()))
+			.map_err(|e| anyhow::anyhow!("invalid DNS lookup family '{s}': {e}"))
+	}
+
 	/// Convert to hickory_resolver's `LookupIpStrategy`, using the
 	/// `ipv6_enabled` flag to resolve the `Auto` case.
 	pub fn to_lookup_strategy(self, ipv6_enabled: bool) -> LookupIpStrategy {
 		match self {
-			Self::All | Self::V4Preferred => LookupIpStrategy::Ipv4AndIpv6,
+			Self::All => LookupIpStrategy::Ipv4AndIpv6,
+			Self::V4Preferred => LookupIpStrategy::Ipv4thenIpv6,
 			Self::V4Only => LookupIpStrategy::Ipv4Only,
 			Self::V6Only => LookupIpStrategy::Ipv6Only,
 			Self::Auto => {
 				if ipv6_enabled {
-					LookupIpStrategy::Ipv4AndIpv6
+					LookupIpStrategy::Ipv4thenIpv6
 				} else {
 					LookupIpStrategy::Ipv4Only
 				}
@@ -139,11 +126,15 @@ pub struct RawConfig {
 	enable_ipv6: Option<bool>,
 
 	/// Controls which IP address families the DNS resolver will query for
-	/// upstream connections. Mirrors Envoy's DnsLookupFamily.
+	/// upstream connections.
 	/// Accepted values: All, Auto, V4Preferred, V4Only, V6Only.
-	/// Can also be set via the DNS_LOOKUP_FAMILY environment variable.
 	/// Defaults to Auto (IPv4-only when enableIpv6 is false, both when true).
 	dns_lookup_family: Option<DnsLookupFamily>,
+
+	/// Whether to enable EDNS0 (Extension Mechanisms for DNS) in the resolver.
+	/// When `None`, the system-provided resolver setting is preserved.
+	/// Can also be set via the `DNS_EDNS0` environment variable.
+	dns_edns0: Option<bool>,
 
 	/// Local XDS path. If not specified, the current configuration file will be used.
 	local_xds_path: Option<PathBuf>,

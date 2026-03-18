@@ -45,9 +45,13 @@ pub fn parse_config(contents: String, filename: Option<PathBuf>) -> anyhow::Resu
 		.or(filename)
 		.map(ConfigSource::File);
 
-	let dns_lookup_family = parse::<DnsLookupFamily>("DNS_LOOKUP_FAMILY")?
-		.or(raw.dns_lookup_family)
-		.unwrap_or_default();
+	let dns_lookup_family = match env::var("DNS_LOOKUP_FAMILY") {
+		Ok(val) => Some(DnsLookupFamily::from_env_str(&val)?),
+		Err(_) => None,
+	}
+	.or(raw.dns_lookup_family)
+	.unwrap_or_default();
+	let dns_edns0: Option<bool> = parse("DNS_EDNS0")?.or(raw.dns_edns0);
 	let (resolver_cfg, resolver_opts) = {
 		let (cfg, opts) = hickory_resolver::system_conf::read_system_conf().unwrap_or_else(|e| {
 			warn!(err=?e, "failed to read system DNS config, using defaults");
@@ -56,7 +60,7 @@ pub fn parse_config(contents: String, filename: Option<PathBuf>) -> anyhow::Resu
 				hickory_resolver::config::ResolverOpts::default(),
 			)
 		});
-		resolve_dns_config(cfg, opts, dns_lookup_family, ipv6_enabled)
+		resolve_dns_config(cfg, opts, dns_lookup_family, ipv6_enabled, dns_edns0)
 	};
 	let cluster: String = parse("CLUSTER_ID")?
 		.or(raw.cluster_id.clone())
@@ -552,12 +556,15 @@ fn parse_otlp_headers(
 
 /// If the resolved config has no nameservers, fall back to defaults while
 /// preserving the original resolver options. Applies the configured
-/// `DnsLookupFamily` as the IP lookup strategy.
+/// `DnsLookupFamily` as the IP lookup strategy. When `edns0` is `Some`, it
+/// overrides the resolver's EDNS0 setting; when `None`, the system-provided
+/// (or default) value is preserved.
 fn resolve_dns_config(
 	cfg: hickory_resolver::config::ResolverConfig,
 	mut opts: hickory_resolver::config::ResolverOpts,
 	dns_lookup_family: DnsLookupFamily,
 	ipv6_enabled: bool,
+	edns0: Option<bool>,
 ) -> (
 	hickory_resolver::config::ResolverConfig,
 	hickory_resolver::config::ResolverOpts,
@@ -578,11 +585,14 @@ fn resolve_dns_config(
 
 	let ip_strategy = dns_lookup_family.to_lookup_strategy(ipv6_enabled);
 	opts.ip_strategy = ip_strategy;
-	opts.edns0 = true;
+	if let Some(edns0) = edns0 {
+		opts.edns0 = edns0;
+	}
 	info!(
 		nameservers = ?nameservers,
 		dns_lookup_family = ?dns_lookup_family,
 		ip_strategy = ?ip_strategy,
+		edns0 = opts.edns0,
 		"using DNS nameservers"
 	);
 	(resolved_cfg, opts)
@@ -720,7 +730,7 @@ config:
 		custom_opts.ndots = 42;
 
 		let (resolved_cfg, resolved_opts) =
-			resolve_dns_config(empty_cfg, custom_opts, DnsLookupFamily::default(), true);
+			resolve_dns_config(empty_cfg, custom_opts, DnsLookupFamily::default(), true, None);
 
 		assert!(
 			!resolved_cfg.name_servers().is_empty(),
@@ -737,7 +747,7 @@ config:
 
 		let original_count = valid_cfg.name_servers().len();
 		let (resolved_cfg, resolved_opts) =
-			resolve_dns_config(valid_cfg, custom_opts, DnsLookupFamily::default(), true);
+			resolve_dns_config(valid_cfg, custom_opts, DnsLookupFamily::default(), true, None);
 
 		assert_eq!(
 			resolved_cfg.name_servers().len(),
@@ -752,12 +762,13 @@ config:
 		let cfg = hickory_resolver::config::ResolverConfig::default();
 		let opts = hickory_resolver::config::ResolverOpts::default();
 
-		let (_, resolved_opts) = resolve_dns_config(cfg, opts, crate::DnsLookupFamily::V4Only, true);
+		let (_, resolved_opts) =
+			resolve_dns_config(cfg, opts, crate::DnsLookupFamily::V4Only, true, None);
 
 		assert_eq!(
 			resolved_opts.ip_strategy,
 			hickory_resolver::config::LookupIpStrategy::Ipv4Only,
-			"V4_ONLY should map to Ipv4Only"
+			"V4Only should map to Ipv4Only"
 		);
 	}
 
@@ -766,12 +777,13 @@ config:
 		let cfg = hickory_resolver::config::ResolverConfig::default();
 		let opts = hickory_resolver::config::ResolverOpts::default();
 
-		let (_, resolved_opts) = resolve_dns_config(cfg, opts, crate::DnsLookupFamily::V6Only, false);
+		let (_, resolved_opts) =
+			resolve_dns_config(cfg, opts, crate::DnsLookupFamily::V6Only, false, None);
 
 		assert_eq!(
 			resolved_opts.ip_strategy,
 			hickory_resolver::config::LookupIpStrategy::Ipv6Only,
-			"V6_ONLY should map to Ipv6Only"
+			"V6Only should map to Ipv6Only"
 		);
 	}
 
@@ -780,12 +792,13 @@ config:
 		let cfg = hickory_resolver::config::ResolverConfig::default();
 		let opts = hickory_resolver::config::ResolverOpts::default();
 
-		let (_, resolved_opts) = resolve_dns_config(cfg, opts, crate::DnsLookupFamily::Auto, false);
+		let (_, resolved_opts) =
+			resolve_dns_config(cfg, opts, crate::DnsLookupFamily::Auto, false, None);
 
 		assert_eq!(
 			resolved_opts.ip_strategy,
 			hickory_resolver::config::LookupIpStrategy::Ipv4Only,
-			"AUTO with ipv6 disabled should map to Ipv4Only"
+			"Auto with ipv6 disabled should map to Ipv4Only"
 		);
 	}
 
@@ -794,13 +807,50 @@ config:
 		let cfg = hickory_resolver::config::ResolverConfig::default();
 		let opts = hickory_resolver::config::ResolverOpts::default();
 
-		let (_, resolved_opts) = resolve_dns_config(cfg, opts, crate::DnsLookupFamily::Auto, true);
+		let (_, resolved_opts) =
+			resolve_dns_config(cfg, opts, crate::DnsLookupFamily::Auto, true, None);
 
 		assert_eq!(
 			resolved_opts.ip_strategy,
-			hickory_resolver::config::LookupIpStrategy::Ipv4AndIpv6,
-			"AUTO with ipv6 enabled should map to Ipv4AndIpv6"
+			hickory_resolver::config::LookupIpStrategy::Ipv4thenIpv6,
+			"Auto with ipv6 enabled should behave like V4Preferred (Ipv4thenIpv6)"
 		);
+	}
+
+	#[test]
+	fn resolve_dns_config_edns0_none_preserves_system_value() {
+		let cfg = hickory_resolver::config::ResolverConfig::default();
+		let mut opts = hickory_resolver::config::ResolverOpts::default();
+		opts.edns0 = false;
+
+		let (_, resolved_opts) =
+			resolve_dns_config(cfg, opts, DnsLookupFamily::default(), true, None);
+
+		assert!(!resolved_opts.edns0, "None should preserve the original edns0 value");
+	}
+
+	#[test]
+	fn resolve_dns_config_edns0_explicit_true() {
+		let cfg = hickory_resolver::config::ResolverConfig::default();
+		let mut opts = hickory_resolver::config::ResolverOpts::default();
+		opts.edns0 = false;
+
+		let (_, resolved_opts) =
+			resolve_dns_config(cfg, opts, DnsLookupFamily::default(), true, Some(true));
+
+		assert!(resolved_opts.edns0, "Some(true) should enable edns0");
+	}
+
+	#[test]
+	fn resolve_dns_config_edns0_explicit_false() {
+		let cfg = hickory_resolver::config::ResolverConfig::default();
+		let mut opts = hickory_resolver::config::ResolverOpts::default();
+		opts.edns0 = true;
+
+		let (_, resolved_opts) =
+			resolve_dns_config(cfg, opts, DnsLookupFamily::default(), true, Some(false));
+
+		assert!(!resolved_opts.edns0, "Some(false) should disable edns0");
 	}
 
 	#[test]
