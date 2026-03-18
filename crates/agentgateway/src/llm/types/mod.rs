@@ -73,4 +73,9 @@ pub trait RequestType: Send + Sync {
 pub struct SimpleChatCompletionMessage {
 	pub role: Strng,
 	pub content: Strng,
+	/// Path to a file whose contents should be used as the message content.
+	/// Resolved at config load time; mutually exclusive with inline `content`.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	#[dynamic(skip)]
+	pub content_file: Option<String>,
 }

@@ -2053,6 +2053,7 @@ fn convert_message(
 	llm::SimpleChatCompletionMessage {
 		role: strng::new(&m.role),
 		content: strng::new(&m.content),
+		content_file: None,
 	}
 }
 

@@ -808,28 +808,34 @@ fn apply_test_prompts<R: RequestType + Serialize>(mut r: R) -> Result<Vec<u8>, A
 		SimpleChatCompletionMessage {
 			role: strng::new("system"),
 			content: strng::new("prepend system prompt"),
+			content_file: None,
 		},
 		SimpleChatCompletionMessage {
 			role: strng::new("user"),
 			content: strng::new("prepend user message"),
+			content_file: None,
 		},
 		SimpleChatCompletionMessage {
 			role: strng::new("assistant"),
 			content: strng::new("prepend assistant message"),
+			content_file: None,
 		},
 	]);
 	r.append_prompts(vec![
 		SimpleChatCompletionMessage {
 			role: strng::new("user"),
 			content: strng::new("append user message"),
+			content_file: None,
 		},
 		SimpleChatCompletionMessage {
 			role: strng::new("system"),
 			content: strng::new("append system prompt"),
+			content_file: None,
 		},
 		SimpleChatCompletionMessage {
 			role: strng::new("assistant"),
 			content: strng::new("append assistant prompt"),
+			content_file: None,
 		},
 	]);
 	serde_json::to_vec(&r).map_err(AIError::RequestMarshal)

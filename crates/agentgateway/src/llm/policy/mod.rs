@@ -1,3 +1,5 @@
+use agent_core::strng;
+
 use crate::http::filters::HeaderModifier;
 use crate::http::jwt::Claims;
 use crate::http::{Response, StatusCode, auth};
@@ -207,6 +209,21 @@ pub struct PromptEnrichment {
 	pub append: Vec<crate::llm::SimpleChatCompletionMessage>,
 	#[serde(default, skip_serializing_if = "Vec::is_empty")]
 	pub prepend: Vec<crate::llm::SimpleChatCompletionMessage>,
+}
+
+impl PromptEnrichment {
+	/// Resolve any `content_file` references in prepend/append messages by reading the
+	/// file and replacing the message `content` with the file contents.
+	pub fn resolve_file_content(&mut self) -> anyhow::Result<()> {
+		for msg in self.prepend.iter_mut().chain(self.append.iter_mut()) {
+			if let Some(path) = msg.content_file.take() {
+				let contents = std::fs::read_to_string(&path)
+					.map_err(|e| anyhow::anyhow!("failed to read contentFile '{}': {}", path, e))?;
+				msg.content = strng::new(contents.trim_end());
+			}
+		}
+		Ok(())
+	}
 }
 
 #[apply(schema!)]
@@ -1414,4 +1431,87 @@ fn test_apply_prompt_guard_regex_mask(
 		Some(RegexResult::Mask(masked)) => assert_eq!(masked, expected),
 		_ => panic!("expected masked result"),
 	}
+}
+
+#[test]
+fn test_prompt_enrichment_content_file() {
+	use std::io::Write;
+
+	let dir = tempfile::tempdir().unwrap();
+	let file_path = dir.path().join("system_prompt.txt");
+	let mut f = std::fs::File::create(&file_path).unwrap();
+	writeln!(f, "You are a helpful assistant.").unwrap();
+	drop(f);
+
+	let mut enrichment = PromptEnrichment {
+		prepend: vec![crate::llm::SimpleChatCompletionMessage {
+			role: strng::literal!("system"),
+			content: Default::default(),
+			content_file: Some(file_path.to_str().unwrap().to_string()),
+		}],
+		append: vec![crate::llm::SimpleChatCompletionMessage {
+			role: strng::literal!("user"),
+			content: strng::new("inline content"),
+			content_file: None,
+		}],
+	};
+
+	enrichment.resolve_file_content().unwrap();
+
+	assert_eq!(enrichment.prepend[0].content.as_str(), "You are a helpful assistant.");
+	assert!(enrichment.prepend[0].content_file.is_none());
+	assert_eq!(enrichment.append[0].content.as_str(), "inline content");
+}
+
+#[test]
+fn test_prompt_enrichment_content_file_missing() {
+	let mut enrichment = PromptEnrichment {
+		prepend: vec![crate::llm::SimpleChatCompletionMessage {
+			role: strng::literal!("system"),
+			content: Default::default(),
+			content_file: Some("/nonexistent/path/prompt.txt".to_string()),
+		}],
+		append: vec![],
+	};
+
+	let result = enrichment.resolve_file_content();
+	assert!(result.is_err());
+	assert!(
+		result
+			.unwrap_err()
+			.to_string()
+			.contains("/nonexistent/path/prompt.txt")
+	);
+}
+
+#[test]
+fn test_prompt_enrichment_deserialization_with_content_file() {
+	use serde_json::json;
+
+	let json = json!({
+		"prompts": {
+			"prepend": [
+				{
+					"role": "system",
+					"content": "inline prompt"
+				},
+				{
+					"role": "user",
+					"content": "",
+					"contentFile": "/path/to/file.txt"
+				}
+			]
+		}
+	});
+
+	let policy: Policy = serde_json::from_value(json).unwrap();
+	let prompts = policy.prompts.unwrap();
+
+	assert_eq!(prompts.prepend.len(), 2);
+	assert_eq!(prompts.prepend[0].content.as_str(), "inline prompt");
+	assert!(prompts.prepend[0].content_file.is_none());
+	assert_eq!(
+		prompts.prepend[1].content_file.as_deref(),
+		Some("/path/to/file.txt")
+	);
 }

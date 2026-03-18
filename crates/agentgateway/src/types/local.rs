@@ -2288,6 +2288,9 @@ pub async fn split_policies(
 
 	// Route policies
 	if let Some(mut p) = ai {
+		if let Some(ref mut prompts) = p.prompts {
+			prompts.resolve_file_content()?;
+		}
 		p.compile_model_alias_patterns();
 		route_policies.push(TrafficPolicy::AI(Arc::new(p)))
 	}

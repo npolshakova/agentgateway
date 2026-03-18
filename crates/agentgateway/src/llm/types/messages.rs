@@ -133,10 +133,11 @@ pub fn get_messages_helper(
 			},
 		};
 		if !content.is_empty() {
-			out.push(SimpleChatCompletionMessage {
-				role: strng::literal!("system"),
-				content,
-			});
+		out.push(SimpleChatCompletionMessage {
+			role: strng::literal!("system"),
+			content,
+			content_file: None,
+		});
 		}
 	}
 
@@ -165,10 +166,11 @@ pub fn get_messages_helper(
 				_ => None,
 			})
 			.unwrap_or_default();
-		SimpleChatCompletionMessage {
-			role: strng::new(&m.role),
-			content,
-		}
+	SimpleChatCompletionMessage {
+		role: strng::new(&m.role),
+		content,
+		content_file: None,
+	}
 	}));
 	out
 }
@@ -388,12 +390,13 @@ impl ResponseType for Response {
 			.iter()
 			.map(|c| {
 				let content = c.text.clone().unwrap_or_default();
-				ResponseChoice {
-					message: Message {
-						role: "assistant".into(),
-						content: content.into(),
-					},
-				}
+			ResponseChoice {
+				message: Message {
+					role: "assistant".into(),
+					content: content.into(),
+					content_file: None,
+				},
+			}
 			})
 			.collect()
 	}
@@ -1021,12 +1024,13 @@ pub mod typed {
 						ContentBlock::Text(t) => t.text.clone(),
 						_ => String::new(),
 					};
-					crate::llm::policy::webhook::ResponseChoice {
-						message: crate::llm::policy::webhook::Message {
-							role: "assistant".into(),
-							content: content.into(),
-						},
-					}
+				crate::llm::policy::webhook::ResponseChoice {
+					message: crate::llm::policy::webhook::Message {
+						role: "assistant".into(),
+						content: content.into(),
+						content_file: None,
+					},
+				}
 				})
 				.collect()
 		}

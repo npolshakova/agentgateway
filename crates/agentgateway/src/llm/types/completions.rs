@@ -170,9 +170,13 @@ impl ResponseType for Response {
 			.map(|c| {
 				let role = c.message.role.clone().unwrap_or_default().into();
 				let content = c.message.content.clone().unwrap_or_default().into();
-				ResponseChoice {
-					message: Message { role, content },
-				}
+			ResponseChoice {
+				message: Message {
+					role,
+					content,
+					content_file: None,
+				},
+			}
 			})
 			.collect()
 	}
@@ -284,10 +288,11 @@ impl super::RequestType for Request {
 						_ => None,
 					})
 					.unwrap_or_default();
-				SimpleChatCompletionMessage {
-					role: strng::new(&m.role),
-					content,
-				}
+			SimpleChatCompletionMessage {
+				role: strng::new(&m.role),
+				content,
+				content_file: None,
+			}
 			})
 			.collect()
 	}

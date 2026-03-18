@@ -292,10 +292,11 @@ impl RequestType for Request {
 	fn get_messages(&self) -> Vec<SimpleChatCompletionMessage> {
 		match &self.input {
 			Input::Text(text) => {
-				vec![SimpleChatCompletionMessage {
-					role: strng::literal!("user"),
-					content: strng::new(text),
-				}]
+			vec![SimpleChatCompletionMessage {
+				role: strng::literal!("user"),
+				content: strng::new(text),
+				content_file: None,
+			}]
 			},
 			Input::Items(items) => items
 				.iter()
@@ -323,7 +324,11 @@ impl RequestType for Request {
 							Role::Developer => strng::literal!("developer"),
 						};
 
-						Some(SimpleChatCompletionMessage { role, content })
+						Some(SimpleChatCompletionMessage {
+						role,
+						content,
+						content_file: None,
+					})
 					},
 					InputItem::Item(Item::Message(MessageItem::Input(msg))) => {
 						let text = msg
@@ -340,12 +345,13 @@ impl RequestType for Request {
 							InputRole::System => strng::literal!("system"),
 							InputRole::Developer => strng::literal!("developer"),
 						};
-						Some(SimpleChatCompletionMessage {
-							role,
-							content: strng::new(&text),
-						})
-					},
-					InputItem::Item(Item::Message(MessageItem::Output(msg))) => {
+					Some(SimpleChatCompletionMessage {
+						role,
+						content: strng::new(&text),
+						content_file: None,
+					})
+				},
+				InputItem::Item(Item::Message(MessageItem::Output(msg))) => {
 						let text = msg
 							.content
 							.iter()
@@ -355,10 +361,11 @@ impl RequestType for Request {
 							})
 							.collect::<Vec<_>>()
 							.join("\n");
-						Some(SimpleChatCompletionMessage {
-							role: strng::literal!("assistant"),
-							content: strng::new(&text),
-						})
+					Some(SimpleChatCompletionMessage {
+						role: strng::literal!("assistant"),
+						content: strng::new(&text),
+						content_file: None,
+					})
 					},
 					_ => None,
 				})
@@ -452,12 +459,13 @@ impl ResponseType for Response {
 						.collect::<Vec<_>>()
 						.join("\n");
 
-					Some(crate::llm::policy::webhook::ResponseChoice {
-						message: crate::llm::policy::webhook::Message {
-							role: "assistant".into(),
-							content: content.into(),
-						},
-					})
+				Some(crate::llm::policy::webhook::ResponseChoice {
+					message: crate::llm::policy::webhook::Message {
+						role: "assistant".into(),
+						content: content.into(),
+						content_file: None,
+					},
+				})
 				},
 				_ => None, // Ignore non-message outputs (tool calls, reasoning, etc.)
 			})
