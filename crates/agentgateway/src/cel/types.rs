@@ -4,6 +4,7 @@ use std::net::{IpAddr, Ipv4Addr};
 use std::sync::Arc;
 use std::time::Instant;
 
+use agent_core::env::ENV;
 use agent_core::strng::Strng;
 use bytes::Bytes;
 use cel::Value;
@@ -40,6 +41,8 @@ pub struct Executor<'a> {
 
 	#[dynamic(skip_serializing_if = "Option::is_none")]
 	pub response: Option<ResponseRef<'a>>,
+
+	pub env: EnvContext,
 
 	#[dynamic(skip_serializing_if = "is_extension_or_direct_none")]
 	pub source: ExtensionOrDirect<'a, SourceContext>,
@@ -80,6 +83,30 @@ pub struct Executor<'a> {
 
 fn is_extension_or_direct_none<T: Send + Sync + 'static>(e: &ExtensionOrDirect<T>) -> bool {
 	e.deref().is_none()
+}
+
+#[apply(schema!)]
+#[derive(cel::DynamicType)]
+pub struct EnvContext {
+	/// The name of the pod (when running on Kubernetes)
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub pod_name: Option<String>,
+	/// The namespace of the pod (when running on Kubernetes)
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub namespace: Option<String>,
+	/// The Gateway we are running as (when running on Kubernetes)
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub gateway: Option<String>,
+}
+
+impl Default for EnvContext {
+	fn default() -> Self {
+		Self {
+			pod_name: (!ENV.pod_name.is_empty()).then(|| ENV.pod_name.clone()),
+			namespace: (!ENV.pod_namespace.is_empty()).then(|| ENV.pod_namespace.clone()),
+			gateway: (!ENV.gateway.is_empty()).then(|| ENV.gateway.clone()),
+		}
+	}
 }
 
 #[apply(schema!)]
@@ -687,7 +714,7 @@ mod serde_rfc3339 {
 	where
 		S: Serializer,
 	{
-		serializer.serialize_str(&value.to_rfc3339())
+		serializer.serialize_str(&cel::functions::format_timestamp(value))
 	}
 
 	pub fn deserialize<'de, D>(deserializer: D) -> Result<DateTime<FixedOffset>, D::Error>
@@ -1145,6 +1172,12 @@ pub struct ExecutorSerde {
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub response: Option<ResponseRefSerde>,
 
+	/// `env` contains selected process environment attributes exposed to CEL.
+	/// This does NOT expose raw environment variables, but rather a subset of well-known variables.
+	//  TODO: in the future we can, but we should add an allow-list of vars to avoid security issues.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub env: Option<EnvContext>,
+
 	/// `jwt` contains the claims from a verified JWT token. This is only present if the JWT policy is enabled.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub jwt: Option<jwt::Claims>,
@@ -1231,6 +1264,9 @@ impl ExecutorSerde {
 	/// are `None` in the snapshot will be absent in the executor.
 	pub fn as_executor(&self) -> Executor<'_> {
 		let mut exec = Executor::new_empty();
+		if let Some(env) = &self.env {
+			exec.env = env.clone();
+		}
 
 		// Set request if present
 		if let Some(req) = &self.request {
@@ -1296,13 +1332,18 @@ pub fn full_example_executor() -> ExecutorSerde {
 				chrono::DateTime::parse_from_rfc3339("2000-01-01T12:00:00Z").unwrap(),
 			)),
 			end_time: Some(RequestTime(
-				chrono::DateTime::parse_from_rfc3339("2000-01-01T12:00:01Z").unwrap(),
+				chrono::DateTime::parse_from_rfc3339("2000-01-01T12:00:01.12345678Z").unwrap(),
 			)),
 		}),
 		response: Some(ResponseRefSerde {
 			code: 200,
 			headers: resp_headers,
 			body: Some(BufferedBody(Bytes::from(r#"{"ok": true}"#))),
+		}),
+		env: Some(EnvContext {
+			pod_name: Some("pod-1".to_string()),
+			namespace: Some("ns-1".to_string()),
+			gateway: Some("gw-1".to_string()),
 		}),
 		source: Some(SourceContext {
 			address: "127.0.0.1".parse().unwrap(),

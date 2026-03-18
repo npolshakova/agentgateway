@@ -4,8 +4,9 @@ use std::net::SocketAddr;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
 use std::task::{Context, Poll, ready};
-use std::time::{Duration, Instant, SystemTime};
+use std::time::{Duration, SystemTime};
 
+use agent_core::Timestamp;
 use agent_core::metrics::CustomField;
 use agent_core::strng;
 use agent_core::strng::{RichStrng, Strng};
@@ -17,7 +18,9 @@ use http_body::{Body, Frame, SizeHint};
 use indexmap::IndexMap;
 use itertools::Itertools;
 use opentelemetry::TraceFlags;
-use opentelemetry::trace::{Span, SpanBuilder, SpanContext, SpanKind, TraceState, Tracer};
+use opentelemetry::trace::{
+	Span, SpanBuilder, SpanContext, SpanKind, TraceContextExt as _, TraceState, Tracer,
+};
 use serde::de::DeserializeOwned;
 use serde::ser::SerializeMap;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -41,7 +44,7 @@ use crate::types::loadbalancer::ActiveHandle;
 use crate::{cel, llm, mcp};
 
 use opentelemetry::logs::{AnyValue, LogRecord as _, Logger, LoggerProvider as _, Severity};
-use opentelemetry::{Key, KeyValue};
+use opentelemetry::{Context as OtelContext, Key, KeyValue};
 use opentelemetry_otlp::{WithExportConfig, WithHttpConfig};
 use opentelemetry_sdk::Resource;
 use opentelemetry_sdk::logs::SdkLoggerProvider;
@@ -487,7 +490,7 @@ impl DropOnLog {
 	fn add_llm_metrics(
 		log: &RequestLog,
 		route_identifier: &RouteIdentifier,
-		end_time: Instant,
+		end_time: Timestamp,
 		duration: Duration,
 		llm_response: Option<&LLMContext>,
 		custom_metric_fields: &CustomField,
@@ -547,7 +550,7 @@ impl DropOnLog {
 				.get_or_create(&gen_ai_labels)
 				.observe(duration.as_secs_f64());
 			if let Some(ft) = llm_response.first_token {
-				let ttft = ft - log.start;
+				let ttft = ft.duration_since(log.start.as_instant());
 				// Duration from start of request to first token
 				// This is the start of when WE got the request, but it should probably be when we SENT the upstream.
 				log
@@ -557,7 +560,7 @@ impl DropOnLog {
 					.observe(ttft.as_secs_f64());
 
 				if let Some(ot) = llm_response.output_tokens {
-					let first_to_last = end_time - ft;
+					let first_to_last = end_time.as_instant().duration_since(ft);
 					let throughput = first_to_last.as_secs_f64() / (ot as f64);
 					log
 						.metrics
@@ -580,7 +583,7 @@ impl RequestLog {
 	pub fn new(
 		cel: CelLogging,
 		metrics: Arc<Metrics>,
-		start: Instant,
+		start: Timestamp,
 		tcp_info: TCPConnectionInfo,
 	) -> Self {
 		RequestLog {
@@ -634,12 +637,10 @@ impl RequestLog {
 	fn span_writer_inner(&self) -> Option<SpanWriterInner> {
 		let tp = self.outgoing_span.clone()?;
 		let tc = self.tracer.clone()?;
-		let current = tp.new_span();
 
 		Some(SpanWriterInner {
 			tracer: tc,
 			parent: tp,
-			current,
 			inner: self.trace_spans.clone(),
 		})
 	}
@@ -649,7 +650,7 @@ impl RequestLog {
 pub struct RequestLog {
 	pub cel: CelLogging,
 	pub metrics: Arc<Metrics>,
-	pub start: Instant,
+	pub start: Timestamp,
 	pub tcp_info: TCPConnectionInfo,
 
 	// Set only for TLS traffic
@@ -659,7 +660,7 @@ pub struct RequestLog {
 	pub tracer: Option<std::sync::Arc<trc::Tracer>>,
 	/// Additional spans created during the request (e.g. upstream call spans).
 	/// These are flushed on drop when tracing is enabled.
-	pub trace_spans: Arc<Mutex<Vec<SpanBuilder>>>,
+	pub trace_spans: Arc<Mutex<Vec<(SpanBuilder, OtelContext)>>>,
 
 	// Set only if OTLP logging is configured
 	pub otel_logger: Option<std::sync::Arc<OtelAccessLogger>>,
@@ -755,8 +756,8 @@ impl Drop for DropOnLog {
 
 		// Always run request_handle/finish_request first so LLM provider eviction (failover) runs
 		// even when logging/tracing/metrics are disabled.
-		let end_time = Instant::now();
-		let duration = end_time - log.start;
+		let end_time = Timestamp::now();
+		let duration = end_time.duration_since(&log.start);
 		let enable_trace = log.tracer.is_some();
 		// We will later check it also matches a filter, but filter is slower
 		let maybe_enable_log = agent_core::telemetry::enabled("request", &Level::INFO);
@@ -782,7 +783,7 @@ impl Drop for DropOnLog {
 			.as_ref()
 			.is_some_and(|p| p.unhealthy_expression.is_some());
 		let cel_end_time = (needs_cel_for_outputs || needs_cel_for_eviction)
-			.then(|| cel::RequestTime(chrono::Utc::now().fixed_offset()));
+			.then(|| cel::RequestTime(end_time.as_datetime()));
 		let cel_exec = if needs_cel_for_outputs || needs_cel_for_eviction {
 			log
 				.cel
@@ -941,11 +942,21 @@ impl Drop for DropOnLog {
 			("protocol", log.backend_protocol.as_ref().map(debug)),
 			("a2a.method", log.a2a_method.display()),
 			(
-				"mcp.method",
+				"mcp.method.name",
 				mcp
 					.as_ref()
 					.and_then(|m| m.method_name.as_ref())
 					.map(display),
+			),
+			(
+				"gen_ai.tool.name",
+				mcp.as_ref().and_then(|m| {
+					if matches!(m.resource, Some(MCPOperation::Tool)) {
+						m.resource_name.as_ref().map(display)
+					} else {
+						None
+					}
+				}),
 			),
 			(
 				"mcp.target",
@@ -959,11 +970,14 @@ impl Drop for DropOnLog {
 				mcp.as_ref().and_then(|m| m.resource.as_ref()).map(display),
 			),
 			(
-				"mcp.resource.name",
-				mcp
-					.as_ref()
-					.and_then(|m| m.resource_name.as_ref())
-					.map(display),
+				"mcp.resource.uri",
+				mcp.as_ref().and_then(|m| {
+					if matches!(m.resource, Some(MCPOperation::Resource)) {
+						m.resource_name.as_ref().map(display)
+					} else {
+						None
+					}
+				}),
 			),
 			(
 				"mcp.session.id",
@@ -976,7 +990,7 @@ impl Drop for DropOnLog {
 				"inferencepool.selected_endpoint",
 				log.inference_pool.display(),
 			),
-			// OpenTelemetry Gen AI Semantic Conventions v1.37.0
+			// OpenTelemetry Gen AI Semantic Conventions v1.40.0
 			(
 				"gen_ai.operation.name",
 				log.llm_request.as_ref().map(|r| {
@@ -1077,13 +1091,14 @@ impl Drop for DropOnLog {
 			("reason", reason.display()),
 			("duration", Some(dur.as_str().into())),
 		];
+
 		if enable_trace && let Some(t) = &log.tracer {
-			t.send(&log, &cel_exec, kv.as_slice());
+			t.send(&log, &end_time, &cel_exec, kv.as_slice());
 			// Flush any buffered spans created during request processing.
 			// Does best effort, if the lock is poisoned, skip flushing.
 			if let Ok(mut spans) = log.trace_spans.lock() {
-				for sb in spans.drain(..) {
-					sb.start(t.tracer.as_ref()).end();
+				for (sb, context) in spans.drain(..) {
+					sb.start_with_context(t.tracer.as_ref(), &context).end();
 				}
 			}
 		};
@@ -1446,15 +1461,20 @@ impl SpanWriter {
 #[derive(Debug, Clone)]
 pub struct SpanWriterInner {
 	parent: trc::TraceParent,
-	current: trc::TraceParent,
 	tracer: Arc<trc::Tracer>,
-	inner: Arc<Mutex<Vec<SpanBuilder>>>,
+	inner: Arc<Mutex<Vec<(SpanBuilder, OtelContext)>>>,
 }
 
 impl SpanWriterInner {
-	#[allow(unused)]
-	pub fn traceparent(&self) -> &trc::TraceParent {
-		&self.current
+	fn parent_context(&self) -> OtelContext {
+		let parent = SpanContext::new(
+			self.parent.trace_id.into(),
+			self.parent.span_id.into(),
+			TraceFlags::new(self.parent.flags),
+			true,
+			TraceState::default(),
+		);
+		OtelContext::new().with_remote_span_context(parent)
 	}
 
 	#[allow(unused)]
@@ -1477,18 +1497,9 @@ impl SpanWriterInner {
 		// Capture end time at write time so it measures the intended operation duration.
 		sb = sb.with_end_time(SystemTime::now());
 
-		let parent = SpanContext::new(
-			self.parent.trace_id.into(),
-			self.parent.span_id.into(),
-			TraceFlags::new(self.parent.flags),
-			true,
-			TraceState::default(),
-		);
-		sb = sb.with_links(vec![opentelemetry::trace::Link::new(parent, vec![], 0)]);
-
 		// Store for later flush when the request log is finalized.
 		if let Ok(mut spans) = self.inner.lock() {
-			spans.push(sb);
+			spans.push((sb, self.parent_context()));
 		}
 	}
 
@@ -1506,7 +1517,7 @@ impl SpanWriterInner {
 
 		SpanWriteOnDrop {
 			sb: Some(sb),
-			parent: self.parent.clone(),
+			context: self.parent_context(),
 			inner: self.inner.clone(),
 		}
 	}
@@ -1515,26 +1526,131 @@ impl SpanWriterInner {
 #[derive(Default)]
 pub struct SpanWriteOnDrop {
 	sb: Option<SpanBuilder>,
-	parent: trc::TraceParent,
-	inner: Arc<Mutex<Vec<SpanBuilder>>>,
+	context: OtelContext,
+	inner: Arc<Mutex<Vec<(SpanBuilder, OtelContext)>>>,
+}
+impl SpanWriteOnDrop {
+	pub fn rename_span(&mut self, name: impl Into<Cow<'static, str>>) {
+		if let Some(sb) = self.sb.as_mut() {
+			sb.name = name.into();
+		}
+	}
 }
 impl Drop for SpanWriteOnDrop {
 	fn drop(&mut self) {
 		let Some(mut sb) = self.sb.take() else { return };
 		sb = sb.with_end_time(SystemTime::now());
 
-		let parent = SpanContext::new(
-			self.parent.trace_id.into(),
-			self.parent.span_id.into(),
-			TraceFlags::new(self.parent.flags),
-			true,
-			TraceState::default(),
-		);
-		sb = sb.with_links(vec![opentelemetry::trace::Link::new(parent, vec![], 0)]);
-
 		// Store for later flush when the request log is finalized.
 		if let Ok(mut spans) = self.inner.lock() {
-			spans.push(sb);
+			spans.push((sb, self.context.clone()));
 		}
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use std::future::ready;
+	use std::net::SocketAddr;
+	use std::sync::{Arc, Mutex};
+	use std::time::Instant;
+
+	use opentelemetry::trace::{SpanKind, TracerProvider};
+	use opentelemetry_sdk::error::OTelSdkResult;
+	use opentelemetry_sdk::trace::{SimpleSpanProcessor, SpanData, SpanExporter};
+	use prometheus_client::registry::Registry;
+
+	use super::*;
+	use crate::telemetry::metrics::Metrics;
+	use crate::telemetry::trc;
+	use crate::transport::stream::TCPConnectionInfo;
+
+	#[derive(Clone, Debug, Default)]
+	struct RecordingSpanExporter {
+		spans: Arc<Mutex<Vec<SpanData>>>,
+	}
+
+	impl RecordingSpanExporter {
+		fn finished_spans(&self) -> Vec<SpanData> {
+			self.spans.lock().unwrap().clone()
+		}
+	}
+
+	impl SpanExporter for RecordingSpanExporter {
+		fn export(
+			&self,
+			batch: Vec<SpanData>,
+		) -> impl std::future::Future<Output = OTelSdkResult> + Send {
+			self.spans.lock().unwrap().extend(batch);
+			ready(Ok(()))
+		}
+	}
+
+	fn test_tracer() -> (Arc<trc::Tracer>, RecordingSpanExporter) {
+		let exporter = RecordingSpanExporter::default();
+		let provider = opentelemetry_sdk::trace::SdkTracerProvider::builder()
+			.with_span_processor(SimpleSpanProcessor::new(exporter.clone()))
+			.build();
+		let tracer = provider.tracer("test-tracer");
+		(
+			Arc::new(trc::Tracer {
+				tracer: Arc::new(tracer),
+				provider,
+				fields: Arc::new(LoggingFields::default()),
+			}),
+			exporter,
+		)
+	}
+
+	fn test_request_log() -> RequestLog {
+		let cel = CelLogging {
+			cel_context: crate::cel::ContextBuilder::new(),
+			filter: None,
+			fields: LoggingFields::default(),
+			metric_fields: Arc::new(MetricFields::default()),
+		};
+		let mut registry = Registry::default();
+		let metrics = Arc::new(Metrics::new(&mut registry, Default::default()));
+		RequestLog::new(
+			cel,
+			metrics,
+			Timestamp::now(),
+			TCPConnectionInfo {
+				peer_addr: "127.0.0.1:12345".parse::<SocketAddr>().unwrap(),
+				local_addr: "127.0.0.1:8080".parse::<SocketAddr>().unwrap(),
+				start: Instant::now(),
+				raw_peer_addr: None,
+			},
+		)
+	}
+
+	#[test]
+	fn span_writer_flushes_recorded_spans_as_children_of_request_span() {
+		let (tracer, exporter) = test_tracer();
+		let mut request = test_request_log();
+		request.tracer = Some(tracer.clone());
+
+		let mut outgoing = trc::TraceParent::new();
+		outgoing.flags = 1;
+		request.outgoing_span = Some(outgoing.clone());
+
+		{
+			let _span = request.span_writer().start("buffered child span");
+		}
+
+		drop(DropOnLog::from(request));
+		let _ = tracer.provider.force_flush();
+
+		let spans = exporter.finished_spans();
+		assert_eq!(spans.len(), 2);
+
+		let child = spans
+			.iter()
+			.find(|span| span.name.as_ref() == "buffered child span")
+			.expect("buffered span should be exported");
+		assert_eq!(child.span_kind, SpanKind::Server);
+		assert_eq!(child.parent_span_id, outgoing.span_id.into());
+		assert_eq!(child.span_context.trace_id(), outgoing.trace_id.into());
+		assert!(child.parent_span_is_remote);
 	}
 }
