@@ -67,22 +67,15 @@
             "null"
           ]
         },
-        "dnsLookupFamily": {
-          "description": "Controls which IP address families the DNS resolver will query for\nupstream connections.\nAccepted values: All, Auto, V4Preferred, V4Only, V6Only.\nDefaults to Auto (IPv4-only when enableIpv6 is false, both when true).",
+        "dns": {
+          "description": "DNS resolver settings.",
           "anyOf": [
             {
-              "$ref": "#/$defs/DnsLookupFamily"
+              "$ref": "#/$defs/RawDnsConfig"
             },
             {
               "type": "null"
             }
-          ]
-        },
-        "dnsEdns0": {
-          "description": "Whether to enable EDNS0 (Extension Mechanisms for DNS) in the resolver.\nWhen `None`, the system-provided resolver setting is preserved.\nCan also be set via the `DNS_EDNS0` environment variable.",
-          "type": [
-            "boolean",
-            "null"
           ]
         },
         "localXdsPath": {
@@ -261,8 +254,32 @@
       },
       "additionalProperties": false
     },
+    "RawDnsConfig": {
+      "type": "object",
+      "properties": {
+        "lookupFamily": {
+          "description": "Controls which IP address families the DNS resolver will query for\nupstream connections.\nAccepted values: All, Auto, V4Preferred, V4Only, V6Only.\nDefaults to Auto (IPv4-only when enableIpv6 is false, both when true).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DnsLookupFamily"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "edns0": {
+          "description": "Whether to enable EDNS0 (Extension Mechanisms for DNS) in the resolver.\nWhen `None`, the system-provided resolver setting is preserved.\nCan also be set via the `DNS_EDNS0` environment variable.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
     "DnsLookupFamily": {
-      "description": "Controls which IP address families the DNS resolver will query for\nupstream (backend) connections.\n\n Maps to hickory_resolver's `LookupIpStrategy` under the hood.\n\nCan be set via the `DNS_LOOKUP_FAMILY` environment variable or the\n`dnsLookupFamily` field in the config file.\n\nSee: <https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/cluster/v3/cluster.proto#enum-config-cluster-v3-cluster-dnslookupfamily>",
+      "description": "Controls which IP address families the DNS resolver will query for\nupstream (backend) connections.\n\n Maps to hickory_resolver's `LookupIpStrategy` under the hood.\n\nCan be set via the `DNS_LOOKUP_FAMILY` environment variable or the\n`dns.lookupFamily` field in the config file.\n\nSee: <https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/cluster/v3/cluster.proto#enum-config-cluster-v3-cluster-dnslookupfamily>",
       "oneOf": [
         {
           "description": "Query for both A and AAAA records in parallel and use all results.",

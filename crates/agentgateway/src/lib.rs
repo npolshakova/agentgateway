@@ -67,7 +67,7 @@ pub struct NestedRawConfig {
 ///  Maps to hickory_resolver's `LookupIpStrategy` under the hood.
 ///
 /// Can be set via the `DNS_LOOKUP_FAMILY` environment variable or the
-/// `dnsLookupFamily` field in the config file.
+/// `dns.lookupFamily` field in the config file.
 ///
 /// See: <https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/cluster/v3/cluster.proto#enum-config-cluster-v3-cluster-dnslookupfamily>
 #[derive(serde::Deserialize, serde::Serialize, Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -116,20 +116,28 @@ impl DnsLookupFamily {
 #[derive(serde::Deserialize, Default, Clone, Debug)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-// RawConfig represents the inputs a user can pass in. Config represents the internal representation of this.
-pub struct RawConfig {
-	enable_ipv6: Option<bool>,
-
+pub struct RawDnsConfig {
 	/// Controls which IP address families the DNS resolver will query for
 	/// upstream connections.
 	/// Accepted values: All, Auto, V4Preferred, V4Only, V6Only.
 	/// Defaults to Auto (IPv4-only when enableIpv6 is false, both when true).
-	dns_lookup_family: Option<DnsLookupFamily>,
+	lookup_family: Option<DnsLookupFamily>,
 
 	/// Whether to enable EDNS0 (Extension Mechanisms for DNS) in the resolver.
 	/// When `None`, the system-provided resolver setting is preserved.
 	/// Can also be set via the `DNS_EDNS0` environment variable.
-	dns_edns0: Option<bool>,
+	edns0: Option<bool>,
+}
+
+#[derive(serde::Deserialize, Default, Clone, Debug)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+// RawConfig represents the inputs a user can pass in. Config represents the internal representation of this.
+pub struct RawConfig {
+	enable_ipv6: Option<bool>,
+
+	/// DNS resolver settings.
+	dns: Option<RawDnsConfig>,
 
 	/// Local XDS path. If not specified, the current configuration file will be used.
 	local_xds_path: Option<PathBuf>,

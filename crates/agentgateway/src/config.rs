@@ -45,13 +45,14 @@ pub fn parse_config(contents: String, filename: Option<PathBuf>) -> anyhow::Resu
 		.or(filename)
 		.map(ConfigSource::File);
 
+	let dns = raw.dns.unwrap_or_default();
 	let dns_lookup_family = match env::var("DNS_LOOKUP_FAMILY") {
 		Ok(val) => Some(DnsLookupFamily::from_env_str(&val)?),
 		Err(_) => None,
 	}
-	.or(raw.dns_lookup_family)
+	.or(dns.lookup_family)
 	.unwrap_or_default();
-	let dns_edns0: Option<bool> = parse("DNS_EDNS0")?.or(raw.dns_edns0);
+	let dns_edns0: Option<bool> = parse("DNS_EDNS0")?.or(dns.edns0);
 	let (resolver_cfg, resolver_opts) = {
 		let (cfg, opts) = hickory_resolver::system_conf::read_system_conf().unwrap_or_else(|e| {
 			warn!(err=?e, "failed to read system DNS config, using defaults");
