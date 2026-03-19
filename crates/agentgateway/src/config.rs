@@ -729,8 +729,13 @@ config:
 		let mut custom_opts = hickory_resolver::config::ResolverOpts::default();
 		custom_opts.ndots = 42;
 
-		let (resolved_cfg, resolved_opts) =
-			resolve_dns_config(empty_cfg, custom_opts, DnsLookupFamily::default(), true, None);
+		let (resolved_cfg, resolved_opts) = resolve_dns_config(
+			empty_cfg,
+			custom_opts,
+			DnsLookupFamily::default(),
+			true,
+			None,
+		);
 
 		assert!(
 			!resolved_cfg.name_servers().is_empty(),
@@ -746,8 +751,13 @@ config:
 		custom_opts.ndots = 7;
 
 		let original_count = valid_cfg.name_servers().len();
-		let (resolved_cfg, resolved_opts) =
-			resolve_dns_config(valid_cfg, custom_opts, DnsLookupFamily::default(), true, None);
+		let (resolved_cfg, resolved_opts) = resolve_dns_config(
+			valid_cfg,
+			custom_opts,
+			DnsLookupFamily::default(),
+			true,
+			None,
+		);
 
 		assert_eq!(
 			resolved_cfg.name_servers().len(),
@@ -823,10 +833,12 @@ config:
 		let mut opts = hickory_resolver::config::ResolverOpts::default();
 		opts.edns0 = false;
 
-		let (_, resolved_opts) =
-			resolve_dns_config(cfg, opts, DnsLookupFamily::default(), true, None);
+		let (_, resolved_opts) = resolve_dns_config(cfg, opts, DnsLookupFamily::default(), true, None);
 
-		assert!(!resolved_opts.edns0, "None should preserve the original edns0 value");
+		assert!(
+			!resolved_opts.edns0,
+			"None should preserve the original edns0 value"
+		);
 	}
 
 	#[test]

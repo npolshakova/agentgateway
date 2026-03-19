@@ -70,13 +70,14 @@ pub struct NestedRawConfig {
 /// `dnsLookupFamily` field in the config file.
 ///
 /// See: <https://www.envoyproxy.io/docs/envoy/latest/api-v3/config/cluster/v3/cluster.proto#enum-config-cluster-v3-cluster-dnslookupfamily>
-#[derive(serde::Deserialize, serde::Serialize, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(serde::Deserialize, serde::Serialize, Clone, Copy, Debug, Default, PartialEq, Eq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum DnsLookupFamily {
 	/// Query for both A and AAAA records in parallel and use all results.
 	All,
 	/// Automatically choose based on the `enable_ipv6` setting. When IPv6 is
 	/// enabled this behaves like `V4Preferred`; otherwise `V4Only`.
+	#[default]
 	Auto,
 	/// Query for both A and AAAA, but prefer IPv4 addresses when both are
 	/// available.
@@ -85,12 +86,6 @@ pub enum DnsLookupFamily {
 	V4Only,
 	/// Only query for AAAA (IPv6) records.
 	V6Only,
-}
-
-impl Default for DnsLookupFamily {
-	fn default() -> Self {
-		Self::Auto
-	}
 }
 
 impl DnsLookupFamily {

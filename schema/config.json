@@ -78,6 +78,13 @@
             }
           ]
         },
+        "dnsEdns0": {
+          "description": "Whether to enable EDNS0 (Extension Mechanisms for DNS) in the resolver.\nWhen `None`, the system-provided resolver setting is preserved.\nCan also be set via the `DNS_EDNS0` environment variable.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
         "localXdsPath": {
           "description": "Local XDS path. If not specified, the current configuration file will be used.",
           "type": [
