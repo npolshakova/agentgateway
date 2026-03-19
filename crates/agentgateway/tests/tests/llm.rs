@@ -29,6 +29,11 @@ use crate::common::gateway::AgentGateway;
 // 3. Run a specific targeted test case (e.g., Bedrock messages):
 //    AGENTGATEWAY_E2E=true cargo test --test integration tests::llm::bedrock::messages
 //
+// DNS configuration can be overridden via environment variables, for example:
+//    IPV6_ENABLED=false DNS_LOOKUP_FAMILY=V4Only DNS_EDNS0=true \
+//    AGENTGATEWAY_E2E=true cargo test --test integration tests::llm::gemini::
+// This will disable IPv6 and enable EDNS0 for the Gemini tests.
+//
 // Note: Some providers (Bedrock, Vertex) use implicit environment auth (AWS/GCP) instead of explicit keys.
 
 macro_rules! send_completions_tests {
