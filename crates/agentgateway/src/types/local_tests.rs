@@ -80,6 +80,7 @@ async fn normalize_test_policies(
 			workloads: vec![],
 			services: vec![],
 			backends: vec![],
+			route_groups: vec![],
 			llm: None,
 			mcp: None,
 		},

@@ -25,10 +25,10 @@ use crate::types::agent::{
 	JwtAuthentication, Listener, ListenerKey, ListenerName, ListenerProtocol, ListenerSet,
 	ListenerTarget, LocalMcpAuthentication, McpAuthentication, McpBackend, McpTarget, McpTargetName,
 	McpTargetSpec, OpenAPITarget, PathMatch, PolicyPhase, PolicyTarget, PolicyType, ResourceName,
-	Route, RouteBackendReference, RouteMatch, RouteName, RouteSet, ServerTLSConfig, SimpleBackend,
-	SimpleBackendReference, SimpleBackendWithPolicies, SseTargetSpec, StreamableHTTPTargetSpec,
-	TCPRoute, TCPRouteBackendReference, TCPRouteSet, Target, TargetedPolicy, TracingConfig,
-	TrafficPolicy, TunnelProtocol, TypedResourceName,
+	Route, RouteBackendReference, RouteBackendTarget, RouteGroupKey, RouteMatch, RouteName, RouteSet,
+	ServerTLSConfig, SimpleBackend, SimpleBackendReference, SimpleBackendWithPolicies, SseTargetSpec,
+	StreamableHTTPTargetSpec, TCPRoute, TCPRouteBackendReference, TCPRouteSet, Target,
+	TargetedPolicy, TracingConfig, TrafficPolicy, TunnelProtocol, TypedResourceName,
 };
 use crate::types::discovery::{NamespacedHostname, Service};
 use crate::types::{backend, frontend};
@@ -241,6 +241,7 @@ pub struct NormalizedLocalConfig {
 	pub binds: Vec<Bind>,
 	pub policies: Vec<TargetedPolicy>,
 	pub backends: Vec<BackendWithPolicies>,
+	pub route_groups: Vec<(RouteGroupKey, Vec<Route>)>,
 	// Note: here we use LocalWorkload since it conveys useful info, we could maybe change but not a problem
 	// for now
 	pub workloads: Vec<LocalWorkload>,
@@ -269,6 +270,8 @@ pub struct LocalConfig {
 	services: Vec<Service>,
 	#[serde(default)]
 	backends: Vec<FullLocalBackend>,
+	#[serde(default, rename = "routeGroups")]
+	route_groups: Vec<LocalRouteGroup>,
 	#[serde(default)]
 	llm: Option<LocalLLMConfig>,
 	#[serde(default)]
@@ -483,6 +486,12 @@ pub struct LocalRouteName {
 }
 
 #[apply(schema_de!)]
+pub struct LocalRouteGroup {
+	name: RouteGroupKey,
+	routes: Vec<LocalRoute>,
+}
+
+#[apply(schema_de!)]
 pub struct LocalRoute {
 	#[serde(flatten)]
 	name: LocalRouteName,
@@ -582,6 +591,8 @@ pub enum LocalBackend {
 	AI(LocalAIBackend),
 	#[serde(rename = "aws")]
 	Aws(LocalAwsBackend),
+	#[serde(rename = "routeGroup")]
+	RouteGroup(RouteGroupKey),
 	Invalid,
 }
 
@@ -802,6 +813,7 @@ impl LocalBackend {
 				};
 				vec![Backend::Aws(name, config).into()]
 			},
+			LocalBackend::RouteGroup(_) => vec![], // Route groups stay as references
 			LocalBackend::Invalid => vec![Backend::Invalid.into()],
 		})
 	}
@@ -1405,6 +1417,7 @@ async fn convert(
 		workloads,
 		services,
 		backends,
+		route_groups,
 		llm,
 		mcp,
 	} = i;
@@ -1519,6 +1532,21 @@ async fn convert(
 		all_backends.extend_from_slice(&mcp_backends);
 	}
 
+	// Convert route groups
+	let mut all_route_groups = vec![];
+	for rg in route_groups {
+		let rg_key = rg.name.clone();
+		let mut routes = vec![];
+		for (idx, lr) in rg.routes.into_iter().enumerate() {
+			let route_group_listener_key: ListenerKey = strng::format!("routegroup/{rg_key}");
+			let (route, backends) =
+				convert_route(client.clone(), config, lr, idx, route_group_listener_key).await?;
+			all_backends.extend_from_slice(&backends);
+			routes.push(route);
+		}
+		all_route_groups.push((rg_key, routes));
+	}
+
 	// Add frontend policies targeted to this listener
 	all_policies.extend_from_slice(&split_frontend_policies(gateway, frontend_policies).await?);
 
@@ -1526,6 +1554,7 @@ async fn convert(
 		binds: all_binds,
 		policies: all_policies,
 		backends: all_backends.into_iter().collect(),
+		route_groups: all_route_groups,
 		workloads,
 		services,
 	};
@@ -1941,7 +1970,7 @@ json(request.body).model
 			matches,
 			backends: vec![RouteBackendReference {
 				weight: 1,
-				backend: BackendReference::Backend(strng::format!("/{}", backend_key)),
+				target: BackendReference::Backend(strng::format!("/{}", backend_key)).into(),
 				inline_policies: vec![],
 			}],
 			inline_policies: vec![TrafficPolicy::AI(Arc::new(crate::llm::Policy {
@@ -2104,7 +2133,7 @@ async fn convert_mcp_config(
 		matches: default_matches(),
 		backends: vec![RouteBackendReference {
 			weight: 1,
-			backend: BackendReference::Backend(strng::new("/mcp")),
+			target: BackendReference::Backend(strng::new("/mcp")).into(),
 			inline_policies: resolved_policies.backend_policies,
 		}],
 		inline_policies: resolved_policies.route_policies,
@@ -2325,15 +2354,21 @@ pub async fn convert_route(
 			.transpose()?
 			.unwrap_or_default();
 		let be_name = local_name(backend_key.clone());
-		let bref = match &b.backend {
-			LocalBackend::Service { name, port } => BackendReference::Service {
-				name: name.clone(),
-				port: *port,
+		let target = match &b.backend {
+			LocalBackend::RouteGroup(rg) => RouteBackendTarget::RouteGroup(rg.clone()),
+			other => {
+				let bref = match other {
+					LocalBackend::Service { name, port } => BackendReference::Service {
+						name: name.clone(),
+						port: *port,
+					},
+					LocalBackend::Backend(n) => BackendReference::Backend(n.clone()),
+					LocalBackend::Invalid => BackendReference::Invalid,
+					LocalBackend::Dynamic {} => BackendReference::Backend("dynamic".into()),
+					_ => BackendReference::Backend(strng::format!("/{}", backend_key)),
+				};
+				bref.into()
 			},
-			LocalBackend::Backend(n) => BackendReference::Backend(n.clone()),
-			LocalBackend::Invalid => BackendReference::Invalid,
-			LocalBackend::Dynamic {} => BackendReference::Backend("dynamic".into()),
-			_ => BackendReference::Backend(strng::format!("/{}", backend_key)),
 		};
 		let backends = b
 			.backend
@@ -2341,7 +2376,7 @@ pub async fn convert_route(
 			.await?;
 		let bref = RouteBackendReference {
 			weight: b.weight,
-			backend: bref,
+			target,
 			inline_policies: policies,
 		};
 		backend_refs.push(bref);

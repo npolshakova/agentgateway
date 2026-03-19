@@ -35,6 +35,12 @@
         "$ref": "#/$defs/FullLocalBackend"
       }
     },
+    "routeGroups": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/LocalRouteGroup"
+      }
+    },
     "llm": {
       "anyOf": [
         {
@@ -4167,6 +4173,17 @@
           "required": [
             "aws"
           ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "routeGroup": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "routeGroup"
+          ]
         }
       ]
     },
@@ -6092,6 +6109,25 @@
             "aws"
           ]
         }
+      ]
+    },
+    "LocalRouteGroup": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "routes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LocalRoute"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "routes"
       ]
     },
     "LocalLLMConfig": {
