@@ -780,7 +780,11 @@ impl AIProvider {
 					let body = req.to_anthropic()?;
 					provider.prepare_anthropic_message_body(body)?
 				},
-				AIProvider::OpenAI(_) | AIProvider::Gemini(_) | AIProvider::AzureOpenAI(_) => {
+			AIProvider::Gemini(_) => {
+					req.consolidate_system_messages();
+					req.to_openai()?
+				},
+				AIProvider::OpenAI(_) | AIProvider::AzureOpenAI(_) => {
 					req.to_openai()?
 				},
 				AIProvider::Vertex(p) => req.to_vertex(p)?,

@@ -922,3 +922,104 @@ fn test_get_messages() {
 		"get-messages-messages",
 	);
 }
+
+#[test]
+fn test_consolidate_system_messages_merges_all_system_into_one() {
+	let mut req: types::completions::Request = serde_json::from_value(json!({
+		"model": "gemini-2.5-flash-lite",
+		"messages": [
+			{"role": "system", "content": "You are a helpful assistant."},
+			{"role": "system", "content": "Graph description here."},
+			{"role": "system", "content": "Label space info."},
+			{"role": "user", "content": "What objects are in the graph?"},
+			{"role": "system", "content": "Format your answer with <answer> tags."}
+		]
+	}))
+	.unwrap();
+
+	req.consolidate_system_messages();
+
+	assert_eq!(req.messages.len(), 2, "should have 1 system + 1 user");
+	assert_eq!(req.messages[0].role, "system");
+	assert_eq!(req.messages[1].role, "user");
+
+	let system_text = req.messages[0].message_text().unwrap();
+	assert!(system_text.contains("You are a helpful assistant."));
+	assert!(system_text.contains("Graph description here."));
+	assert!(system_text.contains("Label space info."));
+	assert!(system_text.contains("Format your answer with <answer> tags."));
+}
+
+#[test]
+fn test_consolidate_system_messages_noop_without_system() {
+	let mut req: types::completions::Request = serde_json::from_value(json!({
+		"model": "gemini-2.5-flash-lite",
+		"messages": [
+			{"role": "user", "content": "Hello"},
+			{"role": "assistant", "content": "Hi there!"},
+			{"role": "user", "content": "How are you?"}
+		]
+	}))
+	.unwrap();
+
+	req.consolidate_system_messages();
+
+	assert_eq!(req.messages.len(), 3);
+	assert_eq!(req.messages[0].role, "user");
+	assert_eq!(req.messages[1].role, "assistant");
+	assert_eq!(req.messages[2].role, "user");
+}
+
+#[test]
+fn test_consolidate_system_messages_handles_developer_role() {
+	let mut req: types::completions::Request = serde_json::from_value(json!({
+		"model": "gemini-2.5-flash-lite",
+		"messages": [
+			{"role": "developer", "content": "You are a coding assistant."},
+			{"role": "system", "content": "Always format code with backticks."},
+			{"role": "user", "content": "Write hello world in Python."}
+		]
+	}))
+	.unwrap();
+
+	req.consolidate_system_messages();
+
+	assert_eq!(req.messages.len(), 2);
+	assert_eq!(req.messages[0].role, "system");
+	assert_eq!(req.messages[1].role, "user");
+
+	let system_text = req.messages[0].message_text().unwrap();
+	assert!(system_text.contains("You are a coding assistant."));
+	assert!(system_text.contains("Always format code with backticks."));
+}
+
+#[test]
+fn test_consolidate_system_messages_preserves_non_system_order() {
+	let mut req: types::completions::Request = serde_json::from_value(json!({
+		"model": "gemini-2.5-flash-lite",
+		"messages": [
+			{"role": "system", "content": "System prompt A"},
+			{"role": "user", "content": "User message 1"},
+			{"role": "assistant", "content": "Assistant reply 1"},
+			{"role": "system", "content": "System prompt B"},
+			{"role": "user", "content": "User message 2"},
+			{"role": "assistant", "content": "Assistant reply 2", "tool_calls": [{"id": "tc1", "type": "function", "function": {"name": "foo", "arguments": "{}"}}]},
+			{"role": "tool", "content": "Tool result", "tool_call_id": "tc1"}
+		]
+	}))
+	.unwrap();
+
+	req.consolidate_system_messages();
+
+	assert_eq!(req.messages.len(), 6, "1 merged system + 5 non-system");
+	assert_eq!(req.messages[0].role, "system");
+	assert_eq!(req.messages[1].role, "user");
+	assert_eq!(req.messages[2].role, "assistant");
+	assert_eq!(req.messages[3].role, "user");
+	assert_eq!(req.messages[4].role, "assistant");
+	assert_eq!(req.messages[5].role, "tool");
+
+	let system_text = req.messages[0].message_text().unwrap();
+	assert!(system_text.contains("System prompt A"));
+	assert!(system_text.contains("System prompt B"));
+}

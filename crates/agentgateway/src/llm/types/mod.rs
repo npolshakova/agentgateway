@@ -65,6 +65,24 @@ pub trait RequestType: Send + Sync {
 	fn to_vertex(&self, _provider: &crate::llm::vertex::Provider) -> Result<Vec<u8>, AIError> {
 		Err(AIError::UnsupportedConversion(strng::literal!("vertex")))
 	}
+
+	/// Merge all system/developer messages into a single system message at index 0.
+	///
+	/// Gemini's OpenAI-compatible endpoint maps system messages to the native
+	/// `system_instruction` field, which only accepts a **single** system message
+	/// placed before the first conversational turn. When the request contains
+	/// multiple system messages — or system messages that appear *after* user
+	/// messages — the Gemini shim silently drops all but the first, causing
+	/// significant prompt loss.
+	///
+	/// This method collects every system/developer message (regardless of
+	/// position), concatenates their text, and re-inserts a single system message
+	/// at the front of the messages array so that the full system context reaches
+	/// the model.
+	///
+	/// The default implementation is a no-op; only formats that carry an inline
+	/// messages array (i.e. chat completions) override it.
+	fn consolidate_system_messages(&mut self) {}
 }
 
 /// SimpleChatCompletionMessage is a simplified chat message

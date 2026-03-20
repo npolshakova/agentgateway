@@ -295,6 +295,54 @@ impl super::RequestType for Request {
 	fn set_messages(&mut self, messages: Vec<SimpleChatCompletionMessage>) {
 		self.messages = messages.into_iter().map(convert_message).collect();
 	}
+
+	fn consolidate_system_messages(&mut self) {
+		fn is_system(m: &RequestMessage) -> bool {
+			m.role == "system" || m.role == "developer"
+		}
+
+		if !self.messages.iter().any(|m| is_system(m)) {
+			return;
+		}
+
+		let mut system_texts: Vec<String> = Vec::new();
+		let mut non_system: Vec<RequestMessage> = Vec::new();
+
+		for msg in self.messages.drain(..) {
+			if is_system(&msg) {
+				if let Some(text) = extract_content_text(&msg.content) {
+					if !text.is_empty() {
+						system_texts.push(text);
+					}
+				}
+			} else {
+				non_system.push(msg);
+			}
+		}
+
+		if !system_texts.is_empty() {
+			self.messages.push(RequestMessage {
+				role: "system".to_string(),
+				name: None,
+				content: Some(Content::Text(system_texts.join("\n"))),
+				tool_call_id: None,
+				tool_calls: None,
+				rest: Default::default(),
+			});
+		}
+		self.messages.extend(non_system);
+	}
+}
+
+fn extract_content_text(content: &Option<Content>) -> Option<String> {
+	content.as_ref().map(|c| match c {
+		Content::Text(t) => t.clone(),
+		Content::Array(parts) => parts
+			.iter()
+			.filter_map(|p| p.text.as_deref())
+			.collect::<Vec<_>>()
+			.join("\n"),
+	})
 }
 
 fn convert_message(r: SimpleChatCompletionMessage) -> RequestMessage {
