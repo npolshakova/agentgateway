@@ -26,14 +26,12 @@ import (
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/agentgateway/agentgateway/api"
-	"github.com/agentgateway/agentgateway/controller/api/v1alpha1/agentgateway"
 	agwir "github.com/agentgateway/agentgateway/controller/pkg/agentgateway/ir"
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/plugins"
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/translator"
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/utils"
 	"github.com/agentgateway/agentgateway/controller/pkg/apiclient"
 	"github.com/agentgateway/agentgateway/controller/pkg/deployer"
-	agentgatewaybackend "github.com/agentgateway/agentgateway/controller/pkg/kgateway/agentgatewaysyncer/backend"
 	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/agentgatewaysyncer/krtxds"
 	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/agentgatewaysyncer/nack"
 	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/agentgatewaysyncer/status"
@@ -80,6 +78,7 @@ type Syncer struct {
 
 	customResourceCollections   func(cfg CustomResourceCollectionsConfig)
 	buildAddressCollectionsFunc AgentgatewayAddressBuilderFunc
+	buildReferenceTypesFunc     func(agw *plugins.AgwCollections, base plugins.ReferenceTypes) plugins.ReferenceTypes
 }
 
 func NewAgwSyncer(
@@ -106,6 +105,7 @@ func NewAgwSyncer(
 		},
 		customResourceCollections:   cfg.CustomResourceCollections,
 		buildAddressCollectionsFunc: cfg.BuildAddressCollectionsFunc,
+		buildReferenceTypesFunc:     cfg.BuildReferenceTypesFunc,
 	}
 	logger.Debug("init agentgateway Syncer", "controllername", controllerName)
 
@@ -159,11 +159,7 @@ func (s *Syncer) buildResourceCollections(krtopts krtutil.KrtOptions) {
 	gatewayInitialStatus, gateways := s.buildGatewayCollection(gatewayClasses, listenerSets, refGrants, krtopts)
 
 	// Build Agw resources for gateway
-	agwResources, routeAttachments, ancestorCollection, policyStatuses, backendStatuses := s.buildAgwResources(gateways, refGrants, krtopts)
-	status.RegisterStatus(s.statusCollections, backendStatuses, translator.GetStatus)
-	for _, col := range policyStatuses {
-		status.RegisterStatus(s.statusCollections, col, translator.GetStatus)
-	}
+	agwResources, routeAttachments, ancestorCollection := s.buildAgwResources(gateways, refGrants, krtopts)
 
 	gatewayFinalStatus := s.buildFinalGatewayStatus(gatewayInitialStatus, routeAttachments, krtopts)
 	status.RegisterStatus(s.statusCollections, gatewayFinalStatus, translator.GetStatus)
@@ -394,7 +390,7 @@ func (s *Syncer) buildListenerSetCollection(
 		}, krtopts.ToOptions("ListenerSets")...)
 }
 
-func (s *Syncer) buildAgwResources(gateways krt.Collection[*translator.GatewayListener], refGrants translator.ReferenceGrants, krtopts krtutil.KrtOptions) (krt.Collection[agwir.AgwResource], krt.Collection[*plugins.RouteAttachment], plugins.ReferenceIndex, PolicyStatusCollections, krt.StatusCollection[*agentgateway.AgentgatewayBackend, agentgateway.AgentgatewayBackendStatus]) {
+func (s *Syncer) buildAgwResources(gateways krt.Collection[*translator.GatewayListener], refGrants translator.ReferenceGrants, krtopts krtutil.KrtOptions) (krt.Collection[agwir.AgwResource], krt.Collection[*plugins.RouteAttachment], plugins.ReferenceIndex) {
 	// filter gateway collections to only include gateways which use a built-in gateway class
 	// (resources for additional gateway classes should be created by the downstream providing them)
 	filteredGateways := krt.NewCollection(gateways, func(ctx krt.HandlerContext, gw *translator.GatewayListener) **translator.GatewayListener {
@@ -449,6 +445,11 @@ func (s *Syncer) buildAgwResources(gateways krt.Collection[*translator.GatewayLi
 	// Build routes
 	routeParents := translator.BuildRouteParents(filteredGateways)
 
+	referenceTypes := plugins.DefaultReferenceTypes(s.agwCollections)
+	if s.buildReferenceTypesFunc != nil {
+		referenceTypes = s.buildReferenceTypesFunc(s.agwCollections, referenceTypes)
+	}
+
 	routeInputs := translator.RouteContextInputs{
 		Grants:         refGrants,
 		RouteParents:   routeParents,
@@ -458,6 +459,7 @@ func (s *Syncer) buildAgwResources(gateways krt.Collection[*translator.GatewayLi
 		ServiceEntries: s.agwCollections.ServiceEntries,
 		InferencePools: s.agwCollections.InferencePools,
 		Backends:       s.agwCollections.Backends,
+		References:     referenceTypes,
 	}
 
 	agwRoutes, routeAttachments, ancestorBackends := translator.AgwRouteCollection(s.statusCollections, s.agwCollections.HTTPRoutes, s.agwCollections.GRPCRoutes, s.agwCollections.TCPRoutes, s.agwCollections.TLSRoutes, routeInputs, krtopts)
@@ -472,9 +474,16 @@ func (s *Syncer) buildAgwResources(gateways krt.Collection[*translator.GatewayLi
 		return []utils.TypedNamespacedName{o.Backend}
 	})
 	ancestorCollection := ancestorsIndex.AsCollection(append(krtopts.ToOptions("AncestorBackend"), utils.TypedNamespacedNameIndexCollectionFunc)...)
-	referenceIndex := plugins.BuildReferenceIndex(ancestorCollection, routeAttachmentsIndex)
+
+	// First, make the policies with access to the route-level attachment references.
+	referenceIndex := plugins.BuildReferenceIndex(ancestorCollection, routeAttachmentsIndex, referenceTypes)
 	agwPolicies, policyReferences, policyStatuses := AgwPolicyCollection(s.agwPlugins, referenceIndex, krtopts)
-	backendPolicyReferences := s.newAgwBackendPolicyReferences(s.agwCollections.Backends, krtopts)
+	for _, col := range policyStatuses {
+		status.RegisterStatus(s.statusCollections, col, translator.GetStatus)
+	}
+
+	// Next, build backend references.
+	backendPolicyReferences := AgwBackendReferencesCollection(s.agwPlugins, krtopts)
 	joinedPolicyReferences := krt.JoinCollection([]krt.Collection[*plugins.PolicyAttachment]{policyReferences, backendPolicyReferences}, krtopts.ToOptions("JoinPolicyAttachment")...)
 	policyReferencesIndex := krt.NewIndex(joinedPolicyReferences, "policyReferences", func(o *plugins.PolicyAttachment) []utils.TypedNamespacedName {
 		return []utils.TypedNamespacedName{o.Backend}
@@ -482,13 +491,15 @@ func (s *Syncer) buildAgwResources(gateways krt.Collection[*translator.GatewayLi
 	policyReferencesIndexCollection := policyReferencesIndex.AsCollection(append(krtopts.ToOptions("PolicyReferencesIndex"), utils.TypedNamespacedNameIndexCollectionFunc)...)
 	referenceIndex = referenceIndex.WithPolicyAttachments(policyReferencesIndexCollection)
 
-	// Create an agentgateway backend collection from the kgateway backend resources
-	agwBackendStatus, agwBackends := s.newAgwBackendCollection(s.agwCollections.Backends, referenceIndex, krtopts)
-
+	// Finally, build the backend collection with backend+route references
+	agwBackends, agwBackendStatus := AgwBackendCollection(s.agwPlugins, referenceIndex, krtopts)
+	for _, col := range agwBackendStatus {
+		status.RegisterStatus(s.statusCollections, col, translator.GetStatus)
+	}
 	// Join all Agw resources
 	allAgwResources := krt.JoinCollection([]krt.Collection[agwir.AgwResource]{binds, listeners, agwRoutes, agwPolicies, agwBackends}, krtopts.ToOptions("Resources")...)
 
-	return allAgwResources, routeAttachments, referenceIndex, policyStatuses, agwBackendStatus
+	return allAgwResources, routeAttachments, referenceIndex
 }
 
 // buildListenerFromGateway creates a listener resource from a gateway
@@ -513,38 +524,6 @@ func (s *Syncer) buildListenerFromGateway(obj *translator.GatewayListener) *agwi
 		Namespace: obj.ParentGateway.Namespace,
 		Name:      obj.ParentGateway.Name,
 	}, translator.AgwListener{l}))
-}
-
-// newAgwBackendPolicyReferences creates the ADP backend collection for agent gateway resources
-func (s *Syncer) newAgwBackendPolicyReferences(
-	finalBackends krt.Collection[*agentgateway.AgentgatewayBackend],
-	krtopts krtutil.KrtOptions,
-) krt.Collection[*plugins.PolicyAttachment] {
-	policyReferences := krt.NewManyCollection(finalBackends, func(ctx krt.HandlerContext, backend *agentgateway.AgentgatewayBackend) []*plugins.PolicyAttachment {
-		return agentgatewaybackend.BuildAgwBackendReferences(backend)
-	}, krtopts.ToOptions("BackendPolicyAttachments")...)
-	return policyReferences
-}
-
-// newAgwBackendCollection creates the ADP backend collection for agent gateway resources
-func (s *Syncer) newAgwBackendCollection(
-	finalBackends krt.Collection[*agentgateway.AgentgatewayBackend],
-	references plugins.ReferenceIndex,
-	krtopts krtutil.KrtOptions,
-) (
-	krt.StatusCollection[*agentgateway.AgentgatewayBackend, agentgateway.AgentgatewayBackendStatus],
-	krt.Collection[agwir.AgwResource],
-) {
-	return krt.NewStatusManyCollection(finalBackends, func(ctx krt.HandlerContext, backend *agentgateway.AgentgatewayBackend) (
-		*agentgateway.AgentgatewayBackendStatus,
-		[]agwir.AgwResource,
-	) {
-		pc := plugins.PolicyCtx{
-			Krt:         ctx,
-			Collections: s.agwCollections,
-		}
-		return agentgatewaybackend.TranslateAgwBackend(pc, backend, references)
-	}, krtopts.ToOptions("Backends")...)
 }
 
 // getProtocolAndTLSConfig extracts protocol and TLS configuration from a gateway
