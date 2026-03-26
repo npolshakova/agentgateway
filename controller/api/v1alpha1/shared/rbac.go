@@ -3,13 +3,21 @@ package shared
 // Authorization defines the configuration for role-based access control.
 type Authorization struct {
 	// `policy` specifies the authorization rule to evaluate.
-	// A policy matches when **any** of the conditions evaluates to true.
+	//
+	// * For `Allow` rules: any policy allows the request.
+	// * For `Require` rules: all policies must match for the request to be allowed.
+	// * For `Deny` rules: any matching policy denies the request. Note: a CEL expression that fails to evaluate is not
+	// considered to match, making this a risky policy; prefer to use `Require`.
+	//
+	// The presence of at least one `Allow` rule triggers a deny-by-default policy, requiring at least 1 match to allow.
+	// With no rules, all requires are allowed.
 	// +required
 	Policy AuthorizationPolicy `json:"policy"`
 
-	// `action` defines whether the rule allows or denies the request if
+	// `action` defines whether the rule allows, denies, or requires the request if
 	// matched. If unspecified, the default is `Allow`.
-	// +kubebuilder:validation:Enum=Allow;Deny
+	// Require policies are conjunctive across merged policies: all require policies must match.
+	// +kubebuilder:validation:Enum=Allow;Deny;Require
 	// +kubebuilder:default=Allow
 	// +optional
 	Action AuthorizationPolicyAction `json:"action,omitempty"`
@@ -44,4 +52,6 @@ const (
 	// AuthorizationPolicyActionDeny denies the action to take when the
 	// `RBACPolicies` matches.
 	AuthorizationPolicyActionDeny AuthorizationPolicyAction = "Deny"
+	// AuthorizationPolicyActionRequire requires the action to take when the RBACPolicies matches.
+	AuthorizationPolicyActionRequire AuthorizationPolicyAction = "Require"
 )
