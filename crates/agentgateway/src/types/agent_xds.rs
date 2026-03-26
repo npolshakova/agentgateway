@@ -1789,6 +1789,30 @@ impl TryFrom<&proto::agent::FrontendPolicySpec> for FrontendPolicy {
 					.transpose()?
 					.unwrap_or_default(),
 			}),
+			Some(fps::Kind::NetworkAuthorization(rbac)) => {
+				let mut allow_exprs = Vec::new();
+				for allow_rule in &rbac.allow {
+					let expr = cel::Expression::new_permissive(allow_rule);
+					allow_exprs.push(Arc::new(expr));
+				}
+
+				let mut deny_exprs = Vec::new();
+				for deny_rule in &rbac.deny {
+					let expr = cel::Expression::new_permissive(deny_rule);
+					deny_exprs.push(Arc::new(expr));
+				}
+
+				let mut require_exprs = Vec::new();
+				for require_rule in &rbac.require {
+					let expr = cel::Expression::new_permissive(require_rule);
+					require_exprs.push(Arc::new(expr));
+				}
+
+				let policy_set = authorization::PolicySet::new(allow_exprs, deny_exprs, require_exprs);
+				FrontendPolicy::NetworkAuthorization(frontend::NetworkAuthorization(
+					authorization::RuleSet::new(policy_set),
+				))
+			},
 			Some(fps::Kind::Logging(p)) => {
 				let (add, rm) = p
 					.fields

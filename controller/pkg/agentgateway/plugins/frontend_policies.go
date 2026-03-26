@@ -15,6 +15,7 @@ import (
 
 const (
 	frontendTcpPolicySuffix     = ":frontend-tcp"
+	frontendNetworkAuthzSuffix  = ":frontend-network-authz"
 	frontendTlsPolicySuffix     = ":frontend-tls"
 	frontendHttpPolicySuffix    = ":frontend-http"
 	frontendLoggingPolicySuffix = ":frontend-logging"
@@ -56,6 +57,10 @@ func translateFrontendPolicyToAgw(
 
 	if s := frontend.TCP; s != nil {
 		appendPolicy("tcp")(translateFrontendTCP(policy, policyName), nil)
+	}
+
+	if s := frontend.NetworkAuthorization; s != nil {
+		appendPolicy("networkAuthorization")(translateFrontendNetworkAuthorization(policy, policyName), nil)
 	}
 
 	if s := frontend.AccessLog; s != nil {
@@ -269,6 +274,40 @@ func translateFrontendTCP(policy *agentgateway.AgentgatewayPolicy, name string) 
 		"agentgateway_policy", tcpPolicy.Name)
 
 	return tcpPolicy
+}
+
+func translateFrontendNetworkAuthorization(policy *agentgateway.AgentgatewayPolicy, name string) *api.Policy {
+	auth := policy.Spec.Frontend.NetworkAuthorization
+	var allowPolicies, denyPolicies, requirePolicies []string
+	if auth.Action == shared.AuthorizationPolicyActionDeny {
+		denyPolicies = append(denyPolicies, cast(auth.Policy.MatchExpressions)...)
+	} else if auth.Action == shared.AuthorizationPolicyActionRequire {
+		requirePolicies = append(requirePolicies, cast(auth.Policy.MatchExpressions)...)
+	} else {
+		allowPolicies = append(allowPolicies, cast(auth.Policy.MatchExpressions)...)
+	}
+
+	pol := &api.Policy{
+		Key:  name + frontendNetworkAuthzSuffix,
+		Name: TypedResourceName(wellknown.AgentgatewayPolicyGVK.Kind, policy),
+		Kind: &api.Policy_Frontend{
+			Frontend: &api.FrontendPolicySpec{
+				Kind: &api.FrontendPolicySpec_NetworkAuthorization_{
+					NetworkAuthorization: &api.FrontendPolicySpec_NetworkAuthorization{
+						Allow:   allowPolicies,
+						Deny:    denyPolicies,
+						Require: requirePolicies,
+					},
+				},
+			},
+		},
+	}
+
+	logger.Debug("generated frontend network authorization policy",
+		"policy", policy.Name,
+		"agentgateway_policy", pol.Name)
+
+	return pol
 }
 
 func castUint32[T ~int32](ka *T) *uint32 {

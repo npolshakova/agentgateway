@@ -1235,6 +1235,9 @@ struct LocalFrontendPolicies {
 	/// Settings for handling incoming TCP connections.
 	#[serde(default)]
 	pub tcp: Option<frontend::TCP>,
+	/// CEL authorization for downstream network connections.
+	#[serde(default)]
+	pub network_authorization: Option<frontend::NetworkAuthorization>,
 	/// Settings for request access logs.
 	#[serde(default, alias = "logging")]
 	pub access_log: Option<frontend::LoggingPolicy>,
@@ -2204,6 +2207,7 @@ async fn split_frontend_policies(
 		http,
 		tls,
 		tcp,
+		network_authorization,
 		access_log,
 		tracing,
 	} = pol;
@@ -2215,6 +2219,12 @@ async fn split_frontend_policies(
 	}
 	if let Some(p) = tcp {
 		add(FrontendPolicy::TCP(p), "tcp");
+	}
+	if let Some(p) = network_authorization {
+		add(
+			FrontendPolicy::NetworkAuthorization(p),
+			"networkAuthorization",
+		);
 	}
 	if let Some(mut p) = access_log {
 		p.init_access_log_policy();
