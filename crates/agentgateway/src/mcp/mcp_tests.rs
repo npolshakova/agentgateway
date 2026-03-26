@@ -18,7 +18,7 @@ use crate::proxy::httpproxy::PolicyClient;
 use crate::test_helpers::proxymock::{
 	BIND_KEY, TestBind, basic_named_route, basic_route, setup_proxy_test, simple_bind,
 };
-use crate::types::agent::BackendPolicy;
+use crate::types::agent::{BackendPolicy, FrontendPolicy, PolicyTarget, TargetedPolicy};
 use crate::*;
 
 #[tokio::test]
@@ -565,6 +565,228 @@ async fn standard_sse_assertions(client: LegacyService) {
 		&ctr.content[0].raw.as_text().unwrap().text,
 		r#"{"hi":"world"}"#
 	);
+}
+
+fn access_log_payload_policy() -> crate::types::frontend::LoggingPolicy {
+	let mut policy: crate::types::frontend::LoggingPolicy =
+		serde_json::from_value(serde_json::json!({
+			"add": {
+				"mcp_trace": "mcp.tool.arguments.traceId",
+				"mcp_method_cel": "mcp.methodName",
+				"mcp_session_cel": "mcp.sessionId",
+				"mcp_tool_name_cel": "mcp.tool.name",
+				"mcp_tool_target_cel": "mcp.tool.target",
+				"mcp_args_cel": "mcp.tool.arguments",
+				"mcp_result_cel": "mcp.tool.result",
+				"mcp_error_cel": "mcp.tool.error"
+			}
+		}))
+		.unwrap();
+	policy.init_access_log_policy();
+	policy
+}
+
+async fn setup_access_log_mcp_proxy(mock: &MockServer) -> (TestBind, SocketAddr) {
+	let (mut t, io) = setup_proxy(mock, true, false).await;
+	let listener_name = t
+		.pi
+		.stores
+		.read_binds()
+		.bind(&BIND_KEY)
+		.unwrap()
+		.listeners
+		.iter()
+		.next()
+		.unwrap()
+		.name
+		.clone();
+	t.with_policy(TargetedPolicy {
+		key: "frontend/accessLog".into(),
+		name: None,
+		target: PolicyTarget::Gateway(listener_name.clone().into()),
+		policy: FrontendPolicy::AccessLog(access_log_payload_policy()).into(),
+	});
+	assert!(
+		t.pi
+			.stores
+			.read_binds()
+			.listener_frontend_policies(&listener_name)
+			.access_log
+			.is_some()
+	);
+	(t, io)
+}
+
+#[tokio::test]
+async fn tool_call_exposes_payload_fields_to_access_log_cel() {
+	let mock = mock_streamable_http_server(true).await;
+	let trace_id = format!("mcp-e2e-{}", uuid::Uuid::new_v4());
+	let (_t, io) = setup_access_log_mcp_proxy(&mock).await;
+	let client = mcp_streamable_client(io).await;
+
+	let result = client
+		.call_tool(rmcp::model::CallToolRequestParams {
+			meta: None,
+			task: None,
+			name: "echo".into(),
+			arguments: serde_json::json!({
+				"traceId": trace_id,
+				"hi": "world",
+			})
+			.as_object()
+			.cloned(),
+		})
+		.await
+		.unwrap();
+	let direct_result_text = &result.content[0].raw.as_text().unwrap().text;
+	let direct_result_json: serde_json::Value =
+		serde_json::from_str(direct_result_text).expect("tool result should be valid JSON text");
+	assert_eq!(direct_result_json["traceId"], trace_id);
+	assert_eq!(direct_result_json["hi"], "world");
+
+	let log = agent_core::telemetry::testing::eventually_find(&[
+		("scope", "request"),
+		("mcp_trace", &trace_id),
+	])
+	.await
+	.unwrap();
+
+	assert_eq!(
+		log.get("mcp_method_cel"),
+		Some(&serde_json::json!("tools/call"))
+	);
+	assert_eq!(
+		log.get("mcp_tool_name_cel"),
+		Some(&serde_json::json!("echo"))
+	);
+	assert_eq!(
+		log.get("mcp_tool_target_cel"),
+		Some(&serde_json::json!("mcp"))
+	);
+	assert_eq!(log["mcp_args_cel"]["traceId"], trace_id);
+	assert_eq!(log["mcp_args_cel"]["hi"], "world");
+	assert!(
+		log["mcp_session_cel"]
+			.as_str()
+			.is_some_and(|session_id| !session_id.is_empty())
+	);
+	assert_eq!(log["mcp_result_cel"]["isError"], false);
+
+	let result_text = log["mcp_result_cel"]["content"][0]["text"]
+		.as_str()
+		.expect("tool result text should be logged");
+	let result_json: serde_json::Value =
+		serde_json::from_str(result_text).expect("tool result should be valid JSON text");
+	assert_eq!(result_json["traceId"], trace_id);
+	assert_eq!(result_json["hi"], "world");
+	assert!(log.get("mcp_error_cel").is_none());
+
+	assert!(log.get("gen_ai.tool.name").is_none());
+	assert!(log.get("gen_ai.tool.call.arguments").is_none());
+	assert!(log.get("gen_ai.tool.call.result").is_none());
+}
+
+#[tokio::test]
+async fn tool_call_error_exposes_error_payload_to_access_log_cel() {
+	let mock = mock_streamable_http_server(true).await;
+	let trace_id = format!("mcp-e2e-error-{}", uuid::Uuid::new_v4());
+	let (_t, io) = setup_access_log_mcp_proxy(&mock).await;
+	let client = mcp_streamable_client(io).await;
+
+	let err = client
+		.call_tool(rmcp::model::CallToolRequestParams {
+			meta: None,
+			task: None,
+			name: "does_not_exist".into(),
+			arguments: serde_json::json!({
+				"traceId": trace_id,
+			})
+			.as_object()
+			.cloned(),
+		})
+		.await
+		.unwrap_err();
+	match &err {
+		rmcp::ServiceError::McpError(mcp_error) => assert_eq!(mcp_error.code.0, -32602),
+		other => panic!("Expected ServiceError::McpError, got: {other:?}"),
+	}
+
+	let log = agent_core::telemetry::testing::eventually_find(&[
+		("scope", "request"),
+		("mcp_trace", &trace_id),
+	])
+	.await
+	.unwrap();
+
+	assert_eq!(
+		log.get("mcp_method_cel"),
+		Some(&serde_json::json!("tools/call"))
+	);
+	assert_eq!(
+		log.get("mcp_tool_name_cel"),
+		Some(&serde_json::json!("does_not_exist"))
+	);
+	assert_eq!(log["mcp_args_cel"]["traceId"], trace_id);
+	assert_eq!(log["mcp_error_cel"]["code"], -32602);
+	assert!(
+		log["mcp_error_cel"]["message"]
+			.as_str()
+			.is_some_and(|message| message.contains("tool"))
+	);
+	assert!(log.get("mcp_result_cel").is_none());
+	assert!(log.get("gen_ai.tool.name").is_none());
+	assert!(log.get("gen_ai.tool.call.arguments").is_none());
+	assert!(log.get("gen_ai.tool.call.result").is_none());
+}
+
+#[tokio::test]
+async fn legacy_sse_tool_call_exposes_arguments_without_terminal_payloads() {
+	let mock = mock_streamable_http_server(true).await;
+	let trace_id = format!("mcp-e2e-sse-{}", uuid::Uuid::new_v4());
+	let (_t, io) = setup_access_log_mcp_proxy(&mock).await;
+	let client = mcp_sse_client(io).await;
+
+	let result = client
+		.call_tool(legacy_rmcp::model::CallToolRequestParam {
+			name: "echo".into(),
+			arguments: serde_json::json!({
+				"traceId": trace_id,
+				"hi": "world",
+			})
+			.as_object()
+			.cloned(),
+		})
+		.await
+		.unwrap();
+	let direct_result_text = &result.content[0].raw.as_text().unwrap().text;
+	let direct_result_json: serde_json::Value =
+		serde_json::from_str(direct_result_text).expect("tool result should be valid JSON text");
+	assert_eq!(direct_result_json["traceId"], trace_id);
+	assert_eq!(direct_result_json["hi"], "world");
+
+	let log = agent_core::telemetry::testing::eventually_find(&[
+		("scope", "request"),
+		("mcp_trace", &trace_id),
+	])
+	.await
+	.unwrap();
+
+	assert_eq!(
+		log.get("mcp_method_cel"),
+		Some(&serde_json::json!("tools/call"))
+	);
+	assert_eq!(
+		log.get("mcp_tool_name_cel"),
+		Some(&serde_json::json!("echo"))
+	);
+	assert_eq!(log["mcp_args_cel"]["traceId"], trace_id);
+	assert_eq!(log["mcp_args_cel"]["hi"], "world");
+	assert!(log.get("mcp_result_cel").is_none());
+	assert!(log.get("mcp_error_cel").is_none());
+
+	assert!(log.get("gen_ai.tool.name").is_none());
+	assert!(log.get("gen_ai.tool.call.arguments").is_none());
+	assert!(log.get("gen_ai.tool.call.result").is_none());
 }
 
 async fn setup_proxy(

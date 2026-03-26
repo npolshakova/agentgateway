@@ -64,10 +64,15 @@
 |`source.issuer`|string|The issuer from the downstream certificate, if available.|
 |`source.subject`|string|The subject from the downstream certificate, if available.|
 |`source.subjectCn`|string|The CN of the subject from the downstream certificate, if available.|
-|`mcp`|object|`mcp` contains attributes about the MCP request.|
+|`mcp`|object|`mcp` contains attributes about the MCP request.<br>Request-time CEL only includes identity fields such as `tool`, `prompt`, or `resource`.<br>Post-request CEL may also include fields like `methodName`, `sessionId`, and tool payloads.|
+|`mcp.methodName`|string||
+|`mcp.sessionId`|string||
 |`mcp.tool`|object||
-|`mcp.tool.target`|string|The target of the resource|
-|`mcp.tool.name`|string|The name of the resource|
+|`mcp.tool.target`|string|The target handling the tool call after multiplexing resolution.|
+|`mcp.tool.name`|string|The resolved tool name sent to the upstream target.|
+|`mcp.tool.arguments`|object|The JSON arguments passed to the tool call.|
+|`mcp.tool.result`|any|The terminal tool result payload, if available.|
+|`mcp.tool.error`|any|The terminal JSON-RPC error payload, if available.|
 |`mcp.prompt`|object||
 |`mcp.prompt.target`|string|The target of the resource|
 |`mcp.prompt.name`|string|The name of the resource|
