@@ -19,9 +19,8 @@ import (
 	"github.com/agentgateway/agentgateway/controller/api/v1alpha1/agentgateway"
 	"github.com/agentgateway/agentgateway/controller/api/v1alpha1/shared"
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/jwks_url"
-	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/translator/sslutils"
-	"github.com/agentgateway/agentgateway/controller/pkg/kgateway/wellknown"
 	"github.com/agentgateway/agentgateway/controller/pkg/utils/kubeutils"
+	"github.com/agentgateway/agentgateway/controller/pkg/wellknown"
 )
 
 const (
@@ -240,7 +239,7 @@ func translateBackendTLS(ctx PolicyCtx, policy *agentgateway.AgentgatewayPolicy)
 		if scrt == nil {
 			errs = append(errs, fmt.Errorf("secret %s not found", nn))
 		} else {
-			if _, err := sslutils.ValidateTlsSecretData(nn.Name, nn.Namespace, scrt.Data); err != nil {
+			if _, err := ValidateTlsSecretData(nn.Name, nn.Namespace, scrt.Data); err != nil {
 				errs = append(errs, fmt.Errorf("secret %v contains invalid certificate: %v", nn, err))
 			}
 			p.Cert = scrt.Data[corev1.TLSCertKey]
@@ -262,7 +261,7 @@ func translateBackendTLS(ctx PolicyCtx, policy *agentgateway.AgentgatewayPolicy)
 				errs = append(errs, fmt.Errorf("ConfigMap %s not found", nn))
 				continue
 			}
-			pem, err := sslutils.GetCACertFromConfigMap(ptr.Flatten(cfgmap))
+			pem, err := GetCACertFromConfigMap(ptr.Flatten(cfgmap))
 			if err != nil {
 				errs = append(errs, fmt.Errorf("error extracting CA cert from ConfigMap %s: %w", nn, err))
 				continue
