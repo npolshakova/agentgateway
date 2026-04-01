@@ -13,6 +13,7 @@ use crate::http::auth::BackendAuth;
 use crate::http::authorization::{HTTPAuthorizationSet, NetworkAuthorizationSet};
 use crate::http::backendtls::BackendTLS;
 use crate::http::ext_proc::InferenceRouting;
+use crate::http::oidc;
 use crate::http::{ext_authz, ext_proc, filters, health, remoteratelimit, retry, timeout};
 use crate::llm::policy::ResponseGuard;
 use crate::mcp::McpAuthorizationSet;
@@ -230,6 +231,7 @@ pub struct RoutePolicies {
 	pub remote_rate_limit: Option<remoteratelimit::RemoteRateLimit>,
 	pub authorization: Option<http::authorization::HTTPAuthorizationSet>,
 	pub jwt: Option<JwtAuthentication>,
+	pub oidc: Option<oidc::OidcPolicy>,
 	pub basic_auth: Option<http::basicauth::BasicAuthentication>,
 	pub api_key: Option<http::apikey::APIKeyAuthentication>,
 	pub ext_authz: Option<ext_authz::ExtAuthz>,
@@ -253,6 +255,7 @@ pub struct RoutePolicies {
 #[derive(Debug, Default)]
 pub struct GatewayPolicies {
 	pub ext_proc: Option<ext_proc::ExtProc>,
+	pub oidc: Option<oidc::OidcPolicy>,
 	pub jwt: Option<JwtAuthentication>,
 	pub ext_authz: Option<ext_authz::ExtAuthz>,
 	pub transformation: Option<http::transformation_cel::Transformation>,
@@ -522,6 +525,9 @@ impl Store {
 				TrafficPolicy::JwtAuth(p) => {
 					pol.jwt.get_or_insert_with(|| p.clone());
 				},
+				TrafficPolicy::Oidc(p) => {
+					pol.oidc.get_or_insert_with(|| p.clone());
+				},
 				TrafficPolicy::BasicAuth(p) => {
 					pol.basic_auth.get_or_insert_with(|| p.clone());
 				},
@@ -599,6 +605,9 @@ impl Store {
 		let mut pol = GatewayPolicies::default();
 		for rule in rules {
 			match &rule {
+				TrafficPolicy::Oidc(p) => {
+					pol.oidc.get_or_insert_with(|| p.clone());
+				},
 				TrafficPolicy::JwtAuth(p) => {
 					pol.jwt.get_or_insert_with(|| p.clone());
 				},

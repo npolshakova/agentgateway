@@ -1,6 +1,6 @@
 use std::cmp;
 use std::cmp::Ordering;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::fmt::{Display, Formatter};
 use std::net::{IpAddr, SocketAddr};
 use std::num::NonZeroU16;
@@ -2038,6 +2038,7 @@ pub enum TrafficPolicy {
 	ExtAuthz(ext_authz::ExtAuthz),
 	ExtProc(ext_proc::ExtProc),
 	JwtAuth(JwtAuthentication),
+	Oidc(crate::http::oidc::OidcPolicy),
 	BasicAuth(crate::http::basicauth::BasicAuthentication),
 	APIKey(crate::http::apikey::APIKeyAuthentication),
 	Transformation(crate::http::transformation_cel::Transformation),

@@ -82,6 +82,14 @@ async fn apply_request_policies(
 			.apply(response_policies.headers())?;
 	}
 
+	if let Some(o) = &policies.oidc {
+		o.apply(Some(log), req, client.clone())
+			.await
+			.map_err(|e| ProxyResponse::from(ProxyError::OidcFailure(e)))?
+			.apply(response_policies.headers())?;
+	}
+	http::strip_request_cookies_by_prefix(req, http::oidc::RESERVED_COOKIE_PREFIX);
+
 	if let Some(j) = &policies.jwt {
 		j.apply(&client, Some(log), req).await?;
 	}
@@ -255,6 +263,14 @@ async fn apply_gateway_policies(
 	ext_proc: Option<&mut ExtProcRequest>,
 	response_headers: &mut HeaderMap,
 ) -> Result<(), ProxyResponse> {
+	if let Some(o) = &policies.oidc {
+		o.apply(Some(log), req, client.clone())
+			.await
+			.map_err(|e| ProxyResponse::from(ProxyError::OidcFailure(e)))?
+			.apply(response_headers)?;
+		http::strip_request_cookies_by_prefix(req, http::oidc::RESERVED_COOKIE_PREFIX);
+	}
+
 	if let Some(j) = &policies.jwt {
 		j.apply(&client, Some(log), req).await?;
 	}
