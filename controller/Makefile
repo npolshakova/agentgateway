@@ -497,11 +497,11 @@ release-charts: package-agentgateway-charts
 
 .PHONY: deploy-agentgateway-crd-chart
 deploy-agentgateway-crd-chart: ## Deploy the agentgateway crd chart
-	$(HELM) upgrade --install agentgateway-crds $(TEST_ASSET_DIR)/agentgateway-crds-$(VERSION).tgz --namespace $(INSTALL_NAMESPACE) --create-namespace
+	$(HELM) upgrade --install agentgateway-crds $(TEST_ASSET_DIR)/agentgateway-crds-$(HELM_CHART_VERSION_NO_V).tgz --namespace $(INSTALL_NAMESPACE) --create-namespace
 
 .PHONY: deploy-agentgateway-chart
 deploy-agentgateway-chart: ## Deploy the agentgateway chart
-	$(HELM) upgrade --install agentgateway $(TEST_ASSET_DIR)/agentgateway-$(VERSION).tgz \
+	$(HELM) upgrade --install agentgateway $(TEST_ASSET_DIR)/agentgateway-$(HELM_CHART_VERSION_NO_V).tgz \
 	--namespace $(INSTALL_NAMESPACE) --create-namespace \
 	--set image.registry=$(IMAGE_REGISTRY) \
 	--set image.tag=$(VERSION) \
