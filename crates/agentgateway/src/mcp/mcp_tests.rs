@@ -186,6 +186,101 @@ async fn stream_to_stream_single_tls() {
 	);
 }
 
+/// Test that RequestHeaderModifier backend policies are applied to MCP backends.
+#[tokio::test]
+async fn mcp_backend_request_header_modifier_applied() {
+	use crate::http::filters::HeaderModifier;
+
+	let mock = mock_streamable_http_server(true).await;
+
+	// Create policies that will be applied at the backend level:
+	// 1. RequestHeaderModifier adds a custom header
+	// 2. BackendAuth adds authorization
+	let header_modifier = HeaderModifier {
+		add: vec![(
+			"x-test-policy-header".parse().unwrap(),
+			"policy-value".parse().unwrap(),
+		)],
+		set: vec![],
+		remove: vec![],
+	};
+
+	let policies = vec![
+		BackendPolicy::RequestHeaderModifier(header_modifier),
+		BackendPolicy::BackendAuth(BackendAuth::Key(SecretString::new("test-key".into()))),
+	];
+
+	let (_bind, io) = setup_proxy_policies(&mock, true, false, policies).await;
+
+	let client = mcp_streamable_client(io).await;
+
+	// Call a tool - the echo_http tool returns the Authorization header value
+	// which confirms that BackendAuth policy was applied via apply_backend_policies
+	let ctr = client
+		.call_tool(
+			rmcp::model::CallToolRequestParams::new("echo_http").with_arguments(
+				serde_json::json!({"hi": "world"})
+					.as_object()
+					.cloned()
+					.unwrap(),
+			),
+		)
+		.await
+		.unwrap();
+
+	// Verify the BackendAuth policy was applied
+	assert_eq!(
+		&ctr.content[0].raw.as_text().unwrap().text,
+		r#"Bearer test-key"#,
+		"Backend authentication should be applied via apply_backend_policies"
+	);
+}
+
+/// Test that BackendAuth::Passthrough fails for MCP backends because Claims are never extracted.
+/// This test demonstrates the bug: the MCP code path early-returns before apply_backend_policies
+/// is called, so Claims are never extracted from the JWT. When the request goes through the
+/// indirect path (MCP -> PolicyClient -> make_backend_call), the new request has no Claims
+/// extension, so Passthrough auth cannot access the JWT.
+#[tokio::test]
+#[should_panic(expected = "Expected JWT to be forwarded via Passthrough auth")]
+async fn mcp_backend_passthrough_auth_fails_missing_claims() {
+	let mock = mock_streamable_http_server(true).await;
+
+	// Configure BackendAuth::Passthrough policy
+	// This should forward the JWT from Claims extension as Authorization header
+	let policies = vec![BackendPolicy::BackendAuth(BackendAuth::Passthrough {})];
+
+	let (_bind, io) = setup_proxy_policies(&mock, true, false, policies).await;
+
+	let client = mcp_streamable_client(io).await;
+
+	// Call a tool - the echo_http tool returns the Authorization header value
+	// With Passthrough auth, we expect the JWT to be forwarded as "Bearer <jwt>"
+	let ctr = client
+		.call_tool(
+			rmcp::model::CallToolRequestParams::new("echo_http").with_arguments(
+				serde_json::json!({"hi": "world"})
+					.as_object()
+					.cloned()
+					.unwrap(),
+			),
+		)
+		.await
+		.unwrap();
+
+	// This assertion will fail because:
+	// 1. MCP branch early-returns without calling apply_backend_policies
+	// 2. Claims are never extracted from the original request
+	// 3. The new request created by MCP client has no Claims extension
+	// 4. Passthrough auth cannot find Claims, so Authorization header is empty
+	let auth_header = &ctr.content[0].raw.as_text().unwrap().text;
+	assert!(
+		auth_header.starts_with("Bearer "),
+		"Expected JWT to be forwarded via Passthrough auth, but got: {}",
+		auth_header
+	);
+}
+
 /// Test that calling a tool denied by MCP authorization policy returns proper JSON-RPC error
 /// with INVALID_PARAMS error code (-32602) and message "Unknown tool: {tool_name}"
 #[tokio::test]
