@@ -82,7 +82,7 @@ var (
 )
 
 // selfManagedGatewayAnnotation is the annotation used to mark a Gateway as self-managed in e2e tests
-const selfManagedGatewayAnnotation = "e2e.kgateway.dev/self-managed"
+const selfManagedGatewayAnnotation = "e2e.agentgateway.dev/self-managed"
 
 // TestCase defines the manifests and resources used by a test or test suite.
 type TestCase struct {
