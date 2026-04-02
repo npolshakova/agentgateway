@@ -402,6 +402,158 @@ MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgltxBTVDLg7C6vE1T
 	);
 }
 
+/// Route JWT validation removes the `Authorization` header and stores the token in `Claims`.
+/// `BackendAuth::Passthrough` must run on the **incoming** MCP gateway request (before MCP
+/// `serve`) so `apply_backend_policies` can restore `Bearer <jwt>` for snapshots used by MCP
+/// authorization. Otherwise `request.headers["authorization"]` is empty in CEL even though the
+/// nested upstream client may still forward credentials.
+///
+/// This test sets an allowlist that only permits tools when `authorization` starts with `Bearer `.
+/// If `Backend::MCP` skipped `apply_backend_policies`, `list_tools` would return nothing.
+#[tokio::test]
+async fn mcp_authorization_cel_sees_bearer_header_after_jwt_and_passthrough() {
+	use std::collections::HashMap;
+
+	use ::http::{HeaderName, HeaderValue};
+	use jsonwebtoken::jwk::JwkSet;
+	use jsonwebtoken::{Algorithm, EncodingKey, Header};
+	use rmcp::ServiceExt;
+	use rmcp::model::{ClientCapabilities, ClientInfo, Implementation};
+	use rmcp::transport::StreamableHttpClientTransport;
+	use rmcp::transport::streamable_http_client::StreamableHttpClientTransportConfig;
+	use serde::Serialize;
+
+	use crate::http::jwt;
+	use crate::types::agent::{JwtAuthentication, TrafficPolicy};
+
+	const TEST_PRIVATE_KEY_PEM: &str = "-----BEGIN PRIVATE KEY-----
+MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgltxBTVDLg7C6vE1T
+7OtwJIZ/dpm8ygE2MBTjPCY3hgahRANCAARYzu50EeBrT0rELmTGroaGtn0zdjxL
+1lOGr9fGw5wOGcXO0+Gn5F5sIxGyTM0FwnUHFNz2SoixZR5dtxhNc+Lo
+-----END PRIVATE KEY-----
+";
+	const TEST_KEY_ID: &str = "test-key-1";
+	const TEST_ISSUER: &str = "https://test.example.com";
+	const TEST_CLIENT_ID: &str = "test-client";
+
+	#[derive(Serialize)]
+	struct TestClaims<'a> {
+		iss: &'a str,
+		aud: &'a str,
+		exp: u64,
+		sub: &'a str,
+	}
+
+	let test_jwks = || -> JwkSet {
+		serde_json::from_value(serde_json::json!({
+			"keys": [{
+				"use": "sig",
+				"kty": "EC",
+				"kid": TEST_KEY_ID,
+				"crv": "P-256",
+				"alg": "ES256",
+				"x": "WM7udBHga09KxC5kxq6GhrZ9M3Y8S9ZThq_XxsOcDhk",
+				"y": "xc7T4afkXmwjEbJMzQXCdQcU3PZKiLFlHl23GE1z4ug"
+			}]
+		}))
+		.expect("jwks json")
+	};
+
+	let now = std::time::SystemTime::now()
+		.duration_since(std::time::UNIX_EPOCH)
+		.unwrap()
+		.as_secs();
+	let header = Header {
+		kid: Some(TEST_KEY_ID.to_string()),
+		alg: Algorithm::ES256,
+		..Default::default()
+	};
+	let test_jwt = jsonwebtoken::encode(
+		&header,
+		&TestClaims {
+			iss: TEST_ISSUER,
+			aud: TEST_CLIENT_ID,
+			exp: now + 600,
+			sub: "test-user",
+		},
+		&EncodingKey::from_ec_pem(TEST_PRIVATE_KEY_PEM.as_bytes()).expect("encoding key"),
+	)
+	.expect("signed jwt");
+
+	let mock = mock_streamable_http_server(true).await;
+
+	// Allow tools only when the gateway request still exposes a Bearer token on the Authorization
+	// header (after JWT validation, that requires Passthrough on the MCP hop).
+	let allow_only_with_bearer = McpAuthorization::new(RuleSet::new(PolicySet::new(
+		vec![Arc::new(
+			cel::Expression::new_strict(r#"request.headers["authorization"].startsWith("Bearer ")"#)
+				.unwrap(),
+		)],
+		vec![],
+		vec![],
+	)));
+
+	let backend_policies = vec![
+		BackendPolicy::BackendAuth(BackendAuth::Passthrough {}),
+		BackendPolicy::McpAuthorization(allow_only_with_bearer),
+	];
+
+	let mut t = setup_proxy_test("{}")
+		.unwrap()
+		.with_mcp_backend_policies(mock.addr, true, false, backend_policies)
+		.with_bind(simple_bind(basic_route(mock.addr)));
+
+	let jwt_provider = jwt::Provider::from_jwks(
+		test_jwks(),
+		TEST_ISSUER.to_string(),
+		Some(vec![TEST_CLIENT_ID.to_string()]),
+		jwt::JWTValidationOptions::default(),
+	)
+	.expect("jwt provider");
+	let jwt_auth = JwtAuthentication {
+		jwt: jwt::Jwt::from_providers(vec![jwt_provider], jwt::Mode::Strict),
+		mcp: None,
+	};
+
+	t.with_policy(TargetedPolicy {
+		key: "jwt-auth".into(),
+		name: None,
+		target: PolicyTarget::Route(RouteName {
+			name: "route".into(),
+			namespace: "".into(),
+			rule_name: None,
+			kind: None,
+		}),
+		policy: TrafficPolicy::JwtAuth(jwt_auth).into(),
+	});
+
+	let io = t.serve_real_listener(BIND_KEY).await;
+
+	let mut headers = HashMap::new();
+	headers.insert(
+		HeaderName::from_static("authorization"),
+		HeaderValue::from_str(&format!("Bearer {}", test_jwt)).unwrap(),
+	);
+	let config = StreamableHttpClientTransportConfig::with_uri(format!("http://{io}/mcp"))
+		.custom_headers(headers);
+	let transport = StreamableHttpClientTransport::from_config(config);
+	let client_info = ClientInfo::new(
+		ClientCapabilities::default(),
+		Implementation::new("test-client".to_string(), "0.0.1"),
+	);
+	let client = client_info
+		.serve(transport)
+		.await
+		.expect("client should connect");
+
+	let tools = client.list_tools(None).await.expect("list_tools");
+	let names: Vec<String> = tools.tools.iter().map(|t| t.name.to_string()).collect();
+	assert!(
+		names.contains(&"echo".to_string()),
+		"allowlist requires Bearer in request.headers[authorization] after Passthrough; got tools: {names:?}"
+	);
+}
+
 /// Test that calling a tool denied by MCP authorization policy returns proper JSON-RPC error
 /// with INVALID_PARAMS error code (-32602) and message "Unknown tool: {tool_name}"
 #[tokio::test]
