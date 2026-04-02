@@ -20,7 +20,7 @@ use crate::proxy::httpproxy::PolicyClient;
 use crate::test_helpers::proxymock::{
 	BIND_KEY, TestBind, basic_named_route, basic_route, setup_proxy_test, simple_bind,
 };
-use crate::types::agent::{BackendPolicy, FrontendPolicy, PolicyTarget, TargetedPolicy};
+use crate::types::agent::{BackendPolicy, FrontendPolicy, PolicyTarget, RouteName, TargetedPolicy};
 use crate::*;
 
 #[tokio::test]
@@ -180,10 +180,9 @@ async fn stream_to_stream_single_tls() {
 		)
 		.await
 		.unwrap();
-	assert_eq!(
-		&ctr.content[0].raw.as_text().unwrap().text,
-		r#"Bearer my-key"#
-	);
+	let response: serde_json::Value =
+		serde_json::from_str(&ctr.content[0].raw.as_text().unwrap().text).unwrap();
+	assert_eq!(response["authorization"], "Bearer my-key");
 }
 
 /// Test that RequestHeaderModifier backend policies are applied to MCP backends.
@@ -214,8 +213,7 @@ async fn mcp_backend_request_header_modifier_applied() {
 
 	let client = mcp_streamable_client(io).await;
 
-	// Call a tool - the echo_http tool returns the Authorization header value
-	// which confirms that BackendAuth policy was applied via apply_backend_policies
+	// Call a tool - the echo_http tool returns HTTP headers as JSON
 	let ctr = client
 		.call_tool(
 			rmcp::model::CallToolRequestParams::new("echo_http").with_arguments(
@@ -228,31 +226,156 @@ async fn mcp_backend_request_header_modifier_applied() {
 		.await
 		.unwrap();
 
+	// Parse the JSON response
+	let response: serde_json::Value =
+		serde_json::from_str(&ctr.content[0].raw.as_text().unwrap().text).unwrap();
+
 	// Verify the BackendAuth policy was applied
 	assert_eq!(
-		&ctr.content[0].raw.as_text().unwrap().text,
-		r#"Bearer test-key"#,
+		response["authorization"], "Bearer test-key",
 		"Backend authentication should be applied via apply_backend_policies"
+	);
+
+	// Verify the RequestHeaderModifier policy was applied
+	assert_eq!(
+		response["x-test-policy-header"], "policy-value",
+		"RequestHeaderModifier should add x-test-policy-header via apply_backend_policies"
 	);
 }
 
 /// Test that BackendAuth::Passthrough works correctly for MCP backends.
-/// This verifies the fix: apply_backend_policies is now called in the MCP code path
-/// before the early return, ensuring Claims are extracted from the JWT and policies
-/// that depend on request context (like Passthrough auth) work correctly.
 #[tokio::test]
 async fn mcp_backend_passthrough_auth_works() {
+	use std::collections::HashMap;
+
+	use ::http::{HeaderName, HeaderValue};
+	use jsonwebtoken::jwk::JwkSet;
+	use jsonwebtoken::{Algorithm, EncodingKey, Header};
+	use rmcp::ServiceExt;
+	use rmcp::model::{ClientCapabilities, ClientInfo, Implementation};
+	use rmcp::transport::StreamableHttpClientTransport;
+	use rmcp::transport::streamable_http_client::StreamableHttpClientTransportConfig;
+	use serde::Serialize;
+
+	use crate::http::jwt;
+	use crate::types::agent::{JwtAuthentication, TrafficPolicy};
+
+	// Test key and issuer constants
+	const TEST_PRIVATE_KEY_PEM: &str = "-----BEGIN PRIVATE KEY-----
+MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgltxBTVDLg7C6vE1T
+7OtwJIZ/dpm8ygE2MBTjPCY3hgahRANCAARYzu50EeBrT0rELmTGroaGtn0zdjxL
+1lOGr9fGw5wOGcXO0+Gn5F5sIxGyTM0FwnUHFNz2SoixZR5dtxhNc+Lo
+-----END PRIVATE KEY-----
+";
+	const TEST_KEY_ID: &str = "test-key-1";
+	const TEST_ISSUER: &str = "https://test.example.com";
+	const TEST_CLIENT_ID: &str = "test-client";
+
+	#[derive(Serialize)]
+	struct TestClaims<'a> {
+		iss: &'a str,
+		aud: &'a str,
+		exp: u64,
+		sub: &'a str,
+	}
+
+	// Helper to create a test JWKS
+	let test_jwks = || -> JwkSet {
+		serde_json::from_value(serde_json::json!({
+			"keys": [{
+				"use": "sig",
+				"kty": "EC",
+				"kid": TEST_KEY_ID,
+				"crv": "P-256",
+				"alg": "ES256",
+				"x": "WM7udBHga09KxC5kxq6GhrZ9M3Y8S9ZThq_XxsOcDhk",
+				"y": "xc7T4afkXmwjEbJMzQXCdQcU3PZKiLFlHl23GE1z4ug"
+			}]
+		}))
+		.expect("jwks json")
+	};
+
+	// Create a test JWT token
+	let now = std::time::SystemTime::now()
+		.duration_since(std::time::UNIX_EPOCH)
+		.unwrap()
+		.as_secs();
+	let header = Header {
+		kid: Some(TEST_KEY_ID.to_string()),
+		alg: Algorithm::ES256,
+		..Default::default()
+	};
+	let test_jwt = jsonwebtoken::encode(
+		&header,
+		&TestClaims {
+			iss: TEST_ISSUER,
+			aud: TEST_CLIENT_ID,
+			exp: now + 600,
+			sub: "test-user",
+		},
+		&EncodingKey::from_ec_pem(TEST_PRIVATE_KEY_PEM.as_bytes()).expect("encoding key"),
+	)
+	.expect("signed jwt");
+
+	// Set up the mock MCP server
 	let mock = mock_streamable_http_server(true).await;
 
-	// Configure BackendAuth::Passthrough policy
-	// This should forward the JWT from Claims extension as Authorization header
-	let policies = vec![BackendPolicy::BackendAuth(BackendAuth::Passthrough {})];
+	// Configure BackendAuth::Passthrough policy on the MCP backend
+	let backend_policies = vec![BackendPolicy::BackendAuth(BackendAuth::Passthrough {})];
 
-	let (_bind, io) = setup_proxy_policies(&mock, true, false, policies).await;
+	// Set up the proxy with JWT authentication
+	let mut t = setup_proxy_test("{}")
+		.unwrap()
+		.with_mcp_backend_policies(mock.addr, true, false, backend_policies)
+		.with_bind(simple_bind(basic_route(mock.addr)));
 
-	let client = mcp_streamable_client(io).await;
+	// Configure JWT authentication policy
+	let jwt_provider = jwt::Provider::from_jwks(
+		test_jwks(),
+		TEST_ISSUER.to_string(),
+		Some(vec![TEST_CLIENT_ID.to_string()]),
+		jwt::JWTValidationOptions::default(),
+	)
+	.expect("jwt provider");
+	let jwt_auth = JwtAuthentication {
+		jwt: jwt::Jwt::from_providers(vec![jwt_provider], jwt::Mode::Strict),
+		mcp: None,
+	};
 
-	// Call a tool - the echo_http tool returns the Authorization header value
+	// Apply JWT auth policy to the route
+	t.with_policy(TargetedPolicy {
+		key: "jwt-auth".into(),
+		name: None,
+		target: PolicyTarget::Route(RouteName {
+			name: "route".into(),
+			namespace: "".into(),
+			rule_name: None,
+			kind: None,
+		}),
+		policy: TrafficPolicy::JwtAuth(jwt_auth).into(),
+	});
+
+	let io = t.serve_real_listener(BIND_KEY).await;
+
+	// Create a client with the JWT in the Authorization header
+	let mut headers = HashMap::new();
+	headers.insert(
+		HeaderName::from_static("authorization"),
+		HeaderValue::from_str(&format!("Bearer {}", test_jwt)).unwrap(),
+	);
+	let config = StreamableHttpClientTransportConfig::with_uri(format!("http://{io}/mcp"))
+		.custom_headers(headers);
+	let transport = StreamableHttpClientTransport::from_config(config);
+	let client_info = ClientInfo::new(
+		ClientCapabilities::default(),
+		Implementation::new("test-client".to_string(), "0.0.1".to_string()),
+	);
+	let client = client_info
+		.serve(transport)
+		.await
+		.expect("client should connect");
+
+	// Call a tool - the echo_http tool returns HTTP headers as JSON
 	// With Passthrough auth, we expect the JWT to be forwarded as "Bearer <jwt>"
 	let ctr = client
 		.call_tool(
@@ -266,12 +389,16 @@ async fn mcp_backend_passthrough_auth_works() {
 		.await
 		.unwrap();
 
-	// Verify the Passthrough auth policy was applied and JWT was forwarded
-	let auth_header = &ctr.content[0].raw.as_text().unwrap().text;
-	assert!(
-		auth_header.starts_with("Bearer "),
-		"Expected JWT to be forwarded via Passthrough auth, but got: {}",
-		auth_header
+	// Parse the JSON response
+	let response: serde_json::Value =
+		serde_json::from_str(&ctr.content[0].raw.as_text().unwrap().text).unwrap();
+
+	// Verify the Passthrough auth policy was applied and the exact JWT was forwarded
+	let forwarded_auth = response["authorization"].as_str().unwrap_or("");
+	let expected_auth = format!("Bearer {}", test_jwt);
+	assert_eq!(
+		forwarded_auth, expected_auth,
+		"Expected JWT to be forwarded via Passthrough auth"
 	);
 }
 
@@ -1032,6 +1159,7 @@ mod mockserver {
 		ErrorData as McpError, RoleServer, ServerHandler, prompt, prompt_handler, prompt_router,
 		schemars, tool, tool_handler, tool_router,
 	};
+	use serde_json::Map;
 	use serde_json::json;
 	use tokio::sync::Mutex;
 
@@ -1129,13 +1257,28 @@ mod mockserver {
 		#[tool(description = "Echo HTTP attributes")]
 		fn echo_http(&self, rq: RequestContext<RoleServer>) -> Result<CallToolResult, McpError> {
 			let ext = rq.extensions.get::<Parts>();
-			Ok(CallToolResult::success(vec![Content::text(
-				ext
-					.unwrap()
-					.headers
+			let headers = &ext.unwrap().headers;
+
+			let mut result = Map::new();
+			result.insert(
+				"authorization".to_string(),
+				headers
 					.get("authorization")
-					.map(|s| String::from_utf8_lossy(s.as_bytes()))
-					.unwrap_or_default(),
+					.map(|v| String::from_utf8_lossy(v.as_bytes()).to_string())
+					.unwrap_or_default()
+					.into(),
+			);
+			result.insert(
+				"x-test-policy-header".to_string(),
+				headers
+					.get("x-test-policy-header")
+					.map(|v| String::from_utf8_lossy(v.as_bytes()).to_string())
+					.unwrap_or_default()
+					.into(),
+			);
+
+			Ok(CallToolResult::success(vec![Content::text(
+				serde_json::to_string(&result).unwrap(),
 			)]))
 		}
 	}
@@ -1284,6 +1427,7 @@ mod legacymockserver {
 		ErrorData as McpError, RoleServer, ServerHandler, prompt, prompt_handler, prompt_router,
 		schemars, tool, tool_handler, tool_router,
 	};
+	use serde_json::Map;
 	use serde_json::json;
 	use tokio::sync::Mutex;
 
@@ -1381,13 +1525,28 @@ mod legacymockserver {
 		#[tool(description = "Echo HTTP attributes")]
 		fn echo_http(&self, rq: RequestContext<RoleServer>) -> Result<CallToolResult, McpError> {
 			let ext = rq.extensions.get::<Parts>();
-			Ok(CallToolResult::success(vec![Content::text(
-				ext
-					.unwrap()
-					.headers
+			let headers = &ext.unwrap().headers;
+
+			let mut result = Map::new();
+			result.insert(
+				"authorization".to_string(),
+				headers
 					.get("authorization")
-					.map(|s| String::from_utf8_lossy(s.as_bytes()))
-					.unwrap_or_default(),
+					.map(|v| String::from_utf8_lossy(v.as_bytes()).to_string())
+					.unwrap_or_default()
+					.into(),
+			);
+			result.insert(
+				"x-test-policy-header".to_string(),
+				headers
+					.get("x-test-policy-header")
+					.map(|v| String::from_utf8_lossy(v.as_bytes()).to_string())
+					.unwrap_or_default()
+					.into(),
+			);
+
+			Ok(CallToolResult::success(vec![Content::text(
+				serde_json::to_string(&result).unwrap(),
 			)]))
 		}
 	}
