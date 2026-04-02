@@ -173,7 +173,8 @@ async fn apply_request_policies(
 
 async fn apply_backend_policies(
 	backend_info: auth::BackendInfo,
-	backend_call: &BackendCall,
+	backend_policies: &BackendPolicies,
+	http_version_override: Option<::http::Version>,
 	req: &mut Request,
 	log: &mut Option<&mut RequestLog>,
 	response_policies: &mut ResponsePolicies,
@@ -209,7 +210,7 @@ async fn apply_backend_policies(
 		override_dest: _,
 		// Applied elsewhere
 		health: _,
-	} = &backend_call.backend_policies;
+	} = backend_policies;
 	response_policies.backend_response_header = response_header_modifier.clone();
 	response_policies.backend_transformation = transformation.clone();
 
@@ -217,7 +218,7 @@ async fn apply_backend_policies(
 	http
 		.as_ref()
 		.unwrap_or(&dh)
-		.apply(req, backend_call.http_version_override);
+		.apply(req, http_version_override);
 
 	if let Some(auth) = backend_auth {
 		auth::apply_backend_auth(&backend_info, auth, req).await?;
@@ -1324,6 +1325,8 @@ async fn make_backend_call(
 	// In practice, these don't conflict: inference is for AI backends, MCP pinning is for MCP backends.
 	let override_dest = inference_override.or(policies.override_dest);
 
+	let backend_target = backend.target();
+
 	let backend_call = match backend {
 		Backend::AI(n, ai) => {
 			let (provider, handle) = ai.select_provider().ok_or(ProxyError::NoHealthyEndpoints)?;
@@ -1425,18 +1428,43 @@ async fn make_backend_call(
 		},
 		Backend::MCP(name, backend) => {
 			let inputs = inputs.clone();
-			let backend = backend.clone();
-			set_backend_cel_context(&mut req, log.as_ref());
+			let mcp_backend = backend.clone();
 			let name = name.clone();
-			let Some(log) = log else {
+
+			// Ensure log is present before applying policies
+			if log.is_none() {
 				return Err(
 					ProxyError::ProcessingString("invalid: log required for MCP".to_string()).into(),
 				);
+			}
+
+			// Apply backend policies before calling MCP serve
+			// This ensures policies that need request context (like Passthrough auth) work correctly
+			let backend_info = auth::BackendInfo {
+				target: backend_target.clone(),
+				call_target: Target::Hostname(name.name.clone(), 0),
+				inputs: inputs.clone(),
 			};
+
+			apply_backend_policies(
+				backend_info,
+				&policies,
+				None, // MCP backends don't have http_version_override
+				&mut req,
+				&mut log,
+				response_policies,
+			)
+			.await?;
+
+			set_backend_cel_context(&mut req, log.as_ref());
+
+			// Safe to unwrap because we checked is_none() above
+			let log_ref = log.as_mut().unwrap();
+
 			let res = inputs
 				.clone()
 				.mcp_state
-				.serve(inputs, name, backend, policies, req, log)
+				.serve(inputs, name, mcp_backend, policies, req, log_ref)
 				.await;
 			return res.map_err(ProxyResponse::from);
 		},
@@ -1452,7 +1480,8 @@ async fn make_backend_call(
 	};
 	apply_backend_policies(
 		backend_info.clone(),
-		&backend_call,
+		&backend_call.backend_policies,
+		backend_call.http_version_override,
 		&mut req,
 		&mut log,
 		response_policies,

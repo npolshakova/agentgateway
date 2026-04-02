@@ -236,14 +236,12 @@ async fn mcp_backend_request_header_modifier_applied() {
 	);
 }
 
-/// Test that BackendAuth::Passthrough fails for MCP backends because Claims are never extracted.
-/// This test demonstrates the bug: the MCP code path early-returns before apply_backend_policies
-/// is called, so Claims are never extracted from the JWT. When the request goes through the
-/// indirect path (MCP -> PolicyClient -> make_backend_call), the new request has no Claims
-/// extension, so Passthrough auth cannot access the JWT.
+/// Test that BackendAuth::Passthrough works correctly for MCP backends.
+/// This verifies the fix: apply_backend_policies is now called in the MCP code path
+/// before the early return, ensuring Claims are extracted from the JWT and policies
+/// that depend on request context (like Passthrough auth) work correctly.
 #[tokio::test]
-#[should_panic(expected = "Expected JWT to be forwarded via Passthrough auth")]
-async fn mcp_backend_passthrough_auth_fails_missing_claims() {
+async fn mcp_backend_passthrough_auth_works() {
 	let mock = mock_streamable_http_server(true).await;
 
 	// Configure BackendAuth::Passthrough policy
@@ -268,11 +266,7 @@ async fn mcp_backend_passthrough_auth_fails_missing_claims() {
 		.await
 		.unwrap();
 
-	// This assertion will fail because:
-	// 1. MCP branch early-returns without calling apply_backend_policies
-	// 2. Claims are never extracted from the original request
-	// 3. The new request created by MCP client has no Claims extension
-	// 4. Passthrough auth cannot find Claims, so Authorization header is empty
+	// Verify the Passthrough auth policy was applied and JWT was forwarded
 	let auth_header = &ctr.content[0].raw.as_text().unwrap().text;
 	assert!(
 		auth_header.starts_with("Bearer "),
