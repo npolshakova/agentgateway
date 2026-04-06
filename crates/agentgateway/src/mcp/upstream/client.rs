@@ -60,7 +60,6 @@ impl McpHttpClient {
 			policies.override_dest = Some(pinned.0);
 		}
 
-		tracing::error!("howardjohn: call with policies: {:#?}", policies);
 		let resp = self
 			.client
 			.call_with_explicit_policies(req, &self.backend, policies)

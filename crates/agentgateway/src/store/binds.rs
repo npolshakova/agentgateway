@@ -701,11 +701,21 @@ impl Store {
 		gateway: Option<&ListenerName>,
 		route: Option<&RouteName>,
 	) -> BackendPolicies {
-		tracing::error!("howardjohn: lookup {:?} {:?} {:?} {:?} {:?}", backend, sub_backend, inline_policies, gateway, route);
 		let backend_rules =
 			backend.and_then(|t| self.policies_by_target.get(&PolicyTargetRef::Backend(t)));
-		let sub_backend_rules =
-			sub_backend.and_then(|t| self.policies_by_target.get(&PolicyTargetRef::Backend(t)));
+
+		// Only use sub_backend rules if there's an actual section specified
+		// (avoid duplicating backend_rules when section is None)
+		let has_section = sub_backend.as_ref().is_some_and(|t| match t {
+			BackendTargetRef::Backend { section, .. } => section.is_some(),
+			_ => false,
+		});
+		let sub_backend_rules = if has_section {
+			sub_backend.and_then(|t| self.policies_by_target.get(&PolicyTargetRef::Backend(t)))
+		} else {
+			None
+		};
+
 		let route_rule_rules =
 			route.and_then(|t| self.policies_by_target.get(&t.as_route_rule_target_ref()));
 		let route_rules = route.and_then(|t| self.policies_by_target.get(&t.as_route_target_ref()));
@@ -714,25 +724,44 @@ impl Store {
 		let gateway_rules =
 			gateway.and_then(|t| self.policies_by_target.get(&t.as_gateway_target_ref()));
 
-		// RouteRule > Route > SubBackend > Backend/Service > Gateway
-		// Most specific (route context) to least specific (gateway-wide default)
-		let rules = route_rule_rules
+		// Precedence (highest to lowest):
+		// backendRef inline > RouteRule attached > SubBackend attached > Route attached >
+		// Backend inline > Backend attached > Listener attached > Gateway attached
+		//
+		// inline_policies array structure (from httpproxy.rs):
+		//   [0]: Backend inline policies (from Backend spec)
+		//   [1+]: backendRef inline policies (from Route's backendRef, if present)
+
+		// Split inline policies: backendRef inline (all but first) vs Backend inline (first)
+		let backend_inline_iter = inline_policies.first().into_iter().flat_map(|p| p.iter());
+		let backend_ref_inline_iter = inline_policies.iter().skip(1).flat_map(|p| p.iter());
+
+		// Build the attached rules chain with Backend inline inserted in the correct position
+		let attached_rules = route_rule_rules
 			.iter()
 			.copied()
 			.flatten()
 			.chain(sub_backend_rules.iter().copied().flatten())
 			.chain(route_rules.iter().copied().flatten())
-			.chain(backend_rules.iter().copied().flatten())
-			.chain(listener_rules.iter().copied().flatten())
-			.chain(gateway_rules.iter().copied().flatten())
 			.unique()
 			.filter_map(|n| self.policies_by_key.get(n))
-			.filter_map(|p| p.policy.as_backend());
-		let rules = inline_policies
-			.iter()
-			.rev()
-			.flat_map(|p| p.iter())
-			.chain(rules);
+			.filter_map(|p| p.policy.as_backend())
+			// Insert Backend inline here (after Route, before Backend attached)
+			.chain(backend_inline_iter)
+			.chain(
+				backend_rules
+					.iter()
+					.copied()
+					.flatten()
+					.chain(listener_rules.iter().copied().flatten())
+					.chain(gateway_rules.iter().copied().flatten())
+					.unique()
+					.filter_map(|n| self.policies_by_key.get(n))
+					.filter_map(|p| p.policy.as_backend()),
+			);
+
+		// Prepend backendRef inline (highest priority)
+		let rules = backend_ref_inline_iter.chain(attached_rules);
 
 		let mut mcp_authz = Vec::new();
 		let mut pol = BackendPolicies::default();
@@ -1473,6 +1502,7 @@ mod tests {
 
 	use super::*;
 	use crate::telemetry::log::OrderedStringMap;
+	use crate::types::agent::{BackendTarget, PolicyType};
 	use crate::types::frontend::LoggingPolicy;
 
 	fn listener() -> ListenerName {
@@ -1767,5 +1797,144 @@ mod tests {
 		let bind = Bind::try_from_xds(&xds_bind, true).unwrap();
 		assert_eq!(bind.address.port(), 9090);
 		assert_eq!(bind.address.ip(), IpAddr::V6(Ipv6Addr::UNSPECIFIED));
+	}
+
+	/// Tests backend policy merging precedence:
+	/// Section-level (sectionName) > Backend inline > Backend attached
+	#[test]
+	fn backend_policy_merging_precedence() {
+		use crate::http::filters::HeaderModifier;
+
+		let mut store = Store::default();
+
+		// Create backend-attached policy (lowest priority) - sets x-foo=bar
+		let backend_attached_policy_key: PolicyKey = strng::new("backend-attached-policy");
+		let backend_attached_policy = TargetedPolicy {
+			key: backend_attached_policy_key.clone(),
+			name: None,
+			target: PolicyTarget::Backend(BackendTarget::Backend {
+				name: strng::new("test-backend"),
+				namespace: strng::new("test-ns"),
+				section: None,
+			}),
+			policy: PolicyType::Backend(BackendPolicy::RequestHeaderModifier(HeaderModifier {
+				add: vec![],
+				set: vec![(strng::new("x-foo"), strng::new("bar"))],
+				remove: vec![],
+			})),
+		};
+		store.insert_policy(backend_attached_policy);
+
+		// Create section-level policy (highest priority) - sets x-foo=bar3
+		let section_policy_key: PolicyKey = strng::new("section-policy");
+		let section_policy = TargetedPolicy {
+			key: section_policy_key.clone(),
+			name: None,
+			target: PolicyTarget::Backend(BackendTarget::Backend {
+				name: strng::new("test-backend"),
+				namespace: strng::new("test-ns"),
+				section: Some(strng::new("target")),
+			}),
+			policy: PolicyType::Backend(BackendPolicy::RequestHeaderModifier(HeaderModifier {
+				add: vec![],
+				set: vec![(strng::new("x-foo"), strng::new("bar3"))],
+				remove: vec![],
+			})),
+		};
+		store.insert_policy(section_policy);
+
+		// Create backend inline policies (middle priority) - sets x-foo=bar2
+		let backend_inline_policies = vec![BackendPolicy::RequestHeaderModifier(HeaderModifier {
+			add: vec![],
+			set: vec![(strng::new("x-foo"), strng::new("bar2"))],
+			remove: vec![],
+		})];
+
+		// Test case 1: Backend without section - should use backend inline (bar2) over backend attached (bar)
+		let policies_no_section = store.backend_policies(
+			BackendTargetRef::Backend {
+				name: "test-backend",
+				namespace: "test-ns",
+				section: None,
+			},
+			&[&backend_inline_policies],
+			None,
+		);
+
+		assert!(
+			policies_no_section.request_header_modifier.is_some(),
+			"Expected request header modifier to be present"
+		);
+		let modifier = policies_no_section
+			.request_header_modifier
+			.as_ref()
+			.unwrap();
+		assert_eq!(
+			modifier.set.len(),
+			1,
+			"Expected exactly one header to be set"
+		);
+		assert_eq!(
+			modifier.set[0],
+			(strng::new("x-foo"), strng::new("bar2")),
+			"Backend inline policy (bar2) should win over backend attached policy (bar)"
+		);
+
+		// Test case 2: Backend with section - should use section policy (bar3) over all others
+		let policies_with_section = store.backend_policies(
+			BackendTargetRef::Backend {
+				name: "test-backend",
+				namespace: "test-ns",
+				section: Some("target"),
+			},
+			&[&backend_inline_policies],
+			None,
+		);
+
+		assert!(
+			policies_with_section.request_header_modifier.is_some(),
+			"Expected request header modifier to be present"
+		);
+		let modifier = policies_with_section
+			.request_header_modifier
+			.as_ref()
+			.unwrap();
+		assert_eq!(
+			modifier.set.len(),
+			1,
+			"Expected exactly one header to be set"
+		);
+		assert_eq!(
+			modifier.set[0],
+			(strng::new("x-foo"), strng::new("bar3")),
+			"Section policy (bar3) should win over backend inline (bar2) and backend attached (bar)"
+		);
+
+		// Test case 3: Backend without any inline policies - should use backend attached (bar)
+		let policies_no_inline = store.backend_policies(
+			BackendTargetRef::Backend {
+				name: "test-backend",
+				namespace: "test-ns",
+				section: None,
+			},
+			&[],
+			None,
+		);
+
+		assert!(
+			policies_no_inline.request_header_modifier.is_some(),
+			"Expected request header modifier to be present"
+		);
+		let modifier = policies_no_inline.request_header_modifier.as_ref().unwrap();
+		assert_eq!(
+			modifier.set.len(),
+			1,
+			"Expected exactly one header to be set"
+		);
+		assert_eq!(
+			modifier.set[0],
+			(strng::new("x-foo"), strng::new("bar")),
+			"Backend attached policy (bar) should be used when no inline policies exist"
+		);
 	}
 }
