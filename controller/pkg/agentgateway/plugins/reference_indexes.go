@@ -275,14 +275,18 @@ func (p ReferenceIndex) LookupGatewaysForTarget(ctx krt.HandlerContext, object u
 		return sets.New(object.NamespacedName)
 	case wellknown.HTTPRouteGVK.Kind, wellknown.GRPCRouteGVK.Kind, wellknown.TCPRouteGVK.Kind, wellknown.TLSRouteGVK.Kind:
 		gateways := sets.New[types.NamespacedName]()
-		for _, ancestor := range krt.FetchOne(ctx, p.attachments, krt.FilterKey(object.String())).Objects {
-			gateways.Insert(ancestor.Gateway)
+		if a := krt.FetchOne(ctx, p.attachments, krt.FilterKey(object.String())); a != nil {
+			for _, ancestor := range a.Objects {
+				gateways.Insert(ancestor.Gateway)
+			}
 		}
 		return gateways
 	default:
 		gateways := sets.New[types.NamespacedName]()
-		for _, ancestor := range krt.FetchOne(ctx, p.Ancestors, krt.FilterKey(object.String())).Objects {
-			gateways.Insert(ancestor.Gateway)
+		if a := krt.FetchOne(ctx, p.Ancestors, krt.FilterKey(object.String())); a != nil {
+			for _, ancestor := range a.Objects {
+				gateways.Insert(ancestor.Gateway)
+			}
 		}
 		return gateways
 	}
@@ -303,7 +307,11 @@ func (p ReferenceIndex) lookupGatewaysForBackend(ctx krt.HandlerContext, object 
 	if p.PolicyAttachments == nil {
 		return base
 	}
-	for _, pref := range krt.FetchOne(ctx, p.PolicyAttachments, krt.FilterKey(key)).Objects {
+	attachment := krt.FetchOne(ctx, p.PolicyAttachments, krt.FilterKey(key))
+	if attachment == nil {
+		return base
+	}
+	for _, pref := range attachment.Objects {
 		base = base.Union(p.lookupGatewaysForBackend(ctx, pref.Target, seen))
 	}
 	return base
