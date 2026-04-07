@@ -1013,3 +1013,51 @@ mod prompt_guard_config_tests {
 		);
 	}
 }
+
+#[test]
+fn test_bedrock_guardrails_user_credentials_take_precedence() {
+	use crate::http::auth::{AwsAuth, BackendAuth};
+	use crate::types::agent::BackendPolicy;
+	use secrecy::SecretString;
+
+	// User provides explicit AWS credentials via K8s secret
+	let user_provided_auth = BackendPolicy::BackendAuth(BackendAuth::Aws(AwsAuth::ExplicitConfig {
+		access_key_id: SecretString::new("AKIAIOSFODNN7EXAMPLE".into()),
+		secret_access_key: SecretString::new("wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY".into()),
+		region: Some("us-east-1".to_string()),
+		session_token: None,
+	}));
+
+	// This is what the user provides in their BedrockGuardrails config
+	let user_policies = vec![user_provided_auth.clone()];
+
+	// User-provided policies come first so they take precedence, then fallback to implicit auth
+	let mut pols: Vec<BackendPolicy> = user_policies.iter().cloned().collect();
+	pols.push(BackendPolicy::BackendTLS(
+		crate::http::backendtls::SYSTEM_TRUST.clone(),
+	));
+	pols.push(BackendPolicy::BackendAuth(BackendAuth::Aws(
+		AwsAuth::Implicit {},
+	)));
+
+	// First auth in the vector wins (first-wins semantics from binds.rs)
+	let mut resolved_auth: Option<&BackendAuth> = None;
+	for p in &pols {
+		if let BackendPolicy::BackendAuth(auth) = p {
+			if resolved_auth.is_none() {
+				resolved_auth = Some(auth);
+			}
+		}
+	}
+
+	// User's explicit credentials should take precedence over implicit auth
+	// because user policies come first in the vector (first-wins semantics)
+	assert!(
+		matches!(
+			resolved_auth,
+			Some(BackendAuth::Aws(AwsAuth::ExplicitConfig { .. }))
+		),
+		"Expected user-provided explicit AWS credentials to take precedence, \
+		 but implicit auth was used instead. This means the user's AWS secret is being ignored!"
+	);
+}

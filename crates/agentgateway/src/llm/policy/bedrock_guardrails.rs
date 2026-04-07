@@ -139,12 +139,14 @@ async fn send_guardrail_request(
 		"Sending Bedrock guardrail request"
 	);
 
-	let mut pols = vec![
-		BackendPolicy::BackendTLS(crate::http::backendtls::SYSTEM_TRUST.clone()),
-		// Default to implicit AWS auth
-		BackendPolicy::BackendAuth(BackendAuth::Aws(AwsAuth::Implicit {})),
-	];
-	pols.extend(guardrails.policies.iter().cloned());
+	// User-provided policies come first, then default to implicit AWS auth (only used if user didn't provide explicit auth)
+	let mut pols: Vec<BackendPolicy> = guardrails.policies.iter().cloned().collect();
+	pols.push(BackendPolicy::BackendTLS(
+		crate::http::backendtls::SYSTEM_TRUST.clone(),
+	));
+	pols.push(BackendPolicy::BackendAuth(BackendAuth::Aws(
+		AwsAuth::Implicit {},
+	)));
 
 	// AWS requires both Content-Type and Accept headers
 	let mut rb = ::http::Request::builder()

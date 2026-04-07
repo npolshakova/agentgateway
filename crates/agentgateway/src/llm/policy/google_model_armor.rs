@@ -340,12 +340,14 @@ async fn send_model_armor_request<T: Serialize>(
 	);
 	let uri = format!("https://{}{}", host, path);
 
-	let mut pols = vec![
-		BackendPolicy::BackendTLS(crate::http::backendtls::SYSTEM_TRUST.clone()),
-		// Default to implicit GCP auth
-		BackendPolicy::BackendAuth(BackendAuth::Gcp(GcpAuth::default())),
-	];
-	pols.extend(model_armor.policies.iter().cloned());
+	// User-provided policies come first, then default to implicit GCP auth (only used if user didn't provide explicit auth)
+	let mut pols: Vec<BackendPolicy> = model_armor.policies.iter().cloned().collect();
+	pols.push(BackendPolicy::BackendTLS(
+		crate::http::backendtls::SYSTEM_TRUST.clone(),
+	));
+	pols.push(BackendPolicy::BackendAuth(BackendAuth::Gcp(
+		GcpAuth::default(),
+	)));
 
 	let mut rb = ::http::Request::builder()
 		.uri(&uri)
