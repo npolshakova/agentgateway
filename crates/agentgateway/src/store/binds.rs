@@ -728,44 +728,25 @@ impl Store {
 		let gateway_rules =
 			gateway.and_then(|t| self.policies_by_target.get(&t.as_gateway_target_ref()));
 
-		// Precedence (highest to lowest):
-		// backendRef inline > RouteRule attached > SubBackend attached > Route attached >
-		// Backend inline > Backend/Service attached > Listener attached > Gateway attached
-		//
-		// inline_policies array structure (from httpproxy.rs):
-		//   [0]: Backend inline policies (from Backend spec)
-		//   [1+]: backendRef inline policies (from Route's backendRef, if present)
-
-		// Split inline policies: backendRef inline (all but first) vs Backend inline (first)
-		let backend_inline_iter = inline_policies.first().into_iter().flat_map(|p| p.iter());
-		let backend_ref_inline_iter = inline_policies.iter().skip(1).flat_map(|p| p.iter());
-
-		// Build the attached rules chain with Backend inline inserted in the correct position
-		let attached_rules = route_rule_rules
+		// RouteRule > Route > SubBackend > Backend/Service > Gateway
+		// Most specific (route context) to least specific (gateway-wide default)
+		let rules = route_rule_rules
 			.iter()
 			.copied()
 			.flatten()
 			.chain(sub_backend_rules.iter().copied().flatten())
 			.chain(route_rules.iter().copied().flatten())
+			.chain(backend_rules.iter().copied().flatten())
+			.chain(listener_rules.iter().copied().flatten())
+			.chain(gateway_rules.iter().copied().flatten())
 			.unique()
 			.filter_map(|n| self.policies_by_key.get(n))
-			.filter_map(|p| p.policy.as_backend())
-			// Insert Backend inline here (after Route, before Backend attached)
-			.chain(backend_inline_iter)
-			.chain(
-				backend_rules
-					.iter()
-					.copied()
-					.flatten()
-					.chain(listener_rules.iter().copied().flatten())
-					.chain(gateway_rules.iter().copied().flatten())
-					.unique()
-					.filter_map(|n| self.policies_by_key.get(n))
-					.filter_map(|p| p.policy.as_backend()),
-			);
-
-		// Prepend backendRef inline (highest priority)
-		let rules = backend_ref_inline_iter.chain(attached_rules);
+			.filter_map(|p| p.policy.as_backend());
+		let rules = inline_policies
+			.iter()
+			.rev()
+			.flat_map(|p| p.iter())
+			.chain(rules);
 
 		let mut mcp_authz = Vec::new();
 		let mut pol = BackendPolicies::default();
@@ -1804,14 +1785,14 @@ mod tests {
 	}
 
 	/// Tests backend policy merging precedence:
-	/// Section-level (sectionName) > Backend inline > Backend attached
+	/// Inline policies > Attached policies (with SubBackend > Backend among attached)
 	#[test]
 	fn backend_policy_merging_precedence() {
 		use crate::http::filters::HeaderModifier;
 
 		let mut store = Store::default();
 
-		// Create backend-attached policy (lowest priority) - sets x-foo=bar
+		// Create backend-attached policy - sets x-foo=bar
 		let backend_attached_policy_key: PolicyKey = strng::new("backend-attached-policy");
 		let backend_attached_policy = TargetedPolicy {
 			key: backend_attached_policy_key.clone(),
@@ -1829,7 +1810,7 @@ mod tests {
 		};
 		store.insert_policy(backend_attached_policy);
 
-		// Create section-level policy (highest priority) - sets x-foo=bar3
+		// Create section-level attached policy - sets x-foo=bar3
 		let section_policy_key: PolicyKey = strng::new("section-policy");
 		let section_policy = TargetedPolicy {
 			key: section_policy_key.clone(),
@@ -1847,14 +1828,14 @@ mod tests {
 		};
 		store.insert_policy(section_policy);
 
-		// Create backend inline policies (middle priority) - sets x-foo=bar2
+		// Create inline policies - sets x-foo=bar2
 		let backend_inline_policies = vec![BackendPolicy::RequestHeaderModifier(HeaderModifier {
 			add: vec![],
 			set: vec![(strng::new("x-foo"), strng::new("bar2"))],
 			remove: vec![],
 		})];
 
-		// Test case 1: Backend without section - should use backend inline (bar2) over backend attached (bar)
+		// Test case 1: Inline policy beats backend attached policy
 		let policies_no_section = store.backend_policies(
 			BackendTargetRef::Backend {
 				name: "test-backend",
@@ -1881,10 +1862,10 @@ mod tests {
 		assert_eq!(
 			modifier.set[0],
 			(strng::new("x-foo"), strng::new("bar2")),
-			"Backend inline policy (bar2) should win over backend attached policy (bar)"
+			"Inline policy (bar2) should win over backend attached policy (bar)"
 		);
 
-		// Test case 2: Backend with section - should use section policy (bar3) over all others
+		// Test case 2: Inline policy beats section attached policy
 		let policies_with_section = store.backend_policies(
 			BackendTargetRef::Backend {
 				name: "test-backend",
@@ -1910,11 +1891,11 @@ mod tests {
 		);
 		assert_eq!(
 			modifier.set[0],
-			(strng::new("x-foo"), strng::new("bar3")),
-			"Section policy (bar3) should win over backend inline (bar2) and backend attached (bar)"
+			(strng::new("x-foo"), strng::new("bar2")),
+			"Inline policy (bar2) should win over section attached policy (bar3)"
 		);
 
-		// Test case 3: Backend without any inline policies - should use backend attached (bar)
+		// Test case 3: Without inline policies, backend attached policy is used
 		let policies_no_inline = store.backend_policies(
 			BackendTargetRef::Backend {
 				name: "test-backend",
@@ -1939,6 +1920,36 @@ mod tests {
 			modifier.set[0],
 			(strng::new("x-foo"), strng::new("bar")),
 			"Backend attached policy (bar) should be used when no inline policies exist"
+		);
+
+		// Test case 4: Without inline policies, section attached policy beats backend attached
+		let policies_section_no_inline = store.backend_policies(
+			BackendTargetRef::Backend {
+				name: "test-backend",
+				namespace: "test-ns",
+				section: Some("target"),
+			},
+			&[],
+			None,
+		);
+
+		assert!(
+			policies_section_no_inline.request_header_modifier.is_some(),
+			"Expected request header modifier to be present"
+		);
+		let modifier = policies_section_no_inline
+			.request_header_modifier
+			.as_ref()
+			.unwrap();
+		assert_eq!(
+			modifier.set.len(),
+			1,
+			"Expected exactly one header to be set"
+		);
+		assert_eq!(
+			modifier.set[0],
+			(strng::new("x-foo"), strng::new("bar3")),
+			"Section attached policy (bar3) should win over backend attached policy (bar)"
 		);
 	}
 }
