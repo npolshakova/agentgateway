@@ -1,16 +1,22 @@
 ---
 source: crates/agentgateway/src/llm/tests.rs
-assertion_line: 136
-description: src/llm/tests/requests/policies/openai_with_inputs.json
+description: src/llm/tests/requests/responses/assistant-history.json
 info:
   model: gpt-4o
-  max_tokens: 1024
   input:
+    - type: message
+      role: assistant
+      phase: final_answer
+      content:
+        - type: output_text
+          text: Here is the answer.
+        - type: refusal
+          text: I cannot help with that part.
     - type: message
       role: user
       content:
         - type: input_text
-          text: "Hello, world"
+          text: Follow up question.
 ---
 {
   "input": [
@@ -41,11 +47,26 @@ info:
     },
     {
       "type": "message",
+      "role": "assistant",
+      "phase": "final_answer",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Here is the answer."
+        },
+        {
+          "type": "refusal",
+          "text": "I cannot help with that part."
+        }
+      ]
+    },
+    {
+      "type": "message",
       "role": "user",
       "content": [
         {
           "type": "input_text",
-          "text": "Hello, world"
+          "text": "Follow up question."
         }
       ]
     },
@@ -75,6 +96,5 @@ info:
       "content": "append assistant prompt"
     }
   ],
-  "model": "gpt-4o",
-  "max_tokens": 1024
+  "model": "gpt-4o"
 }
