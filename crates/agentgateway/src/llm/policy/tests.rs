@@ -1029,10 +1029,10 @@ fn test_bedrock_guardrails_user_credentials_take_precedence() {
 	}));
 
 	// This is what the user provides in their BedrockGuardrails config
-	let user_policies = vec![user_provided_auth.clone()];
+	let user_policies = [user_provided_auth.clone()];
 
 	// User-provided policies come first so they take precedence, then fallback to implicit auth
-	let mut pols: Vec<BackendPolicy> = user_policies.iter().cloned().collect();
+	let mut pols: Vec<BackendPolicy> = user_policies.to_vec();
 	pols.push(BackendPolicy::BackendTLS(
 		crate::http::backendtls::SYSTEM_TRUST.clone(),
 	));
@@ -1043,10 +1043,10 @@ fn test_bedrock_guardrails_user_credentials_take_precedence() {
 	// First auth in the vector wins (first-wins semantics from binds.rs)
 	let mut resolved_auth: Option<&BackendAuth> = None;
 	for p in &pols {
-		if let BackendPolicy::BackendAuth(auth) = p {
-			if resolved_auth.is_none() {
-				resolved_auth = Some(auth);
-			}
+		if let BackendPolicy::BackendAuth(auth) = p
+			&& resolved_auth.is_none()
+		{
+			resolved_auth = Some(auth);
 		}
 	}
 

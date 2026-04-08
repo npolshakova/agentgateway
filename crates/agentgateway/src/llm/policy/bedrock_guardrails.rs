@@ -140,7 +140,7 @@ async fn send_guardrail_request(
 	);
 
 	// User-provided policies come first, then default to implicit AWS auth (only used if user didn't provide explicit auth)
-	let mut pols: Vec<BackendPolicy> = guardrails.policies.iter().cloned().collect();
+	let mut pols: Vec<BackendPolicy> = guardrails.policies.to_vec();
 	pols.push(BackendPolicy::BackendTLS(
 		crate::http::backendtls::SYSTEM_TRUST.clone(),
 	));
