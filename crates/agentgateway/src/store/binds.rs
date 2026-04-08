@@ -712,6 +712,7 @@ impl Store {
 		// UNLESS backend is None, in which case we need to look up the base backend
 		let has_section = sub_backend.as_ref().is_some_and(|t| match t {
 			BackendTargetRef::Backend { section, .. } => section.is_some(),
+			BackendTargetRef::Service { port, .. } => port.is_some(),
 			_ => false,
 		});
 		let sub_backend_rules = if has_section || backend.is_none() {
