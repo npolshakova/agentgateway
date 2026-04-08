@@ -1017,47 +1017,117 @@ mod prompt_guard_config_tests {
 #[test]
 fn test_bedrock_guardrails_user_credentials_take_precedence() {
 	use crate::http::auth::{AwsAuth, BackendAuth};
+	use crate::store::BindStore;
 	use crate::types::agent::BackendPolicy;
 	use secrecy::SecretString;
 
-	// User provides explicit AWS credentials via K8s secret
-	let user_provided_auth = BackendPolicy::BackendAuth(BackendAuth::Aws(AwsAuth::ExplicitConfig {
-		access_key_id: SecretString::new("AKIAIOSFODNN7EXAMPLE".into()),
-		secret_access_key: SecretString::new("wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY".into()),
-		region: Some("us-east-1".to_string()),
-		session_token: None,
-	}));
+	let guardrails = BedrockGuardrails {
+		guardrail_identifier: strng::new("test-guardrail"),
+		guardrail_version: strng::new("1"),
+		region: strng::new("us-east-1"),
+		policies: vec![BackendPolicy::BackendAuth(BackendAuth::Aws(
+			AwsAuth::ExplicitConfig {
+				access_key_id: SecretString::new("AKIAIOSFODNN7EXAMPLE".into()),
+				secret_access_key: SecretString::new("wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY".into()),
+				region: Some("us-east-1".to_string()),
+				session_token: None,
+			},
+		))],
+	};
 
-	// This is what the user provides in their BedrockGuardrails config
-	let user_policies = [user_provided_auth.clone()];
+	let pols = guardrails.build_request_policies();
 
-	// User-provided policies come first so they take precedence, then fallback to implicit auth
-	let mut pols: Vec<BackendPolicy> = user_policies.to_vec();
-	pols.push(BackendPolicy::BackendTLS(
-		crate::http::backendtls::SYSTEM_TRUST.clone(),
-	));
-	pols.push(BackendPolicy::BackendAuth(BackendAuth::Aws(
-		AwsAuth::Implicit {},
-	)));
+	// Resolve through the real policy resolution code (same path as call_with_explicit_policies)
+	let store = BindStore::default();
+	let resolved = store.inline_backend_policies(&pols);
 
-	// First auth in the vector wins (first-wins semantics from binds.rs)
-	let mut resolved_auth: Option<&BackendAuth> = None;
-	for p in &pols {
-		if let BackendPolicy::BackendAuth(auth) = p
-			&& resolved_auth.is_none()
-		{
-			resolved_auth = Some(auth);
-		}
-	}
-
-	// User's explicit credentials should take precedence over implicit auth
-	// because user policies come first in the vector (first-wins semantics)
 	assert!(
 		matches!(
-			resolved_auth,
+			resolved.backend_auth,
 			Some(BackendAuth::Aws(AwsAuth::ExplicitConfig { .. }))
 		),
-		"Expected user-provided explicit AWS credentials to take precedence, \
-		 but implicit auth was used instead. This means the user's AWS secret is being ignored!"
+		"Expected user-provided explicit AWS credentials to take precedence over \
+		 the implicit fallback, but got: {:?}",
+		resolved.backend_auth
+	);
+}
+
+#[test]
+fn test_bedrock_guardrails_implicit_auth_used_when_no_user_credentials() {
+	use crate::http::auth::{AwsAuth, BackendAuth};
+	use crate::store::BindStore;
+
+	let guardrails = BedrockGuardrails {
+		guardrail_identifier: strng::new("test-guardrail"),
+		guardrail_version: strng::new("1"),
+		region: strng::new("us-west-2"),
+		policies: vec![],
+	};
+
+	let pols = guardrails.build_request_policies();
+
+	let store = BindStore::default();
+	let resolved = store.inline_backend_policies(&pols);
+
+	assert!(
+		matches!(
+			resolved.backend_auth,
+			Some(BackendAuth::Aws(AwsAuth::Implicit {}))
+		),
+		"Expected implicit AWS auth when no user credentials are provided, but got: {:?}",
+		resolved.backend_auth
+	);
+}
+
+#[test]
+fn test_google_model_armor_user_credentials_take_precedence() {
+	use crate::http::auth::BackendAuth;
+	use crate::store::BindStore;
+	use crate::types::agent::BackendPolicy;
+	use secrecy::SecretString;
+
+	let model_armor = GoogleModelArmor {
+		template_id: strng::new("test-template"),
+		project_id: strng::new("test-project"),
+		location: Some(strng::new("us-central1")),
+		policies: vec![BackendPolicy::BackendAuth(BackendAuth::Key(
+			SecretString::new("user-provided-api-key".into()),
+		))],
+	};
+
+	let pols = model_armor.build_request_policies();
+
+	let store = BindStore::default();
+	let resolved = store.inline_backend_policies(&pols);
+
+	assert!(
+		matches!(resolved.backend_auth, Some(BackendAuth::Key(_))),
+		"Expected user-provided Key auth to take precedence over \
+		 the implicit GCP fallback, but got: {:?}",
+		resolved.backend_auth
+	);
+}
+
+#[test]
+fn test_google_model_armor_implicit_auth_used_when_no_user_credentials() {
+	use crate::http::auth::BackendAuth;
+	use crate::store::BindStore;
+
+	let model_armor = GoogleModelArmor {
+		template_id: strng::new("test-template"),
+		project_id: strng::new("test-project"),
+		location: None,
+		policies: vec![],
+	};
+
+	let pols = model_armor.build_request_policies();
+
+	let store = BindStore::default();
+	let resolved = store.inline_backend_policies(&pols);
+
+	assert!(
+		matches!(resolved.backend_auth, Some(BackendAuth::Gcp(_))),
+		"Expected implicit GCP auth when no user credentials are provided, but got: {:?}",
+		resolved.backend_auth
 	);
 }
