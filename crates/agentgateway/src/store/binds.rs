@@ -701,26 +701,10 @@ impl Store {
 		gateway: Option<&ListenerName>,
 		route: Option<&RouteName>,
 	) -> BackendPolicies {
-		let backend_rules = backend.as_ref().and_then(|t| {
-			self
-				.policies_by_target
-				.get(&PolicyTargetRef::Backend(t.clone()))
-		});
-
-		// Only use sub_backend rules if there's an actual section specified
-		// (avoid duplicating backend_rules when section is None)
-		// UNLESS backend is None, in which case we need to look up the base backend
-		let has_section = sub_backend.as_ref().is_some_and(|t| match t {
-			BackendTargetRef::Backend { section, .. } => section.is_some(),
-			BackendTargetRef::Service { port, .. } => port.is_some(),
-			_ => false,
-		});
-		let sub_backend_rules = if has_section || backend.is_none() {
-			sub_backend.and_then(|t| self.policies_by_target.get(&PolicyTargetRef::Backend(t)))
-		} else {
-			None
-		};
-
+		let backend_rules =
+			backend.and_then(|t| self.policies_by_target.get(&PolicyTargetRef::Backend(t)));
+		let sub_backend_rules =
+			sub_backend.and_then(|t| self.policies_by_target.get(&PolicyTargetRef::Backend(t)));
 		let route_rule_rules =
 			route.and_then(|t| self.policies_by_target.get(&t.as_route_rule_target_ref()));
 		let route_rules = route.and_then(|t| self.policies_by_target.get(&t.as_route_target_ref()));
