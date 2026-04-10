@@ -54,7 +54,9 @@ func (r *defaultResolver) Resolve(krtctx krt.HandlerContext, input ResolveInput)
 		return nil, err
 	}
 
-	target := FetchTarget{}
+	target := FetchTarget{
+		ProxyURL: resolved.proxyURL,
+	}
 	if resolved.tls == nil {
 		target.URL = fmt.Sprintf("http://%s/%s", resolved.connectHost, path)
 		return &ResolvedTarget{

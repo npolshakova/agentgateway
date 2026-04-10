@@ -63,13 +63,13 @@ func TestRequestKeyPreservesVerificationFingerprintCompatibility(t *testing.T) {
 		},
 	}
 
-	if strict.Key() != FetchKey("e3d906b06f588b422b6b382d625e070f9642c2afdb5797d1ce0f12c2b8fe8ad1") {
+	if strict.Key() != FetchKey("f88aca84338ee9f79f4bfffc38d0ab986b77d9a84c48ab8494320dd674e1360c") {
 		t.Fatalf("strict verification fingerprint changed: %s", strict.Key())
 	}
-	if hostname.Key() != FetchKey("e87ac6c445ca5765c464dace139a702f32324ff57f3a4dd1e212c087a10c5639") {
+	if hostname.Key() != FetchKey("877060d7809ba8ecec793825b9c3a417a86f58b510fe5caef1459fe2ac813f9e") {
 		t.Fatalf("hostname verification fingerprint changed: %s", hostname.Key())
 	}
-	if insecure.Key() != FetchKey("3698988ca86642973e494bc25a7517e57294088173ba7b1e1bd2af0f91de216a") {
+	if insecure.Key() != FetchKey("e9f70ae7c1c52f16f8076f83a4b89efa16d6cdcf8df28a642466bcff4aaf2ded") {
 		t.Fatalf("insecure verification fingerprint changed: %s", insecure.Key())
 	}
 }
@@ -81,8 +81,23 @@ func TestRequestKeyPreservesPlainHTTPCompatibility(t *testing.T) {
 		URL: "http://keycloak.default.svc.cluster.local:7080/realms/mcp/protocol/openid-connect/certs",
 	}
 
-	if request.Key() != FetchKey("8934a9b40d194d588c6a049a782dd1c45bd4821a7e8288210f373f4b89ce765a") {
+	if request.Key() != FetchKey("1e7164f878aa33738bc1ee75f61bbdda058a5435b2908ea9c2cd4f7d6d0fb7b4") {
 		t.Fatalf("plain HTTP fingerprint changed: %s", request.Key())
+	}
+}
+
+func TestRequestKeyDistinguishesByProxyURL(t *testing.T) {
+	t.Parallel()
+
+	noProxy := FetchTarget{URL: "https://issuer.example/jwks"}
+	withProxy := FetchTarget{URL: "https://issuer.example/jwks", ProxyURL: "http://proxy:8080"}
+	differentProxy := FetchTarget{URL: "https://issuer.example/jwks", ProxyURL: "http://other-proxy:3128"}
+
+	if noProxy.Key() == withProxy.Key() {
+		t.Fatalf("expected proxy URL to produce a distinct request key")
+	}
+	if withProxy.Key() == differentProxy.Key() {
+		t.Fatalf("expected different proxy URLs to produce distinct request keys")
 	}
 }
 

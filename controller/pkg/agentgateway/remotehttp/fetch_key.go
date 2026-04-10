@@ -24,6 +24,7 @@ func (r FetchTarget) Key() FetchKey {
 	}
 
 	writeHashPart(r.URL)
+	writeHashPart(r.ProxyURL)
 	writeHashPart(transportVerificationFingerprint(r.URL, transport.Verification))
 	writeHashPart(transport.ServerName)
 	writeHashPart(transport.CABundleHash)
