@@ -1,7 +1,6 @@
 package plugins
 
 import (
-	"cmp"
 	"fmt"
 	"strconv"
 	"strings"
@@ -13,12 +12,12 @@ import (
 	"istio.io/istio/pkg/slices"
 	"istio.io/istio/pkg/util/sets"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/agentgateway/agentgateway/api"
+	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/policyselection"
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/utils"
 	"github.com/agentgateway/agentgateway/controller/pkg/pluginsdk/krtutil"
 	"github.com/agentgateway/agentgateway/controller/pkg/wellknown"
@@ -266,31 +265,11 @@ func checkConflicted(
 			continue
 		}
 		// If the one we match with is higher priority, we are conflicted
-		if comparePolicy(m, btls) {
+		if policyselection.HasHigherPriority(m, btls) {
 			return fmt.Errorf("policy %v matches the same target but with higher priority", m.Name)
 		}
 	}
 	return nil
-}
-
-// comparePolicy compares two objects, and returns true if the first is a higher priority than the second.
-// Priority is determined by creation timestamp and alphabetical order
-func comparePolicy(a, b metav1.Object) bool {
-	ts := a.GetCreationTimestamp().Compare(b.GetCreationTimestamp().Time)
-	if ts < 0 {
-		return true
-	}
-	if ts > 0 {
-		return false
-	}
-	ns := cmp.Compare(a.GetNamespace(), b.GetNamespace())
-	if ns < 0 {
-		return true
-	}
-	if ns > 0 {
-		return false
-	}
-	return a.GetName() < b.GetName()
 }
 
 func targetEqual(a, b gwv1.LocalPolicyTargetReferenceWithSectionName) bool {
