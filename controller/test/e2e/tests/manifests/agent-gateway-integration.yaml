@@ -1,5 +1,7 @@
 image:
   registry: ghcr.io/agentgateway
+  tag: v1.0.1-dev
+  pullPolicy: IfNotPresent
 
 # Configuration for the kgateway controller pod
 controller:

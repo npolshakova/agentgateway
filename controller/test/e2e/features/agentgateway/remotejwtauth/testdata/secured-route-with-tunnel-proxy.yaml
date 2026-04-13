@@ -1,0 +1,137 @@
+# Squid forward proxy for testing tunnel proxy JWKS fetching.
+# The control plane sends HTTP CONNECT to squid, which tunnels TLS to dummy-idp.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: squid-config
+  namespace: agentgateway-base
+  labels:
+    app: squid-proxy
+data:
+  squid.conf: |
+    http_port 3128
+
+    acl SSL_ports port 443
+    acl SSL_ports port 8443
+
+    http_access allow CONNECT SSL_ports
+    http_access deny CONNECT !SSL_ports
+    http_access allow all
+
+    dns_v4_first on
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: squid-proxy
+  namespace: agentgateway-base
+  labels:
+    app: squid-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: squid-proxy
+  template:
+    metadata:
+      labels:
+        app: squid-proxy
+        app.kubernetes.io/name: squid-proxy
+    spec:
+      containers:
+      - name: squid
+        image: ubuntu/squid:6.6-24.04_beta
+        ports:
+        - containerPort: 3128
+          name: proxy
+          protocol: TCP
+        volumeMounts:
+        - name: squid-config
+          mountPath: /etc/squid/squid.conf
+          subPath: squid.conf
+      volumes:
+      - name: squid-config
+        configMap:
+          name: squid-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: squid-proxy
+  namespace: agentgateway-base
+spec:
+  ports:
+  - port: 3128
+    name: proxy
+  selector:
+    app.kubernetes.io/name: squid-proxy
+---
+# Proxy backend (squid forward proxy)
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: squid-proxy
+  namespace: agentgateway-base
+spec:
+  static:
+    host: squid-proxy.agentgateway-base
+    port: 3128
+---
+# JWKS backend with tunnel policy routing through the squid proxy
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: dummy-idp-proxied
+  namespace: agentgateway-base
+spec:
+  static:
+    host: dummy-idp.default.svc.cluster.local
+    port: 8443
+  policies:
+    tls:
+      insecureSkipVerify: All
+    tunnel:
+      backendRef:
+        group: agentgateway.dev
+        kind: AgentgatewayBackend
+        name: squid-proxy
+        port: 3128
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: route-secure-tunnel
+  namespace: agentgateway-base
+spec:
+  parentRefs:
+  - name: gateway
+  hostnames:
+  - "securetunnelroute.com"
+  rules:
+  - backendRefs:
+    - name: backend
+      port: 80
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: route-policy-tunnel
+  namespace: agentgateway-base
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: route-secure-tunnel
+  traffic:
+    jwtAuthentication:
+      mode: Strict
+      providers:
+      - issuer: https://kgateway.dev
+        jwks:
+          remote:
+            jwksPath: org-one/keys
+            backendRef:
+              group: agentgateway.dev
+              kind: AgentgatewayBackend
+              name: dummy-idp-proxied
+              port: 8443

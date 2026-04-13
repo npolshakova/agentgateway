@@ -75,6 +75,9 @@ var (
 		"TestGatewayPolicyWithRbac": {
 			Manifests: []string{secureGWPolicyWithRbacManifest},
 		},
+		"TestRoutePolicyBackendWithTunnelProxy": {
+			Manifests: []string{secureRoutePolicyManifestTunnelProxy},
+		},
 	}
 )
 
@@ -100,6 +103,7 @@ var (
 	secureRoutePolicyManifestSvc                 = getTestFile("secured-route-with-svc.yaml")
 	secureRoutePolicyManifestSvcCaCert           = getTestFile("secured-route-with-svc-ca-cert.yaml")
 	secureRoutePolicyWithRbacManifest            = getTestFile("secured-route-with-rbac.yaml")
+	secureRoutePolicyManifestTunnelProxy         = getTestFile("secured-route-with-tunnel-proxy.yaml")
 )
 
 func (s *testingSuite) TestRoutePolicyBackend() {
@@ -174,6 +178,19 @@ func (s *testingSuite) TestRoutePolicyWithRbac() {
 	s.assertResponse("secureroute.com", JwtOrgOne, http.StatusOK)
 	// verify a jwt with unexpected subject is denied
 	s.assertResponse("secureroute.com", jwtOrgFour, http.StatusForbidden)
+}
+
+func (s *testingSuite) TestRoutePolicyBackendWithTunnelProxy() {
+	s.TestInstallation.AssertionsT(s.T()).EventuallyHTTPRouteCondition(
+		s.Ctx,
+		"route-secure-tunnel",
+		namespace,
+		gwv1.RouteConditionAccepted,
+		metav1.ConditionTrue,
+	)
+	s.assertResponse("securetunnelroute.com", JwtOrgOne, http.StatusOK)
+	s.assertResponse("securetunnelroute.com", "nosuchkey", http.StatusUnauthorized)
+	s.assertResponseWithoutAuth("securetunnelroute.com", http.StatusUnauthorized)
 }
 
 func (s *testingSuite) TestGatewayPolicySvc() {
