@@ -136,7 +136,7 @@ func nextRetryDelay(retryAttempt int) time.Duration {
 	return next
 }
 
-func makeFetchClient(tlsConfig *tls.Config, proxyURL string) *http.Client {
+func makeFetchClient(tlsConfig *tls.Config, proxyURL string) (*http.Client, error) {
 	transport := &http.Transport{
 		TLSClientConfig: tlsConfig,
 		DialContext: (&net.Dialer{
@@ -145,14 +145,16 @@ func makeFetchClient(tlsConfig *tls.Config, proxyURL string) *http.Client {
 		DisableKeepAlives: true,
 	}
 	if proxyURL != "" {
-		if parsed, err := url.Parse(proxyURL); err == nil {
-			transport.Proxy = http.ProxyURL(parsed)
+		parsed, err := url.Parse(proxyURL)
+		if err != nil {
+			return nil, fmt.Errorf("invalid proxy URL %q: %w", proxyURL, err)
 		}
+		transport.Proxy = http.ProxyURL(parsed)
 	}
 	return &http.Client{
 		Timeout:   clientTimeout,
 		Transport: transport,
-	}
+	}, nil
 }
 
 func drainTimer(timer *time.Timer) {
@@ -171,11 +173,11 @@ func signalWake(wake chan<- struct{}) {
 	}
 }
 
-// fetcher fetches and periodically refreshes remote JWKS keysets.
-// Fetched keysets are stored in jwksCache and updates are sent to subscribers.
-type fetcher struct {
+// Fetcher fetches and periodically refreshes remote JWKS keysets.
+// Fetched keysets are stored in JwksCache and updates are sent to subscribers.
+type Fetcher struct {
 	mu                sync.Mutex
-	cache             *jwksCache
+	cache             *JwksCache
 	defaultJwksClient JwksHttpClient
 	requests          map[remotehttp.FetchKey]fetchState
 	schedule          *fetchSchedule
@@ -196,10 +198,12 @@ type jwksHttpClientImpl struct {
 	Client *http.Client
 }
 
-func newFetcher(cache *jwksCache) *fetcher {
-	return &fetcher{
+func NewFetcher(cache *JwksCache) *Fetcher {
+	// No TLS config or proxy URL, so makeFetchClient cannot error.
+	defaultClient, _ := makeFetchClient(nil, "")
+	return &Fetcher{
 		cache:             cache,
-		defaultJwksClient: &jwksHttpClientImpl{Client: makeFetchClient(nil, "")},
+		defaultJwksClient: &jwksHttpClientImpl{Client: defaultClient},
 		requests:          make(map[remotehttp.FetchKey]fetchState),
 		schedule:          newFetchSchedule(),
 		subscribers:       make([]chan sets.Set[remotehttp.FetchKey], 0),
@@ -207,7 +211,7 @@ func newFetcher(cache *jwksCache) *fetcher {
 	}
 }
 
-func (f *fetcher) Run(ctx context.Context) {
+func (f *Fetcher) Run(ctx context.Context) {
 	timer := time.NewTimer(time.Hour)
 	if !timer.Stop() {
 		<-timer.C
@@ -244,7 +248,7 @@ func (f *fetcher) Run(ctx context.Context) {
 	}
 }
 
-func (f *fetcher) maybeFetchJwks(ctx context.Context) {
+func (f *Fetcher) maybeFetchJwks(ctx context.Context) {
 	now := time.Now()
 	due := f.popDue(now)
 	if len(due) == 0 {
@@ -289,7 +293,7 @@ func (f *fetcher) maybeFetchJwks(ctx context.Context) {
 	}
 }
 
-func (f *fetcher) SubscribeToUpdates() <-chan sets.Set[remotehttp.FetchKey] {
+func (f *Fetcher) SubscribeToUpdates() <-chan sets.Set[remotehttp.FetchKey] {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -299,7 +303,7 @@ func (f *fetcher) SubscribeToUpdates() <-chan sets.Set[remotehttp.FetchKey] {
 	return subscriber
 }
 
-func (f *fetcher) AddOrUpdateKeyset(source JwksSource) error {
+func (f *Fetcher) AddOrUpdateKeyset(source JwksSource) error {
 	if _, err := url.Parse(source.Target.URL); err != nil {
 		return fmt.Errorf("error parsing jwks url %w", err)
 	}
@@ -316,7 +320,7 @@ func (f *fetcher) AddOrUpdateKeyset(source JwksSource) error {
 	return nil
 }
 
-func (f *fetcher) RemoveKeyset(requestKey remotehttp.FetchKey) {
+func (f *Fetcher) RemoveKeyset(requestKey remotehttp.FetchKey) {
 	f.mu.Lock()
 	_, ok := f.requests[requestKey]
 	if ok {
@@ -334,7 +338,7 @@ func (f *fetcher) RemoveKeyset(requestKey remotehttp.FetchKey) {
 	signalWake(f.wake)
 }
 
-func (f *fetcher) fetchJwks(ctx context.Context, source JwksSource) (string, jose.JSONWebKeySet, error) {
+func (f *Fetcher) fetchJwks(ctx context.Context, source JwksSource) (string, jose.JSONWebKeySet, error) {
 	jwks, err := f.fetchJwksFromTarget(ctx, source.TLSConfig, source.Target)
 	if err != nil {
 		return "", jose.JSONWebKeySet{}, err
@@ -342,9 +346,13 @@ func (f *fetcher) fetchJwks(ctx context.Context, source JwksSource) (string, jos
 	return source.Target.URL, jwks, nil
 }
 
-func (f *fetcher) fetchJwksFromTarget(ctx context.Context, tlsConfig *tls.Config, target remotehttp.FetchTarget) (jose.JSONWebKeySet, error) {
+func (f *Fetcher) fetchJwksFromTarget(ctx context.Context, tlsConfig *tls.Config, target remotehttp.FetchTarget) (jose.JSONWebKeySet, error) {
 	if tlsConfig != nil || target.ProxyURL != "" {
-		return (&jwksHttpClientImpl{Client: makeFetchClient(tlsConfig, target.ProxyURL)}).FetchJwks(ctx, target)
+		client, err := makeFetchClient(tlsConfig, target.ProxyURL)
+		if err != nil {
+			return jose.JSONWebKeySet{}, err
+		}
+		return (&jwksHttpClientImpl{Client: client}).FetchJwks(ctx, target)
 	}
 	return f.defaultJwksClient.FetchJwks(ctx, target)
 }
@@ -376,13 +384,13 @@ func (c *jwksHttpClientImpl) FetchJwks(ctx context.Context, target remotehttp.Fe
 	return jwks, nil
 }
 
-func (f *fetcher) popDue(now time.Time) []fetchAt {
+func (f *Fetcher) popDue(now time.Time) []fetchAt {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	return f.schedule.PopDue(now)
 }
 
-func (f *fetcher) lookup(requestKey remotehttp.FetchKey) (fetchState, bool) {
+func (f *Fetcher) lookup(requestKey remotehttp.FetchKey) (fetchState, bool) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -390,14 +398,14 @@ func (f *fetcher) lookup(requestKey remotehttp.FetchKey) (fetchState, bool) {
 	return state, ok
 }
 
-func (f *fetcher) scheduleAt(requestKey remotehttp.FetchKey, generation uint64, at time.Time, retryAttempt int) {
+func (f *Fetcher) scheduleAt(requestKey remotehttp.FetchKey, generation uint64, at time.Time, retryAttempt int) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
 	f.scheduleAtLocked(requestKey, generation, at, retryAttempt)
 }
 
-func (f *fetcher) scheduleAtLocked(requestKey remotehttp.FetchKey, generation uint64, at time.Time, retryAttempt int) {
+func (f *Fetcher) scheduleAtLocked(requestKey remotehttp.FetchKey, generation uint64, at time.Time, retryAttempt int) {
 	if _, ok := f.requests[requestKey]; !ok {
 		return
 	}
@@ -406,7 +414,7 @@ func (f *fetcher) scheduleAtLocked(requestKey remotehttp.FetchKey, generation ui
 	signalWake(f.wake)
 }
 
-func (f *fetcher) notifySubscribers(updates sets.Set[remotehttp.FetchKey]) {
+func (f *Fetcher) notifySubscribers(updates sets.Set[remotehttp.FetchKey]) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 

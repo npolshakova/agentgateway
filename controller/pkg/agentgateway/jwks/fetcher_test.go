@@ -22,7 +22,7 @@ const (
 func TestAddKeysetToFetcher(t *testing.T) {
 	expected := testSource()
 
-	f := newFetcher(newCache())
+	f := NewFetcher(NewCache())
 	assert.NoError(t, f.AddOrUpdateKeyset(expected))
 
 	f.mu.Lock()
@@ -39,7 +39,7 @@ func TestAddKeysetToFetcher(t *testing.T) {
 
 func TestRemoveKeysetFromFetcher(t *testing.T) {
 	source := testSource()
-	f := newFetcher(newCache())
+	f := NewFetcher(NewCache())
 
 	assert.NoError(t, f.AddOrUpdateKeyset(source))
 	f.cache.keysets[source.RequestKey] = Keyset{RequestKey: source.RequestKey, URL: source.Target.URL, JwksJSON: "jwks"}
@@ -56,7 +56,7 @@ func TestRemoveKeysetFromFetcher(t *testing.T) {
 }
 
 func TestAddOrUpdateKeysetReplacesExistingScheduleEntry(t *testing.T) {
-	f := newFetcher(newCache())
+	f := NewFetcher(NewCache())
 	source := testSource()
 
 	assert.NoError(t, f.AddOrUpdateKeyset(source))
@@ -75,7 +75,7 @@ func TestAddOrUpdateKeysetReplacesExistingScheduleEntry(t *testing.T) {
 func TestFetcherWithEmptyJwksFetchSchedule(t *testing.T) {
 	ctx := t.Context()
 
-	f := newFetcher(newCache())
+	f := NewFetcher(NewCache())
 	updates := f.SubscribeToUpdates()
 	go f.maybeFetchJwks(ctx)
 
@@ -92,7 +92,7 @@ func TestFetcherWithEmptyJwksFetchSchedule(t *testing.T) {
 func TestSuccessfulJwksFetch(t *testing.T) {
 	ctx := t.Context()
 
-	f := newFetcher(newCache())
+	f := NewFetcher(NewCache())
 	source := testSource()
 	assert.NoError(t, f.AddOrUpdateKeyset(source))
 	updates := f.SubscribeToUpdates()
@@ -119,7 +119,7 @@ func TestSuccessfulJwksFetch(t *testing.T) {
 func TestFetchJwksWithError(t *testing.T) {
 	ctx := t.Context()
 
-	f := newFetcher(newCache())
+	f := NewFetcher(NewCache())
 	source := testSource()
 	assert.NoError(t, f.AddOrUpdateKeyset(source))
 	updates := f.SubscribeToUpdates()
@@ -147,7 +147,7 @@ func TestFetchJwksWithError(t *testing.T) {
 func TestFetcherDiscardedFetchDoesNotRepopulateRemovedKeyset(t *testing.T) {
 	ctx := t.Context()
 
-	f := newFetcher(newCache())
+	f := NewFetcher(NewCache())
 	source := testSource()
 	assert.NoError(t, f.AddOrUpdateKeyset(source))
 
@@ -181,7 +181,7 @@ func TestFetcherDiscardedFetchDoesNotRepopulateRemovedKeyset(t *testing.T) {
 }
 
 func TestNotifySubscribersMergesPendingRequestKeyUpdates(t *testing.T) {
-	f := newFetcher(newCache())
+	f := NewFetcher(NewCache())
 	updates := f.SubscribeToUpdates()
 	first := testSource()
 	second := testSourceWithURL("https://test/other-jwks")
@@ -254,7 +254,7 @@ func awaitJwksUpdate(t *testing.T, updates <-chan sets.Set[remotehttp.FetchKey],
 	}, testEventuallyTimeout, testEventuallyPoll)
 }
 
-func awaitStoredKeyset(t *testing.T, cache *jwksCache, requestKey remotehttp.FetchKey) Keyset {
+func awaitStoredKeyset(t *testing.T, cache *JwksCache, requestKey remotehttp.FetchKey) Keyset {
 	t.Helper()
 
 	var keyset Keyset
@@ -267,7 +267,7 @@ func awaitStoredKeyset(t *testing.T, cache *jwksCache, requestKey remotehttp.Fet
 	return keyset
 }
 
-func awaitJwksRetry(t *testing.T, f *fetcher) fetchAt {
+func awaitJwksRetry(t *testing.T, f *Fetcher) fetchAt {
 	t.Helper()
 
 	var retry fetchAt
@@ -285,7 +285,7 @@ func awaitJwksRetry(t *testing.T, f *fetcher) fetchAt {
 	return retry
 }
 
-func awaitJwksRetryAttempt(t *testing.T, f *fetcher, requestKey remotehttp.FetchKey, retryAttempt int) fetchAt {
+func awaitJwksRetryAttempt(t *testing.T, f *Fetcher, requestKey remotehttp.FetchKey, retryAttempt int) fetchAt {
 	t.Helper()
 
 	var retry fetchAt
@@ -298,7 +298,7 @@ func awaitJwksRetryAttempt(t *testing.T, f *fetcher, requestKey remotehttp.Fetch
 	return retry
 }
 
-func awaitJwksRetryNoWait(f *fetcher) fetchAt {
+func awaitJwksRetryNoWait(f *Fetcher) fetchAt {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 

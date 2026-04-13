@@ -25,8 +25,8 @@ const RunnableName = "jwks-store"
 // remote key fetches.
 type Store struct {
 	storePrefix      string
-	jwksCache        *jwksCache
-	jwksFetcher      *fetcher
+	jwksCache        *JwksCache
+	jwksFetcher      *Fetcher
 	persistedKeysets *persistedKeysetReader
 	requests         krt.Collection[SharedJwksRequest]
 	ready            chan struct{}
@@ -35,12 +35,12 @@ type Store struct {
 func NewStore(requests krt.Collection[SharedJwksRequest], persistedKeysets *PersistedEntries, storePrefix string) *Store {
 	logger.Info("creating jwks store")
 
-	jwksCache := newCache()
+	jwksCache := NewCache()
 	return &Store{
 		storePrefix:      storePrefix,
 		jwksCache:        jwksCache,
 		requests:         requests,
-		jwksFetcher:      newFetcher(jwksCache),
+		jwksFetcher:      NewFetcher(jwksCache),
 		persistedKeysets: newPersistedKeysetReader(persistedKeysets),
 		ready:            make(chan struct{}),
 	}
