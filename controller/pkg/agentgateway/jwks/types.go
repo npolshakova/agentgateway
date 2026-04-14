@@ -38,7 +38,7 @@ func (s JwksSource) Equals(other JwksSource) bool {
 }
 
 // SharedJwksRequest is the canonical JWKS request produced by KRT for a shared
-// fetch key. It is the unit the runtime fetcher and persistence layer watch.
+// fetch key. It is the unit the runtime Fetcher and persistence layer watch.
 type SharedJwksRequest struct {
 	RequestKey remotehttp.FetchKey
 	Target     remotehttp.FetchTarget
@@ -57,7 +57,7 @@ func (r SharedJwksRequest) Equals(other SharedJwksRequest) bool {
 		r.TTL == other.TTL
 }
 
-// JwksSource returns the canonical runtime request consumed by the fetcher.
+// JwksSource returns the canonical runtime request consumed by the Fetcher.
 func (r SharedJwksRequest) JwksSource() JwksSource {
 	return JwksSource{
 		RequestKey: r.RequestKey,

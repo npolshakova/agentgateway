@@ -283,7 +283,7 @@ func jwksRequestsByKey(requests []SharedJwksRequest) map[remotehttp.FetchKey]Sha
 	return out
 }
 
-func awaitJwksFetchState(t *testing.T, f *fetcher, requestKey remotehttp.FetchKey) fetchState {
+func awaitJwksFetchState(t *testing.T, f *Fetcher, requestKey remotehttp.FetchKey) fetchState {
 	t.Helper()
 
 	var state fetchState
@@ -296,7 +296,7 @@ func awaitJwksFetchState(t *testing.T, f *fetcher, requestKey remotehttp.FetchKe
 	return state
 }
 
-func awaitNoJwksFetchState(t *testing.T, f *fetcher, requestKey remotehttp.FetchKey) {
+func awaitNoJwksFetchState(t *testing.T, f *Fetcher, requestKey remotehttp.FetchKey) {
 	t.Helper()
 
 	assert.EventuallyWithT(t, func(c *assert.CollectT) {

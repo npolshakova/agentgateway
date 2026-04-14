@@ -11,20 +11,20 @@ import (
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/remotehttp"
 )
 
-// jwksCache stores fetched JWKS keysets by request key.
-type jwksCache struct {
+// JwksCache stores fetched JWKS keysets by request key.
+type JwksCache struct {
 	l       sync.Mutex
 	keysets map[remotehttp.FetchKey]Keyset
 }
 
-func newCache() *jwksCache {
-	return &jwksCache{
+func NewCache() *JwksCache {
+	return &JwksCache{
 		keysets: make(map[remotehttp.FetchKey]Keyset),
 	}
 }
 
-func (c *jwksCache) LoadJwksFromStores(stored []Keyset) error {
-	newCache := newCache()
+func (c *JwksCache) LoadJwksFromStores(stored []Keyset) error {
+	newCache := NewCache()
 	errs := make([]error, 0)
 
 	for _, keyset := range stored {
@@ -43,7 +43,7 @@ func (c *jwksCache) LoadJwksFromStores(stored []Keyset) error {
 	return errors.Join(errs...)
 }
 
-func (c *jwksCache) GetJwks(requestKey remotehttp.FetchKey) (Keyset, bool) {
+func (c *JwksCache) GetJwks(requestKey remotehttp.FetchKey) (Keyset, bool) {
 	c.l.Lock()
 	defer c.l.Unlock()
 
@@ -51,7 +51,7 @@ func (c *jwksCache) GetJwks(requestKey remotehttp.FetchKey) (Keyset, bool) {
 	return keyset, ok
 }
 
-func (c *jwksCache) addJwks(requestKey remotehttp.FetchKey, requestURL string, jwks jose.JSONWebKeySet) error {
+func (c *JwksCache) addJwks(requestKey remotehttp.FetchKey, requestURL string, jwks jose.JSONWebKeySet) error {
 	serializedJwks, err := json.Marshal(jwks)
 	if err != nil {
 		return err
@@ -70,7 +70,7 @@ func (c *jwksCache) addJwks(requestKey remotehttp.FetchKey, requestURL string, j
 	return nil
 }
 
-func (c *jwksCache) deleteJwks(requestKey remotehttp.FetchKey) {
+func (c *JwksCache) deleteJwks(requestKey remotehttp.FetchKey) {
 	c.l.Lock()
 	delete(c.keysets, requestKey)
 	c.l.Unlock()
