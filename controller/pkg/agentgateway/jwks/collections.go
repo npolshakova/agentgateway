@@ -11,7 +11,7 @@ import (
 	"github.com/agentgateway/agentgateway/controller/pkg/pluginsdk/krtutil"
 )
 
-var fetchKeyIndexCollectionFunc = krt.WithIndexCollectionFromString(func(s string) remotehttp.FetchKey {
+var FetchKeyIndexCollectionFunc = krt.WithIndexCollectionFromString(func(s string) remotehttp.FetchKey {
 	return remotehttp.FetchKey(s)
 })
 
@@ -58,9 +58,9 @@ func NewCollections(inputs CollectionInputs) Collections {
 	sourcesByRequestKey := krt.NewIndex(sources, "jwks-request-key", func(source JwksSource) []remotehttp.FetchKey {
 		return []remotehttp.FetchKey{source.RequestKey}
 	})
-	requestGroups := sourcesByRequestKey.AsCollection(append(inputs.KrtOpts.ToOptions("JwksRequestGroups"), fetchKeyIndexCollectionFunc)...)
+	requestGroups := sourcesByRequestKey.AsCollection(append(inputs.KrtOpts.ToOptions("JwksRequestGroups"), FetchKeyIndexCollectionFunc)...)
 	sharedRequests := krt.NewCollection(requestGroups, func(kctx krt.HandlerContext, grouped krt.IndexObject[remotehttp.FetchKey, JwksSource]) *SharedJwksRequest {
-		return collapseJwksSources(grouped)
+		return CollapseJwksSources(grouped)
 	}, inputs.KrtOpts.ToOptions("JwksRequests")...)
 
 	return Collections{
@@ -72,7 +72,7 @@ func NewCollections(inputs CollectionInputs) Collections {
 	}
 }
 
-func collapseJwksSources(grouped krt.IndexObject[remotehttp.FetchKey, JwksSource]) *SharedJwksRequest {
+func CollapseJwksSources(grouped krt.IndexObject[remotehttp.FetchKey, JwksSource]) *SharedJwksRequest {
 	if len(grouped.Objects) == 0 {
 		return nil
 	}

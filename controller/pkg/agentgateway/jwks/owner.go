@@ -100,7 +100,7 @@ func PolicyJWTProviderLookupOwner(namespace, name string, providerIndex int, pro
 		},
 		DefaultNamespace: namespace,
 		Remote:           *provider.JWKS.Remote.DeepCopy(),
-		TTL:              ttlForRemote(*provider.JWKS.Remote),
+		TTL:              TTLForRemote(*provider.JWKS.Remote),
 	}, true
 }
 
@@ -114,7 +114,7 @@ func PolicyBackendMCPAuthenticationLookupOwner(namespace, name string, remote ag
 		},
 		DefaultNamespace: namespace,
 		Remote:           *remote.DeepCopy(),
-		TTL:              ttlForRemote(remote),
+		TTL:              TTLForRemote(remote),
 	}
 }
 
@@ -128,11 +128,11 @@ func backendMCPAuthenticationOwner(namespace, name string, remote agentgateway.R
 		},
 		DefaultNamespace: namespace,
 		Remote:           *remote.DeepCopy(),
-		TTL:              ttlForRemote(remote),
+		TTL:              TTLForRemote(remote),
 	}
 }
 
-func ttlForRemote(remote agentgateway.RemoteJWKS) time.Duration {
+func TTLForRemote(remote agentgateway.RemoteJWKS) time.Duration {
 	if remote.CacheDuration == nil {
 		return 5 * time.Minute
 	}
