@@ -136,16 +136,22 @@ func nextRetryDelay(retryAttempt int) time.Duration {
 	return next
 }
 
-func makeFetchClient(tlsConfig *tls.Config) *http.Client {
+func makeFetchClient(tlsConfig *tls.Config, proxyURL string) *http.Client {
+	transport := &http.Transport{
+		TLSClientConfig: tlsConfig,
+		DialContext: (&net.Dialer{
+			Timeout: 5 * time.Second,
+		}).DialContext,
+		DisableKeepAlives: true,
+	}
+	if proxyURL != "" {
+		if parsed, err := url.Parse(proxyURL); err == nil {
+			transport.Proxy = http.ProxyURL(parsed)
+		}
+	}
 	return &http.Client{
-		Timeout: clientTimeout,
-		Transport: &http.Transport{
-			TLSClientConfig: tlsConfig,
-			DialContext: (&net.Dialer{
-				Timeout: 5 * time.Second,
-			}).DialContext,
-			DisableKeepAlives: true,
-		},
+		Timeout:   clientTimeout,
+		Transport: transport,
 	}
 }
 
@@ -193,7 +199,7 @@ type jwksHttpClientImpl struct {
 func NewFetcher(cache *JwksCache) *Fetcher {
 	return &Fetcher{
 		cache:             cache,
-		defaultJwksClient: &jwksHttpClientImpl{Client: makeFetchClient(nil)},
+		defaultJwksClient: &jwksHttpClientImpl{Client: makeFetchClient(nil, "")},
 		requests:          make(map[remotehttp.FetchKey]fetchState),
 		schedule:          newFetchSchedule(),
 		subscribers:       make([]chan sets.Set[remotehttp.FetchKey], 0),
@@ -337,8 +343,8 @@ func (f *Fetcher) fetchJwks(ctx context.Context, source JwksSource) (string, jos
 }
 
 func (f *Fetcher) fetchJwksFromTarget(ctx context.Context, tlsConfig *tls.Config, target remotehttp.FetchTarget) (jose.JSONWebKeySet, error) {
-	if tlsConfig != nil {
-		return (&jwksHttpClientImpl{Client: makeFetchClient(tlsConfig)}).FetchJwks(ctx, target)
+	if tlsConfig != nil || target.ProxyURL != "" {
+		return (&jwksHttpClientImpl{Client: makeFetchClient(tlsConfig, target.ProxyURL)}).FetchJwks(ctx, target)
 	}
 	return f.defaultJwksClient.FetchJwks(ctx, target)
 }

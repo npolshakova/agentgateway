@@ -25,6 +25,7 @@ func TestResolve(t *testing.T) {
 		backendRef          gwv1.BackendObjectReference
 		defaultPort         string
 		wantURL             string
+		wantProxyURL        string
 		wantTLSConfig       bool
 		wantVerification    agentgateway.InsecureTLSMode
 		wantServerName      string
@@ -275,6 +276,43 @@ func TestResolve(t *testing.T) {
 			wantVerifyConnCheck: true,
 		},
 		{
+			name: "backend with tunnel proxy resolves proxy URL",
+			inputs: []any{
+				&agentgateway.AgentgatewayBackend{
+					ObjectMeta: metav1.ObjectMeta{Name: "idp-jwks", Namespace: "default"},
+					Spec: agentgateway.AgentgatewayBackendSpec{
+						Static: &agentgateway.StaticBackend{Host: "idp.example.com", Port: 443},
+						Policies: &agentgateway.BackendFull{
+							BackendSimple: agentgateway.BackendSimple{
+								TLS: &agentgateway.BackendTLS{},
+								Tunnel: &agentgateway.BackendTunnel{
+									BackendRef: gwv1.BackendObjectReference{
+										Group: ptr.Of(gwv1.Group(wellknown.AgentgatewayBackendGVK.Group)),
+										Kind:  ptr.Of(gwv1.Kind(wellknown.AgentgatewayBackendGVK.Kind)),
+										Name:  gwv1.ObjectName("corporate-proxy"),
+									},
+								},
+							},
+						},
+					},
+				},
+				&agentgateway.AgentgatewayBackend{
+					ObjectMeta: metav1.ObjectMeta{Name: "corporate-proxy", Namespace: "default"},
+					Spec: agentgateway.AgentgatewayBackendSpec{
+						Static: &agentgateway.StaticBackend{Host: "proxy.internal.example.com", Port: 8080},
+					},
+				},
+			},
+			backendRef: gwv1.BackendObjectReference{
+				Name:  gwv1.ObjectName("idp-jwks"),
+				Group: ptr.Of(gwv1.Group(wellknown.AgentgatewayBackendGVK.Group)),
+				Kind:  ptr.Of(gwv1.Kind(wellknown.AgentgatewayBackendGVK.Kind)),
+			},
+			wantURL:       "https://idp.example.com:443/",
+			wantProxyURL:  "http://proxy.internal.example.com:8080",
+			wantTLSConfig: true,
+		},
+		{
 			name: "service hashes ca bundle into resolved transport",
 			inputs: []any{
 				testService("oauth2-discovery", "default", []corev1.ServicePort{{Name: "https", Port: 8443}}),
@@ -331,6 +369,7 @@ func TestResolve(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, resolved)
 			require.Equal(t, tt.wantURL, resolved.Target.URL)
+			require.Equal(t, tt.wantProxyURL, resolved.Target.ProxyURL)
 			if !tt.wantTLSConfig {
 				require.Nil(t, resolved.TLSConfig)
 				return
