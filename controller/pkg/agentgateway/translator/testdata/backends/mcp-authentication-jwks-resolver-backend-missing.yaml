@@ -17,10 +17,9 @@ spec:
         jwks:
           jwksPath: /
           backendRef:
-              group: ""
-              kind: Service
-              name: store-uninitialized
-              port: 8080
+              group: agentgateway.dev
+              kind: AgentgatewayBackend
+              name: test-jwks
 ---
 # Output
 output: []
@@ -34,9 +33,8 @@ status:
   status:
     conditions:
     - lastTransitionTime: fake
-      message: |-
-        failed to translate backend: JwksUrlBuilderFactory must be initialized before use
-        JwksUrlBuilderFactory must be initialized before use
+      message: 'failed to translate backend: backend default/test-jwks not found,
+        policy default/inline_policy'
       reason: TranslationError
       status: "False"
       type: Accepted

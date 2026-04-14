@@ -19,7 +19,7 @@ import (
 	"github.com/agentgateway/agentgateway/api"
 	"github.com/agentgateway/agentgateway/controller/api/v1alpha1/agentgateway"
 	"github.com/agentgateway/agentgateway/controller/api/v1alpha1/shared"
-	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/jwks_url"
+	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/jwks"
 	"github.com/agentgateway/agentgateway/controller/pkg/utils/kubeutils"
 	"github.com/agentgateway/agentgateway/controller/pkg/wellknown"
 )
@@ -458,17 +458,12 @@ func translateMCPAuthenticationSpec(
 	}
 
 	var errs []error
-	jwksUrl, _, err := jwks_url.JwksUrlBuilderFactory().BuildJwksUrlAndTlsConfig(ctx.Krt, policy.Name, policy.Namespace, &authnPolicy.JWKS)
+	translatedInlineJwks, err := resolveJWKSInlineForOwner(
+		ctx,
+		jwks.PolicyBackendMCPAuthenticationLookupOwner(policy.Namespace, policy.Name, authnPolicy.JWKS),
+	)
 	if err != nil {
-		logger.Error("failed resolving jwks url", "error", err)
-		errs = append(errs, err)
-	}
-	var translatedInlineJwks string
-	if err == nil {
-		translatedInlineJwks, err = resolveRemoteJWKSInline(ctx, jwksUrl)
-	}
-	if err != nil {
-		logger.Error("failed resolving jwks", "jwks_uri", jwksUrl, "error", err)
+		logger.Error("failed resolving jwks", "error", err)
 		errs = append(errs, err)
 	}
 

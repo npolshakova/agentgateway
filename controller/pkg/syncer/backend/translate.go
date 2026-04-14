@@ -18,7 +18,9 @@ import (
 	"github.com/agentgateway/agentgateway/api"
 	"github.com/agentgateway/agentgateway/controller/api/v1alpha1/agentgateway"
 	agwir "github.com/agentgateway/agentgateway/controller/pkg/agentgateway/ir"
+	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/jwks"
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/plugins"
+	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/remotehttp"
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/translator"
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/utils"
 	"github.com/agentgateway/agentgateway/controller/pkg/logging"
@@ -28,7 +30,7 @@ import (
 var logger = logging.New("agentgateway/backend")
 
 // NewBackendPlugin creates a new plugin for AgentgatewayBackends
-func NewBackendPlugin(agw *plugins.AgwCollections) plugins.AgwPlugin {
+func NewBackendPlugin(agw *plugins.AgwCollections, resolver remotehttp.Resolver, jwksLookup jwks.Lookup) plugins.AgwPlugin {
 	return plugins.AgwPlugin{
 		ContributesBackends: map[schema.GroupKind]plugins.BackendPlugin{
 			wellknown.AgentgatewayBackendGVK.GroupKind(): {
@@ -46,6 +48,8 @@ func NewBackendPlugin(agw *plugins.AgwCollections) plugins.AgwPlugin {
 							Krt:         ctx,
 							Collections: agw,
 							References:  input.References,
+							Resolver:    resolver,
+							JWKSLookup:  jwksLookup,
 						}
 						return TranslateAgwBackend(pc, backend, input.References)
 					}, agw.KrtOpts.ToOptions("Backends")...)
