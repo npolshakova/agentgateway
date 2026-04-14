@@ -4,7 +4,7 @@ use agent_core::strng;
 use itertools::Itertools;
 use openapiv3::OpenAPI;
 use rmcp::RoleClient;
-use rmcp::model::InitializeRequestParams;
+use rmcp::model::{ClientJsonRpcMessage, InitializeRequestParams, RequestId};
 use rmcp::service::RunningService;
 use rmcp::transport::StreamableHttpServerConfig;
 use secrecy::SecretString;
@@ -140,6 +140,145 @@ async fn stream_to_multiplex() {
 			.await
 			.is_err()
 	);
+}
+
+#[tokio::test]
+async fn stateless_multiplex_tool_call_initializes_only_target() {
+	let mock_a = mock_streamable_http_server(true).await;
+	let mock_b = mock_streamable_http_server(true).await;
+	let t = setup_proxy_test("{}")
+		.unwrap()
+		.with_multiplex_mcp_backend(
+			"mcp",
+			vec![("a", mock_a.addr, false), ("b", mock_b.addr, false)],
+			false,
+		)
+		.with_bind(simple_bind(basic_named_route(strng::new("/mcp"))));
+	let io = t.serve_real_listener(strng::new("bind")).await;
+	let client = mcp_streamable_client(io).await;
+	let a_init_before = mock_a.init_count().await;
+	let b_init_before = mock_b.init_count().await;
+
+	// A direct tool call to one target should initialize only that target.
+	let _ = client
+		.call_tool(
+			rmcp::model::CallToolRequestParams::new("a_echo").with_arguments(
+				serde_json::json!({"hi": "world"})
+					.as_object()
+					.cloned()
+					.unwrap(),
+			),
+		)
+		.await
+		.unwrap();
+	let a_init_after = mock_a.init_count().await;
+	let b_init_after = mock_b.init_count().await;
+	assert_eq!(a_init_after, a_init_before + 1);
+	assert_eq!(b_init_after, b_init_before);
+}
+
+#[tokio::test]
+async fn stateless_multiplex_get_prompt_initializes_only_target() {
+	let mock_a = mock_streamable_http_server(true).await;
+	let mock_b = mock_streamable_http_server(true).await;
+	let t = setup_proxy_test("{}")
+		.unwrap()
+		.with_multiplex_mcp_backend(
+			"mcp",
+			vec![("a", mock_a.addr, false), ("b", mock_b.addr, false)],
+			false,
+		)
+		.with_bind(simple_bind(basic_named_route(strng::new("/mcp"))));
+	let io = t.serve_real_listener(strng::new("bind")).await;
+	let client = mcp_streamable_client(io).await;
+	let a_init_before = mock_a.init_count().await;
+	let b_init_before = mock_b.init_count().await;
+
+	let _ = client
+		.get_prompt(
+			rmcp::model::GetPromptRequestParams::new("a_example_prompt").with_arguments(
+				serde_json::json!({"message": "hello"})
+					.as_object()
+					.cloned()
+					.unwrap(),
+			),
+		)
+		.await
+		.unwrap();
+
+	let a_init_after = mock_a.init_count().await;
+	let b_init_after = mock_b.init_count().await;
+	assert_eq!(a_init_after, a_init_before + 1);
+	assert_eq!(b_init_after, b_init_before);
+}
+
+#[tokio::test]
+async fn stateless_multiplex_delete_session_skips_uninitialized_targets() {
+	let mock_a = mock_streamable_http_server(true).await;
+	let mock_b = mock_streamable_http_server(true).await;
+	let relay = Relay::new(
+		McpBackendGroup {
+			targets: vec![
+				fake_streamable_target("a", mock_a.addr),
+				fake_streamable_target("b", mock_b.addr),
+			],
+			stateful: false,
+			failure_mode: FailureMode::FailClosed,
+		},
+		empty_mcp_policies(),
+		PolicyClient {
+			inputs: setup_proxy_test("{}").unwrap().pi,
+		},
+	)
+	.unwrap();
+	let session_manager =
+		super::session::SessionManager::new(http::sessionpersistence::Encoder::base64());
+	let mut session = session_manager.create_stateless_session(relay);
+	let parts = ::http::Request::<()>::builder()
+		.method(http::Method::POST)
+		.uri("http://example.test/mcp")
+		.body(())
+		.unwrap()
+		.into_parts()
+		.0;
+
+	session
+		.stateless_send_and_initialize(
+			parts.clone(),
+			ClientJsonRpcMessage::request(
+				rmcp::model::CallToolRequest::new(
+					rmcp::model::CallToolRequestParams::new("a_echo").with_arguments(
+						serde_json::json!({"hi": "world"})
+							.as_object()
+							.cloned()
+							.unwrap(),
+					),
+				)
+				.into(),
+				RequestId::Number(1),
+			),
+		)
+		.await
+		.unwrap();
+
+	let sessions = match http::sessionpersistence::SessionState::decode(
+		session.id.as_ref(),
+		&http::sessionpersistence::Encoder::base64(),
+	)
+	.unwrap()
+	{
+		http::sessionpersistence::SessionState::MCP(state) => state.sessions,
+		_ => panic!("expected MCP session state"),
+	};
+	assert_eq!(sessions.len(), 2);
+	assert_eq!(sessions[0].target_name.as_deref(), Some("a"));
+	assert!(sessions[0].session.is_some());
+	assert_eq!(sessions[1].target_name.as_deref(), Some("b"));
+	assert!(sessions[1].session.is_none());
+
+	let response = session.delete_session(parts).await.unwrap();
+	assert_eq!(response.status(), http::StatusCode::ACCEPTED);
+	assert_eq!(mock_b.init_count().await, 0);
 }
 
 #[tokio::test]
@@ -870,7 +1009,14 @@ pub async fn mcp_sse_client(s: SocketAddr) -> LegacyService {
 
 struct MockServer {
 	addr: SocketAddr,
+	init_counter: std::sync::Arc<tokio::sync::Mutex<i32>>,
 	_cancel: tokio::sync::oneshot::Sender<()>,
+}
+
+impl MockServer {
+	async fn init_count(&self) -> i32 {
+		*self.init_counter.lock().await
+	}
 }
 
 async fn mock_streamable_http_server(stateful: bool) -> MockServer {
@@ -878,9 +1024,13 @@ async fn mock_streamable_http_server(stateful: bool) -> MockServer {
 	use rmcp::transport::streamable_http_server::StreamableHttpService;
 	use rmcp::transport::streamable_http_server::session::local::LocalSessionManager;
 	agent_core::telemetry::testing::setup_test_logging();
+	let init_counter = std::sync::Arc::new(tokio::sync::Mutex::new(0_i32));
 
 	let service = StreamableHttpService::new(
-		|| Ok(Counter::new()),
+		{
+			let init_counter = init_counter.clone();
+			move || Ok(Counter::new(init_counter.clone()))
+		},
 		LocalSessionManager::default().into(),
 		StreamableHttpServerConfig::default()
 			.with_sse_retry(None)
@@ -899,7 +1049,11 @@ async fn mock_streamable_http_server(stateful: bool) -> MockServer {
 			.await;
 		info!("server stopped");
 	});
-	MockServer { addr, _cancel: tx }
+	MockServer {
+		addr,
+		init_counter,
+		_cancel: tx,
+	}
 }
 
 async fn mock_sse_server() -> MockServer {
@@ -930,7 +1084,11 @@ async fn mock_sse_server() -> MockServer {
 			})
 			.await;
 	});
-	MockServer { addr, _cancel: tx }
+	MockServer {
+		addr,
+		init_counter: std::sync::Arc::new(tokio::sync::Mutex::new(0)),
+		_cancel: tx,
+	}
 }
 mod mockserver {
 	use std::sync::Arc;
@@ -972,6 +1130,7 @@ mod mockserver {
 	#[derive(Clone)]
 	pub struct Counter {
 		counter: Arc<Mutex<i32>>,
+		init_counter: Arc<Mutex<i32>>,
 		tool_router: ToolRouter<Counter>,
 		prompt_router: PromptRouter<Counter>,
 	}
@@ -979,9 +1138,10 @@ mod mockserver {
 	#[tool_router]
 	impl Counter {
 		#[allow(dead_code)]
-		pub fn new() -> Self {
+		pub fn new(init_counter: Arc<Mutex<i32>>) -> Self {
 			Self {
 				counter: Arc::new(Mutex::new(0)),
+				init_counter,
 				tool_router: Self::tool_router(),
 				prompt_router: Self::prompt_router(),
 			}
@@ -1049,6 +1209,14 @@ mod mockserver {
 					.get("authorization")
 					.map(|s| String::from_utf8_lossy(s.as_bytes()))
 					.unwrap_or_default(),
+			)]))
+		}
+
+		#[tool(description = "Get initialize call count")]
+		async fn get_init_count(&self) -> Result<CallToolResult, McpError> {
+			let init_counter = self.init_counter.lock().await;
+			Ok(CallToolResult::success(vec![Content::text(
+				init_counter.to_string(),
 			)]))
 		}
 	}
@@ -1178,6 +1346,8 @@ mod mockserver {
 			_request: InitializeRequestParams,
 			_: RequestContext<RoleServer>,
 		) -> Result<InitializeResult, McpError> {
+			let mut init_counter = self.init_counter.lock().await;
+			*init_counter += 1;
 			Ok(self.get_info())
 		}
 	}
