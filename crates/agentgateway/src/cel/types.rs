@@ -109,6 +109,53 @@ pub struct SourceContext {
 	#[serde(flatten, default, deserialize_with = "none_if_empty")]
 	#[dynamic(flatten)]
 	pub tls: Option<crate::transport::tls::TlsInfo>,
+	/// The workload context of the downstream connection, resolved from the
+	/// workload discovery store by source IP. Available when the source pod is
+	/// known to the controller's workload discovery store.
+	///
+	/// Fields are nested under `unverified` to signal that they are derived
+	/// from the source IP (not cryptographically authenticated). Policy
+	/// authors should prefer `source.identity.*` for trust-sensitive checks.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub unverified_workload: Option<WorkloadContext>,
+}
+
+#[apply(schema!)]
+#[derive(cel::DynamicType)]
+/// Workload context wrapper. All fields live under `unverified` to make it
+/// clear that the data is resolved by IP, not cryptographically verified.
+pub struct WorkloadContext {
+	/// The pod name of the source workload.
+	#[serde(default)]
+	pub name: Strng,
+	/// The namespace of the source workload.
+	#[serde(default)]
+	pub namespace: Strng,
+	/// The service account of the source workload.
+	#[serde(default)]
+	pub service_account: Strng,
+}
+
+impl WorkloadContext {
+	/// Resolve the source workload from the discovery store by IP address.
+	pub fn from_stores(
+		stores: &crate::Stores,
+		network: &Strng,
+		addr: IpAddr,
+	) -> Option<WorkloadContext> {
+		let discovery = stores.read_discovery();
+		discovery
+			.workloads
+			.find_address(&crate::types::discovery::NetworkAddress {
+				network: network.clone(),
+				address: addr,
+			})
+			.map(|w| WorkloadContext {
+				name: w.name.clone(),
+				namespace: w.namespace.clone(),
+				service_account: w.service_account.clone(),
+			})
+	}
 }
 fn none_if_empty<'de, D>(deserializer: D) -> Result<Option<TlsInfo>, D::Error>
 where
@@ -1466,6 +1513,11 @@ pub fn full_example_executor() -> ExecutorSerde {
 				issuer: Default::default(),
 				subject: Default::default(),
 				subject_cn: Some("cn".into()),
+			}),
+			unverified_workload: Some(WorkloadContext {
+				name: "pod-1".into(),
+				namespace: "ns-1".into(),
+				service_account: "sa-1".into(),
 			}),
 		}),
 		jwt: Some(jwt::Claims {
