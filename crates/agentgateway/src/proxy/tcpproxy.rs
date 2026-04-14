@@ -214,7 +214,7 @@ impl TCPProxy {
 				inputs,
 				backend_policies,
 				log,
-				None,
+				httpproxy::ServiceCallOverride::default(),
 				svc,
 				port,
 				sni.as_deref(),
