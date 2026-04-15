@@ -23,7 +23,9 @@ type JwksSource struct {
 	Target     remotehttp.FetchTarget
 	// +noKrtEquals
 	TLSConfig *tls.Config
-	TTL       time.Duration
+	// +noKrtEquals
+	ProxyTLSConfig *tls.Config
+	TTL            time.Duration
 }
 
 func (s JwksSource) ResourceName() string {
@@ -44,7 +46,9 @@ type SharedJwksRequest struct {
 	Target     remotehttp.FetchTarget
 	// +noKrtEquals
 	TLSConfig *tls.Config
-	TTL       time.Duration
+	// +noKrtEquals
+	ProxyTLSConfig *tls.Config
+	TTL            time.Duration
 }
 
 func (r SharedJwksRequest) ResourceName() string {
@@ -60,9 +64,10 @@ func (r SharedJwksRequest) Equals(other SharedJwksRequest) bool {
 // JwksSource returns the canonical runtime request consumed by the Fetcher.
 func (r SharedJwksRequest) JwksSource() JwksSource {
 	return JwksSource{
-		RequestKey: r.RequestKey,
-		Target:     r.Target,
-		TLSConfig:  r.TLSConfig,
-		TTL:        r.TTL,
+		RequestKey:     r.RequestKey,
+		Target:         r.Target,
+		TLSConfig:      r.TLSConfig,
+		ProxyTLSConfig: r.ProxyTLSConfig,
+		TTL:            r.TTL,
 	}
 }

@@ -34,6 +34,16 @@ func (r FetchTarget) Key() FetchKey {
 		writeHashPart(nextProto)
 	}
 
+	pt := r.ProxyTransport
+	if pt.ServerName != "" || pt.CABundleHash != "" || pt.Verification != "" || len(pt.NextProtos) > 0 {
+		writeHashPart(transportVerificationFingerprint(r.ProxyURL, pt.Verification))
+		writeHashPart(pt.ServerName)
+		writeHashPart(pt.CABundleHash)
+		for _, nextProto := range pt.NextProtos {
+			writeHashPart(nextProto)
+		}
+	}
+
 	sum := hash.Sum(nil)
 	return FetchKey(hex.EncodeToString(sum[:]))
 }

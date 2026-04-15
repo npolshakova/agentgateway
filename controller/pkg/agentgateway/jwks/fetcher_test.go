@@ -337,7 +337,7 @@ func TestFetchJwksViaProxyWithTLS(t *testing.T) {
 }
 
 func TestMakeFetchClientRejectsInvalidProxyURL(t *testing.T) {
-	_, err := makeFetchClient(nil, "://missing-scheme")
+	_, err := makeFetchClient(nil, "://missing-scheme", nil)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "error parsing proxy URL")
 }
