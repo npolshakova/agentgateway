@@ -668,6 +668,9 @@ impl LocalBackend {
 			.map(|p| LocalBackendPolicies {
 				simple: p.simple,
 				mcp_authorization: p.mcp_authorization,
+				health: None,
+				response_header_modifier: None,
+				request_redirect: None,
 				a2a: None,
 				ai: None,
 			})
@@ -1070,14 +1073,6 @@ pub struct SimpleLocalBackendPolicies {
 	#[serde(default)]
 	pub request_header_modifier: Option<filters::HeaderModifier>,
 
-	/// Headers to be modified in the response.
-	#[serde(default)]
-	pub response_header_modifier: Option<filters::HeaderModifier>,
-
-	/// Directly respond to the request with a redirect.
-	#[serde(default)]
-	pub request_redirect: Option<filters::RequestRedirect>,
-
 	/// Modify requests and responses sent to and from the backend.
 	#[serde(default)]
 	#[serde(deserialize_with = "de_transform")]
@@ -1101,10 +1096,6 @@ pub struct SimpleLocalBackendPolicies {
 	#[serde(default)]
 	pub tcp: Option<backend::TCP>,
 
-	/// Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.
-	#[serde(default)]
-	pub health: Option<health::LocalHealthPolicy>,
-
 	/// Specify a tunnel to use when connecting to the backend
 	#[serde(default)]
 	pub backend_tunnel: Option<backend::Tunnel>,
@@ -1126,6 +1117,18 @@ pub struct LocalBackendPolicies {
 	#[serde(flatten)]
 	simple: SimpleLocalBackendPolicies,
 
+	/// Headers to be modified in the response.
+	#[serde(default)]
+	pub response_header_modifier: Option<filters::HeaderModifier>,
+
+	/// Directly respond to the request with a redirect.
+	#[serde(default)]
+	pub request_redirect: Option<filters::RequestRedirect>,
+
+	/// Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.
+	#[serde(default)]
+	pub health: Option<health::LocalHealthPolicy>,
+
 	/// Authorization policies for MCP access.
 	#[serde(default)]
 	pub mcp_authorization: Option<McpAuthorization>,
@@ -1143,16 +1146,16 @@ impl LocalBackendPolicies {
 			simple:
 				SimpleLocalBackendPolicies {
 					request_header_modifier,
-					response_header_modifier,
-					request_redirect,
 					transformations,
 					backend_tls,
 					backend_auth,
 					http,
 					tcp,
-					health,
 					backend_tunnel,
 				},
+			health,
+			response_header_modifier,
+			request_redirect,
 			mcp_authorization,
 			a2a,
 			ai,
