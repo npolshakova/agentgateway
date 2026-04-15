@@ -24,11 +24,24 @@ func (r FetchTarget) Key() FetchKey {
 	}
 
 	writeHashPart(r.URL)
+	if r.ProxyURL != "" {
+		writeHashPart(r.ProxyURL)
+	}
 	writeHashPart(transportVerificationFingerprint(r.URL, transport.Verification))
 	writeHashPart(transport.ServerName)
 	writeHashPart(transport.CABundleHash)
 	for _, nextProto := range transport.NextProtos {
 		writeHashPart(nextProto)
+	}
+
+	pt := r.ProxyTransport
+	if pt.ServerName != "" || pt.CABundleHash != "" || pt.Verification != "" || len(pt.NextProtos) > 0 {
+		writeHashPart(transportVerificationFingerprint(r.ProxyURL, pt.Verification))
+		writeHashPart(pt.ServerName)
+		writeHashPart(pt.CABundleHash)
+		for _, nextProto := range pt.NextProtos {
+			writeHashPart(nextProto)
+		}
 	}
 
 	sum := hash.Sum(nil)

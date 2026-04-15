@@ -47,11 +47,12 @@ func NewCollections(inputs CollectionInputs) Collections {
 		}
 
 		return &JwksSource{
-			OwnerKey:   resolved.OwnerID,
-			RequestKey: resolved.Target.Key,
-			Target:     resolved.Target.Target,
-			TLSConfig:  resolved.Target.TLSConfig,
-			TTL:        resolved.TTL,
+			OwnerKey:       resolved.OwnerID,
+			RequestKey:     resolved.Target.Key,
+			Target:         resolved.Target.Target,
+			TLSConfig:      resolved.Target.TLSConfig,
+			ProxyTLSConfig: resolved.Target.ProxyTLSConfig,
+			TTL:            resolved.TTL,
 		}
 	}, inputs.KrtOpts.ToOptions("JwksSources")...)
 
@@ -83,10 +84,11 @@ func CollapseJwksSources(grouped krt.IndexObject[remotehttp.FetchKey, JwksSource
 	})
 
 	shared := SharedJwksRequest{
-		RequestKey: grouped.Key,
-		Target:     sources[0].Target,
-		TLSConfig:  sources[0].TLSConfig,
-		TTL:        sources[0].TTL,
+		RequestKey:     grouped.Key,
+		Target:         sources[0].Target,
+		TLSConfig:      sources[0].TLSConfig,
+		ProxyTLSConfig: sources[0].ProxyTLSConfig,
+		TTL:            sources[0].TTL,
 	}
 	for _, source := range sources[1:] {
 		if source.TTL < shared.TTL {

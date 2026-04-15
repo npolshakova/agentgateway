@@ -86,6 +86,21 @@ func TestRequestKeyPreservesPlainHTTPCompatibility(t *testing.T) {
 	}
 }
 
+func TestRequestKeyDistinguishesByProxyURL(t *testing.T) {
+	t.Parallel()
+
+	noProxy := FetchTarget{URL: "https://issuer.example/jwks"}
+	withProxy := FetchTarget{URL: "https://issuer.example/jwks", ProxyURL: "http://proxy:8080"}
+	differentProxy := FetchTarget{URL: "https://issuer.example/jwks", ProxyURL: "http://other-proxy:3128"}
+
+	if noProxy.Key() == withProxy.Key() {
+		t.Fatalf("expected proxy URL to produce a distinct request key")
+	}
+	if withProxy.Key() == differentProxy.Key() {
+		t.Fatalf("expected different proxy URLs to produce distinct request keys")
+	}
+}
+
 func TestRequestKeyPreservesALPNOrder(t *testing.T) {
 	t.Parallel()
 

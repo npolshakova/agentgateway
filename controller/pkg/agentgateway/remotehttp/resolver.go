@@ -1,6 +1,7 @@
 package remotehttp
 
 import (
+	"crypto/tls"
 	"fmt"
 	"strings"
 
@@ -54,12 +55,30 @@ func (r *defaultResolver) Resolve(krtctx krt.HandlerContext, input ResolveInput)
 		return nil, err
 	}
 
-	target := FetchTarget{}
+	target := FetchTarget{
+		ProxyURL: resolved.proxyURL,
+	}
+
+	if resolved.proxyTLS != nil {
+		target.ProxyTransport = TransportFingerprint{
+			Verification: resolved.proxyTLS.verification,
+			ServerName:   resolved.proxyTLS.serverName,
+			CABundleHash: resolved.proxyTLS.caBundleHash,
+			NextProtos:   append([]string(nil), resolved.proxyTLS.nextProtos...),
+		}
+	}
+
+	var proxyTLSConfig *tls.Config
+	if resolved.proxyTLS != nil {
+		proxyTLSConfig = resolved.proxyTLS.tlsConfig
+	}
+
 	if resolved.tls == nil {
 		target.URL = fmt.Sprintf("http://%s/%s", resolved.connectHost, path)
 		return &ResolvedTarget{
-			Key:    target.Key(),
-			Target: target,
+			Key:            target.Key(),
+			Target:         target,
+			ProxyTLSConfig: proxyTLSConfig,
 		}, nil
 	}
 
@@ -72,8 +91,9 @@ func (r *defaultResolver) Resolve(krtctx krt.HandlerContext, input ResolveInput)
 	}
 
 	return &ResolvedTarget{
-		Key:       target.Key(),
-		Target:    target,
-		TLSConfig: resolved.tls.tlsConfig,
+		Key:            target.Key(),
+		Target:         target,
+		TLSConfig:      resolved.tls.tlsConfig,
+		ProxyTLSConfig: proxyTLSConfig,
 	}, nil
 }

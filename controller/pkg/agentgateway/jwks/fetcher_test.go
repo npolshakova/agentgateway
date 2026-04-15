@@ -2,13 +2,20 @@ package jwks
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net"
+	"net/http"
+	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/go-jose/go-jose/v4"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"istio.io/istio/pkg/util/sets"
 
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/remotehttp"
@@ -200,6 +207,156 @@ func TestNextRetryDelayCapsWithoutOverflow(t *testing.T) {
 	assert.Equal(t, maxRetryDelay, nextRetryDelay(36))
 }
 
+func TestFetchJwksViaProxy(t *testing.T) {
+	// Backend serves JWKS.
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, sampleJWKS)
+	}))
+	defer backend.Close()
+
+	// Forward proxy records the request and forwards it to the backend.
+	var proxyRequestCount atomic.Int32
+	proxy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		proxyRequestCount.Add(1)
+		outReq, err := http.NewRequestWithContext(r.Context(), r.Method, r.URL.String(), r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		resp, err := http.DefaultTransport.RoundTrip(outReq)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadGateway)
+			return
+		}
+		defer resp.Body.Close()
+		for k, vv := range resp.Header {
+			for _, v := range vv {
+				w.Header().Add(k, v)
+			}
+		}
+		w.WriteHeader(resp.StatusCode)
+		io.Copy(w, resp.Body) //nolint:errcheck
+	}))
+	defer proxy.Close()
+
+	target := remotehttp.FetchTarget{
+		URL:      backend.URL,
+		ProxyURL: proxy.URL,
+	}
+	source := JwksSource{
+		OwnerKey:   testOwnerKey(),
+		RequestKey: target.Key(),
+		Target:     target,
+		TTL:        5 * time.Minute,
+	}
+
+	ctx := t.Context()
+	f := NewFetcher(NewCache())
+	require.NoError(t, f.AddOrUpdateKeyset(source))
+	updates := f.SubscribeToUpdates()
+
+	go f.maybeFetchJwks(ctx)
+
+	awaitJwksUpdate(t, updates, source.RequestKey)
+	keyset := awaitStoredKeyset(t, f.cache, source.RequestKey)
+	assert.Equal(t, sampleJWKS, keyset.JwksJSON)
+	assert.Equal(t, int32(1), proxyRequestCount.Load(), "request should have been routed through the proxy")
+}
+
+func TestFetchJwksViaProxyWithTLS(t *testing.T) {
+	// Backend serves JWKS over TLS.
+	backend := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, sampleJWKS)
+	}))
+	defer backend.Close()
+
+	// Forward proxy that handles CONNECT for HTTPS targets.
+	var connectCount atomic.Int32
+	proxy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodConnect {
+			http.Error(w, "expected CONNECT", http.StatusMethodNotAllowed)
+			return
+		}
+		connectCount.Add(1)
+
+		destConn, err := net.Dial("tcp", r.Host)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadGateway)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		hijacker, ok := w.(http.Hijacker)
+		if !ok {
+			http.Error(w, "hijack not supported", http.StatusInternalServerError)
+			return
+		}
+		clientConn, _, err := hijacker.Hijack()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		go func() {
+			defer destConn.Close()
+			io.Copy(destConn, clientConn) //nolint:errcheck
+		}()
+		defer clientConn.Close()
+		io.Copy(clientConn, destConn) //nolint:errcheck
+	}))
+	defer proxy.Close()
+
+	// Use the test server's TLS config so the client trusts the backend cert.
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: true, //nolint:gosec // test only
+	}
+
+	target := remotehttp.FetchTarget{
+		URL:      backend.URL,
+		ProxyURL: proxy.URL,
+	}
+	source := JwksSource{
+		OwnerKey:   testOwnerKey(),
+		RequestKey: target.Key(),
+		Target:     target,
+		TLSConfig:  tlsConfig,
+		TTL:        5 * time.Minute,
+	}
+
+	ctx := t.Context()
+	f := NewFetcher(NewCache())
+	require.NoError(t, f.AddOrUpdateKeyset(source))
+	updates := f.SubscribeToUpdates()
+
+	go f.maybeFetchJwks(ctx)
+
+	awaitJwksUpdate(t, updates, source.RequestKey)
+	keyset := awaitStoredKeyset(t, f.cache, source.RequestKey)
+	assert.Equal(t, sampleJWKS, keyset.JwksJSON)
+	assert.Equal(t, int32(1), connectCount.Load(), "HTTPS request should have used CONNECT through the proxy")
+}
+
+func TestMakeFetchClientRejectsInvalidProxyURL(t *testing.T) {
+	_, err := makeFetchClient(nil, "://missing-scheme", nil)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "error parsing proxy URL")
+}
+
+func TestProxyURLAffectsFetchKey(t *testing.T) {
+	a := remotehttp.FetchTarget{URL: "https://example.com/jwks"}
+	b := remotehttp.FetchTarget{URL: "https://example.com/jwks", ProxyURL: "http://proxy:8080"}
+	assert.NotEqual(t, a.Key(), b.Key(), "different proxy URLs should produce different fetch keys")
+}
+
+func testOwnerKey() JwksOwnerID {
+	return JwksOwnerID{
+		Kind:      OwnerKindPolicy,
+		Namespace: "default",
+		Name:      "test",
+		Path:      "spec.traffic.jwtAuthentication.providers[0].jwks.remote",
+	}
+}
+
 func testSource() JwksSource {
 	return testSourceWithURL("https://test/jwks")
 }
@@ -207,12 +364,7 @@ func testSource() JwksSource {
 func testSourceWithURL(requestURL string) JwksSource {
 	target := remotehttp.FetchTarget{URL: requestURL}
 	return JwksSource{
-		OwnerKey: JwksOwnerID{
-			Kind:      OwnerKindPolicy,
-			Namespace: "default",
-			Name:      "test",
-			Path:      "spec.traffic.jwtAuthentication.providers[0].jwks.remote",
-		},
+		OwnerKey:   testOwnerKey(),
 		RequestKey: target.Key(),
 		Target:     target,
 		TTL:        5 * time.Minute,

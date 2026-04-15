@@ -136,16 +136,51 @@ func nextRetryDelay(retryAttempt int) time.Duration {
 	return next
 }
 
-func makeFetchClient(tlsConfig *tls.Config) *http.Client {
+func makeFetchClient(tlsConfig *tls.Config, proxyURL string, proxyTLSConfig *tls.Config) (*http.Client, error) {
+	dialer := &net.Dialer{Timeout: 5 * time.Second}
+	transport := &http.Transport{
+		TLSClientConfig:   tlsConfig,
+		DialContext:       dialer.DialContext,
+		DisableKeepAlives: true,
+	}
+	if proxyURL != "" {
+		parsed, err := url.Parse(proxyURL)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing proxy URL %q: %w", proxyURL, err)
+		}
+		if proxyTLSConfig != nil {
+			// Downgrade the proxy URL scheme to http so that Go's transport
+			// does not attempt its own TLS handshake to the proxy. Our custom
+			// DialContext handles TLS with the proxy-specific configuration.
+			httpProxy := *parsed
+			httpProxy.Scheme = "http"
+			transport.Proxy = http.ProxyURL(&httpProxy)
+			transport.DialContext = proxyTLSDialContext(dialer, proxyTLSConfig)
+		} else {
+			transport.Proxy = http.ProxyURL(parsed)
+		}
+	}
 	return &http.Client{
-		Timeout: clientTimeout,
-		Transport: &http.Transport{
-			TLSClientConfig: tlsConfig,
-			DialContext: (&net.Dialer{
-				Timeout: 5 * time.Second,
-			}).DialContext,
-			DisableKeepAlives: true,
-		},
+		Timeout:   clientTimeout,
+		Transport: transport,
+	}, nil
+}
+
+// proxyTLSDialContext returns a DialContext function that wraps TCP connections
+// in TLS using the given proxy TLS configuration. This is used when the tunnel
+// proxy backend has a TLS policy, so the CONNECT request is sent over TLS.
+func proxyTLSDialContext(dialer *net.Dialer, proxyTLSConfig *tls.Config) func(ctx context.Context, network, addr string) (net.Conn, error) {
+	return func(ctx context.Context, network, addr string) (net.Conn, error) {
+		conn, err := dialer.DialContext(ctx, network, addr)
+		if err != nil {
+			return nil, err
+		}
+		tlsConn := tls.Client(conn, proxyTLSConfig.Clone())
+		if err := tlsConn.HandshakeContext(ctx); err != nil {
+			conn.Close() //nolint:errcheck
+			return nil, err
+		}
+		return tlsConn, nil
 	}
 }
 
@@ -191,9 +226,11 @@ type jwksHttpClientImpl struct {
 }
 
 func NewFetcher(cache *JwksCache) *Fetcher {
+	// Default client has no TLS or proxy config, so makeFetchClient cannot fail.
+	defaultClient, _ := makeFetchClient(nil, "", nil)
 	return &Fetcher{
 		cache:             cache,
-		defaultJwksClient: &jwksHttpClientImpl{Client: makeFetchClient(nil)},
+		defaultJwksClient: &jwksHttpClientImpl{Client: defaultClient},
 		requests:          make(map[remotehttp.FetchKey]fetchState),
 		schedule:          newFetchSchedule(),
 		subscribers:       make([]chan sets.Set[remotehttp.FetchKey], 0),
@@ -329,16 +366,20 @@ func (f *Fetcher) RemoveKeyset(requestKey remotehttp.FetchKey) {
 }
 
 func (f *Fetcher) fetchJwks(ctx context.Context, source JwksSource) (string, jose.JSONWebKeySet, error) {
-	jwks, err := f.fetchJwksFromTarget(ctx, source.TLSConfig, source.Target)
+	jwks, err := f.fetchJwksFromTarget(ctx, source.TLSConfig, source.Target, source.ProxyTLSConfig)
 	if err != nil {
 		return "", jose.JSONWebKeySet{}, err
 	}
 	return source.Target.URL, jwks, nil
 }
 
-func (f *Fetcher) fetchJwksFromTarget(ctx context.Context, tlsConfig *tls.Config, target remotehttp.FetchTarget) (jose.JSONWebKeySet, error) {
-	if tlsConfig != nil {
-		return (&jwksHttpClientImpl{Client: makeFetchClient(tlsConfig)}).FetchJwks(ctx, target)
+func (f *Fetcher) fetchJwksFromTarget(ctx context.Context, tlsConfig *tls.Config, target remotehttp.FetchTarget, proxyTLSConfig *tls.Config) (jose.JSONWebKeySet, error) {
+	if tlsConfig != nil || target.ProxyURL != "" {
+		client, err := makeFetchClient(tlsConfig, target.ProxyURL, proxyTLSConfig)
+		if err != nil {
+			return jose.JSONWebKeySet{}, err
+		}
+		return (&jwksHttpClientImpl{Client: client}).FetchJwks(ctx, target)
 	}
 	return f.defaultJwksClient.FetchJwks(ctx, target)
 }
