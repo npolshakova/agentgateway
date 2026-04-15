@@ -1472,6 +1472,7 @@ mod tests {
 
 	use super::*;
 	use crate::telemetry::log::OrderedStringMap;
+	use crate::types::agent::{BackendTarget, PolicyType};
 	use crate::types::frontend::LoggingPolicy;
 
 	fn listener() -> ListenerName {
@@ -1775,5 +1776,174 @@ mod tests {
 		let bind = Bind::try_from_xds(&xds_bind, true).unwrap();
 		assert_eq!(bind.address.port(), 9090);
 		assert_eq!(bind.address.ip(), IpAddr::V6(Ipv6Addr::UNSPECIFIED));
+	}
+
+	/// Tests backend policy merging precedence:
+	/// Inline policies > Attached policies (with SubBackend > Backend among attached)
+	#[test]
+	fn backend_policy_merging_precedence() {
+		use crate::http::filters::HeaderModifier;
+
+		let mut store = Store::default();
+
+		// Create backend-attached policy - sets x-foo=bar
+		let backend_attached_policy_key: PolicyKey = strng::new("backend-attached-policy");
+		let backend_attached_policy = TargetedPolicy {
+			key: backend_attached_policy_key.clone(),
+			name: None,
+			target: PolicyTarget::Backend(BackendTarget::Backend {
+				name: strng::new("test-backend"),
+				namespace: strng::new("test-ns"),
+				section: None,
+			}),
+			policy: PolicyType::Backend(BackendPolicy::RequestHeaderModifier(HeaderModifier {
+				add: vec![],
+				set: vec![(strng::new("x-foo"), strng::new("bar"))],
+				remove: vec![],
+			})),
+		};
+		store.insert_policy(backend_attached_policy);
+
+		// Create section-level attached policy - sets x-foo=bar3
+		let section_policy_key: PolicyKey = strng::new("section-policy");
+		let section_policy = TargetedPolicy {
+			key: section_policy_key.clone(),
+			name: None,
+			target: PolicyTarget::Backend(BackendTarget::Backend {
+				name: strng::new("test-backend"),
+				namespace: strng::new("test-ns"),
+				section: Some(strng::new("target")),
+			}),
+			policy: PolicyType::Backend(BackendPolicy::RequestHeaderModifier(HeaderModifier {
+				add: vec![],
+				set: vec![(strng::new("x-foo"), strng::new("bar3"))],
+				remove: vec![],
+			})),
+		};
+		store.insert_policy(section_policy);
+
+		// Create inline policies - sets x-foo=bar2
+		let backend_inline_policies = vec![BackendPolicy::RequestHeaderModifier(HeaderModifier {
+			add: vec![],
+			set: vec![(strng::new("x-foo"), strng::new("bar2"))],
+			remove: vec![],
+		})];
+
+		// Test case 1: Inline policy beats backend attached policy
+		let policies_no_section = store.backend_policies(
+			BackendTargetRef::Backend {
+				name: "test-backend",
+				namespace: "test-ns",
+				section: None,
+			},
+			&[&backend_inline_policies],
+			None,
+		);
+
+		assert!(
+			policies_no_section.request_header_modifier.is_some(),
+			"Expected request header modifier to be present"
+		);
+		let modifier = policies_no_section
+			.request_header_modifier
+			.as_ref()
+			.unwrap();
+		assert_eq!(
+			modifier.set.len(),
+			1,
+			"Expected exactly one header to be set"
+		);
+		assert_eq!(
+			modifier.set[0],
+			(strng::new("x-foo"), strng::new("bar2")),
+			"Inline policy (bar2) should win over backend attached policy (bar)"
+		);
+
+		// Test case 2: Inline policy beats section attached policy
+		let policies_with_section = store.backend_policies(
+			BackendTargetRef::Backend {
+				name: "test-backend",
+				namespace: "test-ns",
+				section: Some("target"),
+			},
+			&[&backend_inline_policies],
+			None,
+		);
+
+		assert!(
+			policies_with_section.request_header_modifier.is_some(),
+			"Expected request header modifier to be present"
+		);
+		let modifier = policies_with_section
+			.request_header_modifier
+			.as_ref()
+			.unwrap();
+		assert_eq!(
+			modifier.set.len(),
+			1,
+			"Expected exactly one header to be set"
+		);
+		assert_eq!(
+			modifier.set[0],
+			(strng::new("x-foo"), strng::new("bar2")),
+			"Inline policy (bar2) should win over section attached policy (bar3)"
+		);
+
+		// Test case 3: Without inline policies, backend attached policy is used
+		let policies_no_inline = store.backend_policies(
+			BackendTargetRef::Backend {
+				name: "test-backend",
+				namespace: "test-ns",
+				section: None,
+			},
+			&[],
+			None,
+		);
+
+		assert!(
+			policies_no_inline.request_header_modifier.is_some(),
+			"Expected request header modifier to be present"
+		);
+		let modifier = policies_no_inline.request_header_modifier.as_ref().unwrap();
+		assert_eq!(
+			modifier.set.len(),
+			1,
+			"Expected exactly one header to be set"
+		);
+		assert_eq!(
+			modifier.set[0],
+			(strng::new("x-foo"), strng::new("bar")),
+			"Backend attached policy (bar) should be used when no inline policies exist"
+		);
+
+		// Test case 4: Without inline policies, section attached policy beats backend attached
+		let policies_section_no_inline = store.backend_policies(
+			BackendTargetRef::Backend {
+				name: "test-backend",
+				namespace: "test-ns",
+				section: Some("target"),
+			},
+			&[],
+			None,
+		);
+
+		assert!(
+			policies_section_no_inline.request_header_modifier.is_some(),
+			"Expected request header modifier to be present"
+		);
+		let modifier = policies_section_no_inline
+			.request_header_modifier
+			.as_ref()
+			.unwrap();
+		assert_eq!(
+			modifier.set.len(),
+			1,
+			"Expected exactly one header to be set"
+		);
+		assert_eq!(
+			modifier.set[0],
+			(strng::new("x-foo"), strng::new("bar3")),
+			"Section attached policy (bar3) should win over backend attached policy (bar)"
+		);
 	}
 }

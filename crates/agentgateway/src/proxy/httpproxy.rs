@@ -2285,20 +2285,19 @@ impl PolicyClient {
 			.await
 	}
 
-	pub async fn call_with_default_policies(
+	pub async fn call_with_explicit_policies(
 		&self,
 		req: Request,
 		backend: &SimpleBackend,
-		defaults: BackendPolicies,
+		policies: BackendPolicies,
 	) -> Result<Response, ProxyError> {
-		let backend = Backend::from(backend.clone()).into();
-		let pols = defaults.merge(get_backend_policies(&self.inputs, &backend, &[], None));
+		let backend = Backend::from(backend.clone());
 		self
-			.internal_call_with_policies(req, backend.backend, pols)
+			.internal_call_with_policies(req, backend, policies)
 			.await
 	}
 
-	pub async fn call_with_explicit_policies(
+	pub async fn call_with_explicit_policies_list(
 		&self,
 		req: Request,
 		backend: SimpleBackend,
