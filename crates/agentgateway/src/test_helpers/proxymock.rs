@@ -458,7 +458,11 @@ impl TestBind {
 		self
 	}
 
-	pub fn with_route_group(self, key: agent_core::strng::Strng, routes: Vec<crate::types::agent::Route>) -> Self {
+	pub fn with_route_group(
+		self,
+		key: agent_core::strng::Strng,
+		routes: Vec<crate::types::agent::Route>,
+	) -> Self {
 		let mut binds = self.pi.stores.binds.write();
 		for r in routes {
 			binds.insert_route_into_group(r, key.clone());
