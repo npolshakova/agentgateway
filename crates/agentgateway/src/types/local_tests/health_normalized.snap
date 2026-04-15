@@ -49,5 +49,6 @@ backends:
           stateful: true
           alwaysUsePrefix: false
           failureMode: failClosed
+route_groups: []
 workloads: []
 services: []

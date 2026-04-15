@@ -2518,12 +2518,13 @@ mod route_chain_tests {
 			"/foo",
 			RouteBackendTarget::RouteGroup(child.key.clone()),
 		);
-		let bind = bind(vec![parent, child.clone()]);
+		let bind = bind(vec![parent]);
 		let listener = bind.listeners.get_exactly_one().unwrap();
 		let proxy = proxymock::setup_proxy_test("{}")
 			.unwrap()
 			.with_backend(backend)
-			.with_bind(bind);
+			.with_bind(bind)
+			.with_route_group(child.key.clone(), vec![child.clone()]);
 
 		let selected = select_route_chain(
 			proxy.inputs().as_ref(),
@@ -2558,9 +2559,13 @@ mod route_chain_tests {
 			"/",
 			RouteBackendTarget::RouteGroup(strng::literal!("parent")),
 		);
-		let bind = bind(vec![parent, child]);
+		let bind = bind(vec![parent.clone(), child.clone()]);
 		let listener = bind.listeners.get_exactly_one().unwrap();
-		let proxy = proxymock::setup_proxy_test("{}").unwrap().with_bind(bind);
+		let proxy = proxymock::setup_proxy_test("{}")
+			.unwrap()
+			.with_bind(bind)
+			.with_route_group(strng::literal!("child"), vec![child])
+			.with_route_group(strng::literal!("parent"), vec![parent]);
 
 		let err = select_route_chain(
 			proxy.inputs().as_ref(),
