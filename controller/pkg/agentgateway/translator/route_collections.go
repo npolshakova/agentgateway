@@ -194,20 +194,20 @@ func buildHTTPRouteGroupBindings(
 	return raw
 }
 
-//func buildHTTPRouteGroupResources(
-//	bindings krt.Collection[routeGroupBinding],
-//	krtopts krtutil.KrtOptions,
-//) krt.Collection[agwir.AgwResource] {
-//	return krt.NewCollection(bindings, func(krtctx krt.HandlerContext, binding routeGroupBinding) *agwir.AgwResource {
-//		return ptr.Of(ToResourceForGateway(binding.Gateway(), AgwRouteGroup{
-//			RouteGroup: &api.RouteGroup{
-//				Key:       binding.RouteGroupKey(),
-//				Namespace: binding.Namespace,
-//				Name:      binding.Name,
-//			},
-//		}))
-//	}, krtopts.ToOptions("HTTPRouteGroups")...)
-//}
+func buildHTTPRouteGroupResources(
+	bindings krt.Collection[routeGroupBindingKey],
+	krtopts krtutil.KrtOptions,
+) krt.Collection[agwir.AgwResource] {
+	return krt.NewCollection(bindings, func(krtctx krt.HandlerContext, binding routeGroupBindingKey) *agwir.AgwResource {
+		return ptr.Of(ToResourceForGateway(binding.GatewayNN(), AgwRouteGroup{
+			RouteGroup: &api.RouteGroup{
+				Key:       utils.InternalRouteGroupKey(binding.Namespace, binding.Name),
+				Namespace: binding.Namespace,
+				Name:      binding.Name,
+			},
+		}))
+	}, krtopts.ToOptions("HTTPRouteGroups")...)
+}
 
 func buildDelegatedHTTPRoutes(
 	httpRouteCol krt.Collection[*gwv1.HTTPRoute],
@@ -344,6 +344,69 @@ func buildDelegatedHTTPRoutes(
 	return routes, ancestors
 }
 
+// setDelegatedRouteParentStatus sets parent status for HTTPRoute parentRefs on delegated child routes.
+// For each HTTPRoute parentRef, it checks whether the parent actually delegates to this child via bindings,
+// and sets Accepted and ResolvedRefs conditions accordingly.
+func setDelegatedRouteParentStatus(
+	krtctx krt.HandlerContext,
+	obj *gwv1.HTTPRoute,
+	routeReporter reporter.RouteReporter,
+	bindings krt.Collection[routeGroupBindingKey],
+	bindingsBySource krt.Index[string, routeGroupBindingKey],
+) {
+	for _, ref := range obj.Spec.ParentRefs {
+		// Only handle HTTPRoute parentRefs
+		if ref.Group == nil || string(*ref.Group) != wellknown.GatewayGroup ||
+			ref.Kind == nil || string(*ref.Kind) != wellknown.HTTPRouteKind {
+			continue
+		}
+
+		parentNN := types.NamespacedName{
+			Namespace: defaultString(ref.Namespace, obj.Namespace),
+			Name:      string(ref.Name),
+		}
+
+		// Check if the parent delegates to this child by looking at bindings
+		parentBindings := krt.Fetch(krtctx, bindings, krt.FilterIndex(bindingsBySource, parentNN.String()))
+		accepted := false
+		for _, b := range parentBindings {
+			if routeMatchesRouteGroup(obj, b) {
+				accepted = true
+				break
+			}
+		}
+
+		// Build a normalized parentRef with namespace filled in so it matches
+		// what BuildRouteStatusWithParentRefDefaulting will look up.
+		statusRef := ref
+		if statusRef.Namespace == nil {
+			ns := gwv1.Namespace(obj.Namespace)
+			statusRef.Namespace = &ns
+		}
+
+		pr := routeReporter.ParentRef(&statusRef)
+		if accepted {
+			pr.SetCondition(reporter.RouteCondition{
+				Type:   gwv1.RouteConditionAccepted,
+				Status: metav1.ConditionTrue,
+				Reason: gwv1.RouteReasonAccepted,
+			})
+		} else {
+			pr.SetCondition(reporter.RouteCondition{
+				Type:    gwv1.RouteConditionAccepted,
+				Status:  metav1.ConditionFalse,
+				Reason:  "NoMatchingParent",
+				Message: "Parent HTTPRoute does not delegate to this route",
+			})
+		}
+		pr.SetCondition(reporter.RouteCondition{
+			Type:   gwv1.RouteConditionResolvedRefs,
+			Status: metav1.ConditionTrue,
+			Reason: gwv1.RouteReasonResolvedRefs,
+		})
+	}
+}
+
 // AgwRouteCollection creates the collection of translated Routes
 func AgwRouteCollection(
 	queue *status.StatusCollections,
@@ -354,6 +417,13 @@ func AgwRouteCollection(
 	inputs RouteContextInputs,
 	krtopts krtutil.KrtOptions,
 ) (krt.Collection[agwir.AgwResource], krt.Collection[*plugins.RouteAttachment], krt.Collection[*utils.AncestorBackend]) {
+	// Build delegation bindings before creating the HTTPRoute status collection,
+	// so we can set parent status for delegated routes.
+	httpRouteGroupBindings := buildHTTPRouteGroupBindings(httpRouteCol, inputs, krtopts)
+	bindingsBySource := krt.NewIndex(httpRouteGroupBindings, "HTTPRouteGroupBindingsBySource", func(binding routeGroupBindingKey) []string {
+		return []string{binding.Source.String()}
+	})
+
 	httpRouteStatus, httpRoutes := createRouteCollectionGeneric(httpRouteCol, inputs, krtopts, "HTTPRoutes",
 		func(ctx RouteContext, obj *gwv1.HTTPRoute) (RouteContext, iter.Seq2[AgwRoute, *reporter.RouteCondition]) {
 			route := obj.Spec
@@ -367,10 +437,13 @@ func AgwRouteCollection(
 			}
 		}, func(status gwv1.RouteStatus) gwv1.HTTPRouteStatus {
 			return gwv1.HTTPRouteStatus{RouteStatus: status}
-		})
+		},
+		func(krtctx krt.HandlerContext, obj *gwv1.HTTPRoute, routeReporter reporter.RouteReporter) {
+			setDelegatedRouteParentStatus(krtctx, obj, routeReporter, httpRouteGroupBindings, bindingsBySource)
+		},
+	)
 	status.RegisterStatus(queue, httpRouteStatus, GetStatus)
-	httpRouteGroupBindings := buildHTTPRouteGroupBindings(httpRouteCol, inputs, krtopts)
-	//httpRouteGroups := buildHTTPRouteGroupResources(httpRouteGroupBindings, krtopts)
+	httpRouteGroups := buildHTTPRouteGroupResources(httpRouteGroupBindings, krtopts)
 	delegatedHTTPRoutes, delegatedHTTPAncestors := buildDelegatedHTTPRoutes(httpRouteCol, httpRouteGroupBindings, inputs, krtopts)
 
 	grpcRouteStatus, grpcRoutes := createRouteCollectionGeneric(grpcRouteCol, inputs, krtopts, "GRPCRoutes",
@@ -427,7 +500,7 @@ func AgwRouteCollection(
 	routes := krt.JoinCollection(
 		[]krt.Collection[agwir.AgwResource]{
 			httpRoutes,
-			//httpRouteGroups,
+			httpRouteGroups,
 			delegatedHTTPRoutes,
 			grpcRoutes,
 			tcpRoutes,
@@ -722,6 +795,7 @@ func createRouteCollectionGeneric[T controllers.Object, R comparable, ST any](
 	collectionName string,
 	translator func(ctx RouteContext, obj T) (RouteContext, iter.Seq2[R, *reporter.RouteCondition]),
 	buildStatus func(status gwv1.RouteStatus) ST,
+	postProcess ...func(krtctx krt.HandlerContext, obj T, routeReporter reporter.RouteReporter),
 ) (
 	krt.StatusCollection[T, ST],
 	krt.Collection[agwir.AgwResource],
@@ -754,6 +828,12 @@ func createRouteCollectionGeneric[T controllers.Object, R comparable, ST any](
 			routeNN,
 			routeReporter,
 		)
+
+		// Apply post-processing to enrich status (e.g., delegation parent status).
+		for _, pp := range postProcess {
+			pp(krtctx, obj, routeReporter)
+		}
+
 		status := rm.BuildRouteStatusWithParentRefDefaulting(context.Background(), obj, inputs.ControllerName, true)
 		return ptr.Of(buildStatus(*status)), resources
 	}, krtopts.ToOptions(collectionName)...)
