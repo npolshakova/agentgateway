@@ -128,10 +128,11 @@ func (r *defaultResolver) resolveTunnelProxyHost(
 
 	case string(kind) == wellknown.ServiceKind && string(group) == "":
 		host := kubeutils.GetServiceHostname(string(backendRef.Name), refNamespace)
-		if port := ptr.OrEmpty(backendRef.Port); port != 0 {
-			return fmt.Sprintf("%s:%d", host, port), nil
+		port := ptr.OrEmpty(backendRef.Port)
+		if port == 0 {
+			return "", fmt.Errorf("port is required for Service tunnel proxy backend %s/%s", backendRef.Name, refNamespace)
 		}
-		return host, nil
+		return fmt.Sprintf("%s:%d", host, port), nil
 
 	default:
 		return "", fmt.Errorf("unsupported backend kind %s.%s for tunnel proxy", group, kind)

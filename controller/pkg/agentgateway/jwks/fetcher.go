@@ -136,7 +136,7 @@ func nextRetryDelay(retryAttempt int) time.Duration {
 	return next
 }
 
-func makeFetchClient(tlsConfig *tls.Config, proxyURL string) *http.Client {
+func makeFetchClient(tlsConfig *tls.Config, proxyURL string) (*http.Client, error) {
 	transport := &http.Transport{
 		TLSClientConfig: tlsConfig,
 		DialContext: (&net.Dialer{
@@ -145,14 +145,16 @@ func makeFetchClient(tlsConfig *tls.Config, proxyURL string) *http.Client {
 		DisableKeepAlives: true,
 	}
 	if proxyURL != "" {
-		if parsed, err := url.Parse(proxyURL); err == nil {
-			transport.Proxy = http.ProxyURL(parsed)
+		parsed, err := url.Parse(proxyURL)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing proxy URL %q: %w", proxyURL, err)
 		}
+		transport.Proxy = http.ProxyURL(parsed)
 	}
 	return &http.Client{
 		Timeout:   clientTimeout,
 		Transport: transport,
-	}
+	}, nil
 }
 
 func drainTimer(timer *time.Timer) {
@@ -197,9 +199,11 @@ type jwksHttpClientImpl struct {
 }
 
 func NewFetcher(cache *JwksCache) *Fetcher {
+	// Default client has no TLS or proxy config, so makeFetchClient cannot fail.
+	defaultClient, _ := makeFetchClient(nil, "")
 	return &Fetcher{
 		cache:             cache,
-		defaultJwksClient: &jwksHttpClientImpl{Client: makeFetchClient(nil, "")},
+		defaultJwksClient: &jwksHttpClientImpl{Client: defaultClient},
 		requests:          make(map[remotehttp.FetchKey]fetchState),
 		schedule:          newFetchSchedule(),
 		subscribers:       make([]chan sets.Set[remotehttp.FetchKey], 0),
@@ -344,7 +348,11 @@ func (f *Fetcher) fetchJwks(ctx context.Context, source JwksSource) (string, jos
 
 func (f *Fetcher) fetchJwksFromTarget(ctx context.Context, tlsConfig *tls.Config, target remotehttp.FetchTarget) (jose.JSONWebKeySet, error) {
 	if tlsConfig != nil || target.ProxyURL != "" {
-		return (&jwksHttpClientImpl{Client: makeFetchClient(tlsConfig, target.ProxyURL)}).FetchJwks(ctx, target)
+		client, err := makeFetchClient(tlsConfig, target.ProxyURL)
+		if err != nil {
+			return jose.JSONWebKeySet{}, err
+		}
+		return (&jwksHttpClientImpl{Client: client}).FetchJwks(ctx, target)
 	}
 	return f.defaultJwksClient.FetchJwks(ctx, target)
 }
