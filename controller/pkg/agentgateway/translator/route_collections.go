@@ -82,7 +82,10 @@ func (b routeGroupBindingKey) gatewayKey() string {
 	return b.Gateway.String()
 }
 
-// TODO: allow parent refs
+// isDelegatedChildHTTPRoute returns true for routes that may be delegated children:
+// 1. routes with no parentRefs (orphan routes adoptable by any parent)
+// 2. routes with explicit HTTPRoute parentRefs.
+// Routes with only Gateway parentRefs are directly-attached and cannot be delegated children.
 func isDelegatedChildHTTPRoute(obj *gwv1.HTTPRoute) bool {
 	if len(obj.Spec.ParentRefs) == 0 {
 		// No explicit parents, all good

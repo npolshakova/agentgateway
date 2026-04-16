@@ -986,8 +986,10 @@ impl Store {
         fields(route),
     )]
 	pub fn remove_route(&mut self, route: RouteKey) {
-		// TODO: handle route group!!!!
 		if self.remove_service_route(&route) {
+			return;
+		}
+		if self.remove_route_from_group(&route) {
 			return;
 		}
 		let Some((_, bind, listener)) = self.binds.iter().find_map(|(k, v)| {
@@ -1001,6 +1003,18 @@ impl Store {
 		lis.routes.remove(&route);
 		bind.listeners.insert(lis);
 		self.insert_bind(bind);
+	}
+
+	fn remove_route_from_group(&mut self, route_key: &RouteKey) -> bool {
+		let mut found = false;
+		self.route_groups.retain(|_, route_set| {
+			if route_set.contains(route_key) {
+				route_set.remove(route_key);
+				found = true;
+			}
+			!route_set.is_empty()
+		});
+		found
 	}
 
 	#[instrument(

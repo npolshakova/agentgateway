@@ -65,18 +65,14 @@ fn select_route_chain(
 	listener: &Listener,
 	req: &Request,
 ) -> Result<SelectedRouteChain, ProxyError> {
-	let (mut selected_route, mut path_match) = dbg!(http::route::select_best_route(
-		inputs.stores.clone(),
-		target_address,
-		listener,
-		req,
-	))
-	.ok_or(ProxyError::RouteNotFound)?;
+	let (mut selected_route, mut path_match) =
+		http::route::select_best_route(inputs.stores.clone(), target_address, listener, req)
+			.ok_or(ProxyError::RouteNotFound)?;
 
 	let mut routes = vec![selected_route.clone()];
 	let mut seen = HashSet::from([selected_route.key.clone()]);
 	loop {
-		let Some(selected_backend) = dbg!(select_backend(selected_route.as_ref(), req)) else {
+		let Some(selected_backend) = select_backend(selected_route.as_ref(), req) else {
 			return Ok(SelectedRouteChain {
 				routes,
 				path_match,
@@ -92,7 +88,9 @@ fn select_route_chain(
 		};
 
 		let binds = inputs.stores.binds.read();
-		let rg = dbg!(binds.lookup_route_group(route_name)).ok_or(ProxyError::RouteNotFound)?;
+		let rg = binds
+			.lookup_route_group(route_name)
+			.ok_or(ProxyError::RouteNotFound)?;
 		(selected_route, path_match) =
 			http::route::select_best_route_group(rg, req).ok_or(ProxyError::RouteNotFound)?;
 		if !seen.insert(selected_route.key.clone()) {
