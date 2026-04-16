@@ -182,6 +182,7 @@ e2e-test: testbox-docker kind-load-testbox
 e2e-test: go-test
 e2e-test: TEST_TAG = e2e
 e2e-test: GO_TEST_ARGS = $(E2E_GO_TEST_ARGS)
+e2e-test: export VERSION := $(VERSION)
 
 
 # https://go.dev/blog/cover#heat-maps
