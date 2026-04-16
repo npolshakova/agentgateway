@@ -423,6 +423,10 @@ agentgateway-controller-docker: agentgateway-controller $(CONTROLLER_OUTPUT_DIR)
 		--build-arg GOARCH=$(GOARCH) \
 		-t $(IMAGE_REGISTRY)/$(AGENTGATEWAY_IMAGE_REPO):$(VERSION)
 
+.PHONY: agentgateway-docker
+agentgateway-docker: ## Build the proxy Docker image from the root Makefile
+	$(MAKE) -C .. docker IMAGE_TAG=$(VERSION)
+
 .PHONY: agentgateway-controller-docker-local
 agentgateway-controller-docker-local: agentgateway-controller $(CONTROLLER_OUTPUT_DIR)/Dockerfile.agentgateway
 	docker buildx build --push $(PLATFORM) $(CONTROLLER_OUTPUT_DIR) -f $(CONTROLLER_OUTPUT_DIR)/Dockerfile.agentgateway \
@@ -632,6 +636,7 @@ kind-reload-%: kind-build-and-load-% kind-set-image-% ; ## Use to build specifie
 
 .PHONY: kind-build-and-load ## Use to build all images and load them into kind
 kind-build-and-load: kind-build-and-load-agentgateway-controller
+kind-build-and-load: kind-build-and-load-agentgateway
 kind-build-and-load: kind-build-and-load-testbox
 
 .PHONY: kind-load ## Use to load all images into kind
