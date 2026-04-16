@@ -333,7 +333,7 @@ func TestFetchJwksViaProxyWithTLS(t *testing.T) {
 	awaitJwksUpdate(t, updates, source.RequestKey)
 	keyset := awaitStoredKeyset(t, f.cache, source.RequestKey)
 	assert.Equal(t, sampleJWKS, keyset.JwksJSON)
-	assert.True(t, connectCount.Load() >= 1, "HTTPS request should have used CONNECT through the proxy")
+	assert.Equal(t, int32(1), connectCount.Load(), "HTTPS request should have used CONNECT through the proxy")
 }
 
 func TestMakeFetchClientRejectsInvalidProxyURL(t *testing.T) {
