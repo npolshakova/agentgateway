@@ -292,14 +292,14 @@ func TestFetchJwksViaProxyWithTLS(t *testing.T) {
 			http.Error(w, "hijack not supported", http.StatusInternalServerError)
 			return
 		}
-		clientConn, _, err := hijacker.Hijack()
+		clientConn, clientBuf, err := hijacker.Hijack()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		go func() {
 			defer destConn.Close()
-			io.Copy(destConn, clientConn) //nolint:errcheck
+			io.Copy(destConn, clientBuf) //nolint:errcheck
 		}()
 		defer clientConn.Close()
 		io.Copy(clientConn, destConn) //nolint:errcheck
