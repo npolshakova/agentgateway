@@ -150,6 +150,11 @@ pub struct RawConfig {
 	namespace: Option<String>,
 	gateway: Option<String>,
 	trust_domain: Option<String>,
+	/// Comma-separated list of additional SPIFFE trust domains accepted on inbound HBONE
+	/// connections. The local trust_domain is always implicitly included.
+	additional_trust_domains: Option<String>,
+	/// When true, skip SPIFFE trust-domain verification on inbound HBONE connections.
+	skip_validate_trust_domain: Option<bool>,
 	service_account: Option<String>,
 	cluster_id: Option<String>,
 	network: Option<String>,

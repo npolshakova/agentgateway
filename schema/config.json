@@ -127,6 +127,20 @@
             "null"
           ]
         },
+        "additionalTrustDomains": {
+          "description": "Comma-separated list of additional SPIFFE trust domains accepted on inbound HBONE\nconnections. The local trust_domain is always implicitly included.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "skipValidateTrustDomain": {
+          "description": "When true, skip SPIFFE trust-domain verification on inbound HBONE connections.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
         "serviceAccount": {
           "type": [
             "string",
