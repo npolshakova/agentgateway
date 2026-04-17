@@ -684,7 +684,7 @@ impl Store {
 				&[]
 			},
 			None,
-			None,
+			&[],
 		)
 	}
 
@@ -695,7 +695,7 @@ impl Store {
 			None,
 			std::slice::from_ref(&inline_policies),
 			None,
-			None,
+			&[],
 		)
 	}
 
@@ -710,7 +710,7 @@ impl Store {
 			Some(backend.clone()),
 			inline_policies,
 			path.as_ref().map(|p| p.listener),
-			path.as_ref().and_then(RoutePath::final_route),
+			path.as_ref().map(|p| p.routes.as_slice()).unwrap_or(&[]),
 		)
 	}
 
@@ -724,28 +724,36 @@ impl Store {
 		sub_backend: Option<BackendTargetRef>,
 		inline_policies: &[&[BackendPolicy]],
 		gateway: Option<&ListenerName>,
-		route: Option<&RouteName>,
+		routes: &[&RouteName],
 	) -> BackendPolicies {
 		let backend_rules =
 			backend.and_then(|t| self.policies_by_target.get(&PolicyTargetRef::Backend(t)));
 		let sub_backend_rules =
 			sub_backend.and_then(|t| self.policies_by_target.get(&PolicyTargetRef::Backend(t)));
-		let route_rule_rules =
-			route.and_then(|t| self.policies_by_target.get(&t.as_route_rule_target_ref()));
-		let route_rules = route.and_then(|t| self.policies_by_target.get(&t.as_route_target_ref()));
 		let listener_rules =
 			gateway.and_then(|t| self.policies_by_target.get(&t.as_listener_target_ref()));
 		let gateway_rules =
 			gateway.and_then(|t| self.policies_by_target.get(&t.as_gateway_target_ref()));
 
-		// RouteRule > Route > SubBackend > Backend/Service > Gateway
-		// Most specific (route context) to least specific (gateway-wide default)
-		let rules = route_rule_rules
-			.iter()
-			.copied()
-			.flatten()
+		// Collect route policies across the full delegation chain, child (most specific) first.
+		// For each route: rule-level before route-level, matching route_policies() ordering.
+		let mut route_based_keys: Vec<&PolicyKey> = Vec::new();
+		for route in routes.iter().rev() {
+			if let Some(keys) = self
+				.policies_by_target
+				.get(&route.as_route_rule_target_ref())
+			{
+				route_based_keys.extend(keys.iter());
+			}
+			if let Some(keys) = self.policies_by_target.get(&route.as_route_target_ref()) {
+				route_based_keys.extend(keys.iter());
+			}
+		}
+
+		// Route chain (child→parent) > SubBackend > Backend/Service > Gateway
+		let rules = route_based_keys
+			.into_iter()
 			.chain(sub_backend_rules.iter().copied().flatten())
-			.chain(route_rules.iter().copied().flatten())
 			.chain(backend_rules.iter().copied().flatten())
 			.chain(listener_rules.iter().copied().flatten())
 			.chain(gateway_rules.iter().copied().flatten())
