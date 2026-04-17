@@ -15,8 +15,8 @@ use crate::proxy::httpproxy::PolicyClient;
 use crate::types::agent::{
 	A2aPolicy, Backend, BackendKey, BackendPolicy, BackendTargetRef, BackendWithPolicies, Bind,
 	BindKey, FrontendPolicy, JwtAuthentication, Listener, ListenerKey, ListenerName,
-	McpAuthentication, PolicyKey, PolicyTarget, Route, RouteKey, RouteName, RouteSet, TCPRoute,
-	TCPRouteSet, TargetedPolicy, TrafficPolicy,
+	McpAuthentication, PolicyKey, PolicyTarget, Route, RouteGroupKey, RouteKey, RouteName, RouteSet,
+	TCPRoute, TCPRouteSet, TargetedPolicy, TrafficPolicy,
 };
 use crate::types::discovery::NamespacedHostname;
 use crate::types::proto::agent::resource::Kind as XdsKind;
@@ -57,6 +57,7 @@ pub struct Store {
 	// Listeners we got before a Bind arrived
 	staged_listeners: HashMap<BindKey, HashMap<ListenerKey, Listener>>,
 	staged_routes: HashMap<ListenerKey, HashMap<RouteKey, Route>>,
+	route_groups: HashMap<RouteGroupKey, RouteSet>,
 	staged_tcp_routes: HashMap<ListenerKey, HashMap<RouteKey, TCPRoute>>,
 
 	// Service-keyed routes (GAMMA spec: routes with parentRef targeting a Service)
@@ -391,13 +392,19 @@ impl Default for Store {
 	}
 }
 
-// RoutePath describes the objects traversed to reach the given route
+// RoutePath describes the objects traversed to reach the given route.
 #[derive(Debug, Clone)]
 pub struct RoutePath<'a> {
 	pub listener: &'a ListenerName,
 	// the originally intended service, pre-routing
 	pub service: Option<&'a NamespacedHostname>,
-	pub route: &'a RouteName,
+	pub routes: Vec<&'a RouteName>,
+}
+
+impl<'a> RoutePath<'a> {
+	pub fn final_route(&self) -> Option<&'a RouteName> {
+		self.routes.last().copied()
+	}
 }
 
 impl Store {
@@ -469,6 +476,7 @@ impl Store {
 			policies_by_target: Default::default(),
 			backends: Default::default(),
 			staged_routes: Default::default(),
+			route_groups: Default::default(),
 			staged_listeners: Default::default(),
 			staged_tcp_routes: Default::default(),
 			service_routes: Default::default(),
@@ -482,34 +490,51 @@ impl Store {
 		tokio_stream::wrappers::UnboundedReceiverStream::new(sub)
 	}
 
-	pub fn route_policies(&self, path: &RoutePath<'_>, inline: &[TrafficPolicy]) -> RoutePolicies {
-		let &RoutePath {
-			listener,
-			service,
-			route,
-		} = path;
+	pub fn route_policies(&self, path: &RoutePath<'_>, inline: &[&[TrafficPolicy]]) -> RoutePolicies {
+		let listener = &path.listener;
 		let gateway = self
 			.policies_by_target
 			.get(&listener.as_gateway_target_ref());
 		let listener = self
 			.policies_by_target
 			.get(&listener.as_listener_target_ref());
-		let service = service.and_then(|s| self.policies_by_target.get(&s.as_policy_target_ref()));
-		let route_rule = self
-			.policies_by_target
-			.get(&route.as_route_rule_target_ref());
-		let route = self.policies_by_target.get(&route.as_route_target_ref());
-		let rules = route_rule
+		let service = path
+			.service
+			.and_then(|s| self.policies_by_target.get(&s.as_policy_target_ref()));
+
+		let mut route_rules = Vec::new();
+		for (idx, route) in path.routes.iter().enumerate().rev() {
+			route_rules.extend(inline.get(idx).copied().unwrap_or_default().iter());
+			route_rules.extend(
+				self
+					.policies_by_target
+					.get(&route.as_route_rule_target_ref())
+					.into_iter()
+					.flatten()
+					.filter_map(|n| self.policies_by_key.get(n))
+					.filter_map(|p| p.policy.as_traffic_route_phase()),
+			);
+			route_rules.extend(
+				self
+					.policies_by_target
+					.get(&route.as_route_target_ref())
+					.into_iter()
+					.flatten()
+					.filter_map(|n| self.policies_by_key.get(n))
+					.filter_map(|p| p.policy.as_traffic_route_phase()),
+			);
+		}
+
+		let shared_rules = service
 			.iter()
 			.copied()
 			.flatten()
-			.chain(route.iter().copied().flatten())
-			.chain(service.iter().copied().flatten())
 			.chain(listener.iter().copied().flatten())
 			.chain(gateway.iter().copied().flatten())
 			.filter_map(|n| self.policies_by_key.get(n))
 			.filter_map(|p| p.policy.as_traffic_route_phase());
-		let rules = inline.iter().chain(rules);
+
+		let rules = route_rules.into_iter().chain(shared_rules);
 
 		let mut authz = Vec::new();
 		let mut pol = RoutePolicies::default();
@@ -659,7 +684,7 @@ impl Store {
 				&[]
 			},
 			None,
-			None,
+			&[],
 		)
 	}
 
@@ -670,7 +695,7 @@ impl Store {
 			None,
 			std::slice::from_ref(&inline_policies),
 			None,
-			None,
+			&[],
 		)
 	}
 
@@ -685,7 +710,7 @@ impl Store {
 			Some(backend.clone()),
 			inline_policies,
 			path.as_ref().map(|p| p.listener),
-			path.as_ref().map(|p| p.route),
+			path.as_ref().map(|p| p.routes.as_slice()).unwrap_or(&[]),
 		)
 	}
 
@@ -699,28 +724,36 @@ impl Store {
 		sub_backend: Option<BackendTargetRef>,
 		inline_policies: &[&[BackendPolicy]],
 		gateway: Option<&ListenerName>,
-		route: Option<&RouteName>,
+		routes: &[&RouteName],
 	) -> BackendPolicies {
 		let backend_rules =
 			backend.and_then(|t| self.policies_by_target.get(&PolicyTargetRef::Backend(t)));
 		let sub_backend_rules =
 			sub_backend.and_then(|t| self.policies_by_target.get(&PolicyTargetRef::Backend(t)));
-		let route_rule_rules =
-			route.and_then(|t| self.policies_by_target.get(&t.as_route_rule_target_ref()));
-		let route_rules = route.and_then(|t| self.policies_by_target.get(&t.as_route_target_ref()));
 		let listener_rules =
 			gateway.and_then(|t| self.policies_by_target.get(&t.as_listener_target_ref()));
 		let gateway_rules =
 			gateway.and_then(|t| self.policies_by_target.get(&t.as_gateway_target_ref()));
 
-		// RouteRule > Route > SubBackend > Backend/Service > Gateway
-		// Most specific (route context) to least specific (gateway-wide default)
-		let rules = route_rule_rules
-			.iter()
-			.copied()
-			.flatten()
+		// Collect route policies across the full delegation chain, child (most specific) first.
+		// For each route: rule-level before route-level, matching route_policies() ordering.
+		let mut route_based_keys: Vec<&PolicyKey> = Vec::new();
+		for route in routes.iter().rev() {
+			if let Some(keys) = self
+				.policies_by_target
+				.get(&route.as_route_rule_target_ref())
+			{
+				route_based_keys.extend(keys.iter());
+			}
+			if let Some(keys) = self.policies_by_target.get(&route.as_route_target_ref()) {
+				route_based_keys.extend(keys.iter());
+			}
+		}
+
+		// Route chain (child→parent) > SubBackend > Backend/Service > Gateway
+		let rules = route_based_keys
+			.into_iter()
 			.chain(sub_backend_rules.iter().copied().flatten())
-			.chain(route_rules.iter().copied().flatten())
 			.chain(backend_rules.iter().copied().flatten())
 			.chain(listener_rules.iter().copied().flatten())
 			.chain(gateway_rules.iter().copied().flatten())
@@ -946,6 +979,13 @@ impl Store {
 		bind.listeners.remove(&listener);
 		self.insert_bind(bind);
 	}
+	pub fn remove_route_group(&mut self, rg: RouteGroupKey) {
+		self.route_groups.remove(&rg);
+	}
+
+	pub fn lookup_route_group(&self, route: &RouteGroupKey) -> Option<&RouteSet> {
+		self.route_groups.get(route)
+	}
 
 	#[instrument(
         level = Level::INFO,
@@ -955,6 +995,9 @@ impl Store {
     )]
 	pub fn remove_route(&mut self, route: RouteKey) {
 		if self.remove_service_route(&route) {
+			return;
+		}
+		if self.remove_route_from_group(&route) {
 			return;
 		}
 		let Some((_, bind, listener)) = self.binds.iter().find_map(|(k, v)| {
@@ -968,6 +1011,18 @@ impl Store {
 		lis.routes.remove(&route);
 		bind.listeners.insert(lis);
 		self.insert_bind(bind);
+	}
+
+	fn remove_route_from_group(&mut self, route_key: &RouteKey) -> bool {
+		let mut found = false;
+		self.route_groups.retain(|_, route_set| {
+			if route_set.contains(route_key) {
+				route_set.remove(route_key);
+				found = true;
+			}
+			!route_set.is_empty()
+		});
+		found
 	}
 
 	#[instrument(
@@ -1115,6 +1170,11 @@ impl Store {
 				.or_default()
 				.insert(lis.key.clone(), lis);
 		}
+	}
+
+	pub fn insert_route_into_group(&mut self, r: Route, ln: RouteGroupKey) {
+		debug!(group=%ln, route=%r.key, "insert route");
+		self.route_groups.entry(ln).or_default().insert(r);
 	}
 
 	pub fn insert_route(&mut self, r: Route, ln: ListenerKey) {
@@ -1288,14 +1348,15 @@ impl Store {
 		Ok(())
 	}
 	fn insert_xds_route(&mut self, raw: XdsRoute) -> anyhow::Result<()> {
-		let (route, listener_name) = Route::try_from_xds(&raw)?;
+		let (route, listener_name, rgk) = Route::try_from_xds(&raw)?;
 		if let Some(sk) = route.service_key.clone() {
 			self.insert_service_route(route, sk);
-			Ok(())
+		} else if let Some(rgk) = rgk {
+			self.insert_route_into_group(route, rgk);
 		} else {
 			self.insert_route(route, listener_name);
-			Ok(())
 		}
+		Ok(())
 	}
 	fn insert_xds_tcp_route(&mut self, raw: XdsTcpRoute) -> anyhow::Result<()> {
 		let (route, listener_name) = TCPRoute::try_from_xds(&raw)?;
@@ -1385,16 +1446,19 @@ impl StoreUpdater {
 		binds: Vec<Bind>,
 		policies: Vec<TargetedPolicy>,
 		backends: Vec<BackendWithPolicies>,
+		route_groups: Vec<(RouteGroupKey, Vec<Route>)>,
 		prev: PreviousState,
 	) -> PreviousState {
 		let mut s = self.state.write().expect("mutex acquired");
 		let mut old_binds = prev.binds;
 		let mut old_pols = prev.policies;
 		let mut old_backends = prev.backends;
+		let mut old_route_groups = prev.route_groups;
 		let mut next_state = PreviousState {
 			binds: Default::default(),
 			policies: Default::default(),
 			backends: Default::default(),
+			route_groups: Default::default(),
 		};
 		for b in binds {
 			old_binds.remove(&b.key);
@@ -1412,6 +1476,13 @@ impl StoreUpdater {
 			next_state.policies.insert(p.key.clone());
 			s.insert_policy(p);
 		}
+		for (rg_key, routes) in route_groups {
+			old_route_groups.remove(&rg_key);
+			next_state.route_groups.insert(rg_key.clone());
+			for r in routes {
+				s.insert_route_into_group(r, rg_key.clone());
+			}
+		}
 		for remaining_bind in old_binds {
 			s.remove_bind(remaining_bind);
 		}
@@ -1420,6 +1491,9 @@ impl StoreUpdater {
 		}
 		for remaining_backend in old_backends {
 			s.remove_backend(remaining_backend);
+		}
+		for remaining_rg in old_route_groups {
+			s.remove_route_group(remaining_rg);
 		}
 		next_state
 	}
@@ -1430,6 +1504,7 @@ pub struct PreviousState {
 	pub binds: HashSet<BindKey>,
 	pub policies: HashSet<PolicyKey>,
 	pub backends: HashSet<BackendKey>,
+	pub route_groups: HashSet<RouteGroupKey>,
 }
 
 impl agent_xds::Handler<ADPResource> for StoreUpdater {
@@ -1639,7 +1714,7 @@ mod tests {
 			&RoutePath {
 				listener: &listener,
 				service: None,
-				route: &http_route,
+				routes: vec![&http_route],
 			},
 			&[],
 		);
@@ -1649,11 +1724,35 @@ mod tests {
 			&RoutePath {
 				listener: &listener,
 				service: None,
-				route: &grpc_route,
+				routes: vec![&grpc_route],
 			},
 			&[],
 		);
 		assert_eq!(grpc_pols.timeout, Some(grpc_timeout));
+	}
+
+	#[test]
+	fn route_policies_give_precedence_to_later_routes_in_path() {
+		let mut store = Store::default();
+		let listener = listener();
+		let parent_route = route("parent", "ns", Some("HTTPRoute"));
+		let child_route = route("child", "ns", Some("HTTPRoute"));
+
+		let parent_timeout =
+			insert_route_timeout_policy(&mut store, "p-parent", parent_route.clone(), 1);
+		let child_timeout = insert_route_timeout_policy(&mut store, "p-child", child_route.clone(), 2);
+
+		let pols = store.route_policies(
+			&RoutePath {
+				listener: &listener,
+				service: None,
+				routes: vec![&parent_route, &child_route],
+			},
+			&[],
+		);
+
+		assert_ne!(parent_timeout, child_timeout);
+		assert_eq!(pols.timeout, Some(child_timeout));
 	}
 
 	/// Tests that frontend policies at listener level take precedence over gateway level policies

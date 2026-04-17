@@ -1,4 +1,5 @@
 use rand::RngExt;
+use std::collections::HashSet;
 use std::net::SocketAddr;
 use std::ops::{Deref, DerefMut};
 use std::str::FromStr;
@@ -49,6 +50,54 @@ fn select_backend(route: &Route, _req: &Request) -> Option<RouteBackendReference
 		.choose_weighted(&mut rand::rng(), |b| b.weight)
 		.ok()
 		.cloned()
+}
+
+#[derive(Debug)]
+struct SelectedRouteChain {
+	routes: Vec<Arc<Route>>,
+	path_match: PathMatch,
+	backend: Option<RouteBackendReference>,
+}
+
+fn select_route_chain(
+	inputs: &ProxyInputs,
+	target_address: SocketAddr,
+	listener: &Listener,
+	req: &Request,
+) -> Result<SelectedRouteChain, ProxyError> {
+	let (mut selected_route, mut path_match) =
+		http::route::select_best_route(inputs.stores.clone(), target_address, listener, req)
+			.ok_or(ProxyError::RouteNotFound)?;
+
+	let mut routes = vec![selected_route.clone()];
+	let mut seen = HashSet::from([selected_route.key.clone()]);
+	loop {
+		let Some(selected_backend) = select_backend(selected_route.as_ref(), req) else {
+			return Ok(SelectedRouteChain {
+				routes,
+				path_match,
+				backend: None,
+			});
+		};
+		let RouteBackendTarget::RouteGroup(route_name) = &selected_backend.target else {
+			return Ok(SelectedRouteChain {
+				routes,
+				path_match,
+				backend: Some(selected_backend),
+			});
+		};
+
+		let binds = inputs.stores.binds.read();
+		let rg = binds
+			.lookup_route_group(route_name)
+			.ok_or(ProxyError::RouteNotFound)?;
+		(selected_route, path_match) =
+			http::route::select_best_route_group(rg, req).ok_or(ProxyError::RouteNotFound)?;
+		if !seen.insert(selected_route.key.clone()) {
+			return Err(ProxyError::RouteCycleDetected);
+		}
+		routes.push(selected_route.clone());
+	}
 }
 
 pub fn apply_logging_policy_to_log(log: &mut RequestLog, lp: &frontend::LoggingPolicy) {
@@ -593,14 +642,15 @@ impl HTTPProxy {
 
 		Self::detect_misdirected(log, bind, &req, &selected_listener).snapshot_on_err(log, &mut req)?;
 
-		let (selected_route, path_match) = http::route::select_best_route(
-			inputs.stores.clone(),
-			self.target_address,
-			&selected_listener,
-			&req,
-		)
-		.ok_or(ProxyError::RouteNotFound)
-		.snapshot_on_err(log, &mut req)?;
+		let selected_route_chain =
+			select_route_chain(&inputs, self.target_address, &selected_listener, &req)
+				.snapshot_on_err(log, &mut req)?;
+		let selected_route = selected_route_chain
+			.routes
+			.last()
+			.expect("route chain always contains the initially selected route")
+			.clone();
+		let path_match = selected_route_chain.path_match.clone();
 		log.route_name = Some(selected_route.name.clone());
 		// Record the matched path for tracing/logging span names
 		log.path_match = Some(match &path_match {
@@ -619,15 +669,27 @@ impl HTTPProxy {
 		debug!(bind=%bind_name, listener=%selected_listener.key, route=%selected_route.key, "selected route");
 
 		let route_path = RoutePath {
-			route: &selected_route.name,
-			service: selected_route.service_key.as_ref(),
 			listener: &selected_listener.name,
+			service: selected_route_chain
+				.routes
+				.last()
+				.and_then(|r| r.service_key.as_ref()),
+			routes: selected_route_chain
+				.routes
+				.iter()
+				.map(|route| &route.name)
+				.collect(),
 		};
+		let route_inline_policies = selected_route_chain
+			.routes
+			.iter()
+			.map(|route| route.inline_policies.as_slice())
+			.collect::<Vec<_>>();
 
 		let mut route_policies = inputs
 			.stores
 			.read_binds()
-			.route_policies(&route_path, &selected_route.inline_policies);
+			.route_policies(&route_path, &route_inline_policies);
 		// Register all expressions
 		route_policies.register_cel_expressions(log.cel.ctx());
 		log.retry_backoff = route_policies.retry.as_ref().and_then(|r| r.backoff);
@@ -654,11 +716,12 @@ impl HTTPProxy {
 		)
 		.await
 		.snapshot_on_err(log, &mut req)?;
-		let selected_backend = select_backend(selected_route.as_ref(), &req)
+		let selected_backend_ref = selected_route_chain
+			.backend
 			.ok_or(ProxyError::NoValidBackends)
 			.snapshot_on_err(log, &mut req)?;
 		let selected_backend =
-			resolve_backend(selected_backend, self.inputs.as_ref()).snapshot_on_err(log, &mut req)?;
+			resolve_backend(selected_backend_ref, self.inputs.as_ref()).snapshot_on_err(log, &mut req)?;
 		let backend_policies = get_backend_policies(
 			self.inputs.as_ref(),
 			&selected_backend.backend,
@@ -1019,7 +1082,11 @@ impl HTTPProxy {
 }
 
 fn resolve_backend(b: RouteBackendReference, pi: &ProxyInputs) -> Result<RouteBackend, ProxyError> {
-	let backend = super::resolve_backend(&b.backend, pi)?;
+	let backend_ref = b
+		.target
+		.as_backend_reference()
+		.ok_or(ProxyError::InvalidBackendType)?;
+	let backend = super::resolve_backend(&backend_ref, pi)?;
 	Ok(RouteBackend {
 		weight: b.weight,
 		backend,
@@ -2417,5 +2484,183 @@ impl OptLogger for Option<&mut RequestLog> {
 		if let Some(log) = self.as_mut() {
 			f(log)
 		}
+	}
+}
+
+#[cfg(test)]
+mod route_chain_tests {
+	use super::*;
+	use crate::test_helpers::proxymock;
+	use agent_core::strng;
+
+	fn route(name: &str, path: &str, target: RouteBackendTarget) -> Route {
+		Route {
+			key: strng::new(name),
+			service_key: None,
+			name: RouteName {
+				name: strng::new(name),
+				namespace: strng::EMPTY,
+				rule_name: None,
+				kind: Some(strng::literal!("HTTPRoute")),
+			},
+			hostnames: Vec::new(),
+			matches: vec![RouteMatch {
+				headers: Vec::new(),
+				path: PathMatch::PathPrefix(strng::new(path)),
+				method: None,
+				query: Vec::new(),
+			}],
+			backends: vec![RouteBackendReference {
+				weight: 1,
+				target,
+				inline_policies: Vec::new(),
+			}],
+			inline_policies: Vec::new(),
+		}
+	}
+
+	fn route_without_backends(name: &str, path: &str) -> Route {
+		Route {
+			key: strng::new(name),
+			service_key: None,
+			name: RouteName {
+				name: strng::new(name),
+				namespace: strng::EMPTY,
+				rule_name: None,
+				kind: Some(strng::literal!("HTTPRoute")),
+			},
+			hostnames: Vec::new(),
+			matches: vec![RouteMatch {
+				headers: Vec::new(),
+				path: PathMatch::PathPrefix(strng::new(path)),
+				method: None,
+				query: Vec::new(),
+			}],
+			backends: Vec::new(),
+			inline_policies: Vec::new(),
+		}
+	}
+
+	fn request(path: &str) -> Request {
+		::http::Request::builder()
+			.uri(format!("http://example.com{path}"))
+			.header(header::HOST, "example.com")
+			.body(http::Body::empty())
+			.unwrap()
+	}
+
+	fn bind(routes: Vec<Route>) -> Bind {
+		Bind {
+			key: proxymock::BIND_KEY,
+			address: "127.0.0.1:0".parse().unwrap(),
+			listeners: ListenerSet::from_list([Listener {
+				key: proxymock::LISTENER_KEY,
+				name: Default::default(),
+				hostname: Default::default(),
+				protocol: ListenerProtocol::HTTP,
+				tcp_routes: Default::default(),
+				routes: RouteSet::from_list(routes),
+			}]),
+			protocol: BindProtocol::http,
+			tunnel_protocol: Default::default(),
+		}
+	}
+
+	#[test]
+	fn select_route_chain_follows_delegated_routes() {
+		let backend: SocketAddr = "127.0.0.1:8080".parse().unwrap();
+		let child = route(
+			"child",
+			"/",
+			BackendReference::Backend(strng::format!("/{}", backend)).into(),
+		);
+		let parent = route(
+			"parent",
+			"/foo",
+			RouteBackendTarget::RouteGroup(child.key.clone()),
+		);
+		let bind = bind(vec![parent]);
+		let listener = bind.listeners.get_exactly_one().unwrap();
+		let proxy = proxymock::setup_proxy_test("{}")
+			.unwrap()
+			.with_backend(backend)
+			.with_bind(bind)
+			.with_route_group(child.key.clone(), vec![child.clone()]);
+
+		let selected = select_route_chain(
+			proxy.inputs().as_ref(),
+			listener_address(),
+			&listener,
+			&request("/foo"),
+		)
+		.expect("delegated route should resolve");
+
+		assert_eq!(selected.routes.len(), 2);
+		assert_eq!(selected.routes[0].name.name.as_str(), "parent");
+		assert_eq!(selected.routes[1].name.name.as_str(), "child");
+		match &selected.path_match {
+			PathMatch::PathPrefix(prefix) => assert_eq!(prefix.as_str(), "/"),
+			other => panic!("expected delegated path prefix match, got {other:?}"),
+		}
+		match selected.backend.unwrap().target {
+			RouteBackendTarget::Backend(name) => assert_eq!(name.as_str(), format!("/{}", backend)),
+			other => panic!("expected backend target, got {other:?}"),
+		}
+	}
+
+	#[test]
+	fn select_route_chain_rejects_cycles() {
+		let parent = route(
+			"parent",
+			"/",
+			RouteBackendTarget::RouteGroup(strng::literal!("child")),
+		);
+		let child = route(
+			"child",
+			"/",
+			RouteBackendTarget::RouteGroup(strng::literal!("parent")),
+		);
+		let bind = bind(vec![parent.clone(), child.clone()]);
+		let listener = bind.listeners.get_exactly_one().unwrap();
+		let proxy = proxymock::setup_proxy_test("{}")
+			.unwrap()
+			.with_bind(bind)
+			.with_route_group(strng::literal!("child"), vec![child])
+			.with_route_group(strng::literal!("parent"), vec![parent]);
+
+		let err = select_route_chain(
+			proxy.inputs().as_ref(),
+			listener_address(),
+			&listener,
+			&request("/"),
+		)
+		.expect_err("cycle should fail");
+		assert!(matches!(err, ProxyError::RouteCycleDetected));
+	}
+
+	#[test]
+	fn select_route_chain_allows_backendless_terminal_route() {
+		let bind = bind(vec![route_without_backends("direct", "/")]);
+		let listener = bind.listeners.get_exactly_one().unwrap();
+		let proxy = proxymock::setup_proxy_test("{}").unwrap().with_bind(bind);
+
+		let selected = select_route_chain(
+			proxy.inputs().as_ref(),
+			listener_address(),
+			&listener,
+			&request("/"),
+		)
+		.expect("backendless route should still resolve");
+
+		assert_eq!(selected.routes.len(), 1);
+		assert!(selected.backend.is_none());
+		match &selected.path_match {
+			PathMatch::PathPrefix(prefix) => assert_eq!(prefix.as_str(), "/"),
+			other => panic!("expected path prefix match, got {other:?}"),
+		}
+	}
+
+	fn listener_address() -> SocketAddr {
+		"127.0.0.1:80".parse().unwrap()
 	}
 }

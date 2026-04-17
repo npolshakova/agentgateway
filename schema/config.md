@@ -2832,6 +2832,7 @@
 |`binds[].listeners[].routes[].backends[].aws.agentCore`|object||
 |`binds[].listeners[].routes[].backends[].aws.agentCore.agentRuntimeArn`|string||
 |`binds[].listeners[].routes[].backends[].aws.agentCore.qualifier`|string||
+|`binds[].listeners[].routes[].backends[].routeGroup`|string||
 |`binds[].listeners[].routes[].backends[].weight`|integer||
 |`binds[].listeners[].routes[].backends[].policies`|object||
 |`binds[].listeners[].routes[].backends[].policies.requestHeaderModifier`|object|Headers to be modified in the request.|
@@ -7545,6 +7546,3498 @@
 |`backends[].policies.ai.promptCaching.minTokens`|integer||
 |`backends[].policies.ai.promptCaching.cacheMessageOffset`|integer||
 |`backends[].policies.ai.routes`|object||
+|`routeGroups`|[]object||
+|`routeGroups[].name`|string||
+|`routeGroups[].routes`|[]object||
+|`routeGroups[].routes[].name`|string||
+|`routeGroups[].routes[].namespace`|string||
+|`routeGroups[].routes[].ruleName`|string||
+|`routeGroups[].routes[].hostnames`|[]string|Can be a wildcard|
+|`routeGroups[].routes[].matches`|[]object||
+|`routeGroups[].routes[].matches[].headers`|[]object||
+|`routeGroups[].routes[].matches[].headers[].name`|string||
+|`routeGroups[].routes[].matches[].headers[].value`|object|Exactly one of exact or regex may be set.|
+|`routeGroups[].routes[].matches[].headers[].value.exact`|string||
+|`routeGroups[].routes[].matches[].headers[].value.regex`|string||
+|`routeGroups[].routes[].matches[].path`|object|Exactly one of exact, pathPrefix, or regex may be set.|
+|`routeGroups[].routes[].matches[].path.exact`|string||
+|`routeGroups[].routes[].matches[].path.pathPrefix`|string||
+|`routeGroups[].routes[].matches[].path.regex`|string||
+|`routeGroups[].routes[].matches[].method`|string||
+|`routeGroups[].routes[].matches[].query`|[]object||
+|`routeGroups[].routes[].matches[].query[].name`|string||
+|`routeGroups[].routes[].matches[].query[].value`|object|Exactly one of exact or regex may be set.|
+|`routeGroups[].routes[].matches[].query[].value.exact`|string||
+|`routeGroups[].routes[].matches[].query[].value.regex`|string||
+|`routeGroups[].routes[].policies`|object||
+|`routeGroups[].routes[].policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].policies.responseHeaderModifier`|object|Headers to be modified in the response.|
+|`routeGroups[].routes[].policies.responseHeaderModifier.add`|object||
+|`routeGroups[].routes[].policies.responseHeaderModifier.set`|object||
+|`routeGroups[].routes[].policies.responseHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].policies.requestRedirect`|object|Directly respond to the request with a redirect.|
+|`routeGroups[].routes[].policies.requestRedirect.scheme`|string||
+|`routeGroups[].routes[].policies.requestRedirect.authority`|string||
+|`routeGroups[].routes[].policies.requestRedirect.authority.full`|string||
+|`routeGroups[].routes[].policies.requestRedirect.authority.host`|string||
+|`routeGroups[].routes[].policies.requestRedirect.authority.port`|integer||
+|`routeGroups[].routes[].policies.requestRedirect.path`|object||
+|`routeGroups[].routes[].policies.requestRedirect.path.full`|string||
+|`routeGroups[].routes[].policies.requestRedirect.path.prefix`|string||
+|`routeGroups[].routes[].policies.requestRedirect.status`|integer||
+|`routeGroups[].routes[].policies.urlRewrite`|object|Modify the URL path or authority.|
+|`routeGroups[].routes[].policies.urlRewrite.authority`|string||
+|`routeGroups[].routes[].policies.urlRewrite.authority.full`|string||
+|`routeGroups[].routes[].policies.urlRewrite.authority.host`|string||
+|`routeGroups[].routes[].policies.urlRewrite.authority.port`|integer||
+|`routeGroups[].routes[].policies.urlRewrite.path`|object||
+|`routeGroups[].routes[].policies.urlRewrite.path.full`|string||
+|`routeGroups[].routes[].policies.urlRewrite.path.prefix`|string||
+|`routeGroups[].routes[].policies.requestMirror`|object|Mirror incoming requests to another destination.|
+|`routeGroups[].routes[].policies.requestMirror.backend`|object|Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].policies.requestMirror.backend.service`|object||
+|`routeGroups[].routes[].policies.requestMirror.backend.service.name`|object||
+|`routeGroups[].routes[].policies.requestMirror.backend.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.requestMirror.backend.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.requestMirror.backend.service.port`|integer||
+|`routeGroups[].routes[].policies.requestMirror.backend.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.requestMirror.backend.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.requestMirror.percentage`|number||
+|`routeGroups[].routes[].policies.directResponse`|object|Directly respond to the request with a static response.|
+|`routeGroups[].routes[].policies.directResponse.body`|array||
+|`routeGroups[].routes[].policies.directResponse.status`|integer||
+|`routeGroups[].routes[].policies.cors`|object|Handle CORS preflight requests and append configured CORS headers to applicable requests.|
+|`routeGroups[].routes[].policies.cors.allowCredentials`|boolean||
+|`routeGroups[].routes[].policies.cors.allowHeaders`|[]string||
+|`routeGroups[].routes[].policies.cors.allowMethods`|[]string||
+|`routeGroups[].routes[].policies.cors.allowOrigins`|[]string||
+|`routeGroups[].routes[].policies.cors.exposeHeaders`|[]string||
+|`routeGroups[].routes[].policies.cors.maxAge`|string||
+|`routeGroups[].routes[].policies.mcpAuthorization`|object|Authorization policies for MCP access.|
+|`routeGroups[].routes[].policies.mcpAuthorization.rules`|[]string||
+|`routeGroups[].routes[].policies.authorization`|object|Authorization policies for HTTP access.|
+|`routeGroups[].routes[].policies.authorization.rules`|[]string||
+|`routeGroups[].routes[].policies.mcpAuthentication`|object|Authentication for MCP clients.|
+|`routeGroups[].routes[].policies.mcpAuthentication.issuer`|string||
+|`routeGroups[].routes[].policies.mcpAuthentication.audiences`|[]string||
+|`routeGroups[].routes[].policies.mcpAuthentication.provider`|object||
+|`routeGroups[].routes[].policies.mcpAuthentication.provider.auth0`|object||
+|`routeGroups[].routes[].policies.mcpAuthentication.provider.keycloak`|object||
+|`routeGroups[].routes[].policies.mcpAuthentication.resourceMetadata`|object||
+|`routeGroups[].routes[].policies.mcpAuthentication.jwks`|object||
+|`routeGroups[].routes[].policies.mcpAuthentication.jwks.file`|string||
+|`routeGroups[].routes[].policies.mcpAuthentication.jwks.url`|string||
+|`routeGroups[].routes[].policies.mcpAuthentication.mode`|string||
+|`routeGroups[].routes[].policies.mcpAuthentication.jwtValidationOptions`|object|JWT validation options controlling which claims must be present in a token.<br><br>The `required_claims` set specifies which RFC 7519 registered claims must<br>exist in the token payload before validation proceeds. Only the following<br>values are recognized: `exp`, `nbf`, `aud`, `iss`, `sub`. Other registered<br>claims such as `iat` and `jti` are **not** enforced by the underlying<br>`jsonwebtoken` library and will be silently ignored.<br><br>This only enforces **presence**. Standard claims like `exp` and `nbf`<br>have their values validated independently (e.g., expiry is always checked<br>when the `exp` claim is present, regardless of this setting).<br><br>Defaults to `["exp"]`.|
+|`routeGroups[].routes[].policies.mcpAuthentication.jwtValidationOptions.requiredClaims`|[]string|Claims that must be present in the token before validation.<br>Only "exp", "nbf", "aud", "iss", "sub" are enforced; others<br>(including "iat" and "jti") are ignored.<br>Defaults to ["exp"]. Use an empty list to require no claims.|
+|`routeGroups[].routes[].policies.a2a`|object|Mark this traffic as A2A to enable A2A processing and telemetry.|
+|`routeGroups[].routes[].policies.ai`|object|Mark this as LLM traffic to enable LLM processing.|
+|`routeGroups[].routes[].policies.ai.promptGuard`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request`|[]object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].regex`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].regex.action`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].regex.rules`|[]object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].regex.rules[].builtin`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].regex.rules[].pattern`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].webhook`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].webhook.target`|object|Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].webhook.target.service`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].webhook.target.service.name`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].webhook.target.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].webhook.target.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].webhook.target.service.port`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].webhook.target.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].webhook.target.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].webhook.forwardHeaderMatches`|[]object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].name`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].value`|object|Exactly one of exact or regex may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].value.exact`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].value.regex`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.model`|string|Model to use. Defaults to `omni-moderation-latest`|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.http.version`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails`|object|Configuration for AWS Bedrock Guardrails integration.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.guardrailIdentifier`|string|The unique identifier of the guardrail|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.guardrailVersion`|string|The version of the guardrail|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.region`|string|AWS region where the guardrail is deployed|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies`|object|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.http.version`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor`|object|Configuration for Google Cloud Model Armor integration.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.templateId`|string|The template ID for the Model Armor configuration|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.projectId`|string|The GCP project ID|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.location`|string|The GCP region (default: us-central1)|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies`|object|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.http.version`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety`|object|Configuration for Azure Content Safety integration.<br><br>Uses the Azure AI Content Safety APIs to detect harmful content<br>and jailbreak attempts. The endpoint and authentication are shared<br>across all enabled features.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.endpoint`|string|The Azure Content Safety endpoint hostname (e.g., "<resource-name>.cognitiveservices.azure.com")|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies`|object|Backend policies for Azure authentication (optional, defaults to implicit Azure auth)|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.http.version`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.analyzeText`|object|Analyze Text configuration for detecting harmful content categories<br>(Hate, SelfHarm, Sexual, Violence) and blocklist matches.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.analyzeText.severityThreshold`|integer|Severity threshold (0-6 for FourSeverityLevels). Content at or above this level is blocked. Default: 2.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.analyzeText.apiVersion`|string|API version to use (default: "2024-09-01")|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.analyzeText.blocklistNames`|[]string|Blocklist names to check against|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.analyzeText.haltOnBlocklistHit`|boolean|When true, further analysis stops if a blocklist is hit|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.detectJailbreak`|object|Detect Text Jailbreak configuration for detecting jailbreak attempts.<br>Only applicable to request guards.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.detectJailbreak.apiVersion`|string|API version to use (default: "2024-02-15-preview")|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].rejection`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].rejection.body`|array||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].rejection.status`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].rejection.headers`|object|Optional headers to add, set, or remove from the rejection response|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].rejection.headers.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].rejection.headers.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].rejection.headers.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response`|[]object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].regex`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].regex.action`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].regex.rules`|[]object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].regex.rules[].builtin`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].regex.rules[].pattern`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].webhook`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].webhook.target`|object|Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].webhook.target.service`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].webhook.target.service.name`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].webhook.target.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].webhook.target.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].webhook.target.service.port`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].webhook.target.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].webhook.target.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].webhook.forwardHeaderMatches`|[]object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].name`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].value`|object|Exactly one of exact or regex may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].value.exact`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].value.regex`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails`|object|Configuration for AWS Bedrock Guardrails integration.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.guardrailIdentifier`|string|The unique identifier of the guardrail|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.guardrailVersion`|string|The version of the guardrail|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.region`|string|AWS region where the guardrail is deployed|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies`|object|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.http.version`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor`|object|Configuration for Google Cloud Model Armor integration.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.templateId`|string|The template ID for the Model Armor configuration|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.projectId`|string|The GCP project ID|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.location`|string|The GCP region (default: us-central1)|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies`|object|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.http.version`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety`|object|Configuration for Azure Content Safety integration.<br><br>Uses the Azure AI Content Safety APIs to detect harmful content<br>and jailbreak attempts. The endpoint and authentication are shared<br>across all enabled features.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.endpoint`|string|The Azure Content Safety endpoint hostname (e.g., "<resource-name>.cognitiveservices.azure.com")|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies`|object|Backend policies for Azure authentication (optional, defaults to implicit Azure auth)|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.http.version`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.analyzeText`|object|Analyze Text configuration for detecting harmful content categories<br>(Hate, SelfHarm, Sexual, Violence) and blocklist matches.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.analyzeText.severityThreshold`|integer|Severity threshold (0-6 for FourSeverityLevels). Content at or above this level is blocked. Default: 2.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.analyzeText.apiVersion`|string|API version to use (default: "2024-09-01")|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.analyzeText.blocklistNames`|[]string|Blocklist names to check against|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.analyzeText.haltOnBlocklistHit`|boolean|When true, further analysis stops if a blocklist is hit|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.detectJailbreak`|object|Detect Text Jailbreak configuration for detecting jailbreak attempts.<br>Only applicable to request guards.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.detectJailbreak.apiVersion`|string|API version to use (default: "2024-02-15-preview")|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].rejection`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].rejection.body`|array||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].rejection.status`|integer||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].rejection.headers`|object|Optional headers to add, set, or remove from the rejection response|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].rejection.headers.add`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].rejection.headers.set`|object||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].rejection.headers.remove`|[]string||
+|`routeGroups[].routes[].policies.ai.defaults`|object||
+|`routeGroups[].routes[].policies.ai.overrides`|object||
+|`routeGroups[].routes[].policies.ai.transformations`|object||
+|`routeGroups[].routes[].policies.ai.prompts`|object||
+|`routeGroups[].routes[].policies.ai.prompts.append`|[]object||
+|`routeGroups[].routes[].policies.ai.prompts.append[].role`|string||
+|`routeGroups[].routes[].policies.ai.prompts.append[].content`|string||
+|`routeGroups[].routes[].policies.ai.prompts.prepend`|[]object||
+|`routeGroups[].routes[].policies.ai.prompts.prepend[].role`|string||
+|`routeGroups[].routes[].policies.ai.prompts.prepend[].content`|string||
+|`routeGroups[].routes[].policies.ai.modelAliases`|object||
+|`routeGroups[].routes[].policies.ai.promptCaching`|object||
+|`routeGroups[].routes[].policies.ai.promptCaching.cacheSystem`|boolean||
+|`routeGroups[].routes[].policies.ai.promptCaching.cacheMessages`|boolean||
+|`routeGroups[].routes[].policies.ai.promptCaching.cacheTools`|boolean||
+|`routeGroups[].routes[].policies.ai.promptCaching.minTokens`|integer||
+|`routeGroups[].routes[].policies.ai.promptCaching.cacheMessageOffset`|integer||
+|`routeGroups[].routes[].policies.ai.routes`|object||
+|`routeGroups[].routes[].policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].policies.backendTLS.key`|string||
+|`routeGroups[].routes[].policies.backendTLS.root`|string||
+|`routeGroups[].routes[].policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.backendTunnel`|object|Tunnel to the backend.|
+|`routeGroups[].routes[].policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].policies.backendAuth.key`|object||
+|`routeGroups[].routes[].policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].policies.localRateLimit`|[]object|Rate limit incoming requests. State is kept local.|
+|`routeGroups[].routes[].policies.localRateLimit[].maxTokens`|integer||
+|`routeGroups[].routes[].policies.localRateLimit[].tokensPerFill`|integer||
+|`routeGroups[].routes[].policies.localRateLimit[].fillInterval`|string||
+|`routeGroups[].routes[].policies.localRateLimit[].type`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit`|object|Rate limit incoming requests. State is managed by a remote server.|
+|`routeGroups[].routes[].policies.remoteRateLimit.service`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.service.name`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.service.port`|integer||
+|`routeGroups[].routes[].policies.remoteRateLimit.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.remoteRateLimit.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.remoteRateLimit.domain`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies`|object|Policies to connect to the backend|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.transformations.request`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.transformations.response`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.http.version`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.remoteRateLimit.descriptors`|[]object||
+|`routeGroups[].routes[].policies.remoteRateLimit.descriptors[].entries`|[]object||
+|`routeGroups[].routes[].policies.remoteRateLimit.descriptors[].entries[].key`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.descriptors[].entries[].value`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.descriptors[].type`|string||
+|`routeGroups[].routes[].policies.remoteRateLimit.descriptors[].limitOverride`|string|limitOverride determines the optional expression to determine the limit of the request.<br>This tells the remote server what limit to apply to the request.<br>The expression must evaluate to a map with `unit` and `requestsPerUnit` keys. For example:<br>`{"unit":"second","requestsPerUnit":100}`.<br>Valid units: second, minute, hour, day, month, year<br>If the expression fails to evaluate, the descriptor is skipped.|
+|`routeGroups[].routes[].policies.remoteRateLimit.failureMode`|string|Behavior when the remote rate limit service is unavailable or returns an error.<br>Defaults to failClosed, denying requests with a 500 status on service failure.|
+|`routeGroups[].routes[].policies.jwtAuth`|object|Authenticate incoming JWT requests.|
+|`routeGroups[].routes[].policies.jwtAuth.mode`|string||
+|`routeGroups[].routes[].policies.jwtAuth.providers`|[]object||
+|`routeGroups[].routes[].policies.jwtAuth.providers[].issuer`|string||
+|`routeGroups[].routes[].policies.jwtAuth.providers[].audiences`|[]string||
+|`routeGroups[].routes[].policies.jwtAuth.providers[].jwks`|object||
+|`routeGroups[].routes[].policies.jwtAuth.providers[].jwks.file`|string||
+|`routeGroups[].routes[].policies.jwtAuth.providers[].jwks.url`|string||
+|`routeGroups[].routes[].policies.jwtAuth.providers[].jwtValidationOptions`|object|JWT validation options controlling which claims must be present in a token.<br><br>The `required_claims` set specifies which RFC 7519 registered claims must<br>exist in the token payload before validation proceeds. Only the following<br>values are recognized: `exp`, `nbf`, `aud`, `iss`, `sub`. Other registered<br>claims such as `iat` and `jti` are **not** enforced by the underlying<br>`jsonwebtoken` library and will be silently ignored.<br><br>This only enforces **presence**. Standard claims like `exp` and `nbf`<br>have their values validated independently (e.g., expiry is always checked<br>when the `exp` claim is present, regardless of this setting).<br><br>Defaults to `["exp"]`.|
+|`routeGroups[].routes[].policies.jwtAuth.providers[].jwtValidationOptions.requiredClaims`|[]string|Claims that must be present in the token before validation.<br>Only "exp", "nbf", "aud", "iss", "sub" are enforced; others<br>(including "iat" and "jti") are ignored.<br>Defaults to ["exp"]. Use an empty list to require no claims.|
+|`routeGroups[].routes[].policies.jwtAuth.mode`|string||
+|`routeGroups[].routes[].policies.jwtAuth.issuer`|string||
+|`routeGroups[].routes[].policies.jwtAuth.audiences`|[]string||
+|`routeGroups[].routes[].policies.jwtAuth.jwks`|object||
+|`routeGroups[].routes[].policies.jwtAuth.jwks.file`|string||
+|`routeGroups[].routes[].policies.jwtAuth.jwks.url`|string||
+|`routeGroups[].routes[].policies.jwtAuth.jwtValidationOptions`|object|JWT validation options controlling which claims must be present in a token.<br><br>The `required_claims` set specifies which RFC 7519 registered claims must<br>exist in the token payload before validation proceeds. Only the following<br>values are recognized: `exp`, `nbf`, `aud`, `iss`, `sub`. Other registered<br>claims such as `iat` and `jti` are **not** enforced by the underlying<br>`jsonwebtoken` library and will be silently ignored.<br><br>This only enforces **presence**. Standard claims like `exp` and `nbf`<br>have their values validated independently (e.g., expiry is always checked<br>when the `exp` claim is present, regardless of this setting).<br><br>Defaults to `["exp"]`.|
+|`routeGroups[].routes[].policies.jwtAuth.jwtValidationOptions.requiredClaims`|[]string|Claims that must be present in the token before validation.<br>Only "exp", "nbf", "aud", "iss", "sub" are enforced; others<br>(including "iat" and "jti") are ignored.<br>Defaults to ["exp"]. Use an empty list to require no claims.|
+|`routeGroups[].routes[].policies.oidc`|object|Authenticate incoming browser requests with OIDC authorization code flow.|
+|`routeGroups[].routes[].policies.oidc.issuer`|string|Issuer used for discovery and ID token validation.|
+|`routeGroups[].routes[].policies.oidc.discovery`|object|Optional discovery document override. If omitted, discovery uses<br>`${issuer}/.well-known/openid-configuration`.|
+|`routeGroups[].routes[].policies.oidc.discovery.file`|string||
+|`routeGroups[].routes[].policies.oidc.discovery.url`|string||
+|`routeGroups[].routes[].policies.oidc.authorizationEndpoint`|string|Authorization endpoint used to start the browser login flow.|
+|`routeGroups[].routes[].policies.oidc.tokenEndpoint`|string|Token endpoint used to exchange the authorization code.|
+|`routeGroups[].routes[].policies.oidc.tokenEndpointAuth`|string|Token endpoint client authentication method for explicit provider configuration.<br><br>Discovery mode derives this from provider metadata. Explicit mode defaults to<br>`clientSecretBasic` when omitted.|
+|`routeGroups[].routes[].policies.oidc.jwks`|object|JWKS source used to validate returned ID tokens.|
+|`routeGroups[].routes[].policies.oidc.jwks.file`|string||
+|`routeGroups[].routes[].policies.oidc.jwks.url`|string||
+|`routeGroups[].routes[].policies.oidc.clientId`|string|OAuth2 client identifier used for authorization and token exchange.|
+|`routeGroups[].routes[].policies.oidc.clientSecret`|string|OAuth2 client secret used for token exchange.|
+|`routeGroups[].routes[].policies.oidc.redirectURI`|string|Absolute callback URI handled by the gateway.<br>This policy always redirects unauthenticated non-callback requests back through this login<br>flow.|
+|`routeGroups[].routes[].policies.oidc.scopes`|[]string|Additional OAuth2 scopes to request. `openid` is always included.|
+|`routeGroups[].routes[].policies.basicAuth`|object|Authenticate incoming requests using Basic Authentication with htpasswd.|
+|`routeGroups[].routes[].policies.basicAuth.htpasswd`|object|.htpasswd file contents/reference|
+|`routeGroups[].routes[].policies.basicAuth.htpasswd.file`|string||
+|`routeGroups[].routes[].policies.basicAuth.realm`|string|Realm name for the WWW-Authenticate header|
+|`routeGroups[].routes[].policies.basicAuth.mode`|string|Validation mode for basic authentication|
+|`routeGroups[].routes[].policies.apiKey`|object|Authenticate incoming requests using API Keys|
+|`routeGroups[].routes[].policies.apiKey.keys`|[]object|List of API keys|
+|`routeGroups[].routes[].policies.apiKey.keys[].key`|string||
+|`routeGroups[].routes[].policies.apiKey.keys[].metadata`|any||
+|`routeGroups[].routes[].policies.apiKey.mode`|string|Validation mode for API keys|
+|`routeGroups[].routes[].policies.extAuthz`|object|Authenticate incoming requests by calling an external authorization server.|
+|`routeGroups[].routes[].policies.extAuthz.service`|object||
+|`routeGroups[].routes[].policies.extAuthz.service.name`|object||
+|`routeGroups[].routes[].policies.extAuthz.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.extAuthz.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.extAuthz.service.port`|integer||
+|`routeGroups[].routes[].policies.extAuthz.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.extAuthz.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.extAuthz.policies`|object|Policies to connect to the backend|
+|`routeGroups[].routes[].policies.extAuthz.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].policies.extAuthz.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].policies.extAuthz.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].policies.extAuthz.policies.transformations.request`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].policies.extAuthz.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.transformations.response`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].policies.extAuthz.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].policies.extAuthz.policies.http.version`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].policies.extAuthz.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].policies.extAuthz.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].policies.extAuthz.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].policies.extAuthz.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.extAuthz.protocol`|object|The ext_authz protocol to use. Unless you need to integrate with an HTTP-only server, gRPC is recommended.<br>Exactly one of grpc or http may be set.|
+|`routeGroups[].routes[].policies.extAuthz.protocol.grpc`|object||
+|`routeGroups[].routes[].policies.extAuthz.protocol.grpc.context`|object|Additional context to send to the authorization service.<br>This maps to the `context_extensions` field of the request, and only allows static values.|
+|`routeGroups[].routes[].policies.extAuthz.protocol.grpc.metadata`|object|Additional metadata to send to the authorization service.<br>This maps to the `metadata_context.filter_metadata` field of the request, and allows dynamic CEL expressions.<br>If unset, by default the `envoy.filters.http.jwt_authn` key is set if the JWT policy is used as well, for compatibility.|
+|`routeGroups[].routes[].policies.extAuthz.protocol.http`|object||
+|`routeGroups[].routes[].policies.extAuthz.protocol.http.path`|string||
+|`routeGroups[].routes[].policies.extAuthz.protocol.http.redirect`|string|When using the HTTP protocol, and the server returns unauthorized, redirect to the URL resolved by<br>the provided expression rather than directly returning the error.|
+|`routeGroups[].routes[].policies.extAuthz.protocol.http.includeResponseHeaders`|[]string|Specific headers from the authorization response will be copied into the request to the backend.|
+|`routeGroups[].routes[].policies.extAuthz.protocol.http.addRequestHeaders`|object|Specific headers to add in the authorization request (empty = all headers), based on the expression|
+|`routeGroups[].routes[].policies.extAuthz.protocol.http.metadata`|object|Metadata to include under the `extauthz` variable, based on the authorization response.|
+|`routeGroups[].routes[].policies.extAuthz.failureMode`|string|Behavior when the authorization service is unavailable or returns an error|
+|`routeGroups[].routes[].policies.extAuthz.failureMode.denyWithStatus`|integer||
+|`routeGroups[].routes[].policies.extAuthz.includeRequestHeaders`|[]string|Specific headers to include in the authorization request.<br>If unset, the gRPC protocol sends all request headers. The HTTP protocol sends only 'Authorization'.|
+|`routeGroups[].routes[].policies.extAuthz.includeRequestBody`|object|Options for including the request body in the authorization request|
+|`routeGroups[].routes[].policies.extAuthz.includeRequestBody.maxRequestBytes`|integer|Maximum size of request body to buffer (default: 8192)|
+|`routeGroups[].routes[].policies.extAuthz.includeRequestBody.allowPartialMessage`|boolean|If true, send partial body when max_request_bytes is reached|
+|`routeGroups[].routes[].policies.extAuthz.includeRequestBody.packAsBytes`|boolean|If true, pack body as raw bytes in gRPC|
+|`routeGroups[].routes[].policies.extProc`|object|Extend agentgateway with an external processor|
+|`routeGroups[].routes[].policies.extProc.service`|object||
+|`routeGroups[].routes[].policies.extProc.service.name`|object||
+|`routeGroups[].routes[].policies.extProc.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.extProc.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.extProc.service.port`|integer||
+|`routeGroups[].routes[].policies.extProc.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.extProc.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.extProc.policies`|object|Policies to connect to the backend|
+|`routeGroups[].routes[].policies.extProc.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].policies.extProc.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].policies.extProc.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].policies.extProc.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].policies.extProc.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].policies.extProc.policies.transformations.request`|object||
+|`routeGroups[].routes[].policies.extProc.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].policies.extProc.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].policies.extProc.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].policies.extProc.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].policies.extProc.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].policies.extProc.policies.transformations.response`|object||
+|`routeGroups[].routes[].policies.extProc.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].policies.extProc.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].policies.extProc.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].policies.extProc.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].policies.extProc.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].policies.extProc.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].policies.extProc.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].policies.extProc.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].policies.extProc.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].policies.extProc.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].policies.extProc.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].policies.extProc.policies.http.version`|string||
+|`routeGroups[].routes[].policies.extProc.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].policies.extProc.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].policies.extProc.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].policies.extProc.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].policies.extProc.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].policies.extProc.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].policies.extProc.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].policies.extProc.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].policies.extProc.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].policies.extProc.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].policies.extProc.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].policies.extProc.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].policies.extProc.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].policies.extProc.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].policies.extProc.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].policies.extProc.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].policies.extProc.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].policies.extProc.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].policies.extProc.failureMode`|string|Behavior when the ext_proc service is unavailable or returns an error|
+|`routeGroups[].routes[].policies.extProc.metadataContext`|object|Additional metadata to send to the external processing service.<br>Maps to the `metadata_context.filter_metadata` field in ProcessingRequest, and allows dynamic CEL expressions.|
+|`routeGroups[].routes[].policies.extProc.requestAttributes`|object|Maps to the request `attributes` field in ProcessingRequest, and allows dynamic CEL expressions.|
+|`routeGroups[].routes[].policies.extProc.responseAttributes`|object|Maps to the response `attributes` field in ProcessingRequest, and allows dynamic CEL expressions.|
+|`routeGroups[].routes[].policies.transformations`|object|Modify requests and responses|
+|`routeGroups[].routes[].policies.transformations.request`|object||
+|`routeGroups[].routes[].policies.transformations.request.add`|object||
+|`routeGroups[].routes[].policies.transformations.request.set`|object||
+|`routeGroups[].routes[].policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].policies.transformations.request.body`|string||
+|`routeGroups[].routes[].policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].policies.transformations.response`|object||
+|`routeGroups[].routes[].policies.transformations.response.add`|object||
+|`routeGroups[].routes[].policies.transformations.response.set`|object||
+|`routeGroups[].routes[].policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].policies.transformations.response.body`|string||
+|`routeGroups[].routes[].policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].policies.csrf`|object|Handle CSRF protection by validating request origins against configured allowed origins.|
+|`routeGroups[].routes[].policies.csrf.additionalOrigins`|[]string||
+|`routeGroups[].routes[].policies.timeout`|object|Timeout requests that exceed the configured duration.|
+|`routeGroups[].routes[].policies.timeout.requestTimeout`|string||
+|`routeGroups[].routes[].policies.timeout.backendRequestTimeout`|string||
+|`routeGroups[].routes[].policies.retry`|object|Retry matching requests.|
+|`routeGroups[].routes[].policies.retry.attempts`|integer||
+|`routeGroups[].routes[].policies.retry.backoff`|string||
+|`routeGroups[].routes[].policies.retry.codes`|[]integer||
+|`routeGroups[].routes[].backends`|[]object||
+|`routeGroups[].routes[].backends[].service`|object||
+|`routeGroups[].routes[].backends[].service.name`|object||
+|`routeGroups[].routes[].backends[].service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].service.port`|integer||
+|`routeGroups[].routes[].backends[].backend`|string||
+|`routeGroups[].routes[].backends[].host`|string||
+|`routeGroups[].routes[].backends[].dynamic`|object||
+|`routeGroups[].routes[].backends[].mcp`|object||
+|`routeGroups[].routes[].backends[].mcp.targets`|[]object||
+|`routeGroups[].routes[].backends[].mcp.targets[].sse`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].sse.host`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].sse.port`|integer||
+|`routeGroups[].routes[].backends[].mcp.targets[].sse.path`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].mcp`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].mcp.host`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].mcp.port`|integer||
+|`routeGroups[].routes[].backends[].mcp.targets[].mcp.path`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].stdio`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].stdio.cmd`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].stdio.args`|[]string||
+|`routeGroups[].routes[].backends[].mcp.targets[].stdio.env`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].openapi`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].openapi.host`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].openapi.port`|integer||
+|`routeGroups[].routes[].backends[].mcp.targets[].openapi.path`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].openapi.schema`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].openapi.schema.file`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].openapi.schema.url`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].name`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.http.version`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.mcpAuthorization`|object|Authorization policies for MCP access.|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.mcpAuthorization.rules`|[]string||
+|`routeGroups[].routes[].backends[].mcp.statefulMode`|string||
+|`routeGroups[].routes[].backends[].mcp.prefixMode`|string||
+|`routeGroups[].routes[].backends[].mcp.failureMode`|string|Behavior when one or more MCP targets fail to initialize or fail during fanout.<br>Defaults to `failClosed`.|
+|`routeGroups[].routes[].backends[].ai`|object||
+|`routeGroups[].routes[].backends[].ai.name`|string||
+|`routeGroups[].routes[].backends[].ai.provider`|object|Exactly one of openAI, gemini, vertex, anthropic, bedrock, or azure may be set.|
+|`routeGroups[].routes[].backends[].ai.provider.openAI`|object||
+|`routeGroups[].routes[].backends[].ai.provider.openAI.model`|string||
+|`routeGroups[].routes[].backends[].ai.provider.gemini`|object||
+|`routeGroups[].routes[].backends[].ai.provider.gemini.model`|string||
+|`routeGroups[].routes[].backends[].ai.provider.vertex`|object||
+|`routeGroups[].routes[].backends[].ai.provider.vertex.model`|string||
+|`routeGroups[].routes[].backends[].ai.provider.vertex.region`|string||
+|`routeGroups[].routes[].backends[].ai.provider.vertex.projectId`|string||
+|`routeGroups[].routes[].backends[].ai.provider.anthropic`|object||
+|`routeGroups[].routes[].backends[].ai.provider.anthropic.model`|string||
+|`routeGroups[].routes[].backends[].ai.provider.bedrock`|object||
+|`routeGroups[].routes[].backends[].ai.provider.bedrock.model`|string||
+|`routeGroups[].routes[].backends[].ai.provider.bedrock.region`|string||
+|`routeGroups[].routes[].backends[].ai.provider.bedrock.guardrailIdentifier`|string||
+|`routeGroups[].routes[].backends[].ai.provider.bedrock.guardrailVersion`|string||
+|`routeGroups[].routes[].backends[].ai.provider.azure`|object||
+|`routeGroups[].routes[].backends[].ai.provider.azure.model`|string||
+|`routeGroups[].routes[].backends[].ai.provider.azure.resourceName`|string|The Azure resource name used to construct the endpoint host.|
+|`routeGroups[].routes[].backends[].ai.provider.azure.resourceType`|string|The type of Azure endpoint. Determines the host suffix.|
+|`routeGroups[].routes[].backends[].ai.provider.azure.apiVersion`|string||
+|`routeGroups[].routes[].backends[].ai.provider.azure.projectName`|string|The Foundry project name, required when `resourceType` is `foundry`.<br>Used to construct paths: `/api/projects/{projectName}/openai/v1/...`.<br>This is distinct from `resourceName` which is used for the host.|
+|`routeGroups[].routes[].backends[].ai.hostOverride`|string|Override the upstream host for this provider.|
+|`routeGroups[].routes[].backends[].ai.pathOverride`|string|Override the upstream path for this provider.|
+|`routeGroups[].routes[].backends[].ai.pathPrefix`|string|Override the default base path prefix for this provider.|
+|`routeGroups[].routes[].backends[].ai.tokenize`|boolean|Whether to tokenize on the request flow. This enables us to do more accurate rate limits,<br>since we know (part of) the cost of the request upfront.<br>This comes with the cost of an expensive operation.|
+|`routeGroups[].routes[].backends[].ai.policies`|object||
+|`routeGroups[].routes[].backends[].ai.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.policies.responseHeaderModifier`|object|Headers to be modified in the response.|
+|`routeGroups[].routes[].backends[].ai.policies.responseHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.responseHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.responseHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.requestRedirect`|object|Directly respond to the request with a redirect.|
+|`routeGroups[].routes[].backends[].ai.policies.requestRedirect.scheme`|string||
+|`routeGroups[].routes[].backends[].ai.policies.requestRedirect.authority`|string||
+|`routeGroups[].routes[].backends[].ai.policies.requestRedirect.authority.full`|string||
+|`routeGroups[].routes[].backends[].ai.policies.requestRedirect.authority.host`|string||
+|`routeGroups[].routes[].backends[].ai.policies.requestRedirect.authority.port`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.requestRedirect.path`|object||
+|`routeGroups[].routes[].backends[].ai.policies.requestRedirect.path.full`|string||
+|`routeGroups[].routes[].backends[].ai.policies.requestRedirect.path.prefix`|string||
+|`routeGroups[].routes[].backends[].ai.policies.requestRedirect.status`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.health`|object|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
+|`routeGroups[].routes[].backends[].ai.policies.health.unhealthyExpression`|string|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 5xx or connection failure is treated as unhealthy.|
+|`routeGroups[].routes[].backends[].ai.policies.health.eviction`|object|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
+|`routeGroups[].routes[].backends[].ai.policies.health.eviction.duration`|string||
+|`routeGroups[].routes[].backends[].ai.policies.health.eviction.restoreHealth`|number||
+|`routeGroups[].routes[].backends[].ai.policies.health.eviction.consecutiveFailures`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.health.eviction.healthThreshold`|number||
+|`routeGroups[].routes[].backends[].ai.policies.mcpAuthorization`|object|Authorization policies for MCP access.|
+|`routeGroups[].routes[].backends[].ai.policies.mcpAuthorization.rules`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.a2a`|object|Mark this traffic as A2A to enable A2A processing and telemetry.|
+|`routeGroups[].routes[].backends[].ai.policies.ai`|object|Mark this as LLM traffic to enable LLM processing.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request`|[]object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].regex`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].regex.action`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].regex.rules`|[]object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].regex.rules[].builtin`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].regex.rules[].pattern`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].webhook`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].webhook.target`|object|Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].webhook.target.service`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].webhook.target.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].webhook.target.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].webhook.target.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].webhook.target.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].webhook.target.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].webhook.target.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].webhook.forwardHeaderMatches`|[]object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].name`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].value`|object|Exactly one of exact or regex may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].value.exact`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].value.regex`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.model`|string|Model to use. Defaults to `omni-moderation-latest`|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails`|object|Configuration for AWS Bedrock Guardrails integration.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.guardrailIdentifier`|string|The unique identifier of the guardrail|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.guardrailVersion`|string|The version of the guardrail|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.region`|string|AWS region where the guardrail is deployed|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies`|object|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor`|object|Configuration for Google Cloud Model Armor integration.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.templateId`|string|The template ID for the Model Armor configuration|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.projectId`|string|The GCP project ID|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.location`|string|The GCP region (default: us-central1)|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies`|object|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety`|object|Configuration for Azure Content Safety integration.<br><br>Uses the Azure AI Content Safety APIs to detect harmful content<br>and jailbreak attempts. The endpoint and authentication are shared<br>across all enabled features.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.endpoint`|string|The Azure Content Safety endpoint hostname (e.g., "<resource-name>.cognitiveservices.azure.com")|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies`|object|Backend policies for Azure authentication (optional, defaults to implicit Azure auth)|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.analyzeText`|object|Analyze Text configuration for detecting harmful content categories<br>(Hate, SelfHarm, Sexual, Violence) and blocklist matches.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.analyzeText.severityThreshold`|integer|Severity threshold (0-6 for FourSeverityLevels). Content at or above this level is blocked. Default: 2.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.analyzeText.apiVersion`|string|API version to use (default: "2024-09-01")|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.analyzeText.blocklistNames`|[]string|Blocklist names to check against|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.analyzeText.haltOnBlocklistHit`|boolean|When true, further analysis stops if a blocklist is hit|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.detectJailbreak`|object|Detect Text Jailbreak configuration for detecting jailbreak attempts.<br>Only applicable to request guards.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.detectJailbreak.apiVersion`|string|API version to use (default: "2024-02-15-preview")|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].rejection`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].rejection.body`|array||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].rejection.status`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].rejection.headers`|object|Optional headers to add, set, or remove from the rejection response|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].rejection.headers.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].rejection.headers.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].rejection.headers.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response`|[]object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].regex`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].regex.action`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].regex.rules`|[]object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].regex.rules[].builtin`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].regex.rules[].pattern`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].webhook`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].webhook.target`|object|Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].webhook.target.service`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].webhook.target.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].webhook.target.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].webhook.target.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].webhook.target.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].webhook.target.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].webhook.target.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].webhook.forwardHeaderMatches`|[]object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].name`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].value`|object|Exactly one of exact or regex may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].value.exact`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].value.regex`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails`|object|Configuration for AWS Bedrock Guardrails integration.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.guardrailIdentifier`|string|The unique identifier of the guardrail|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.guardrailVersion`|string|The version of the guardrail|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.region`|string|AWS region where the guardrail is deployed|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies`|object|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor`|object|Configuration for Google Cloud Model Armor integration.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.templateId`|string|The template ID for the Model Armor configuration|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.projectId`|string|The GCP project ID|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.location`|string|The GCP region (default: us-central1)|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies`|object|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety`|object|Configuration for Azure Content Safety integration.<br><br>Uses the Azure AI Content Safety APIs to detect harmful content<br>and jailbreak attempts. The endpoint and authentication are shared<br>across all enabled features.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.endpoint`|string|The Azure Content Safety endpoint hostname (e.g., "<resource-name>.cognitiveservices.azure.com")|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies`|object|Backend policies for Azure authentication (optional, defaults to implicit Azure auth)|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.analyzeText`|object|Analyze Text configuration for detecting harmful content categories<br>(Hate, SelfHarm, Sexual, Violence) and blocklist matches.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.analyzeText.severityThreshold`|integer|Severity threshold (0-6 for FourSeverityLevels). Content at or above this level is blocked. Default: 2.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.analyzeText.apiVersion`|string|API version to use (default: "2024-09-01")|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.analyzeText.blocklistNames`|[]string|Blocklist names to check against|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.analyzeText.haltOnBlocklistHit`|boolean|When true, further analysis stops if a blocklist is hit|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.detectJailbreak`|object|Detect Text Jailbreak configuration for detecting jailbreak attempts.<br>Only applicable to request guards.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.detectJailbreak.apiVersion`|string|API version to use (default: "2024-02-15-preview")|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].rejection`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].rejection.body`|array||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].rejection.status`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].rejection.headers`|object|Optional headers to add, set, or remove from the rejection response|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].rejection.headers.add`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].rejection.headers.set`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].rejection.headers.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.defaults`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.overrides`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.transformations`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.prompts`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.prompts.append`|[]object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.prompts.append[].role`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.prompts.append[].content`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.prompts.prepend`|[]object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.prompts.prepend[].role`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.prompts.prepend[].content`|string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.modelAliases`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptCaching`|object||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptCaching.cacheSystem`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptCaching.cacheMessages`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptCaching.cacheTools`|boolean||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptCaching.minTokens`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptCaching.cacheMessageOffset`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.ai.routes`|object||
+|`routeGroups[].routes[].backends[].ai.groups`|[]object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers`|[]object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].name`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider`|object|Exactly one of openAI, gemini, vertex, anthropic, bedrock, or azure may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.openAI`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.openAI.model`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.gemini`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.gemini.model`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.vertex`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.vertex.model`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.vertex.region`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.vertex.projectId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.anthropic`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.anthropic.model`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.bedrock`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.bedrock.model`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.bedrock.region`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.bedrock.guardrailIdentifier`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.bedrock.guardrailVersion`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.azure`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.azure.model`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.azure.resourceName`|string|The Azure resource name used to construct the endpoint host.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.azure.resourceType`|string|The type of Azure endpoint. Determines the host suffix.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.azure.apiVersion`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.azure.projectName`|string|The Foundry project name, required when `resourceType` is `foundry`.<br>Used to construct paths: `/api/projects/{projectName}/openai/v1/...`.<br>This is distinct from `resourceName` which is used for the host.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].hostOverride`|string|Override the upstream host for this provider.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].pathOverride`|string|Override the upstream path for this provider.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].pathPrefix`|string|Override the default base path prefix for this provider.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].tokenize`|boolean|Whether to tokenize on the request flow. This enables us to do more accurate rate limits,<br>since we know (part of) the cost of the request upfront.<br>This comes with the cost of an expensive operation.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.responseHeaderModifier`|object|Headers to be modified in the response.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.responseHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.responseHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.responseHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.requestRedirect`|object|Directly respond to the request with a redirect.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.requestRedirect.scheme`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.requestRedirect.authority`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.requestRedirect.authority.full`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.requestRedirect.authority.host`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.requestRedirect.authority.port`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.requestRedirect.path`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.requestRedirect.path.full`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.requestRedirect.path.prefix`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.requestRedirect.status`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.health`|object|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.health.unhealthyExpression`|string|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 5xx or connection failure is treated as unhealthy.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.health.eviction`|object|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.health.eviction.duration`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.health.eviction.restoreHealth`|number||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.health.eviction.consecutiveFailures`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.health.eviction.healthThreshold`|number||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpAuthorization`|object|Authorization policies for MCP access.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpAuthorization.rules`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.a2a`|object|Mark this traffic as A2A to enable A2A processing and telemetry.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai`|object|Mark this as LLM traffic to enable LLM processing.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request`|[]object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].regex`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].regex.action`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].regex.rules`|[]object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].regex.rules[].builtin`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].regex.rules[].pattern`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].webhook`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].webhook.target`|object|Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].webhook.target.service`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].webhook.target.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].webhook.target.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].webhook.target.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].webhook.target.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].webhook.target.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].webhook.target.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].webhook.forwardHeaderMatches`|[]object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].name`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].value`|object|Exactly one of exact or regex may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].value.exact`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].value.regex`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.model`|string|Model to use. Defaults to `omni-moderation-latest`|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails`|object|Configuration for AWS Bedrock Guardrails integration.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.guardrailIdentifier`|string|The unique identifier of the guardrail|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.guardrailVersion`|string|The version of the guardrail|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.region`|string|AWS region where the guardrail is deployed|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies`|object|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor`|object|Configuration for Google Cloud Model Armor integration.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.templateId`|string|The template ID for the Model Armor configuration|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.projectId`|string|The GCP project ID|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.location`|string|The GCP region (default: us-central1)|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies`|object|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety`|object|Configuration for Azure Content Safety integration.<br><br>Uses the Azure AI Content Safety APIs to detect harmful content<br>and jailbreak attempts. The endpoint and authentication are shared<br>across all enabled features.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.endpoint`|string|The Azure Content Safety endpoint hostname (e.g., "<resource-name>.cognitiveservices.azure.com")|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies`|object|Backend policies for Azure authentication (optional, defaults to implicit Azure auth)|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.analyzeText`|object|Analyze Text configuration for detecting harmful content categories<br>(Hate, SelfHarm, Sexual, Violence) and blocklist matches.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.analyzeText.severityThreshold`|integer|Severity threshold (0-6 for FourSeverityLevels). Content at or above this level is blocked. Default: 2.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.analyzeText.apiVersion`|string|API version to use (default: "2024-09-01")|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.analyzeText.blocklistNames`|[]string|Blocklist names to check against|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.analyzeText.haltOnBlocklistHit`|boolean|When true, further analysis stops if a blocklist is hit|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.detectJailbreak`|object|Detect Text Jailbreak configuration for detecting jailbreak attempts.<br>Only applicable to request guards.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.detectJailbreak.apiVersion`|string|API version to use (default: "2024-02-15-preview")|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].rejection`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].rejection.body`|array||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].rejection.status`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].rejection.headers`|object|Optional headers to add, set, or remove from the rejection response|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].rejection.headers.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].rejection.headers.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].rejection.headers.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response`|[]object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].regex`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].regex.action`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].regex.rules`|[]object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].regex.rules[].builtin`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].regex.rules[].pattern`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].webhook`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].webhook.target`|object|Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].webhook.target.service`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].webhook.target.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].webhook.target.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].webhook.target.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].webhook.target.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].webhook.target.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].webhook.target.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].webhook.forwardHeaderMatches`|[]object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].name`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].value`|object|Exactly one of exact or regex may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].value.exact`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].value.regex`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails`|object|Configuration for AWS Bedrock Guardrails integration.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.guardrailIdentifier`|string|The unique identifier of the guardrail|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.guardrailVersion`|string|The version of the guardrail|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.region`|string|AWS region where the guardrail is deployed|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies`|object|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor`|object|Configuration for Google Cloud Model Armor integration.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.templateId`|string|The template ID for the Model Armor configuration|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.projectId`|string|The GCP project ID|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.location`|string|The GCP region (default: us-central1)|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies`|object|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety`|object|Configuration for Azure Content Safety integration.<br><br>Uses the Azure AI Content Safety APIs to detect harmful content<br>and jailbreak attempts. The endpoint and authentication are shared<br>across all enabled features.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.endpoint`|string|The Azure Content Safety endpoint hostname (e.g., "<resource-name>.cognitiveservices.azure.com")|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies`|object|Backend policies for Azure authentication (optional, defaults to implicit Azure auth)|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.analyzeText`|object|Analyze Text configuration for detecting harmful content categories<br>(Hate, SelfHarm, Sexual, Violence) and blocklist matches.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.analyzeText.severityThreshold`|integer|Severity threshold (0-6 for FourSeverityLevels). Content at or above this level is blocked. Default: 2.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.analyzeText.apiVersion`|string|API version to use (default: "2024-09-01")|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.analyzeText.blocklistNames`|[]string|Blocklist names to check against|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.analyzeText.haltOnBlocklistHit`|boolean|When true, further analysis stops if a blocklist is hit|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.detectJailbreak`|object|Detect Text Jailbreak configuration for detecting jailbreak attempts.<br>Only applicable to request guards.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.detectJailbreak.apiVersion`|string|API version to use (default: "2024-02-15-preview")|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].rejection`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].rejection.body`|array||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].rejection.status`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].rejection.headers`|object|Optional headers to add, set, or remove from the rejection response|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].rejection.headers.add`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].rejection.headers.set`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].rejection.headers.remove`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.defaults`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.overrides`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.transformations`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.prompts`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.prompts.append`|[]object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.prompts.append[].role`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.prompts.append[].content`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.prompts.prepend`|[]object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.prompts.prepend[].role`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.prompts.prepend[].content`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.modelAliases`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptCaching`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptCaching.cacheSystem`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptCaching.cacheMessages`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptCaching.cacheTools`|boolean||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptCaching.minTokens`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptCaching.cacheMessageOffset`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.routes`|object||
+|`routeGroups[].routes[].backends[].aws`|object||
+|`routeGroups[].routes[].backends[].aws.agentCore`|object||
+|`routeGroups[].routes[].backends[].aws.agentCore.agentRuntimeArn`|string||
+|`routeGroups[].routes[].backends[].aws.agentCore.qualifier`|string||
+|`routeGroups[].routes[].backends[].routeGroup`|string||
+|`routeGroups[].routes[].backends[].weight`|integer||
+|`routeGroups[].routes[].backends[].policies`|object||
+|`routeGroups[].routes[].backends[].policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.http.version`|string||
+|`routeGroups[].routes[].backends[].policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].policies.responseHeaderModifier`|object|Headers to be modified in the response.|
+|`routeGroups[].routes[].backends[].policies.responseHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].policies.responseHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].policies.responseHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.requestRedirect`|object|Directly respond to the request with a redirect.|
+|`routeGroups[].routes[].backends[].policies.requestRedirect.scheme`|string||
+|`routeGroups[].routes[].backends[].policies.requestRedirect.authority`|string||
+|`routeGroups[].routes[].backends[].policies.requestRedirect.authority.full`|string||
+|`routeGroups[].routes[].backends[].policies.requestRedirect.authority.host`|string||
+|`routeGroups[].routes[].backends[].policies.requestRedirect.authority.port`|integer||
+|`routeGroups[].routes[].backends[].policies.requestRedirect.path`|object||
+|`routeGroups[].routes[].backends[].policies.requestRedirect.path.full`|string||
+|`routeGroups[].routes[].backends[].policies.requestRedirect.path.prefix`|string||
+|`routeGroups[].routes[].backends[].policies.requestRedirect.status`|integer||
+|`routeGroups[].routes[].backends[].policies.health`|object|Health policy for backend outlier detection; evicts on unhealthy responses based on CEL condition and configurable duration.|
+|`routeGroups[].routes[].backends[].policies.health.unhealthyExpression`|string|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 5xx or connection failure is treated as unhealthy.|
+|`routeGroups[].routes[].backends[].policies.health.eviction`|object|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
+|`routeGroups[].routes[].backends[].policies.health.eviction.duration`|string||
+|`routeGroups[].routes[].backends[].policies.health.eviction.restoreHealth`|number||
+|`routeGroups[].routes[].backends[].policies.health.eviction.consecutiveFailures`|integer||
+|`routeGroups[].routes[].backends[].policies.health.eviction.healthThreshold`|number||
+|`routeGroups[].routes[].backends[].policies.mcpAuthorization`|object|Authorization policies for MCP access.|
+|`routeGroups[].routes[].backends[].policies.mcpAuthorization.rules`|[]string||
+|`routeGroups[].routes[].backends[].policies.a2a`|object|Mark this traffic as A2A to enable A2A processing and telemetry.|
+|`routeGroups[].routes[].backends[].policies.ai`|object|Mark this as LLM traffic to enable LLM processing.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request`|[]object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].regex`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].regex.action`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].regex.rules`|[]object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].regex.rules[].builtin`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].regex.rules[].pattern`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].webhook`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].webhook.target`|object|Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].webhook.target.service`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].webhook.target.service.name`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].webhook.target.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].webhook.target.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].webhook.target.service.port`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].webhook.target.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].webhook.target.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].webhook.forwardHeaderMatches`|[]object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].name`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].value`|object|Exactly one of exact or regex may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].value.exact`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].webhook.forwardHeaderMatches[].value.regex`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.model`|string|Model to use. Defaults to `omni-moderation-latest`|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails`|object|Configuration for AWS Bedrock Guardrails integration.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.guardrailIdentifier`|string|The unique identifier of the guardrail|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.guardrailVersion`|string|The version of the guardrail|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.region`|string|AWS region where the guardrail is deployed|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies`|object|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor`|object|Configuration for Google Cloud Model Armor integration.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.templateId`|string|The template ID for the Model Armor configuration|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.projectId`|string|The GCP project ID|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.location`|string|The GCP region (default: us-central1)|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies`|object|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety`|object|Configuration for Azure Content Safety integration.<br><br>Uses the Azure AI Content Safety APIs to detect harmful content<br>and jailbreak attempts. The endpoint and authentication are shared<br>across all enabled features.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.endpoint`|string|The Azure Content Safety endpoint hostname (e.g., "<resource-name>.cognitiveservices.azure.com")|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies`|object|Backend policies for Azure authentication (optional, defaults to implicit Azure auth)|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.analyzeText`|object|Analyze Text configuration for detecting harmful content categories<br>(Hate, SelfHarm, Sexual, Violence) and blocklist matches.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.analyzeText.severityThreshold`|integer|Severity threshold (0-6 for FourSeverityLevels). Content at or above this level is blocked. Default: 2.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.analyzeText.apiVersion`|string|API version to use (default: "2024-09-01")|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.analyzeText.blocklistNames`|[]string|Blocklist names to check against|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.analyzeText.haltOnBlocklistHit`|boolean|When true, further analysis stops if a blocklist is hit|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.detectJailbreak`|object|Detect Text Jailbreak configuration for detecting jailbreak attempts.<br>Only applicable to request guards.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.detectJailbreak.apiVersion`|string|API version to use (default: "2024-02-15-preview")|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].rejection`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].rejection.body`|array||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].rejection.status`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].rejection.headers`|object|Optional headers to add, set, or remove from the rejection response|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].rejection.headers.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].rejection.headers.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].rejection.headers.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response`|[]object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].regex`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].regex.action`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].regex.rules`|[]object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].regex.rules[].builtin`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].regex.rules[].pattern`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].webhook`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].webhook.target`|object|Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].webhook.target.service`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].webhook.target.service.name`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].webhook.target.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].webhook.target.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].webhook.target.service.port`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].webhook.target.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].webhook.target.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].webhook.forwardHeaderMatches`|[]object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].name`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].value`|object|Exactly one of exact or regex may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].value.exact`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].webhook.forwardHeaderMatches[].value.regex`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails`|object|Configuration for AWS Bedrock Guardrails integration.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.guardrailIdentifier`|string|The unique identifier of the guardrail|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.guardrailVersion`|string|The version of the guardrail|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.region`|string|AWS region where the guardrail is deployed|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies`|object|Backend policies for AWS authentication (optional, defaults to implicit AWS auth)|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor`|object|Configuration for Google Cloud Model Armor integration.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.templateId`|string|The template ID for the Model Armor configuration|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.projectId`|string|The GCP project ID|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.location`|string|The GCP region (default: us-central1)|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies`|object|Backend policies for GCP authentication (optional, defaults to implicit GCP auth)|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety`|object|Configuration for Azure Content Safety integration.<br><br>Uses the Azure AI Content Safety APIs to detect harmful content<br>and jailbreak attempts. The endpoint and authentication are shared<br>across all enabled features.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.endpoint`|string|The Azure Content Safety endpoint hostname (e.g., "<resource-name>.cognitiveservices.azure.com")|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies`|object|Backend policies for Azure authentication (optional, defaults to implicit Azure auth)|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier`|object|Headers to be modified in the request.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.requestHeaderModifier.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations`|object|Modify requests and responses sent to and from the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.body`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.request.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.body`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.transformations.response.metadata`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS`|object|Send TLS to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.cert`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.key`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.root`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecure`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.file`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp.audience`|string|Audience for the token. If not set, the destination host will be used.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.gcp.type`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.accessKeyId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.secretAccessKey`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.tenant_id`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_id`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret.client_secret`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.clientId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.objectId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.managedIdentity.userAssignedIdentity.resourceId`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.workloadIdentity`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.developerImplicit`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.implicit`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.http`|object|Specify HTTP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.http.version`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.http.requestTimeout`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp`|object|Specify TCP settings for the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.enabled`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.time`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.interval`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.keepalives.retries`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.connectTimeout`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.connectTimeout.secs`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.tcp.connectTimeout.nanos`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel`|object|Specify a tunnel to use when connecting to the backend|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.name`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.service.port`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTunnel.proxy.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.analyzeText`|object|Analyze Text configuration for detecting harmful content categories<br>(Hate, SelfHarm, Sexual, Violence) and blocklist matches.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.analyzeText.severityThreshold`|integer|Severity threshold (0-6 for FourSeverityLevels). Content at or above this level is blocked. Default: 2.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.analyzeText.apiVersion`|string|API version to use (default: "2024-09-01")|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.analyzeText.blocklistNames`|[]string|Blocklist names to check against|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.analyzeText.haltOnBlocklistHit`|boolean|When true, further analysis stops if a blocklist is hit|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.detectJailbreak`|object|Detect Text Jailbreak configuration for detecting jailbreak attempts.<br>Only applicable to request guards.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.detectJailbreak.apiVersion`|string|API version to use (default: "2024-02-15-preview")|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].rejection`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].rejection.body`|array||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].rejection.status`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].rejection.headers`|object|Optional headers to add, set, or remove from the rejection response|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].rejection.headers.add`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].rejection.headers.set`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].rejection.headers.remove`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.defaults`|object||
+|`routeGroups[].routes[].backends[].policies.ai.overrides`|object||
+|`routeGroups[].routes[].backends[].policies.ai.transformations`|object||
+|`routeGroups[].routes[].backends[].policies.ai.prompts`|object||
+|`routeGroups[].routes[].backends[].policies.ai.prompts.append`|[]object||
+|`routeGroups[].routes[].backends[].policies.ai.prompts.append[].role`|string||
+|`routeGroups[].routes[].backends[].policies.ai.prompts.append[].content`|string||
+|`routeGroups[].routes[].backends[].policies.ai.prompts.prepend`|[]object||
+|`routeGroups[].routes[].backends[].policies.ai.prompts.prepend[].role`|string||
+|`routeGroups[].routes[].backends[].policies.ai.prompts.prepend[].content`|string||
+|`routeGroups[].routes[].backends[].policies.ai.modelAliases`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptCaching`|object||
+|`routeGroups[].routes[].backends[].policies.ai.promptCaching.cacheSystem`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptCaching.cacheMessages`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptCaching.cacheTools`|boolean||
+|`routeGroups[].routes[].backends[].policies.ai.promptCaching.minTokens`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.promptCaching.cacheMessageOffset`|integer||
+|`routeGroups[].routes[].backends[].policies.ai.routes`|object||
 |`llm`|object||
 |`llm.port`|integer||
 |`llm.models`|[]object|models defines the set of models that can be served by this gateway. The model name refers to the<br>model in the users request that is matched; the model sent to the actual LLM can be overridden<br>on a per-model basis.|

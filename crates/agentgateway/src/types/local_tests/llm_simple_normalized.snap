@@ -354,5 +354,6 @@ backends:
           remove:
             - x-gateway-model-name
       - ai: {}
+route_groups: []
 workloads: []
 services: []

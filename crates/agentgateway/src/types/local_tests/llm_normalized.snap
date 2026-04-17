@@ -95,5 +95,6 @@ backends:
                     times_ejected: 0
                     evicted_until: ~
               rejected: {}
+route_groups: []
 workloads: []
 services: []

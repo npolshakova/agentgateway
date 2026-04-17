@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::cmp;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -9,7 +10,7 @@ use crate::http::Request;
 use crate::types::agent;
 use crate::types::agent::{
 	BackendReference, HeaderMatch, HeaderValueMatch, Listener, PathMatch, QueryValueMatch, Route,
-	RouteBackendReference, RouteMatch, RouteName,
+	RouteBackendReference, RouteMatch, RouteName, RouteSet,
 };
 use crate::*;
 
@@ -171,10 +172,11 @@ pub fn select_best_route(
 				inline_policies: vec![],
 				backends: vec![RouteBackendReference {
 					weight: 1,
-					backend: BackendReference::Service {
+					target: BackendReference::Service {
 						name: svc.namespaced_hostname(),
 						port: dst.port(), // TODO: get from req
-					},
+					}
+					.into(),
 					inline_policies: Vec::new(),
 				}],
 			};
@@ -194,4 +196,76 @@ pub fn select_best_route(
 		}
 	}
 	default_response
+}
+
+pub fn select_best_route_group(
+	rg: &RouteSet,
+	request: &Request,
+) -> Option<(Arc<Route>, PathMatch)> {
+	let host = http::get_host(request).ok()?;
+	for hnm in agent::HostnameMatch::all_matches(host) {
+		let mut candidates = rg.get_hostname(&hnm);
+		let best_match = candidates.find(|(_, m)| matches_request(m, request));
+		if let Some((route, matcher)) = best_match {
+			return Some((route, matcher.path.clone()));
+		}
+	}
+	None
+}
+
+pub fn best_match_for_route(route: &Route, request: &Request) -> Option<PathMatch> {
+	let mut best: Option<&agent::RouteMatch> = None;
+	for candidate in route.matches.iter().filter(|m| matches_request(m, request)) {
+		if let Some(current) = best {
+			if compare_route_match(candidate, current) == cmp::Ordering::Greater {
+				best = Some(candidate);
+			}
+		} else {
+			best = Some(candidate);
+		}
+	}
+	best.map(|m| m.path.clone())
+}
+
+fn compare_route_match(a: &agent::RouteMatch, b: &agent::RouteMatch) -> cmp::Ordering {
+	let path_rank1 = get_path_rank(&a.path);
+	let path_rank2 = get_path_rank(&b.path);
+	if path_rank1 != path_rank2 {
+		return path_rank1.cmp(&path_rank2);
+	}
+
+	let path_len1 = get_path_length(&a.path);
+	let path_len2 = get_path_length(&b.path);
+	if path_len1 != path_len2 {
+		return path_len1.cmp(&path_len2);
+	}
+
+	let method1 = a.method.is_some();
+	let method2 = b.method.is_some();
+	if method1 != method2 {
+		return method1.cmp(&method2);
+	}
+
+	let header_count1 = a.headers.len();
+	let header_count2 = b.headers.len();
+	if header_count1 != header_count2 {
+		return header_count1.cmp(&header_count2);
+	}
+
+	a.query.len().cmp(&b.query.len())
+}
+
+fn get_path_rank(path: &PathMatch) -> u8 {
+	match path {
+		PathMatch::Exact(_) => 3,
+		PathMatch::PathPrefix(_) => 2,
+		PathMatch::Regex(_) => 1,
+	}
+}
+
+fn get_path_length(path: &PathMatch) -> usize {
+	match path {
+		PathMatch::Exact(p) | PathMatch::PathPrefix(p) => p.len(),
+		PathMatch::Regex(r) => r.as_str().len(),
+	}
 }

@@ -200,7 +200,7 @@ pub fn basic_named_route(target: Strng) -> Route {
 		inline_policies: Default::default(),
 		backends: vec![RouteBackendReference {
 			weight: 1,
-			backend: BackendReference::Backend(target),
+			target: BackendReference::Backend(target).into(),
 			inline_policies: Default::default(),
 		}],
 	}
@@ -455,6 +455,19 @@ impl TestBind {
 			.discovery
 			.sync_local(vec![svc], vec![wl], Default::default())
 			.unwrap();
+		self
+	}
+
+	pub fn with_route_group(
+		self,
+		key: agent_core::strng::Strng,
+		routes: Vec<crate::types::agent::Route>,
+	) -> Self {
+		let mut binds = self.pi.stores.binds.write();
+		for r in routes {
+			binds.insert_route_into_group(r, key.clone());
+		}
+		drop(binds);
 		self
 	}
 
