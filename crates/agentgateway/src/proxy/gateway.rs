@@ -661,6 +661,8 @@ impl Gateway {
 		stream.ext_mut().insert(src);
 
 		let transport_metrics = inputs.metrics.clone();
+		let _max_dur_metrics = transport_metrics.clone();
+		let _max_dur_labels = transport_labels.clone();
 		let proxy = super::httpproxy::HTTPProxy {
 			bind_name,
 			inputs,
@@ -679,6 +681,11 @@ impl Gateway {
 			.map(|h| h.max_buffer_size)
 			.unwrap_or(def.max_buffer_size);
 
+		let max_connection_duration = policies
+			.http
+			.as_ref()
+			.and_then(|h| h.max_connection_duration);
+
 		let serve = server.serve_connection_with_upgrades(
 			TokioIo::new(stream),
 			hyper::service::service_fn(move |mut req| {
@@ -688,9 +695,32 @@ impl Gateway {
 				async move { proxy.proxy(connection, req).map(Ok::<_, Infallible>).await }
 			}),
 		);
-		// Wrap it in the graceful watcher, will ensure GOAWAY/Connect:clone when we shutdown
-		let serve = drain.wrap_connection(serve);
-		let res = serve.await;
+		// Pin the connection so we can call graceful_shutdown() on it
+		tokio::pin!(serve);
+		let drain_signal = drain.wait_for_drain();
+		tokio::pin!(drain_signal);
+
+		let max_connection_duration = async {
+			match max_connection_duration {
+				Some(d) => tokio::time::sleep(d).await,
+				None => std::future::pending().await,
+			}
+		};
+		let res = tokio::select! {
+			res = serve.as_mut() => res,
+			_guard = &mut drain_signal => {
+				// Drain signaled, initiate graceful shutdown (GOAWAY/Connection:close)
+				// then wait for in-flight requests to complete
+				serve.as_mut().graceful_shutdown();
+				serve.await
+			},
+			_ = max_connection_duration => {
+				debug!("connection closed: max connection duration reached");
+				// Initiate graceful shutdown then wait for in-flight requests to complete
+				serve.as_mut().graceful_shutdown();
+				serve.await
+			},
+		};
 		match res {
 			Ok(_) => Ok(()),
 			Err(e) => {
@@ -1238,6 +1268,7 @@ pub fn auto_server(c: Option<&frontend::HTTP>) -> auto::Builder<::hyper_util::rt
 		http2_frame_size,
 		http2_keepalive_interval,
 		http2_keepalive_timeout,
+		max_connection_duration: _,
 	} = c.unwrap_or(&def);
 
 	if let Some(m) = http1_max_headers {
