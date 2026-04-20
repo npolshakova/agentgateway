@@ -8,7 +8,6 @@ pub use cel::Value;
 pub use cel::types::dynamic::DynamicType;
 use cel::{Context, ExecutionError, ParseError, ParseErrors, Program};
 use flagset::FlagSet;
-use headers::{ContentEncoding, HeaderMapExt};
 pub use helpers::*;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize, Serializer};
@@ -201,31 +200,10 @@ impl ContextBuilder {
 			if resp.extensions().get::<BufferedBody>().is_some() {
 				return;
 			}
-			let ce = resp.headers().typed_get::<ContentEncoding>();
-			if ce.is_some() {
-				// Peek the compressed bytes without consuming the body, then decompress a copy
-				// for CEL. The body and headers are left intact so downstream clients receive
-				// the original compressed response.
-				let Ok(compressed) = crate::http::inspect_response_body(resp).await else {
-					return;
-				};
-				let limit = crate::http::response_buffer_limit(resp);
-				let Ok((_, plain)) = crate::http::compression::to_bytes_with_decompression(
-					axum_core::body::Body::from(compressed),
-					ce.as_ref(),
-					limit,
-				)
-				.await
-				else {
-					return;
-				};
-				resp.extensions_mut().insert(BufferedBody(plain));
-			} else {
-				let Ok(body) = crate::http::inspect_response_body(resp).await else {
-					return;
-				};
-				resp.extensions_mut().insert(BufferedBody(body));
-			}
+			let Ok(body) = crate::http::inspect_response_body(resp).await else {
+				return;
+			};
+			resp.extensions_mut().insert(BufferedBody(body));
 		}
 	}
 
