@@ -25,6 +25,8 @@
 |`config.readinessAddr`|string|Readiness probe server address in the format "ip:port"|
 |`config.session`|object|Configuration for stateful session management|
 |`config.session.key`|string|The AES-256-GCM session protection key to be used for session tokens.<br>If not set, sessions will not be encrypted.<br>For example, generated via `openssl rand -hex 32`.|
+|`config.mcp`|object|MCP gateway settings.|
+|`config.mcp.sessionTtl`|string||
 |`config.connectionTerminationDeadline`|string||
 |`config.connectionMinTerminationDeadline`|string||
 |`config.workerThreads`|string||

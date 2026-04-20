@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr};
 use std::path::PathBuf;
 use std::sync::{Arc, OnceLock};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use crate::agentcore;
 use crate::client::Client;
@@ -727,6 +727,7 @@ impl LocalBackend {
 		&self,
 		name: ResourceName,
 		client: client::Client,
+		mcp_session_ttl: Duration,
 	) -> anyhow::Result<Vec<BackendWithPolicies>> {
 		Ok(match self {
 			LocalBackend::Service { .. } => vec![], // These stay as references
@@ -810,6 +811,7 @@ impl LocalBackend {
 						McpPrefixMode::Conditional => false,
 					}),
 					failure_mode: tgt.failure_mode.unwrap_or_default(),
+					session_idle_ttl: mcp_session_ttl,
 				};
 				backends.push(Backend::MCP(name, m).into());
 				backends
@@ -1580,7 +1582,9 @@ async fn convert(
 			.unwrap_or_default();
 		let name = local_name(b.name);
 		let lb: LocalBackend = b.spec.into();
-		let mut bws = lb.as_backends(name.clone(), client.clone()).await?;
+		let mut bws = lb
+			.as_backends(name.clone(), client.clone(), config.mcp.session_ttl)
+			.await?;
 
 		// as_backends may expand a single LocalBackend into multiple Backends (e.g. MCP)
 		// attach the policies to the "main" one
@@ -2259,7 +2263,11 @@ async fn convert_mcp_config(
 	};
 
 	let backends = LocalBackend::MCP(backend)
-		.as_backends(local_name(strng::new("mcp")), client)
+		.as_backends(
+			local_name(strng::new("mcp")),
+			client,
+			config.mcp.session_ttl,
+		)
 		.await?;
 
 	Ok((bind, vec![], backends))
@@ -2457,7 +2465,7 @@ pub async fn convert_route(
 		};
 		let backends = b
 			.backend
-			.as_backends(be_name.clone(), client.clone())
+			.as_backends(be_name.clone(), client.clone(), config.mcp.session_ttl)
 			.await?;
 		let bref = RouteBackendReference {
 			weight: b.weight,

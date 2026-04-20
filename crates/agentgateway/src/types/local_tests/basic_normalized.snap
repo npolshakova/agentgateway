@@ -65,6 +65,7 @@ backends:
           stateful: true
           alwaysUsePrefix: false
           failureMode: failClosed
+          sessionIdleTtl: 8m0s
 route_groups: []
 workloads: []
 services: []
