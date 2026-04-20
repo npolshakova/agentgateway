@@ -1,6 +1,5 @@
 ---
 source: crates/agentgateway/src/types/local_tests.rs
-assertion_line: 137
 description: "Config normalization test for llm_simple: YAML -> LocalConfig -> NormalizedLocalConfig -> YAML"
 ---
 binds:
@@ -158,6 +157,10 @@ policies:
     policy:
       traffic:
         jwtAuth:
+          location:
+            header:
+              name: authorization
+              prefix: "Bearer "
           mode: optional
           providers:
             - issuer: agentgateway.dev
@@ -230,7 +233,12 @@ backends:
                     tokenize: true
                     inlinePolicies:
                       - backendAuth:
-                          key: "<redacted>"
+                          key:
+                            value: "<redacted>"
+                            location:
+                              header:
+                                name: authorization
+                                prefix: "Bearer "
                   info:
                     health: 1
                     request_latency: 0
@@ -274,7 +282,12 @@ backends:
                     tokenize: false
                     inlinePolicies:
                       - backendAuth:
-                          key: "<redacted>"
+                          key:
+                            value: "<redacted>"
+                            location:
+                              header:
+                                name: authorization
+                                prefix: "Bearer "
                   info:
                     health: 1
                     request_latency: 0

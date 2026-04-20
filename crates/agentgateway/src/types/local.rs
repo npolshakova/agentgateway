@@ -1125,6 +1125,31 @@ where
 		.map_err(serde::de::Error::custom)
 }
 
+pub fn de_backend_auth<'de, D>(deserializer: D) -> Result<Option<BackendAuth>, D::Error>
+where
+	D: Deserializer<'de>,
+{
+	#[derive(serde::Deserialize)]
+	#[serde(untagged)]
+	enum BackendAuthCompat {
+		PlainKey {
+			#[serde(deserialize_with = "deser_key_from_file")]
+			key: SecretString,
+		},
+		Full(BackendAuth),
+	}
+
+	Option::<BackendAuthCompat>::deserialize(deserializer).map(|auth| {
+		auth.map(|auth| match auth {
+			BackendAuthCompat::Full(auth) => auth,
+			BackendAuthCompat::PlainKey { key } => BackendAuth::Key {
+				value: key,
+				location: crate::http::auth::AuthorizationLocation::default(),
+			},
+		})
+	})
+}
+
 #[apply(schema_de!)]
 #[derive(Default)]
 struct LocalLLMPolicy {
@@ -1211,7 +1236,7 @@ pub struct SimpleLocalBackendPolicies {
 	#[serde(rename = "backendTLS", default)]
 	pub backend_tls: Option<http::backendtls::LocalBackendTLS>,
 	/// Authenticate to the backend.
-	#[serde(default)]
+	#[serde(default, deserialize_with = "de_backend_auth")]
 	pub backend_auth: Option<BackendAuth>,
 
 	/// Specify HTTP settings for the backend
@@ -1437,7 +1462,7 @@ pub struct FilterOrPolicy {
 	#[serde(rename = "backendTunnel", default)]
 	backend_tunnel: Option<backend::Tunnel>,
 	/// Authenticate to the backend.
-	#[serde(default)]
+	#[serde(default, deserialize_with = "de_backend_auth")]
 	backend_auth: Option<BackendAuth>,
 	/// Rate limit incoming requests. State is kept local.
 	#[serde(default)]
@@ -1877,7 +1902,10 @@ json(request.body).model
 		// Create backend auth policy
 		let mut pols = vec![];
 		if let Some(key) = p.api_key.as_ref() {
-			let backend_auth = BackendAuth::Key(key.0.clone());
+			let backend_auth = BackendAuth::Key {
+				value: key.0.clone(),
+				location: crate::http::auth::AuthorizationLocation::default(),
+			};
 			pols.push(BackendPolicy::BackendAuth(backend_auth));
 		}
 

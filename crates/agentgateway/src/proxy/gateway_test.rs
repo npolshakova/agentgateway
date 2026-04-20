@@ -1476,7 +1476,7 @@ async fn tunnel_absolute_form() {
 	assert_eq!(&body.uri.to_string(), "http://lo/foo");
 	assert_eq!(
 		body.headers.get("proxy-authorization").unwrap().as_bytes(),
-		b"Basic my-key"
+		b"Bearer my-key"
 	);
 }
 
@@ -1535,7 +1535,15 @@ async fn tunnel_connect() {
 			&tunnel_addr,
 			json!({
 				"backendAuth": {
-					"key": "my-key"
+					"key": {
+						"value": "my-key",
+						"location": {
+							"header": {
+								"name":"authorization",
+								"prefix": "Basic "
+							},
+						}
+					}
 				}
 			}),
 		)
