@@ -917,7 +917,9 @@ impl AIProvider {
 		// Snapshot decompressed bytes for CEL response.body access before re-compression,
 		// so maybe_buffer_response_body can skip decompression entirely.
 		if encoding.is_some() {
-			parts.extensions.insert(crate::cel::BufferedBody(bytes.clone()));
+			parts
+				.extensions
+				.insert(crate::cel::BufferedBody(bytes.clone()));
 		}
 
 		// count_tokens has simplified response handling (just format translation)
