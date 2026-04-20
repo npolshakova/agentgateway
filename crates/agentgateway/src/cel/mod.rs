@@ -201,23 +201,25 @@ impl ContextBuilder {
 			if resp.extensions().get::<BufferedBody>().is_some() {
 				return;
 			}
-			// If the upstream compressed the response body, decompress before buffering so
-			// CEL expressions like `json(response.body)` can parse plaintext/JSON. The
-			// decompressed bytes replace the body stream and the encoding headers are removed
-			// so downstream clients still receive a valid (uncompressed) response.
 			let ce = resp.headers().typed_get::<ContentEncoding>();
 			if ce.is_some() {
+				// Peek the compressed bytes without consuming the body, then decompress a copy
+				// for CEL. The body and headers are left intact so downstream clients receive
+				// the original compressed response.
+				let Ok(compressed) = crate::http::inspect_response_body(resp).await else {
+					return;
+				};
 				let limit = crate::http::response_buffer_limit(resp);
-				let body = std::mem::replace(resp.body_mut(), axum_core::body::Body::empty());
-				let Ok((_, bytes)) =
-					crate::http::compression::to_bytes_with_decompression(body, ce.as_ref(), limit).await
+				let Ok((_, plain)) = crate::http::compression::to_bytes_with_decompression(
+					axum_core::body::Body::from(compressed),
+					ce.as_ref(),
+					limit,
+				)
+				.await
 				else {
 					return;
 				};
-				resp.headers_mut().remove(http::header::CONTENT_ENCODING);
-				resp.headers_mut().remove(http::header::CONTENT_LENGTH);
-				*resp.body_mut() = axum_core::body::Body::from(bytes.clone());
-				resp.extensions_mut().insert(BufferedBody(bytes));
+				resp.extensions_mut().insert(BufferedBody(plain));
 			} else {
 				let Ok(body) = crate::http::inspect_response_body(resp).await else {
 					return;
