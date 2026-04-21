@@ -86,9 +86,11 @@ func BuildAgwBackendReferences(
 			for _, p := range r.Providers {
 				if p.Policies != nil {
 					plugins.BackendReferencesFromBackendPolicy(&agentgateway.BackendFull{
-						BackendSimple: p.Policies.BackendSimple,
-						AI:            p.Policies.AI,
-						MCP:           nil,
+						BackendSimple:  p.Policies.BackendSimple,
+						AI:             p.Policies.AI,
+						MCP:            nil,
+						Transformation: p.Policies.Transformation,
+						Health:         p.Policies.Health,
 					}, app)
 				}
 			}
@@ -399,8 +401,10 @@ func translateAIBackendPolicies(
 		return nil, nil
 	}
 	return TranslateBackendPolicies(ctx, namespace, &agentgateway.BackendFull{
-		BackendSimple: policies.BackendSimple,
-		AI:            policies.AI,
+		BackendSimple:  policies.BackendSimple,
+		AI:             policies.AI,
+		Transformation: policies.Transformation,
+		Health:         policies.Health,
 	})
 }
 

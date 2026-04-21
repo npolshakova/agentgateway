@@ -146,17 +146,9 @@ type BackendSimple struct {
 	// +optional
 	Tunnel *BackendTunnel `json:"tunnel,omitempty"`
 
-	// transformation is used to mutate and transform requests and responses sent to and from the backend.
-	// +optional
-	Transformation *Transformation `json:"transformation,omitempty"`
-
 	// `auth` defines settings for managing authentication to the backend.
 	// +optional
 	Auth *BackendAuth `json:"auth,omitempty"`
-
-	// health defines settings for passive and active health checking.
-	// +optional
-	Health *Health `json:"health,omitempty"`
 }
 
 type Health struct {
@@ -229,6 +221,14 @@ type BackendWithAI struct {
 	// connecting to a `Backend` of type `ai`.
 	// +optional
 	AI *BackendAI `json:"ai,omitempty"`
+
+	// transformation is used to mutate and transform requests and responses sent to and from the backend.
+	// +optional
+	Transformation *Transformation `json:"transformation,omitempty"`
+
+	// health defines settings for passive and active health checking.
+	// +optional
+	Health *Health `json:"health,omitempty"`
 }
 
 // +kubebuilder:validation:AtLeastOneFieldSet
@@ -245,6 +245,14 @@ type BackendFull struct {
 	//
 	// +optional
 	MCP *BackendMCP `json:"mcp,omitempty"`
+
+	// transformation is used to mutate and transform requests and responses sent to and from the backend.
+	// +optional
+	Transformation *Transformation `json:"transformation,omitempty"`
+
+	// health defines settings for passive and active health checking.
+	// +optional
+	Health *Health `json:"health,omitempty"`
 }
 
 // +kubebuilder:validation:MinLength=1
