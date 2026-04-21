@@ -192,9 +192,29 @@ func TranslateAgentgatewayPolicy(
 		}
 	}
 
+	type targetKey struct {
+		Group       string
+		Kind        string
+		Name        string
+		SectionName string
+	}
+	seen := make(map[targetKey]struct{})
+	tryProcessTarget := func(gk schema.GroupKind, name gwv1.ObjectName, sectionName *gwv1.SectionName) {
+		section := ""
+		if sectionName != nil {
+			section = string(*sectionName)
+		}
+		key := targetKey{Group: gk.Group, Kind: gk.Kind, Name: string(name), SectionName: section}
+		if _, ok := seen[key]; ok {
+			return
+		}
+		seen[key] = struct{}{}
+		processTarget(gk, name, sectionName)
+	}
+
 	for _, target := range policy.Spec.TargetRefs {
 		gk := schema.GroupKind{Group: string(target.Group), Kind: string(target.Kind)}
-		processTarget(gk, target.Name, target.SectionName)
+		tryProcessTarget(gk, target.Name, target.SectionName)
 	}
 	for _, selector := range policy.Spec.TargetSelectors {
 		gk := schema.GroupKind{Group: string(selector.Group), Kind: string(selector.Kind)}
@@ -203,7 +223,7 @@ func TranslateAgentgatewayPolicy(
 			attachmentErrors = append(attachmentErrors, fmt.Sprintf("Policy is not attached: no %s matching selector found in namespace %s", gk.Kind, policy.Namespace))
 		}
 		for _, name := range names {
-			processTarget(gk, name, selector.SectionName)
+			tryProcessTarget(gk, name, selector.SectionName)
 		}
 	}
 
@@ -241,34 +261,24 @@ func resolveSelectorTargetNames(
 
 	switch targetGK {
 	case wellknown.GatewayGVK.GroupKind():
-		for _, gw := range krt.Fetch(ctx, agw.Gateways, krt.FilterLabel(selector.MatchLabels)) {
-			if gw.Namespace == policyNamespace {
-				names = append(names, gwv1.ObjectName(gw.Name))
-			}
+		for _, gw := range krt.Fetch(ctx, agw.Gateways, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.GatewaysByNamespace, policyNamespace)) {
+			names = append(names, gwv1.ObjectName(gw.Name))
 		}
 	case wellknown.HTTPRouteGVK.GroupKind():
-		for _, route := range krt.Fetch(ctx, agw.HTTPRoutes, krt.FilterLabel(selector.MatchLabels)) {
-			if route.Namespace == policyNamespace {
-				names = append(names, gwv1.ObjectName(route.Name))
-			}
+		for _, route := range krt.Fetch(ctx, agw.HTTPRoutes, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.HTTPRoutesByNamespace, policyNamespace)) {
+			names = append(names, gwv1.ObjectName(route.Name))
 		}
 	case wellknown.GRPCRouteGVK.GroupKind():
-		for _, route := range krt.Fetch(ctx, agw.GRPCRoutes, krt.FilterLabel(selector.MatchLabels)) {
-			if route.Namespace == policyNamespace {
-				names = append(names, gwv1.ObjectName(route.Name))
-			}
+		for _, route := range krt.Fetch(ctx, agw.GRPCRoutes, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.GRPCRoutesByNamespace, policyNamespace)) {
+			names = append(names, gwv1.ObjectName(route.Name))
 		}
 	case wellknown.ListenerSetGVK.GroupKind():
-		for _, ls := range krt.Fetch(ctx, agw.ListenerSets, krt.FilterLabel(selector.MatchLabels)) {
-			if ls.Namespace == policyNamespace {
-				names = append(names, gwv1.ObjectName(ls.Name))
-			}
+		for _, ls := range krt.Fetch(ctx, agw.ListenerSets, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.ListenerSetsByNamespace, policyNamespace)) {
+			names = append(names, gwv1.ObjectName(ls.Name))
 		}
 	case wellknown.AgentgatewayBackendGVK.GroupKind():
-		for _, backend := range krt.Fetch(ctx, agw.Backends, krt.FilterLabel(selector.MatchLabels)) {
-			if backend.Namespace == policyNamespace {
-				names = append(names, gwv1.ObjectName(backend.Name))
-			}
+		for _, backend := range krt.Fetch(ctx, agw.Backends, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.BackendsByNamespace, policyNamespace)) {
+			names = append(names, gwv1.ObjectName(backend.Name))
 		}
 	case wellknown.ServiceGVK.GroupKind():
 		for _, svc := range krt.Fetch(ctx, agw.Services, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.ServicesByNamespace, policyNamespace)) {
@@ -1547,14 +1557,22 @@ func BackendReferencesFromPolicy(ctx krt.HandlerContext, policy *agentgateway.Ag
 		Kind:           wellknown.AgentgatewayPolicyGVK.Kind,
 	}
 
-	existingTargets := make([]utils.TypedNamespacedName, 0, len(s.TargetRefs))
+	seenTargets := make(map[utils.TypedNamespacedName]struct{})
+	var existingTargets []utils.TypedNamespacedName
+	addTarget := func(tnn utils.TypedNamespacedName) {
+		if _, ok := seenTargets[tnn]; ok {
+			return
+		}
+		seenTargets[tnn] = struct{}{}
+		existingTargets = append(existingTargets, tnn)
+	}
 	for _, tgt := range s.TargetRefs {
 		gk := schema.GroupKind{Group: string(tgt.Group), Kind: string(tgt.Kind)}
 		policyTarget, targetExists := references.PolicyTarget(ctx, policy.Namespace, tgt.Name, gk, tgt.SectionName)
 		if policyTarget == nil || !targetExists {
 			continue
 		}
-		existingTargets = append(existingTargets, utils.TypedNamespacedName{
+		addTarget(utils.TypedNamespacedName{
 			NamespacedName: types.NamespacedName{Namespace: policy.Namespace, Name: string(tgt.Name)},
 			Kind:           string(tgt.Kind),
 		})
@@ -1566,7 +1584,7 @@ func BackendReferencesFromPolicy(ctx krt.HandlerContext, policy *agentgateway.Ag
 			if policyTarget == nil || !targetExists {
 				continue
 			}
-			existingTargets = append(existingTargets, utils.TypedNamespacedName{
+			addTarget(utils.TypedNamespacedName{
 				NamespacedName: types.NamespacedName{Namespace: policy.Namespace, Name: string(name)},
 				Kind:           string(selector.Kind),
 			})
