@@ -123,6 +123,11 @@ type ResolvedTarget struct {
 	AttachmentError    string
 }
 
+type resolvedSelectorTarget struct {
+	Name      gwv1.ObjectName
+	Namespace string
+}
+
 // TranslateAgentgatewayPolicy generates policies for a single traffic policy
 func TranslateAgentgatewayPolicy(
 	ctx krt.HandlerContext,
@@ -143,15 +148,15 @@ func TranslateAgentgatewayPolicy(
 	baseConds := PolicyConditionMap(baseErr, len(baseTranslatedPolicies) > 0)
 	controller := gwv1.GatewayController(agw.ControllerName)
 
-	processTarget := func(gk schema.GroupKind, name gwv1.ObjectName, sectionName *gwv1.SectionName) {
-		policyTargets, targetExists := references.PolicyTarget(ctx, policy.Namespace, name, gk, sectionName)
+	processTarget := func(gk schema.GroupKind, name gwv1.ObjectName, sectionName *gwv1.SectionName, targetNamespace string) {
+		policyTargets, targetExists := references.PolicyTarget(ctx, targetNamespace, name, gk, sectionName)
 		if len(policyTargets) == 0 {
 			logger.Warn("unsupported target kind", "kind", gk.Kind, "policy", policy.Name)
 			return
 		}
 
 		targetObject := utils.TypedNamespacedName{
-			NamespacedName: types.NamespacedName{Namespace: policy.Namespace, Name: string(name)},
+			NamespacedName: types.NamespacedName{Namespace: targetNamespace, Name: string(name)},
 			Kind:           gk.Kind,
 		}
 
@@ -174,7 +179,7 @@ func TranslateAgentgatewayPolicy(
 				}
 			}
 
-			ancestorRefs, attachmentErr := resolvePolicyAncestorRefs(policy.Namespace, targetObject, gatewayTargets, targetExists)
+			ancestorRefs, attachmentErr := resolvePolicyAncestorRefs(targetNamespace, targetObject, gatewayTargets, targetExists)
 			if attachmentErr != "" {
 				attachmentErrors = append(attachmentErrors, attachmentErr)
 			}
@@ -196,34 +201,35 @@ func TranslateAgentgatewayPolicy(
 		Group       string
 		Kind        string
 		Name        string
+		Namespace   string
 		SectionName string
 	}
 	seen := make(map[targetKey]struct{})
-	tryProcessTarget := func(gk schema.GroupKind, name gwv1.ObjectName, sectionName *gwv1.SectionName) {
+	tryProcessTarget := func(gk schema.GroupKind, name gwv1.ObjectName, sectionName *gwv1.SectionName, targetNamespace string) {
 		section := ""
 		if sectionName != nil {
 			section = string(*sectionName)
 		}
-		key := targetKey{Group: gk.Group, Kind: gk.Kind, Name: string(name), SectionName: section}
+		key := targetKey{Group: gk.Group, Kind: gk.Kind, Name: string(name), Namespace: targetNamespace, SectionName: section}
 		if _, ok := seen[key]; ok {
 			return
 		}
 		seen[key] = struct{}{}
-		processTarget(gk, name, sectionName)
+		processTarget(gk, name, sectionName, targetNamespace)
 	}
 
 	for _, target := range policy.Spec.TargetRefs {
 		gk := schema.GroupKind{Group: string(target.Group), Kind: string(target.Kind)}
-		tryProcessTarget(gk, target.Name, target.SectionName)
+		tryProcessTarget(gk, target.Name, target.SectionName, policy.Namespace)
 	}
 	for _, selector := range policy.Spec.TargetSelectors {
 		gk := schema.GroupKind{Group: string(selector.Group), Kind: string(selector.Kind)}
-		names := resolveSelectorTargetNames(ctx, policy.Namespace, selector, agw)
-		if len(names) == 0 {
+		targets := resolveSelectorTargetNames(ctx, policy.Namespace, selector, agw)
+		if len(targets) == 0 {
 			attachmentErrors = append(attachmentErrors, fmt.Sprintf("Policy is not attached: no %s matching selector found in namespace %s", gk.Kind, policy.Namespace))
 		}
-		for _, name := range names {
-			tryProcessTarget(gk, name, selector.SectionName)
+		for _, target := range targets {
+			tryProcessTarget(gk, target.Name, selector.SectionName, target.Namespace)
 		}
 	}
 
@@ -255,41 +261,91 @@ func resolveSelectorTargetNames(
 	policyNamespace string,
 	selector shared.LocalPolicyTargetSelectorWithSectionName,
 	agw *AgwCollections,
-) []gwv1.ObjectName {
+) []resolvedSelectorTarget {
 	targetGK := schema.GroupKind{Group: string(selector.Group), Kind: string(selector.Kind)}
-	var names []gwv1.ObjectName
+	var targets []resolvedSelectorTarget
 
 	switch targetGK {
 	case wellknown.GatewayGVK.GroupKind():
-		for _, gw := range krt.Fetch(ctx, agw.Gateways, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.GatewaysByNamespace, policyNamespace)) {
-			names = append(names, gwv1.ObjectName(gw.Name))
+		for _, gw := range krt.Fetch(ctx, agw.Gateways, krt.FilterLabel(selector.MatchLabels)) {
+			if gw.Namespace == policyNamespace || isPolicySelectorAllowedCrossNamespace(ctx, agw, policyNamespace, gw.Namespace, targetGK, gwv1.ObjectName(gw.Name)) {
+				targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(gw.Name), Namespace: gw.Namespace})
+			}
 		}
 	case wellknown.HTTPRouteGVK.GroupKind():
-		for _, route := range krt.Fetch(ctx, agw.HTTPRoutes, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.HTTPRoutesByNamespace, policyNamespace)) {
-			names = append(names, gwv1.ObjectName(route.Name))
+		for _, route := range krt.Fetch(ctx, agw.HTTPRoutes, krt.FilterLabel(selector.MatchLabels)) {
+			if route.Namespace == policyNamespace || isPolicySelectorAllowedCrossNamespace(ctx, agw, policyNamespace, route.Namespace, targetGK, gwv1.ObjectName(route.Name)) {
+				targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(route.Name), Namespace: route.Namespace})
+			}
 		}
 	case wellknown.GRPCRouteGVK.GroupKind():
-		for _, route := range krt.Fetch(ctx, agw.GRPCRoutes, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.GRPCRoutesByNamespace, policyNamespace)) {
-			names = append(names, gwv1.ObjectName(route.Name))
+		for _, route := range krt.Fetch(ctx, agw.GRPCRoutes, krt.FilterLabel(selector.MatchLabels)) {
+			if route.Namespace == policyNamespace || isPolicySelectorAllowedCrossNamespace(ctx, agw, policyNamespace, route.Namespace, targetGK, gwv1.ObjectName(route.Name)) {
+				targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(route.Name), Namespace: route.Namespace})
+			}
 		}
 	case wellknown.ListenerSetGVK.GroupKind():
-		for _, ls := range krt.Fetch(ctx, agw.ListenerSets, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.ListenerSetsByNamespace, policyNamespace)) {
-			names = append(names, gwv1.ObjectName(ls.Name))
+		for _, ls := range krt.Fetch(ctx, agw.ListenerSets, krt.FilterLabel(selector.MatchLabels)) {
+			if ls.Namespace == policyNamespace || isPolicySelectorAllowedCrossNamespace(ctx, agw, policyNamespace, ls.Namespace, targetGK, gwv1.ObjectName(ls.Name)) {
+				targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(ls.Name), Namespace: ls.Namespace})
+			}
 		}
 	case wellknown.AgentgatewayBackendGVK.GroupKind():
-		for _, backend := range krt.Fetch(ctx, agw.Backends, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.BackendsByNamespace, policyNamespace)) {
-			names = append(names, gwv1.ObjectName(backend.Name))
+		for _, backend := range krt.Fetch(ctx, agw.Backends, krt.FilterLabel(selector.MatchLabels)) {
+			if backend.Namespace == policyNamespace || isPolicySelectorAllowedCrossNamespace(ctx, agw, policyNamespace, backend.Namespace, targetGK, gwv1.ObjectName(backend.Name)) {
+				targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(backend.Name), Namespace: backend.Namespace})
+			}
 		}
 	case wellknown.ServiceGVK.GroupKind():
-		for _, svc := range krt.Fetch(ctx, agw.Services, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.ServicesByNamespace, policyNamespace)) {
-			names = append(names, gwv1.ObjectName(svc.Name))
+		for _, svc := range krt.Fetch(ctx, agw.Services, krt.FilterLabel(selector.MatchLabels)) {
+			if svc.Namespace == policyNamespace || isPolicySelectorAllowedCrossNamespace(ctx, agw, policyNamespace, svc.Namespace, targetGK, gwv1.ObjectName(svc.Name)) {
+				targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(svc.Name), Namespace: svc.Namespace})
+			}
 		}
 	}
 
-	slices.SortFunc(names, func(a, b gwv1.ObjectName) int {
-		return strings.Compare(string(a), string(b))
+	slices.SortFunc(targets, func(a, b resolvedSelectorTarget) int {
+		if a.Namespace != b.Namespace {
+			return strings.Compare(a.Namespace, b.Namespace)
+		}
+		return strings.Compare(string(a.Name), string(b.Name))
 	})
-	return names
+	return targets
+}
+
+func isPolicySelectorAllowedCrossNamespace(
+	ctx krt.HandlerContext,
+	agw *AgwCollections,
+	policyNamespace string,
+	targetNamespace string,
+	targetGK schema.GroupKind,
+	targetName gwv1.ObjectName,
+) bool {
+	for _, rg := range krt.Fetch(ctx, agw.ReferenceGrants) {
+		if rg.Namespace != targetNamespace {
+			continue
+		}
+		fromMatch := false
+		for _, from := range rg.Spec.From {
+			if string(from.Group) == wellknown.AgentgatewayPolicyGVK.Group &&
+				string(from.Kind) == wellknown.AgentgatewayPolicyGVK.Kind &&
+				string(from.Namespace) == policyNamespace {
+				fromMatch = true
+				break
+			}
+		}
+		if !fromMatch {
+			continue
+		}
+		for _, to := range rg.Spec.To {
+			if string(to.Group) == targetGK.Group && string(to.Kind) == targetGK.Kind {
+				if to.Name == nil || string(*to.Name) == string(targetName) {
+					return true
+				}
+			}
+		}
+	}
+	return false
 }
 
 func PolicyConditionMap(err error, hasTranslatedPolicies bool) map[string]*Condition {
@@ -1579,13 +1635,13 @@ func BackendReferencesFromPolicy(ctx krt.HandlerContext, policy *agentgateway.Ag
 	}
 	for _, selector := range s.TargetSelectors {
 		gk := schema.GroupKind{Group: string(selector.Group), Kind: string(selector.Kind)}
-		for _, name := range resolveSelectorTargetNames(ctx, policy.Namespace, selector, agw) {
-			policyTarget, targetExists := references.PolicyTarget(ctx, policy.Namespace, name, gk, selector.SectionName)
+		for _, target := range resolveSelectorTargetNames(ctx, policy.Namespace, selector, agw) {
+			policyTarget, targetExists := references.PolicyTarget(ctx, target.Namespace, target.Name, gk, selector.SectionName)
 			if policyTarget == nil || !targetExists {
 				continue
 			}
 			addTarget(utils.TypedNamespacedName{
-				NamespacedName: types.NamespacedName{Namespace: policy.Namespace, Name: string(name)},
+				NamespacedName: types.NamespacedName{Namespace: target.Namespace, Name: string(target.Name)},
 				Kind:           string(selector.Kind),
 			})
 		}
