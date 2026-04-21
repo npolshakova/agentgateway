@@ -914,6 +914,14 @@ impl AIProvider {
 				.await
 				.map_err(|e| map_compression_error(e, &parts.headers))?;
 
+		// Snapshot decompressed bytes for CEL response.body access before re-compression,
+		// so maybe_buffer_response_body can skip decompression entirely.
+		if encoding.is_some() {
+			parts
+				.extensions
+				.insert(crate::cel::BufferedBody(bytes.clone()));
+		}
+
 		// count_tokens has simplified response handling (just format translation)
 		if req.input_format == InputFormat::CountTokens {
 			let (bytes, count) = match self {
