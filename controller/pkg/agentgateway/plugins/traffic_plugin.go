@@ -100,7 +100,7 @@ func NewAgentPlugin(agw *AgwCollections, resolver remotehttp.Resolver, jwksLooku
 				},
 				BuildReferences: func(input PolicyPluginInput) krt.Collection[*PolicyAttachment] {
 					return krt.NewManyCollection(agw.AgentgatewayPolicies, func(ctx krt.HandlerContext, policy *agentgateway.AgentgatewayPolicy) []*PolicyAttachment {
-						return BackendReferencesFromPolicy(ctx, policy, input.References)
+						return BackendReferencesFromPolicy(ctx, policy, input.References, agw)
 					}, agw.KrtOpts.ToOptions("AgentgatewayPolicyAttachments")...)
 				},
 			},
@@ -142,18 +142,16 @@ func TranslateAgentgatewayPolicy(
 	baseTranslatedPolicies, baseErr := TranslatePolicyToAgw(pctx, policy)
 	baseConds := PolicyConditionMap(baseErr, len(baseTranslatedPolicies) > 0)
 	controller := gwv1.GatewayController(agw.ControllerName)
-	for _, target := range policy.Spec.TargetRefs {
-		gk := schema.GroupKind{Group: string(target.Group), Kind: string(target.Kind)}
 
-		policyTargets, targetExists := references.PolicyTarget(ctx, policy.Namespace, target.Name, gk, target.SectionName)
+	processTarget := func(gk schema.GroupKind, name gwv1.ObjectName, sectionName *gwv1.SectionName) {
+		policyTargets, targetExists := references.PolicyTarget(ctx, policy.Namespace, name, gk, sectionName)
 		if len(policyTargets) == 0 {
-			// This should be impossible, verified by CEL validation
-			logger.Warn("unsupported target kind", "kind", target.Kind, "policy", policy.Name)
-			continue
+			logger.Warn("unsupported target kind", "kind", gk.Kind, "policy", policy.Name)
+			return
 		}
 
 		targetObject := utils.TypedNamespacedName{
-			NamespacedName: types.NamespacedName{Namespace: policy.Namespace, Name: string(target.Name)},
+			NamespacedName: types.NamespacedName{Namespace: policy.Namespace, Name: string(name)},
 			Kind:           gk.Kind,
 		}
 
@@ -183,7 +181,7 @@ func TranslateAgentgatewayPolicy(
 
 			for _, ar := range ancestorRefs {
 				// A policy should report at most one status per Gateway parent, even if multiple
-				// targetRefs resolve to the same Gateway.
+				// targetRefs/targetSelectors resolve to the same Gateway.
 				if slices.IndexFunc(ancestors, func(existing gwv1.PolicyAncestorStatus) bool {
 					return existing.ControllerName == controller && ParentRefEquals(existing.AncestorRef, ar)
 				}) != -1 {
@@ -191,6 +189,21 @@ func TranslateAgentgatewayPolicy(
 				}
 				ancestors = append(ancestors, SetAncestorStatus(ar, existingStatus, policy.Generation, baseConds, controller))
 			}
+		}
+	}
+
+	for _, target := range policy.Spec.TargetRefs {
+		gk := schema.GroupKind{Group: string(target.Group), Kind: string(target.Kind)}
+		processTarget(gk, target.Name, target.SectionName)
+	}
+	for _, selector := range policy.Spec.TargetSelectors {
+		gk := schema.GroupKind{Group: string(selector.Group), Kind: string(selector.Kind)}
+		names := resolveSelectorTargetNames(ctx, policy.Namespace, selector, agw)
+		if len(names) == 0 {
+			attachmentErrors = append(attachmentErrors, fmt.Sprintf("Policy is not attached: no %s matching selector found in namespace %s", gk.Kind, policy.Namespace))
+		}
+		for _, name := range names {
+			processTarget(gk, name, selector.SectionName)
 		}
 	}
 
@@ -215,6 +228,58 @@ func TranslateAgentgatewayPolicy(
 	})
 
 	return &status, agwPolicies
+}
+
+func resolveSelectorTargetNames(
+	ctx krt.HandlerContext,
+	policyNamespace string,
+	selector shared.LocalPolicyTargetSelectorWithSectionName,
+	agw *AgwCollections,
+) []gwv1.ObjectName {
+	targetGK := schema.GroupKind{Group: string(selector.Group), Kind: string(selector.Kind)}
+	var names []gwv1.ObjectName
+
+	switch targetGK {
+	case wellknown.GatewayGVK.GroupKind():
+		for _, gw := range krt.Fetch(ctx, agw.Gateways, krt.FilterLabel(selector.MatchLabels)) {
+			if gw.Namespace == policyNamespace {
+				names = append(names, gwv1.ObjectName(gw.Name))
+			}
+		}
+	case wellknown.HTTPRouteGVK.GroupKind():
+		for _, route := range krt.Fetch(ctx, agw.HTTPRoutes, krt.FilterLabel(selector.MatchLabels)) {
+			if route.Namespace == policyNamespace {
+				names = append(names, gwv1.ObjectName(route.Name))
+			}
+		}
+	case wellknown.GRPCRouteGVK.GroupKind():
+		for _, route := range krt.Fetch(ctx, agw.GRPCRoutes, krt.FilterLabel(selector.MatchLabels)) {
+			if route.Namespace == policyNamespace {
+				names = append(names, gwv1.ObjectName(route.Name))
+			}
+		}
+	case wellknown.ListenerSetGVK.GroupKind():
+		for _, ls := range krt.Fetch(ctx, agw.ListenerSets, krt.FilterLabel(selector.MatchLabels)) {
+			if ls.Namespace == policyNamespace {
+				names = append(names, gwv1.ObjectName(ls.Name))
+			}
+		}
+	case wellknown.AgentgatewayBackendGVK.GroupKind():
+		for _, backend := range krt.Fetch(ctx, agw.Backends, krt.FilterLabel(selector.MatchLabels)) {
+			if backend.Namespace == policyNamespace {
+				names = append(names, gwv1.ObjectName(backend.Name))
+			}
+		}
+	case wellknown.ServiceGVK.GroupKind():
+		for _, svc := range krt.Fetch(ctx, agw.Services, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.ServicesByNamespace, policyNamespace)) {
+			names = append(names, gwv1.ObjectName(svc.Name))
+		}
+	}
+
+	slices.SortFunc(names, func(a, b gwv1.ObjectName) int {
+		return strings.Compare(string(a), string(b))
+	})
+	return names
 }
 
 func PolicyConditionMap(err error, hasTranslatedPolicies bool) map[string]*Condition {
@@ -1475,7 +1540,7 @@ func DefaultString[T ~string](s *T, def string) string {
 
 // BackendReferencesFromPolicy only emits attachments for existing, unsectioned targets
 // to prevent phantom chains and section-scoped over-attachment.
-func BackendReferencesFromPolicy(ctx krt.HandlerContext, policy *agentgateway.AgentgatewayPolicy, references ReferenceIndex) []*PolicyAttachment {
+func BackendReferencesFromPolicy(ctx krt.HandlerContext, policy *agentgateway.AgentgatewayPolicy, references ReferenceIndex, agw *AgwCollections) []*PolicyAttachment {
 	s := policy.Spec
 	self := utils.TypedNamespacedName{
 		NamespacedName: types.NamespacedName{Namespace: policy.Namespace, Name: policy.Name},
@@ -1493,6 +1558,19 @@ func BackendReferencesFromPolicy(ctx krt.HandlerContext, policy *agentgateway.Ag
 			NamespacedName: types.NamespacedName{Namespace: policy.Namespace, Name: string(tgt.Name)},
 			Kind:           string(tgt.Kind),
 		})
+	}
+	for _, selector := range s.TargetSelectors {
+		gk := schema.GroupKind{Group: string(selector.Group), Kind: string(selector.Kind)}
+		for _, name := range resolveSelectorTargetNames(ctx, policy.Namespace, selector, agw) {
+			policyTarget, targetExists := references.PolicyTarget(ctx, policy.Namespace, name, gk, selector.SectionName)
+			if policyTarget == nil || !targetExists {
+				continue
+			}
+			existingTargets = append(existingTargets, utils.TypedNamespacedName{
+				NamespacedName: types.NamespacedName{Namespace: policy.Namespace, Name: string(name)},
+				Kind:           string(selector.Kind),
+			})
+		}
 	}
 	if len(existingTargets) == 0 {
 		return nil
