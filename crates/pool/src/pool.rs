@@ -254,8 +254,18 @@ impl H2Pool {
 		if let HttpConnection::Http2(h) = conn {
 			self.0.push_front(h.clone_without_load_incremented());
 			if reserve {
+				// IMPORTANT: must not wrap this `try_reserve_stream_slot` call in a
+				// `debug_assert!` — `debug_assert!` is stripped entirely in release
+				// builds, which also strips the side-effecting reserve. Callers pass
+				// `reserve=true` to get a `ReservedHttp2Connection` whose slot is
+				// accounted; without the increment the corresponding Drop releases
+				// an unreserved slot, wrapping `active_streams` to `usize::MAX` and
+				// permanently blocking the connection from further reservations
+				// (and preventing it from ever returning to `idle`, which leaks the
+				// underlying TCP connection).
+				let result = h.load.try_reserve_stream_slot();
 				debug_assert!(
-					h.load.try_reserve_stream_slot() != CapacityReservationResult::NoCapacity,
+					result != CapacityReservationResult::NoCapacity,
 					"a new stream should always be able to be reserved"
 				);
 			}
