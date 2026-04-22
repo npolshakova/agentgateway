@@ -1063,6 +1063,64 @@ mod prompt_guard_config_tests {
 	}
 
 	#[test]
+	fn test_bedrock_guardrails_without_policies() {
+		let json = json!({
+			"promptGuard": {
+				"request": [{
+					"bedrockGuardrails": {
+						"guardrailIdentifier": "my-guardrail-id",
+						"guardrailVersion": "DRAFT",
+						"region": "us-west-2"
+					}
+				}],
+				"response": [{
+					"bedrockGuardrails": {
+						"guardrailIdentifier": "my-guardrail-id",
+						"guardrailVersion": "DRAFT",
+						"region": "us-west-2"
+					}
+				}]
+			}
+		});
+
+		let policy: Policy = serde_json::from_value(json).unwrap();
+		let prompt_guard = policy.prompt_guard.unwrap();
+		assert_eq!(prompt_guard.request.len(), 1);
+		assert_eq!(prompt_guard.response.len(), 1);
+
+		match &prompt_guard.request[0].kind {
+			RequestGuardKind::BedrockGuardrails(bg) => {
+				assert!(bg.policies.is_empty());
+			},
+			_ => panic!("Expected BedrockGuardrails guard kind"),
+		}
+	}
+
+	#[test]
+	fn test_google_model_armor_without_policies() {
+		let json = json!({
+			"promptGuard": {
+				"request": [{
+					"googleModelArmor": {
+						"templateId": "my-template",
+						"projectId": "my-project"
+					}
+				}]
+			}
+		});
+
+		let policy: Policy = serde_json::from_value(json).unwrap();
+		let prompt_guard = policy.prompt_guard.unwrap();
+
+		match &prompt_guard.request[0].kind {
+			RequestGuardKind::GoogleModelArmor(gma) => {
+				assert!(gma.policies.is_empty());
+			},
+			_ => panic!("Expected GoogleModelArmor guard kind"),
+		}
+	}
+
+	#[test]
 	fn test_mixed_guardrails_request_and_response() {
 		let json = json!({
 			"promptGuard": {
