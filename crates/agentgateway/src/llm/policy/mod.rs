@@ -1227,7 +1227,11 @@ pub struct Moderation {
 	/// Model to use. Defaults to `omni-moderation-latest`
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub model: Option<Strng>,
-	#[serde(deserialize_with = "crate::types::local::de_from_local_backend_policy")]
+	#[serde(
+		default,
+		deserialize_with = "crate::types::local::de_from_local_backend_policy",
+		skip_serializing_if = "Vec::is_empty"
+	)]
 	#[cfg_attr(
 		feature = "schema",
 		schemars(with = "Option<crate::types::local::SimpleLocalBackendPolicies>")
@@ -1245,7 +1249,11 @@ pub struct BedrockGuardrails {
 	/// AWS region where the guardrail is deployed
 	pub region: Strng,
 	/// Backend policies for AWS authentication (optional, defaults to implicit AWS auth)
-	#[serde(deserialize_with = "crate::types::local::de_from_local_backend_policy")]
+	#[serde(
+		default,
+		deserialize_with = "crate::types::local::de_from_local_backend_policy",
+		skip_serializing_if = "Vec::is_empty"
+	)]
 	#[cfg_attr(
 		feature = "schema",
 		schemars(with = "Option<crate::types::local::SimpleLocalBackendPolicies>")
@@ -1264,7 +1272,11 @@ pub struct GoogleModelArmor {
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub location: Option<Strng>,
 	/// Backend policies for GCP authentication (optional, defaults to implicit GCP auth)
-	#[serde(deserialize_with = "crate::types::local::de_from_local_backend_policy")]
+	#[serde(
+		default,
+		deserialize_with = "crate::types::local::de_from_local_backend_policy",
+		skip_serializing_if = "Vec::is_empty"
+	)]
 	#[cfg_attr(
 		feature = "schema",
 		schemars(with = "Option<crate::types::local::SimpleLocalBackendPolicies>")
@@ -1282,7 +1294,11 @@ pub struct AzureContentSafety {
 	/// The Azure Content Safety endpoint hostname (e.g., "<resource-name>.cognitiveservices.azure.com")
 	pub endpoint: Strng,
 	/// Backend policies for Azure authentication (optional, defaults to implicit Azure auth)
-	#[serde(deserialize_with = "crate::types::local::de_from_local_backend_policy")]
+	#[serde(
+		default,
+		deserialize_with = "crate::types::local::de_from_local_backend_policy",
+		skip_serializing_if = "Vec::is_empty"
+	)]
 	#[cfg_attr(
 		feature = "schema",
 		schemars(with = "Option<crate::types::local::SimpleLocalBackendPolicies>")
