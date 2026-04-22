@@ -5149,6 +5149,18 @@
           ],
           "default": null
         },
+        "inferenceRouting": {
+          "description": "Route requests through an endpoint picker before forwarding to the selected backend.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InferenceRouting"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "ai": {
           "description": "Mark this as LLM traffic to enable LLM processing.",
           "anyOf": [
@@ -5221,6 +5233,18 @@
         }
       },
       "additionalProperties": false
+    },
+    "InferenceRouting": {
+      "type": "object",
+      "properties": {
+        "endpointPicker": {
+          "$ref": "#/$defs/SimpleLocalBackend"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "endpointPicker"
+      ]
     },
     "LocalAIProviders": {
       "type": "object",

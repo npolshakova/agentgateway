@@ -670,6 +670,10 @@ impl LocalAIBackend {
 		for g in providers {
 			let mut group = vec![];
 			for p in g {
+				validate_inference_routing_scope(
+					p.policies.as_ref(),
+					InferenceRoutingScope::AIProviderPolicies,
+				)?;
 				let policies = p
 					.policies
 					.map(|p| p.translate())
@@ -705,11 +709,12 @@ impl LocalBackend {
 			.map(|p| LocalBackendPolicies {
 				simple: p.simple,
 				mcp_authorization: p.mcp_authorization,
-				health: None,
+				a2a: None,
+				inference_routing: None,
+				ai: None,
 				response_header_modifier: None,
 				request_redirect: None,
-				a2a: None,
-				ai: None,
+				health: None,
 			})
 			.map(LocalBackendPolicies::translate)
 			.transpose()?
@@ -1286,9 +1291,42 @@ pub struct LocalBackendPolicies {
 	/// Mark this traffic as A2A to enable A2A processing and telemetry.
 	#[serde(default)]
 	pub a2a: Option<A2aPolicy>,
+	/// Route requests through an endpoint picker before forwarding to the selected backend.
+	#[serde(default)]
+	pub inference_routing: Option<crate::http::ext_proc::InferenceRouting>,
 	/// Mark this as LLM traffic to enable LLM processing.
 	#[serde(default)]
 	pub ai: Option<llm::Policy>,
+}
+
+enum InferenceRoutingScope {
+	ServiceRouteBackend,
+	NonServiceRouteBackend,
+	NamedBackend,
+	AIProviderPolicies,
+}
+
+fn validate_inference_routing_scope(
+	policies: Option<&LocalBackendPolicies>,
+	scope: InferenceRoutingScope,
+) -> anyhow::Result<()> {
+	if policies.is_none_or(|p| p.inference_routing.is_none()) {
+		return Ok(());
+	}
+	match scope {
+		InferenceRoutingScope::ServiceRouteBackend => Ok(()),
+		InferenceRoutingScope::NonServiceRouteBackend => {
+			bail!("inferenceRouting is only supported on service route backends")
+		},
+		InferenceRoutingScope::NamedBackend => {
+			bail!("inferenceRouting is only supported on service route backends, not named backends")
+		},
+		InferenceRoutingScope::AIProviderPolicies => {
+			bail!(
+				"inferenceRouting is only supported on service route backends, not AI provider policies"
+			)
+		},
+	}
 }
 
 impl LocalBackendPolicies {
@@ -1304,12 +1342,13 @@ impl LocalBackendPolicies {
 					tcp,
 					backend_tunnel,
 				},
-			health,
-			response_header_modifier,
-			request_redirect,
 			mcp_authorization,
 			a2a,
+			inference_routing,
 			ai,
+			response_header_modifier,
+			request_redirect,
+			health,
 		} = self;
 		let mut pols = vec![];
 		if let Some(p) = tcp {
@@ -1338,6 +1377,9 @@ impl LocalBackendPolicies {
 		}
 		if let Some(p) = a2a {
 			pols.push(BackendPolicy::A2a(p))
+		}
+		if let Some(p) = inference_routing {
+			pols.push(BackendPolicy::InferenceRouting(p))
 		}
 		if let Some(p) = backend_tls {
 			pols.push(BackendPolicy::BackendTLS(p.try_into()?))
@@ -1607,6 +1649,7 @@ async fn convert(
 	}
 
 	for b in backends {
+		validate_inference_routing_scope(b.policies.as_ref(), InferenceRoutingScope::NamedBackend)?;
 		let policies = b
 			.policies
 			.map(|p| p.translate())
@@ -2406,6 +2449,14 @@ pub async fn convert_route(
 	let mut backend_refs = Vec::new();
 	let mut external_backends = Vec::new();
 	for (idx, b) in backends.iter().enumerate() {
+		validate_inference_routing_scope(
+			b.policies.as_ref(),
+			if matches!(b.backend, LocalBackend::Service { .. }) {
+				InferenceRoutingScope::ServiceRouteBackend
+			} else {
+				InferenceRoutingScope::NonServiceRouteBackend
+			},
+		)?;
 		let backend_key = strng::format!("{key}/backend{idx}");
 		let policies = b
 			.policies

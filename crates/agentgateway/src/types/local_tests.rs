@@ -102,19 +102,11 @@ async fn normalize_test_yaml(yaml: &str) -> anyhow::Result<NormalizedLocalConfig
 	.await
 }
 
-async fn test_config_parsing(test_name: &str) {
-	// Make it static
-	super::STARTUP_TIMESTAMP.get_or_init(|| 0);
-	let test_dir = Path::new("src/types/local_tests");
-	let input_path = test_dir.join(format!("{}_config.yaml", test_name));
-
-	let yaml_str = fs::read_to_string(&input_path).unwrap();
-
-	// Create a test client. Ideally we could have a fake one
+async fn normalize_test_config(yaml_str: &str) -> anyhow::Result<NormalizedLocalConfig> {
 	let client = test_client();
-	let config = crate::config::parse_config(yaml_str.clone(), None).unwrap();
+	let config = crate::config::parse_config(yaml_str.to_string(), None).unwrap();
 
-	let normalized = NormalizedLocalConfig::from(
+	NormalizedLocalConfig::from(
 		&config,
 		client,
 		ListenerTarget {
@@ -122,10 +114,21 @@ async fn test_config_parsing(test_name: &str) {
 			gateway_namespace: "ns".into(),
 			listener_name: None,
 		},
-		&yaml_str,
+		yaml_str,
 	)
 	.await
-	.unwrap_or_else(|e| panic!("Failed to normalize config from: {:?} {e}", input_path));
+}
+
+async fn test_config_parsing(test_name: &str) {
+	// Make it static
+	super::STARTUP_TIMESTAMP.get_or_init(|| 0);
+	let test_dir = Path::new("src/types/local_tests");
+	let input_path = test_dir.join(format!("{}_config.yaml", test_name));
+
+	let yaml_str = fs::read_to_string(&input_path).unwrap();
+	let normalized = normalize_test_config(&yaml_str)
+		.await
+		.unwrap_or_else(|e| panic!("Failed to normalize config from: {:?} {e}", input_path));
 
 	insta::with_settings!({
 		description => format!("Config normalization test for {}: YAML -> LocalConfig -> NormalizedLocalConfig -> YAML", test_name),
@@ -195,6 +198,131 @@ async fn test_aws_config() {
 #[tokio::test]
 async fn test_health_config() {
 	test_config_parsing("health").await;
+}
+
+#[tokio::test]
+async fn test_inference_routing_requires_service_backend() {
+	let input = r#"
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - host: 127.0.0.1:8000
+        policies:
+          inferenceRouting:
+            endpointPicker:
+              host: 127.0.0.1:9002
+"#;
+
+	let err = normalize_test_config(input).await.unwrap_err();
+	assert!(
+		err
+			.to_string()
+			.contains("inferenceRouting is only supported on service route backends"),
+		"unexpected error: {err}"
+	);
+}
+
+#[tokio::test]
+async fn test_inference_routing_service_backend_config() {
+	let input = r#"
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - service:
+          name: default/my-model
+          port: 8000
+        policies:
+          inferenceRouting:
+            endpointPicker:
+              host: 127.0.0.1:9002
+"#;
+
+	normalize_test_config(input)
+		.await
+		.expect("service backends should allow inference routing");
+}
+
+#[tokio::test]
+async fn test_inference_routing_rejects_failure_mode() {
+	let input = r#"
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - service:
+          name: default/my-model
+          port: 8000
+        policies:
+          inferenceRouting:
+            endpointPicker:
+              host: 127.0.0.1:9002
+            failureMode: failOpen
+"#;
+
+	let err = normalize_test_config(input).await.unwrap_err();
+	assert!(
+		err.to_string().contains("failureMode"),
+		"unexpected error: {err}"
+	);
+}
+
+#[tokio::test]
+async fn test_inference_routing_rejects_named_backend_policies() {
+	let input = r#"
+backends:
+- name: model
+  host: 127.0.0.1:8000
+  policies:
+    inferenceRouting:
+      endpointPicker:
+        host: 127.0.0.1:9002
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - backend: model
+"#;
+
+	let err = normalize_test_config(input).await.unwrap_err();
+	assert!(
+		err
+			.to_string()
+			.contains("inferenceRouting is only supported on service route backends, not named backends"),
+		"unexpected error: {err}"
+	);
+}
+
+#[tokio::test]
+async fn test_inference_routing_rejects_ai_provider_policies() {
+	let input = r#"
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - ai:
+          name: openai
+          provider:
+            openAI: {}
+          policies:
+            inferenceRouting:
+              endpointPicker:
+                host: 127.0.0.1:9002
+"#;
+
+	let err = normalize_test_config(input).await.unwrap_err();
+	assert!(
+		err.to_string().contains(
+			"inferenceRouting is only supported on service route backends, not AI provider policies"
+		),
+		"unexpected error: {err}"
+	);
 }
 
 #[test]

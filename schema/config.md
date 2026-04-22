@@ -1697,6 +1697,15 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.mcpAuthorization`|object|Authorization policies for MCP access.|
 |`binds[].listeners[].routes[].backends[].ai.policies.mcpAuthorization.rules`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.policies.a2a`|object|Mark this traffic as A2A to enable A2A processing and telemetry.|
+|`binds[].listeners[].routes[].backends[].ai.policies.inferenceRouting`|object|Route requests through an endpoint picker before forwarding to the selected backend.|
+|`binds[].listeners[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker`|object|Exactly one of service, host, or backend may be set.|
+|`binds[].listeners[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker.service`|object||
+|`binds[].listeners[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker.service.name`|object||
+|`binds[].listeners[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker.service.name.namespace`|string||
+|`binds[].listeners[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker.service.name.hostname`|string||
+|`binds[].listeners[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker.service.port`|integer||
+|`binds[].listeners[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker.host`|string|Hostname or IP address|
+|`binds[].listeners[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai`|object|Mark this as LLM traffic to enable LLM processing.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard`|object||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request`|[]object||
@@ -2596,6 +2605,15 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpAuthorization`|object|Authorization policies for MCP access.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpAuthorization.rules`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.a2a`|object|Mark this traffic as A2A to enable A2A processing and telemetry.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting`|object|Route requests through an endpoint picker before forwarding to the selected backend.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker`|object|Exactly one of service, host, or backend may be set.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.service`|object||
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.service.name`|object||
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.service.name.namespace`|string||
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.service.name.hostname`|string||
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.service.port`|integer||
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.host`|string|Hostname or IP address|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai`|object|Mark this as LLM traffic to enable LLM processing.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard`|object||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request`|[]object||
@@ -3472,6 +3490,15 @@
 |`binds[].listeners[].routes[].backends[].policies.mcpAuthorization`|object|Authorization policies for MCP access.|
 |`binds[].listeners[].routes[].backends[].policies.mcpAuthorization.rules`|[]string||
 |`binds[].listeners[].routes[].backends[].policies.a2a`|object|Mark this traffic as A2A to enable A2A processing and telemetry.|
+|`binds[].listeners[].routes[].backends[].policies.inferenceRouting`|object|Route requests through an endpoint picker before forwarding to the selected backend.|
+|`binds[].listeners[].routes[].backends[].policies.inferenceRouting.endpointPicker`|object|Exactly one of service, host, or backend may be set.|
+|`binds[].listeners[].routes[].backends[].policies.inferenceRouting.endpointPicker.service`|object||
+|`binds[].listeners[].routes[].backends[].policies.inferenceRouting.endpointPicker.service.name`|object||
+|`binds[].listeners[].routes[].backends[].policies.inferenceRouting.endpointPicker.service.name.namespace`|string||
+|`binds[].listeners[].routes[].backends[].policies.inferenceRouting.endpointPicker.service.name.hostname`|string||
+|`binds[].listeners[].routes[].backends[].policies.inferenceRouting.endpointPicker.service.port`|integer||
+|`binds[].listeners[].routes[].backends[].policies.inferenceRouting.endpointPicker.host`|string|Hostname or IP address|
+|`binds[].listeners[].routes[].backends[].policies.inferenceRouting.endpointPicker.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
 |`binds[].listeners[].routes[].backends[].policies.ai`|object|Mark this as LLM traffic to enable LLM processing.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard`|object||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request`|[]object||
@@ -6433,6 +6460,15 @@
 |`backends[].ai.policies.mcpAuthorization`|object|Authorization policies for MCP access.|
 |`backends[].ai.policies.mcpAuthorization.rules`|[]string||
 |`backends[].ai.policies.a2a`|object|Mark this traffic as A2A to enable A2A processing and telemetry.|
+|`backends[].ai.policies.inferenceRouting`|object|Route requests through an endpoint picker before forwarding to the selected backend.|
+|`backends[].ai.policies.inferenceRouting.endpointPicker`|object|Exactly one of service, host, or backend may be set.|
+|`backends[].ai.policies.inferenceRouting.endpointPicker.service`|object||
+|`backends[].ai.policies.inferenceRouting.endpointPicker.service.name`|object||
+|`backends[].ai.policies.inferenceRouting.endpointPicker.service.name.namespace`|string||
+|`backends[].ai.policies.inferenceRouting.endpointPicker.service.name.hostname`|string||
+|`backends[].ai.policies.inferenceRouting.endpointPicker.service.port`|integer||
+|`backends[].ai.policies.inferenceRouting.endpointPicker.host`|string|Hostname or IP address|
+|`backends[].ai.policies.inferenceRouting.endpointPicker.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
 |`backends[].ai.policies.ai`|object|Mark this as LLM traffic to enable LLM processing.|
 |`backends[].ai.policies.ai.promptGuard`|object||
 |`backends[].ai.policies.ai.promptGuard.request`|[]object||
@@ -7332,6 +7368,15 @@
 |`backends[].ai.groups[].providers[].policies.mcpAuthorization`|object|Authorization policies for MCP access.|
 |`backends[].ai.groups[].providers[].policies.mcpAuthorization.rules`|[]string||
 |`backends[].ai.groups[].providers[].policies.a2a`|object|Mark this traffic as A2A to enable A2A processing and telemetry.|
+|`backends[].ai.groups[].providers[].policies.inferenceRouting`|object|Route requests through an endpoint picker before forwarding to the selected backend.|
+|`backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker`|object|Exactly one of service, host, or backend may be set.|
+|`backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.service`|object||
+|`backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.service.name`|object||
+|`backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.service.name.namespace`|string||
+|`backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.service.name.hostname`|string||
+|`backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.service.port`|integer||
+|`backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.host`|string|Hostname or IP address|
+|`backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
 |`backends[].ai.groups[].providers[].policies.ai`|object|Mark this as LLM traffic to enable LLM processing.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard`|object||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request`|[]object||
@@ -8207,6 +8252,15 @@
 |`backends[].policies.mcpAuthorization`|object|Authorization policies for MCP access.|
 |`backends[].policies.mcpAuthorization.rules`|[]string||
 |`backends[].policies.a2a`|object|Mark this traffic as A2A to enable A2A processing and telemetry.|
+|`backends[].policies.inferenceRouting`|object|Route requests through an endpoint picker before forwarding to the selected backend.|
+|`backends[].policies.inferenceRouting.endpointPicker`|object|Exactly one of service, host, or backend may be set.|
+|`backends[].policies.inferenceRouting.endpointPicker.service`|object||
+|`backends[].policies.inferenceRouting.endpointPicker.service.name`|object||
+|`backends[].policies.inferenceRouting.endpointPicker.service.name.namespace`|string||
+|`backends[].policies.inferenceRouting.endpointPicker.service.name.hostname`|string||
+|`backends[].policies.inferenceRouting.endpointPicker.service.port`|integer||
+|`backends[].policies.inferenceRouting.endpointPicker.host`|string|Hostname or IP address|
+|`backends[].policies.inferenceRouting.endpointPicker.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
 |`backends[].policies.ai`|object|Mark this as LLM traffic to enable LLM processing.|
 |`backends[].policies.ai.promptGuard`|object||
 |`backends[].policies.ai.promptGuard.request`|[]object||
@@ -10580,6 +10634,15 @@
 |`routeGroups[].routes[].backends[].ai.policies.mcpAuthorization`|object|Authorization policies for MCP access.|
 |`routeGroups[].routes[].backends[].ai.policies.mcpAuthorization.rules`|[]string||
 |`routeGroups[].routes[].backends[].ai.policies.a2a`|object|Mark this traffic as A2A to enable A2A processing and telemetry.|
+|`routeGroups[].routes[].backends[].ai.policies.inferenceRouting`|object|Route requests through an endpoint picker before forwarding to the selected backend.|
+|`routeGroups[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker`|object|Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker.service`|object||
+|`routeGroups[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.policies.inferenceRouting.endpointPicker.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
 |`routeGroups[].routes[].backends[].ai.policies.ai`|object|Mark this as LLM traffic to enable LLM processing.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard`|object||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request`|[]object||
@@ -11479,6 +11542,15 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpAuthorization`|object|Authorization policies for MCP access.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpAuthorization.rules`|[]string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.a2a`|object|Mark this traffic as A2A to enable A2A processing and telemetry.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting`|object|Route requests through an endpoint picker before forwarding to the selected backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker`|object|Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.service`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.service.name`|object||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.service.port`|integer||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.inferenceRouting.endpointPicker.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai`|object|Mark this as LLM traffic to enable LLM processing.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard`|object||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request`|[]object||
@@ -12355,6 +12427,15 @@
 |`routeGroups[].routes[].backends[].policies.mcpAuthorization`|object|Authorization policies for MCP access.|
 |`routeGroups[].routes[].backends[].policies.mcpAuthorization.rules`|[]string||
 |`routeGroups[].routes[].backends[].policies.a2a`|object|Mark this traffic as A2A to enable A2A processing and telemetry.|
+|`routeGroups[].routes[].backends[].policies.inferenceRouting`|object|Route requests through an endpoint picker before forwarding to the selected backend.|
+|`routeGroups[].routes[].backends[].policies.inferenceRouting.endpointPicker`|object|Exactly one of service, host, or backend may be set.|
+|`routeGroups[].routes[].backends[].policies.inferenceRouting.endpointPicker.service`|object||
+|`routeGroups[].routes[].backends[].policies.inferenceRouting.endpointPicker.service.name`|object||
+|`routeGroups[].routes[].backends[].policies.inferenceRouting.endpointPicker.service.name.namespace`|string||
+|`routeGroups[].routes[].backends[].policies.inferenceRouting.endpointPicker.service.name.hostname`|string||
+|`routeGroups[].routes[].backends[].policies.inferenceRouting.endpointPicker.service.port`|integer||
+|`routeGroups[].routes[].backends[].policies.inferenceRouting.endpointPicker.host`|string|Hostname or IP address|
+|`routeGroups[].routes[].backends[].policies.inferenceRouting.endpointPicker.backend`|string|Explicit backend reference. Backend must be defined in the top level backends list|
 |`routeGroups[].routes[].backends[].policies.ai`|object|Mark this as LLM traffic to enable LLM processing.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard`|object||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request`|[]object||
