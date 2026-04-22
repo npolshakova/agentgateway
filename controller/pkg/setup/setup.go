@@ -66,6 +66,10 @@ type Options struct {
 	ExtraStatusHandlers         map[schema.GroupVersionKind]syncer.ResourceStatusSyncer
 
 	AgentGatewaySyncerOptions []syncer.AgentgatewaySyncerOption
+
+	// PersistedJWKS overrides the default JWKS persistence layer.
+	// When set, setup uses this instance instead of creating one with DefaultJwksStorePrefix.
+	PersistedJWKS *jwks.PersistedEntries
 }
 
 type setup struct {
@@ -223,7 +227,10 @@ func (s *setup) Start(ctx context.Context) error {
 		Backends:       agwCollections.Backends,
 		PolicySelector: policySelector,
 	})
-	persistedJWKS := jwks.NewPersistedEntries(s.APIClient, krtOpts, jwks.DefaultJwksStorePrefix, namespaces.GetPodNamespace())
+	persistedJWKS := s.PersistedJWKS
+	if persistedJWKS == nil {
+		persistedJWKS = jwks.NewPersistedEntries(s.APIClient, krtOpts, jwks.DefaultJwksStorePrefix, namespaces.GetPodNamespace())
+	}
 	jwksLookup := jwks.NewLookup(persistedJWKS, jwks.NewResolver(resolver))
 
 	for _, mgrCfgFunc := range s.ExtraManagerConfig {
