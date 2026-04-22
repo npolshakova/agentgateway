@@ -1,6 +1,7 @@
 pub mod extauthmock;
 pub mod extprocmock;
 mod hyper_tower;
+pub mod oteltracemock;
 #[cfg(any(test, feature = "internal_benches"))]
 pub mod proxymock;
 pub mod ratelimitmock;
@@ -96,7 +97,14 @@ mod common {
 
 #[cfg(test)]
 mod tests {
-	use super::{extauthmock, extprocmock, ratelimitmock};
+	use super::{extauthmock, extprocmock, oteltracemock, ratelimitmock};
+	use crate::test_helpers::extauthmock::allow_response;
+	use crate::test_helpers::oteltracemock::ok_response;
+	use opentelemetry_proto::tonic::collector::trace::v1::{
+		ExportTraceServiceRequest, ExportTraceServiceResponse,
+	};
+	use protos::envoy::service::auth::v3::{CheckRequest, CheckResponse};
+	use tonic::Status;
 
 	struct DevExtProcHandler;
 
@@ -111,28 +119,52 @@ mod tests {
 	struct DevExtAuthHandler;
 
 	#[async_trait::async_trait]
-	impl extauthmock::Handler for DevExtAuthHandler {}
+	impl extauthmock::Handler for DevExtAuthHandler {
+		async fn check(&mut self, request: &CheckRequest) -> Result<CheckResponse, Status> {
+			tracing::info!("got extauth request {:#?}", request);
+			allow_response(None)
+		}
+	}
+
+	struct DevOtelTraceHandler;
+
+	#[async_trait::async_trait]
+	impl oteltracemock::Handler for DevOtelTraceHandler {
+		async fn export(
+			&mut self,
+			_request: &ExportTraceServiceRequest,
+		) -> Result<ExportTraceServiceResponse, Status> {
+			tracing::info!("got trace request");
+			ok_response()
+		}
+	}
 
 	// Run with: cargo test --lib -p agentgateway -- --ignored start_dev_mocks_on_fixed_ports --nocapture
 	#[tokio::test]
 	#[ignore = "dev helper: starts mock services on fixed ports and hangs"]
 	async fn start_dev_mocks_on_fixed_ports() {
+		agent_core::telemetry::testing::setup_test_logging();
 		let ext_proc = extprocmock::ExtProcMock::new(|| DevExtProcHandler)
 			.spawn_on(([127, 0, 0, 1], 9995).into())
 			.await;
-		println!("ext_proc mock started on {}", ext_proc.address);
+		tracing::info!("ext_proc mock started on {}", ext_proc.address);
 
 		let rate_limit = ratelimitmock::RateLimitMock::new(|| DevRateLimitHandler)
 			.spawn_on(([127, 0, 0, 1], 9996).into())
 			.await;
-		println!("ratelimit mock started on {}", rate_limit.address);
+		tracing::info!("ratelimit mock started on {}", rate_limit.address);
 
 		let ext_auth = extauthmock::ExtAuthMock::new(|| DevExtAuthHandler)
 			.spawn_on(([127, 0, 0, 1], 9997).into())
 			.await;
-		println!("ext_auth mock started on {}", ext_auth.address);
+		tracing::info!("ext_auth mock started on {}", ext_auth.address);
 
-		let _instances = (ext_proc, rate_limit, ext_auth);
+		let otel_trace = oteltracemock::OtelTraceMock::new(|| DevOtelTraceHandler)
+			.spawn_on(([127, 0, 0, 1], 9998).into())
+			.await;
+		tracing::info!("otel trace mock started on {}", otel_trace.address);
+
+		let _instances = (ext_proc, rate_limit, ext_auth, otel_trace);
 		std::future::pending::<()>().await;
 	}
 }
