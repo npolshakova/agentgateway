@@ -433,22 +433,37 @@ impl Policy {
 					}
 				},
 				RequestGuardKind::BedrockGuardrails(bg) => {
-					if let Some(res) =
-						Self::apply_bedrock_guardrails_request(req, claims.clone(), &client, &g.rejection, bg)
-							.await?
+					match Self::apply_bedrock_guardrails_request(
+						req,
+						claims.clone(),
+						&client,
+						&g.rejection,
+						bg,
+					)
+					.await?
 					{
-						Self::record_guardrail_trip(
-							&client,
-							crate::telemetry::metrics::GuardrailPhase::Request,
-							crate::telemetry::metrics::GuardrailAction::Reject,
-						);
-						return Ok(Some(res));
-					} else {
-						Self::record_guardrail_trip(
-							&client,
-							crate::telemetry::metrics::GuardrailPhase::Request,
-							crate::telemetry::metrics::GuardrailAction::Allow,
-						);
+						GuardrailOutcome::Rejected(res) => {
+							Self::record_guardrail_trip(
+								&client,
+								crate::telemetry::metrics::GuardrailPhase::Request,
+								crate::telemetry::metrics::GuardrailAction::Reject,
+							);
+							return Ok(Some(res));
+						},
+						GuardrailOutcome::Masked => {
+							Self::record_guardrail_trip(
+								&client,
+								crate::telemetry::metrics::GuardrailPhase::Request,
+								crate::telemetry::metrics::GuardrailAction::Mask,
+							);
+						},
+						GuardrailOutcome::None => {
+							Self::record_guardrail_trip(
+								&client,
+								crate::telemetry::metrics::GuardrailPhase::Request,
+								crate::telemetry::metrics::GuardrailAction::Allow,
+							);
+						},
 					}
 				},
 				RequestGuardKind::GoogleModelArmor(gma) => {
@@ -520,12 +535,20 @@ impl Policy {
 		client: &PolicyClient,
 		rej: &RequestRejection,
 		guardrails: &BedrockGuardrails,
-	) -> anyhow::Result<Option<Response>> {
+	) -> anyhow::Result<GuardrailOutcome> {
 		let resp = bedrock_guardrails::send_request(req, claims.clone(), client, guardrails).await?;
 		if resp.is_blocked() {
-			Ok(Some(rej.as_response()))
+			Ok(GuardrailOutcome::Rejected(rej.as_response()))
+		} else if resp.is_anonymized() {
+			let output_texts = resp.output_texts();
+			let mut msgs = req.get_messages();
+			for (msg, text) in msgs.iter_mut().zip(output_texts) {
+				msg.content = text.into();
+			}
+			req.set_messages(msgs);
+			Ok(GuardrailOutcome::Masked)
 		} else {
-			Ok(None)
+			Ok(GuardrailOutcome::None)
 		}
 	}
 
@@ -535,7 +558,7 @@ impl Policy {
 		client: &PolicyClient,
 		rej: &RequestRejection,
 		guardrails: &BedrockGuardrails,
-	) -> anyhow::Result<Option<Response>> {
+	) -> anyhow::Result<GuardrailOutcome> {
 		// Extract text content from response choices
 		let content: Vec<String> = resp
 			.to_webhook_choices()
@@ -544,15 +567,23 @@ impl Policy {
 			.collect();
 
 		if content.is_empty() {
-			return Ok(None);
+			return Ok(GuardrailOutcome::None);
 		}
 
 		let guardrail_resp =
 			bedrock_guardrails::send_response(content, claims, client, guardrails).await?;
 		if guardrail_resp.is_blocked() {
-			Ok(Some(rej.as_response()))
+			Ok(GuardrailOutcome::Rejected(rej.as_response()))
+		} else if guardrail_resp.is_anonymized() {
+			let output_texts = guardrail_resp.output_texts();
+			let mut choices = resp.to_webhook_choices();
+			for (choice, text) in choices.iter_mut().zip(output_texts) {
+				choice.message.content = text.into();
+			}
+			resp.set_webhook_choices(choices)?;
+			Ok(GuardrailOutcome::Masked)
 		} else {
-			Ok(None)
+			Ok(GuardrailOutcome::None)
 		}
 	}
 
@@ -1030,21 +1061,31 @@ impl Policy {
 					}
 				},
 				ResponseGuardKind::BedrockGuardrails(bg) => {
-					if let Some(res) =
-						Self::apply_bedrock_guardrails_response(resp, None, client, &g.rejection, bg).await?
+					match Self::apply_bedrock_guardrails_response(resp, None, client, &g.rejection, bg)
+						.await?
 					{
-						Self::record_guardrail_trip(
-							client,
-							crate::telemetry::metrics::GuardrailPhase::Response,
-							crate::telemetry::metrics::GuardrailAction::Reject,
-						);
-						return Ok(Some(res));
-					} else {
-						Self::record_guardrail_trip(
-							client,
-							crate::telemetry::metrics::GuardrailPhase::Response,
-							crate::telemetry::metrics::GuardrailAction::Allow,
-						);
+						GuardrailOutcome::Rejected(res) => {
+							Self::record_guardrail_trip(
+								client,
+								crate::telemetry::metrics::GuardrailPhase::Response,
+								crate::telemetry::metrics::GuardrailAction::Reject,
+							);
+							return Ok(Some(res));
+						},
+						GuardrailOutcome::Masked => {
+							Self::record_guardrail_trip(
+								client,
+								crate::telemetry::metrics::GuardrailPhase::Response,
+								crate::telemetry::metrics::GuardrailAction::Mask,
+							);
+						},
+						GuardrailOutcome::None => {
+							Self::record_guardrail_trip(
+								client,
+								crate::telemetry::metrics::GuardrailPhase::Response,
+								crate::telemetry::metrics::GuardrailAction::Allow,
+							);
+						},
 					}
 				},
 				ResponseGuardKind::GoogleModelArmor(gma) => {
