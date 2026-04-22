@@ -348,19 +348,33 @@ mod bedrock_guardrails_tests {
 	#[test]
 	fn test_apply_guardrail_response_is_blocked_true() {
 		let json = json!({
-			"action": "GUARDRAIL_INTERVENED"
+			"action": "GUARDRAIL_INTERVENED",
+			"outputs": [{"text": "Sorry, I can't help with that."}],
+			"assessments": [{
+				"contentPolicy": {
+					"filters": [{
+						"action": "BLOCKED",
+						"type": "HATE",
+						"confidence": "HIGH"
+					}]
+				}
+			}]
 		});
 		let response: ApplyGuardrailResponse = serde_json::from_value(json).unwrap();
 		assert!(response.is_blocked());
+		assert!(!response.is_anonymized());
 	}
 
 	#[test]
 	fn test_apply_guardrail_response_is_blocked_false() {
 		let json = json!({
-			"action": "NONE"
+			"action": "NONE",
+			"outputs": [{"text": "Hello, world!"}],
+			"assessments": [{}]
 		});
 		let response: ApplyGuardrailResponse = serde_json::from_value(json).unwrap();
 		assert!(!response.is_blocked());
+		assert!(!response.is_anonymized());
 	}
 
 	#[test]
@@ -410,6 +424,15 @@ mod bedrock_guardrails_tests {
 		let json = json!({
 			"action": "GUARDRAIL_INTERVENED",
 			"outputs": [{"text": "I can't help with that request."}],
+			"assessments": [{
+				"topicPolicy": {
+					"topics": [{
+						"action": "BLOCKED",
+						"name": "Finance",
+						"type": "DENY"
+					}]
+				}
+			}],
 			"usage": {
 				"topicPolicyUnits": 1,
 				"contentPolicyUnits": 0,
@@ -417,10 +440,106 @@ mod bedrock_guardrails_tests {
 			}
 		});
 
-		// Our struct only cares about the action field
 		let response: ApplyGuardrailResponse = serde_json::from_value(json).unwrap();
 		assert!(response.is_blocked());
+		assert!(!response.is_anonymized());
 		assert_eq!(response.action, GuardrailAction::GuardrailIntervened);
+	}
+
+	#[test]
+	fn test_apply_guardrail_response_anonymized() {
+		let json = json!({
+			"action": "GUARDRAIL_INTERVENED",
+			"outputs": [{"text": "My name is {NAME} and my email is {EMAIL}"}],
+			"assessments": [{
+				"sensitiveInformationPolicy": {
+					"piiEntities": [
+						{
+							"action": "ANONYMIZED",
+							"match": "John Doe",
+							"type": "NAME"
+						},
+						{
+							"action": "ANONYMIZED",
+							"match": "john@example.com",
+							"type": "EMAIL"
+						}
+					]
+				}
+			}]
+		});
+		let response: ApplyGuardrailResponse = serde_json::from_value(json).unwrap();
+		assert!(!response.is_blocked());
+		assert!(response.is_anonymized());
+		assert_eq!(
+			response.output_texts(),
+			vec!["My name is {NAME} and my email is {EMAIL}"]
+		);
+	}
+
+	#[test]
+	fn test_apply_guardrail_response_mixed_block_and_anonymize() {
+		let json = json!({
+			"action": "GUARDRAIL_INTERVENED",
+			"outputs": [{"text": "blocked"}],
+			"assessments": [{
+				"sensitiveInformationPolicy": {
+					"piiEntities": [{
+						"action": "ANONYMIZED",
+						"match": "John Doe",
+						"type": "NAME"
+					}]
+				},
+				"contentPolicy": {
+					"filters": [{
+						"action": "BLOCKED",
+						"type": "HATE",
+						"confidence": "HIGH"
+					}]
+				}
+			}]
+		});
+		let response: ApplyGuardrailResponse = serde_json::from_value(json).unwrap();
+		assert!(response.is_blocked());
+		assert!(!response.is_anonymized());
+	}
+
+	#[test]
+	fn test_apply_guardrail_response_output_texts() {
+		let json = json!({
+			"action": "GUARDRAIL_INTERVENED",
+			"outputs": [
+				{"text": "First message with {NAME}"},
+				{"text": "Second message with {EMAIL}"}
+			],
+			"assessments": [{
+				"sensitiveInformationPolicy": {
+					"piiEntities": [{
+						"action": "ANONYMIZED",
+						"match": "test",
+						"type": "NAME"
+					}]
+				}
+			}]
+		});
+		let response: ApplyGuardrailResponse = serde_json::from_value(json).unwrap();
+		assert!(response.is_anonymized());
+		assert_eq!(
+			response.output_texts(),
+			vec!["First message with {NAME}", "Second message with {EMAIL}"]
+		);
+	}
+
+	#[test]
+	fn test_apply_guardrail_response_intervened_no_assessments() {
+		let json = json!({
+			"action": "GUARDRAIL_INTERVENED",
+			"outputs": [{"text": "modified content"}],
+			"assessments": []
+		});
+		let response: ApplyGuardrailResponse = serde_json::from_value(json).unwrap();
+		assert!(!response.is_blocked());
+		assert!(response.is_anonymized());
 	}
 }
 
