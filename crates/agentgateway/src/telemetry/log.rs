@@ -1282,13 +1282,19 @@ impl opentelemetry_sdk::logs::LogExporter for PolicyGrpcLogExporter {
 			}
 			let req =
 				opentelemetry_proto::tonic::collector::logs::v1::ExportLogsServiceRequest { resource_logs };
+			// Drop tonic Response inside the spawned task so guard is released on the Tokio runtime, not on
+			// the BatchProcessor OS thread which has no Tokio context.
 			handle
-				.spawn(async move { client.export(req).await })
+				.spawn(async move {
+					client
+						.export(req)
+						.await
+						.map(|_| ())
+						.map_err(|e| e.message().to_string())
+				})
 				.await
 				.map_err(|e| OTelSdkError::InternalFailure(e.to_string()))?
-				.map(|_| ())
-				.map_err(|e: tonic::Status| OTelSdkError::InternalFailure(e.message().to_string()))
-				as OTelSdkResult
+				.map_err(OTelSdkError::InternalFailure) as OTelSdkResult
 		}
 	}
 
