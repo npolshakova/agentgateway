@@ -916,10 +916,14 @@ impl AIProvider {
 
 		// Snapshot decompressed bytes for CEL response.body access before re-compression,
 		// so maybe_buffer_response_body can skip decompression entirely.
+		// Also strip encoding headers now that the body is decompressed; the chat
+		// completions path re-adds Content-Encoding when it re-compresses.
 		if encoding.is_some() {
 			parts
 				.extensions
 				.insert(crate::cel::BufferedBody(bytes.clone()));
+			parts.headers.remove(header::CONTENT_ENCODING);
+			parts.headers.remove(header::TRANSFER_ENCODING);
 		}
 
 		// count_tokens has simplified response handling (just format translation)
@@ -993,6 +997,9 @@ impl AIProvider {
 		};
 
 		let body = if let Some(encoding) = encoding {
+			parts
+				.headers
+				.insert(header::CONTENT_ENCODING, HeaderValue::from_static(encoding));
 			Body::from(
 				http::compression::encode_body(&body, encoding)
 					.await
