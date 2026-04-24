@@ -21,7 +21,7 @@ use types::discovery::*;
 use crate::cel::{BackendContext, RequestTime};
 use crate::client::{ApplicationTransport, Transport};
 use crate::http::backendtls::BackendTLS;
-use crate::http::ext_proc::ExtProcRequest;
+use crate::http::ext_proc::{ExtProcRequest, InferenceRoutingDestinationMode};
 use crate::http::filters::{AutoHostname, BackendRequestTimeout};
 use crate::http::transformation_cel::Transformation;
 use crate::http::{
@@ -1397,6 +1397,11 @@ async fn make_backend_call(
 	// In practice, these don't conflict: inference is for AI backends, MCP pinning is for MCP backends.
 	let service_override = ServiceCallOverride {
 		destination: inference_result.destination.or(policies.override_dest),
+		destination_passthrough: inference_result.destination.is_some()
+			&& matches!(
+				inference_result.destination_mode,
+				InferenceRoutingDestinationMode::Passthrough
+			),
 		inference_failed_open: inference_result.failed_open,
 	};
 
@@ -1802,6 +1807,25 @@ pub fn build_service_call(
 	request_host: Option<&str>,
 ) -> Result<BackendCall, ProxyError> {
 	let port = *port;
+	let http_version_override = if svc.port_is_http2(port) {
+		Some(::http::Version::HTTP_2)
+	} else if svc.port_is_http1(port) {
+		Some(::http::Version::HTTP_11)
+	} else {
+		None
+	};
+	if let Some(destination) = service_override.destination
+		&& service_override.destination_passthrough
+	{
+		return Ok(BackendCall {
+			target: Target::Address(destination),
+			http_version_override,
+			transport_override: None,
+			network_gateway: None,
+			backend_policies,
+		});
+	}
+
 	let workloads = &inputs.stores.read_discovery().workloads;
 	let (ep, handle, wl) = svc
 		.endpoints
@@ -1816,14 +1840,6 @@ pub fn build_service_call(
 		service_override.inference_failed_open,
 	)
 	.ok_or(ProxyError::NoHealthyEndpoints)?;
-
-	let http_version_override = if svc.port_is_http2(port) {
-		Some(::http::Version::HTTP_2)
-	} else if svc.port_is_http1(port) {
-		Some(::http::Version::HTTP_11)
-	} else {
-		None
-	};
 
 	log.add(move |l| l.request_handle = Some(handle));
 
@@ -1913,7 +1929,7 @@ fn select_service_target_port(
 ) -> Option<u16> {
 	let svc_target_port = svc.ports.get(&svc_port).copied().unwrap_or_default();
 	if let Some(ov) = override_dest {
-		// use the explicit override. select_endpoint ensures this is actually in the endpoint
+		// Use the explicit override. select_endpoint ensures this is actually in the endpoint.
 		return Some(ov.port());
 	}
 	if inference_failed_open
@@ -2293,6 +2309,7 @@ pub struct BackendCall {
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ServiceCallOverride {
 	pub destination: Option<SocketAddr>,
+	pub destination_passthrough: bool,
 	pub inference_failed_open: bool,
 }
 
