@@ -667,6 +667,7 @@ impl HTTPProxy {
 				}
 			},
 			PathMatch::Regex(r) => r.as_str().into(),
+			PathMatch::Invalid => strng::literal!("<invalid>"),
 		});
 		req.extensions_mut().insert(path_match);
 

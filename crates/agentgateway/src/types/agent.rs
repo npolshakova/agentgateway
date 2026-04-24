@@ -854,6 +854,7 @@ pub enum QueryValueMatch {
 		#[cfg_attr(feature = "schema", schemars(with = "String"))]
 		regex::Regex,
 	),
+	Invalid,
 }
 
 #[apply(schema!)]
@@ -868,6 +869,7 @@ pub enum HeaderValueMatch {
 		#[cfg_attr(feature = "schema", schemars(with = "String"))]
 		regex::Regex,
 	),
+	Invalid,
 }
 
 #[apply(schema!)]
@@ -879,6 +881,7 @@ pub enum PathMatch {
 		#[cfg_attr(feature = "schema", schemars(with = "String"))]
 		regex::Regex,
 	),
+	Invalid,
 }
 
 #[apply(schema!)]
@@ -1817,6 +1820,7 @@ fn get_path_rank(path: &PathMatch) -> i32 {
 		// Prefix/Regex -- we will defer to the length
 		PathMatch::PathPrefix(_) => 2,
 		PathMatch::Regex(_) => 2,
+		PathMatch::Invalid => 0,
 	}
 }
 
@@ -1825,6 +1829,7 @@ fn get_path_length(path: &PathMatch) -> usize {
 		PathMatch::Exact(s) => s.len(),
 		PathMatch::PathPrefix(s) => s.len(),
 		PathMatch::Regex(r) => r.as_str().len(),
+		PathMatch::Invalid => 0,
 	}
 }
 
