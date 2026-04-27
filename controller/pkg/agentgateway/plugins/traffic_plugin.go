@@ -267,40 +267,28 @@ func resolveSelectorTargetNames(
 
 	switch targetGK {
 	case wellknown.GatewayGVK.GroupKind():
-		for _, gw := range krt.Fetch(ctx, agw.Gateways, krt.FilterLabel(selector.MatchLabels)) {
-			if gw.Namespace == policyNamespace || isPolicySelectorAllowedCrossNamespace(ctx, agw, policyNamespace, gw.Namespace, targetGK, gwv1.ObjectName(gw.Name)) {
-				targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(gw.Name), Namespace: gw.Namespace})
-			}
+		for _, gw := range krt.Fetch(ctx, agw.Gateways, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.GatewaysByNamespace, policyNamespace)) {
+			targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(gw.Name), Namespace: gw.Namespace})
 		}
 	case wellknown.HTTPRouteGVK.GroupKind():
-		for _, route := range krt.Fetch(ctx, agw.HTTPRoutes, krt.FilterLabel(selector.MatchLabels)) {
-			if route.Namespace == policyNamespace || isPolicySelectorAllowedCrossNamespace(ctx, agw, policyNamespace, route.Namespace, targetGK, gwv1.ObjectName(route.Name)) {
-				targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(route.Name), Namespace: route.Namespace})
-			}
+		for _, route := range krt.Fetch(ctx, agw.HTTPRoutes, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.HTTPRoutesByNamespace, policyNamespace)) {
+			targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(route.Name), Namespace: route.Namespace})
 		}
 	case wellknown.GRPCRouteGVK.GroupKind():
-		for _, route := range krt.Fetch(ctx, agw.GRPCRoutes, krt.FilterLabel(selector.MatchLabels)) {
-			if route.Namespace == policyNamespace || isPolicySelectorAllowedCrossNamespace(ctx, agw, policyNamespace, route.Namespace, targetGK, gwv1.ObjectName(route.Name)) {
-				targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(route.Name), Namespace: route.Namespace})
-			}
+		for _, route := range krt.Fetch(ctx, agw.GRPCRoutes, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.GRPCRoutesByNamespace, policyNamespace)) {
+			targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(route.Name), Namespace: route.Namespace})
 		}
 	case wellknown.ListenerSetGVK.GroupKind():
-		for _, ls := range krt.Fetch(ctx, agw.ListenerSets, krt.FilterLabel(selector.MatchLabels)) {
-			if ls.Namespace == policyNamespace || isPolicySelectorAllowedCrossNamespace(ctx, agw, policyNamespace, ls.Namespace, targetGK, gwv1.ObjectName(ls.Name)) {
-				targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(ls.Name), Namespace: ls.Namespace})
-			}
+		for _, ls := range krt.Fetch(ctx, agw.ListenerSets, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.ListenerSetsByNamespace, policyNamespace)) {
+			targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(ls.Name), Namespace: ls.Namespace})
 		}
 	case wellknown.AgentgatewayBackendGVK.GroupKind():
-		for _, backend := range krt.Fetch(ctx, agw.Backends, krt.FilterLabel(selector.MatchLabels)) {
-			if backend.Namespace == policyNamespace || isPolicySelectorAllowedCrossNamespace(ctx, agw, policyNamespace, backend.Namespace, targetGK, gwv1.ObjectName(backend.Name)) {
-				targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(backend.Name), Namespace: backend.Namespace})
-			}
+		for _, backend := range krt.Fetch(ctx, agw.Backends, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.BackendsByNamespace, policyNamespace)) {
+			targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(backend.Name), Namespace: backend.Namespace})
 		}
 	case wellknown.ServiceGVK.GroupKind():
-		for _, svc := range krt.Fetch(ctx, agw.Services, krt.FilterLabel(selector.MatchLabels)) {
-			if svc.Namespace == policyNamespace || isPolicySelectorAllowedCrossNamespace(ctx, agw, policyNamespace, svc.Namespace, targetGK, gwv1.ObjectName(svc.Name)) {
-				targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(svc.Name), Namespace: svc.Namespace})
-			}
+		for _, svc := range krt.Fetch(ctx, agw.Services, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.ServicesByNamespace, policyNamespace)) {
+			targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(svc.Name), Namespace: svc.Namespace})
 		}
 	}
 
@@ -313,40 +301,6 @@ func resolveSelectorTargetNames(
 	return targets
 }
 
-func isPolicySelectorAllowedCrossNamespace(
-	ctx krt.HandlerContext,
-	agw *AgwCollections,
-	policyNamespace string,
-	targetNamespace string,
-	targetGK schema.GroupKind,
-	targetName gwv1.ObjectName,
-) bool {
-	for _, rg := range krt.Fetch(ctx, agw.ReferenceGrants) {
-		if rg.Namespace != targetNamespace {
-			continue
-		}
-		fromMatch := false
-		for _, from := range rg.Spec.From {
-			if string(from.Group) == wellknown.AgentgatewayPolicyGVK.Group &&
-				string(from.Kind) == wellknown.AgentgatewayPolicyGVK.Kind &&
-				string(from.Namespace) == policyNamespace {
-				fromMatch = true
-				break
-			}
-		}
-		if !fromMatch {
-			continue
-		}
-		for _, to := range rg.Spec.To {
-			if string(to.Group) == targetGK.Group && string(to.Kind) == targetGK.Kind {
-				if to.Name == nil || string(*to.Name) == string(targetName) {
-					return true
-				}
-			}
-		}
-	}
-	return false
-}
 
 func PolicyConditionMap(err error, hasTranslatedPolicies bool) map[string]*Condition {
 	conds := map[string]*Condition{}
