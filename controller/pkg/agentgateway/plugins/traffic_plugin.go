@@ -301,7 +301,6 @@ func resolveSelectorTargetNames(
 	return targets
 }
 
-
 func PolicyConditionMap(err error, hasTranslatedPolicies bool) map[string]*Condition {
 	conds := map[string]*Condition{}
 	if err != nil {
