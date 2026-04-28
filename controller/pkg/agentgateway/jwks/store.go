@@ -67,6 +67,12 @@ func (s *Store) Start(ctx context.Context) error {
 			if event.New == nil {
 				return
 			}
+			if event.Event == controllers.EventUpdate && event.Old != nil && event.Old.RequestKey != event.New.RequestKey {
+				// Defensively drop the previous key when a shared request retargets.
+				// Some update paths can surface as an update without a distinct delete event.
+				logger.Debug("removing stale keyset after request key change", "old_request_key", event.Old.RequestKey, "new_request_key", event.New.RequestKey)
+				s.jwksFetcher.RemoveKeyset(event.Old.RequestKey)
+			}
 
 			request := event.New.JwksSource()
 			logger.Debug("updating keyset", "request_key", request.RequestKey, "config_map", JwksConfigMapName(s.storePrefix, request.RequestKey))
