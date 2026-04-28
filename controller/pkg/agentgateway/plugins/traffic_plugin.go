@@ -100,7 +100,7 @@ func NewAgentPlugin(agw *AgwCollections, resolver remotehttp.Resolver, jwksLooku
 				},
 				BuildReferences: func(input PolicyPluginInput) krt.Collection[*PolicyAttachment] {
 					return krt.NewManyCollection(agw.AgentgatewayPolicies, func(ctx krt.HandlerContext, policy *agentgateway.AgentgatewayPolicy) []*PolicyAttachment {
-						return BackendReferencesFromPolicy(ctx, policy, input.References, agw)
+						return BackendReferencesFromPolicy(ctx, policy, input.References)
 					}, agw.KrtOpts.ToOptions("AgentgatewayPolicyAttachments")...)
 				},
 			},
@@ -1509,7 +1509,7 @@ func DefaultString[T ~string](s *T, def string) string {
 
 // BackendReferencesFromPolicy only emits attachments for existing, unsectioned targets
 // to prevent phantom chains and section-scoped over-attachment.
-func BackendReferencesFromPolicy(ctx krt.HandlerContext, policy *agentgateway.AgentgatewayPolicy, references ReferenceIndex, agw *AgwCollections) []*PolicyAttachment {
+func BackendReferencesFromPolicy(ctx krt.HandlerContext, policy *agentgateway.AgentgatewayPolicy, references ReferenceIndex) []*PolicyAttachment {
 	s := policy.Spec
 	self := utils.TypedNamespacedName{
 		NamespacedName: types.NamespacedName{Namespace: policy.Namespace, Name: policy.Name},
