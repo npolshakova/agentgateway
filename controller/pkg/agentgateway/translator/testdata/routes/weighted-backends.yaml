@@ -61,9 +61,6 @@ output:
       - mcp.example.com
       key: default/canary-route.00.http
       listenerKey: default/test-gateway.http
-      matches:
-      - path:
-          pathPrefix: /
       name:
         kind: HTTPRoute
         name: canary-route
