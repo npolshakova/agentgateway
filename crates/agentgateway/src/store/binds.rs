@@ -127,6 +127,7 @@ pub struct FrontendPolices {
 	pub access_log: Option<frontend::LoggingPolicy>,
 	pub tracing: Option<Arc<crate::types::agent::TracingPolicy>>,
 	pub access_log_otlp: Option<Arc<crate::types::agent::AccessLogPolicy>>,
+	pub metrics_fields: Option<frontend::MetricsFieldsPolicy>,
 }
 
 impl FrontendPolices {
@@ -160,24 +161,31 @@ impl FrontendPolices {
 			FrontendPolicy::Tracing(p) => {
 				self.tracing.get_or_insert_with(|| p.clone());
 			},
+			FrontendPolicy::Metrics(p) => {
+				self.metrics_fields.get_or_insert_with(|| p.clone());
+			},
 		}
 	}
 	pub fn register_cel_expressions(&self, ctx: &mut ContextBuilder) {
-		let Some(frontend::LoggingPolicy {
+		if let Some(frontend::LoggingPolicy {
 			filter,
 			add: fields_add,
 			remove: _,
 			otlp: _,
 			access_log_policy: _,
 		}) = &self.access_log
-		else {
-			return;
-		};
-		if let Some(f) = filter {
-			ctx.register_log_expression(f)
+		{
+			if let Some(f) = filter {
+				ctx.register_log_expression(f)
+			}
+			for (_, v) in fields_add.iter() {
+				ctx.register_log_expression(v)
+			}
 		}
-		for (_, v) in fields_add.iter() {
-			ctx.register_log_expression(v)
+		if let Some(mf) = &self.metrics_fields {
+			for (_, v) in mf.add.iter() {
+				ctx.register_log_expression(v)
+			}
 		}
 	}
 }
