@@ -68,10 +68,11 @@ func (s *Store) Start(ctx context.Context) error {
 				return
 			}
 			if event.Event == controllers.EventUpdate && event.Old != nil && event.Old.RequestKey != event.New.RequestKey {
-				// Defensively drop the previous key when a shared request retargets.
-				// Some update paths can surface as an update without a distinct delete event.
-				logger.Debug("removing stale keyset after request key change", "old_request_key", event.Old.RequestKey, "new_request_key", event.New.RequestKey)
-				s.jwksFetcher.RemoveKeyset(event.Old.RequestKey)
+				// Retire the old keyset: stop fetching it but keep the cache
+				// entry so JWT validation continues working until the next
+				// successful fetch sweeps the orphaned entry.
+				logger.Debug("retiring stale keyset after request key change", "old_request_key", event.Old.RequestKey, "new_request_key", event.New.RequestKey)
+				s.jwksFetcher.RetireKeyset(event.Old.RequestKey)
 			}
 
 			request := event.New.JwksSource()
