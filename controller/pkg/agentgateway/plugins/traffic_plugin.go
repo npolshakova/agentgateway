@@ -123,11 +123,6 @@ type ResolvedTarget struct {
 	AttachmentError    string
 }
 
-type resolvedSelectorTarget struct {
-	Name      gwv1.ObjectName
-	Namespace string
-}
-
 // TranslateAgentgatewayPolicy generates policies for a single traffic policy
 func TranslateAgentgatewayPolicy(
 	ctx krt.HandlerContext,
@@ -224,7 +219,7 @@ func TranslateAgentgatewayPolicy(
 	}
 	for _, selector := range policy.Spec.TargetSelectors {
 		gk := schema.GroupKind{Group: string(selector.Group), Kind: string(selector.Kind)}
-		targets := resolveSelectorTargetNames(ctx, policy.Namespace, selector, agw)
+		targets := references.PolicyTargetsBySelector(ctx, policy.Namespace, selector)
 		if len(targets) == 0 {
 			attachmentErrors = append(attachmentErrors, fmt.Sprintf("Policy is not attached: no %s matching selector found in namespace %s", gk.Kind, policy.Namespace))
 		}
@@ -254,51 +249,6 @@ func TranslateAgentgatewayPolicy(
 	})
 
 	return &status, agwPolicies
-}
-
-func resolveSelectorTargetNames(
-	ctx krt.HandlerContext,
-	policyNamespace string,
-	selector shared.LocalPolicyTargetSelectorWithSectionName,
-	agw *AgwCollections,
-) []resolvedSelectorTarget {
-	targetGK := schema.GroupKind{Group: string(selector.Group), Kind: string(selector.Kind)}
-	var targets []resolvedSelectorTarget
-
-	switch targetGK {
-	case wellknown.GatewayGVK.GroupKind():
-		for _, gw := range krt.Fetch(ctx, agw.Gateways, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.GatewaysByNamespace, policyNamespace)) {
-			targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(gw.Name), Namespace: gw.Namespace})
-		}
-	case wellknown.HTTPRouteGVK.GroupKind():
-		for _, route := range krt.Fetch(ctx, agw.HTTPRoutes, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.HTTPRoutesByNamespace, policyNamespace)) {
-			targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(route.Name), Namespace: route.Namespace})
-		}
-	case wellknown.GRPCRouteGVK.GroupKind():
-		for _, route := range krt.Fetch(ctx, agw.GRPCRoutes, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.GRPCRoutesByNamespace, policyNamespace)) {
-			targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(route.Name), Namespace: route.Namespace})
-		}
-	case wellknown.ListenerSetGVK.GroupKind():
-		for _, ls := range krt.Fetch(ctx, agw.ListenerSets, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.ListenerSetsByNamespace, policyNamespace)) {
-			targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(ls.Name), Namespace: ls.Namespace})
-		}
-	case wellknown.AgentgatewayBackendGVK.GroupKind():
-		for _, backend := range krt.Fetch(ctx, agw.Backends, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.BackendsByNamespace, policyNamespace)) {
-			targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(backend.Name), Namespace: backend.Namespace})
-		}
-	case wellknown.ServiceGVK.GroupKind():
-		for _, svc := range krt.Fetch(ctx, agw.Services, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.ServicesByNamespace, policyNamespace)) {
-			targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(svc.Name), Namespace: svc.Namespace})
-		}
-	}
-
-	slices.SortFunc(targets, func(a, b resolvedSelectorTarget) int {
-		if a.Namespace != b.Namespace {
-			return strings.Compare(a.Namespace, b.Namespace)
-		}
-		return strings.Compare(string(a.Name), string(b.Name))
-	})
-	return targets
 }
 
 func PolicyConditionMap(err error, hasTranslatedPolicies bool) map[string]*Condition {
@@ -1588,7 +1538,7 @@ func BackendReferencesFromPolicy(ctx krt.HandlerContext, policy *agentgateway.Ag
 	}
 	for _, selector := range s.TargetSelectors {
 		gk := schema.GroupKind{Group: string(selector.Group), Kind: string(selector.Kind)}
-		for _, target := range resolveSelectorTargetNames(ctx, policy.Namespace, selector, agw) {
+		for _, target := range references.PolicyTargetsBySelector(ctx, policy.Namespace, selector) {
 			policyTarget, targetExists := references.PolicyTarget(ctx, target.Namespace, target.Name, gk, selector.SectionName)
 			if policyTarget == nil || !targetExists {
 				continue
