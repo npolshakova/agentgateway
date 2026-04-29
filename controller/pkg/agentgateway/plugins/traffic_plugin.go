@@ -143,8 +143,7 @@ func TranslateAgentgatewayPolicy(
 	baseConds := PolicyConditionMap(baseErr, len(baseTranslatedPolicies) > 0)
 	controller := gwv1.GatewayController(agw.ControllerName)
 
-	processTarget := func(gk schema.GroupKind, name gwv1.ObjectName, sectionName *gwv1.SectionName, targetNamespace string) {
-		policyTargets, targetExists := references.PolicyTarget(ctx, targetNamespace, name, gk, sectionName)
+	processTarget := func(name gwv1.ObjectName, targetNamespace string, gk schema.GroupKind, policyTargets []*api.PolicyTarget, targetExists bool) {
 		if len(policyTargets) == 0 {
 			logger.Warn("unsupported target kind", "kind", gk.Kind, "policy", policy.Name)
 			return
@@ -210,7 +209,8 @@ func TranslateAgentgatewayPolicy(
 			return
 		}
 		seen[key] = struct{}{}
-		processTarget(gk, name, sectionName, targetNamespace)
+		policyTargets, targetExists := references.PolicyTarget(ctx, targetNamespace, name, gk, sectionName)
+		processTarget(name, targetNamespace, gk, policyTargets, targetExists)
 	}
 
 	for _, target := range policy.Spec.TargetRefs {
@@ -224,7 +224,7 @@ func TranslateAgentgatewayPolicy(
 			attachmentErrors = append(attachmentErrors, fmt.Sprintf("Policy is not attached: no %s matching selector found in namespace %s", gk.Kind, policy.Namespace))
 		}
 		for _, target := range targets {
-			tryProcessTarget(gk, target.Name, selector.SectionName, target.Namespace)
+			processTarget(target.Name, target.Namespace, gk, target.PolicyTargets, true)
 		}
 	}
 
@@ -1537,10 +1537,8 @@ func BackendReferencesFromPolicy(ctx krt.HandlerContext, policy *agentgateway.Ag
 		})
 	}
 	for _, selector := range s.TargetSelectors {
-		gk := schema.GroupKind{Group: string(selector.Group), Kind: string(selector.Kind)}
 		for _, target := range references.PolicyTargetsBySelector(ctx, policy.Namespace, selector) {
-			policyTarget, targetExists := references.PolicyTarget(ctx, target.Namespace, target.Name, gk, selector.SectionName)
-			if policyTarget == nil || !targetExists {
+			if len(target.PolicyTargets) == 0 {
 				continue
 			}
 			addTarget(utils.TypedNamespacedName{

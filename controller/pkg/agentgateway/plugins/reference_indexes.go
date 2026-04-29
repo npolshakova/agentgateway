@@ -20,14 +20,15 @@ import (
 	"github.com/agentgateway/agentgateway/controller/pkg/wellknown"
 )
 
-type resolvedSelectorTarget struct {
-	Name      gwv1.ObjectName
-	Namespace string
+type ResolvedPolicySelectorTarget struct {
+	Name          gwv1.ObjectName
+	Namespace     string
+	PolicyTargets []*api.PolicyTarget
 }
 
 type ReferenceTypes struct {
 	PolicyTargets           func(krtctx krt.HandlerContext, namespace string, name gwv1.ObjectName, gk schema.GroupKind, sectionName *gwv1.SectionName) ([]*api.PolicyTarget, bool)
-	PolicyTargetsBySelector func(krtctx krt.HandlerContext, policyNamespace string, selector shared.LocalPolicyTargetSelectorWithSectionName) []resolvedSelectorTarget
+	PolicyTargetsBySelector func(krtctx krt.HandlerContext, policyNamespace string, selector shared.LocalPolicyTargetSelectorWithSectionName) []ResolvedPolicySelectorTarget
 	PolicyBackend           func(krtctx krt.HandlerContext, defaultNamespace string, gk schema.GroupKind, name gwv1.ObjectName, namespace *gwv1.Namespace, port *gwv1.PortNumber) (*api.BackendReference, error)
 	RouteBackend            func(krtctx krt.HandlerContext, defaultNamespace string, gk schema.GroupKind, name gwv1.ObjectName, namespace *gwv1.Namespace, port *gwv1.PortNumber) (*api.BackendReference, error)
 }
@@ -78,38 +79,54 @@ func DefaultReferenceTypes(agw *AgwCollections) ReferenceTypes {
 			}
 			return nil, false
 		},
-		PolicyTargetsBySelector: func(krtctx krt.HandlerContext, policyNamespace string, selector shared.LocalPolicyTargetSelectorWithSectionName) []resolvedSelectorTarget {
+		PolicyTargetsBySelector: func(krtctx krt.HandlerContext, policyNamespace string, selector shared.LocalPolicyTargetSelectorWithSectionName) []ResolvedPolicySelectorTarget {
 			targetGK := schema.GroupKind{Group: string(selector.Group), Kind: string(selector.Kind)}
-			var targets []resolvedSelectorTarget
+			var targets []ResolvedPolicySelectorTarget
+			sectionName := selector.SectionName
 
 			switch targetGK {
 			case wellknown.GatewayGVK.GroupKind():
 				for _, gw := range krt.Fetch(krtctx, agw.Gateways, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.GatewaysByNamespace, policyNamespace)) {
-					targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(gw.Name), Namespace: gw.Namespace})
+					policyTargets := []*api.PolicyTarget{{
+						Kind: utils.GatewayTarget(gw.Namespace, gw.Name, sectionName),
+					}}
+					targets = append(targets, ResolvedPolicySelectorTarget{Name: gwv1.ObjectName(gw.Name), Namespace: gw.Namespace, PolicyTargets: policyTargets})
 				}
 			case wellknown.HTTPRouteGVK.GroupKind():
 				for _, route := range krt.Fetch(krtctx, agw.HTTPRoutes, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.HTTPRoutesByNamespace, policyNamespace)) {
-					targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(route.Name), Namespace: route.Namespace})
+					policyTargets := []*api.PolicyTarget{{
+						Kind: utils.RouteTarget(route.Namespace, route.Name, wellknown.HTTPRouteGVK.Kind, sectionName),
+					}}
+					targets = append(targets, ResolvedPolicySelectorTarget{Name: gwv1.ObjectName(route.Name), Namespace: route.Namespace, PolicyTargets: policyTargets})
 				}
 			case wellknown.GRPCRouteGVK.GroupKind():
 				for _, route := range krt.Fetch(krtctx, agw.GRPCRoutes, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.GRPCRoutesByNamespace, policyNamespace)) {
-					targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(route.Name), Namespace: route.Namespace})
+					policyTargets := []*api.PolicyTarget{{
+						Kind: utils.RouteTarget(route.Namespace, route.Name, wellknown.GRPCRouteGVK.Kind, sectionName),
+					}}
+					targets = append(targets, ResolvedPolicySelectorTarget{Name: gwv1.ObjectName(route.Name), Namespace: route.Namespace, PolicyTargets: policyTargets})
 				}
 			case wellknown.ListenerSetGVK.GroupKind():
 				for _, ls := range krt.Fetch(krtctx, agw.ListenerSets, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.ListenerSetsByNamespace, policyNamespace)) {
-					targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(ls.Name), Namespace: ls.Namespace})
+					targets = append(targets, ResolvedPolicySelectorTarget{Name: gwv1.ObjectName(ls.Name), Namespace: ls.Namespace})
 				}
 			case wellknown.AgentgatewayBackendGVK.GroupKind():
 				for _, backend := range krt.Fetch(krtctx, agw.Backends, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.BackendsByNamespace, policyNamespace)) {
-					targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(backend.Name), Namespace: backend.Namespace})
+					policyTargets := []*api.PolicyTarget{{
+						Kind: utils.BackendTarget(backend.Namespace, backend.Name, sectionName),
+					}}
+					targets = append(targets, ResolvedPolicySelectorTarget{Name: gwv1.ObjectName(backend.Name), Namespace: backend.Namespace, PolicyTargets: policyTargets})
 				}
 			case wellknown.ServiceGVK.GroupKind():
 				for _, svc := range krt.Fetch(krtctx, agw.Services, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.ServicesByNamespace, policyNamespace)) {
-					targets = append(targets, resolvedSelectorTarget{Name: gwv1.ObjectName(svc.Name), Namespace: svc.Namespace})
+					policyTargets := []*api.PolicyTarget{{
+						Kind: utils.ServiceTarget(svc.Namespace, svc.Name, sectionName),
+					}}
+					targets = append(targets, ResolvedPolicySelectorTarget{Name: gwv1.ObjectName(svc.Name), Namespace: svc.Namespace, PolicyTargets: policyTargets})
 				}
 			}
 
-			slices.SortFunc(targets, func(a, b resolvedSelectorTarget) int {
+			slices.SortFunc(targets, func(a, b ResolvedPolicySelectorTarget) int {
 				if a.Namespace != b.Namespace {
 					return strings.Compare(a.Namespace, b.Namespace)
 				}
@@ -386,7 +403,7 @@ func (p ReferenceIndex) PolicyTarget(krtctx krt.HandlerContext, namespace string
 	return p.explicitReferences.PolicyTargets(krtctx, namespace, name, gk, sectionName)
 }
 
-func (p ReferenceIndex) PolicyTargetsBySelector(krtctx krt.HandlerContext, policyNamespace string, selector shared.LocalPolicyTargetSelectorWithSectionName) []resolvedSelectorTarget {
+func (p ReferenceIndex) PolicyTargetsBySelector(krtctx krt.HandlerContext, policyNamespace string, selector shared.LocalPolicyTargetSelectorWithSectionName) []ResolvedPolicySelectorTarget {
 	return p.explicitReferences.PolicyTargetsBySelector(krtctx, policyNamespace, selector)
 }
 
