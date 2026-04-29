@@ -7,22 +7,31 @@ import (
 	"istio.io/istio/pkg/kube/controllers"
 	"istio.io/istio/pkg/kube/krt"
 	"istio.io/istio/pkg/ptr"
+	"istio.io/istio/pkg/slices"
 	"istio.io/istio/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 
 	"github.com/agentgateway/agentgateway/api"
+	"github.com/agentgateway/agentgateway/controller/api/v1alpha1/shared"
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/utils"
 	"github.com/agentgateway/agentgateway/controller/pkg/pluginsdk/krtutil"
 	"github.com/agentgateway/agentgateway/controller/pkg/utils/kubeutils"
 	"github.com/agentgateway/agentgateway/controller/pkg/wellknown"
 )
 
+type ResolvedPolicySelectorTarget struct {
+	Name          gwv1.ObjectName
+	Namespace     string
+	PolicyTargets []*api.PolicyTarget
+}
+
 type ReferenceTypes struct {
-	PolicyTargets func(krtctx krt.HandlerContext, namespace string, name gwv1.ObjectName, gk schema.GroupKind, sectionName *gwv1.SectionName) ([]*api.PolicyTarget, bool)
-	PolicyBackend func(krtctx krt.HandlerContext, defaultNamespace string, gk schema.GroupKind, name gwv1.ObjectName, namespace *gwv1.Namespace, port *gwv1.PortNumber) (*api.BackendReference, error)
-	RouteBackend  func(krtctx krt.HandlerContext, defaultNamespace string, gk schema.GroupKind, name gwv1.ObjectName, namespace *gwv1.Namespace, port *gwv1.PortNumber) (*api.BackendReference, error)
+	PolicyTargets           func(krtctx krt.HandlerContext, namespace string, name gwv1.ObjectName, gk schema.GroupKind, sectionName *gwv1.SectionName) ([]*api.PolicyTarget, bool)
+	PolicyTargetsBySelector func(krtctx krt.HandlerContext, policyNamespace string, selector shared.LocalPolicyTargetSelectorWithSectionName) []ResolvedPolicySelectorTarget
+	PolicyBackend           func(krtctx krt.HandlerContext, defaultNamespace string, gk schema.GroupKind, name gwv1.ObjectName, namespace *gwv1.Namespace, port *gwv1.PortNumber) (*api.BackendReference, error)
+	RouteBackend            func(krtctx krt.HandlerContext, defaultNamespace string, gk schema.GroupKind, name gwv1.ObjectName, namespace *gwv1.Namespace, port *gwv1.PortNumber) (*api.BackendReference, error)
 }
 
 type BackendReferenceErrorReason string
@@ -80,6 +89,61 @@ func DefaultReferenceTypes(agw *AgwCollections) ReferenceTypes {
 				}}, ResourceExists(krtctx, agw.Services, key)
 			}
 			return nil, false
+		},
+		PolicyTargetsBySelector: func(krtctx krt.HandlerContext, policyNamespace string, selector shared.LocalPolicyTargetSelectorWithSectionName) []ResolvedPolicySelectorTarget {
+			targetGK := schema.GroupKind{Group: string(selector.Group), Kind: string(selector.Kind)}
+			var targets []ResolvedPolicySelectorTarget
+			sectionName := selector.SectionName
+
+			switch targetGK {
+			case wellknown.GatewayGVK.GroupKind():
+				for _, gw := range krt.Fetch(krtctx, agw.Gateways, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.GatewaysByNamespace, policyNamespace)) {
+					policyTargets := []*api.PolicyTarget{{
+						Kind: utils.GatewayTarget(gw.Namespace, gw.Name, sectionName),
+					}}
+					targets = append(targets, ResolvedPolicySelectorTarget{Name: gwv1.ObjectName(gw.Name), Namespace: gw.Namespace, PolicyTargets: policyTargets})
+				}
+			case wellknown.HTTPRouteGVK.GroupKind():
+				for _, route := range krt.Fetch(krtctx, agw.HTTPRoutes, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.HTTPRoutesByNamespace, policyNamespace)) {
+					policyTargets := []*api.PolicyTarget{{
+						Kind: utils.RouteTarget(route.Namespace, route.Name, wellknown.HTTPRouteGVK.Kind, sectionName),
+					}}
+					targets = append(targets, ResolvedPolicySelectorTarget{Name: gwv1.ObjectName(route.Name), Namespace: route.Namespace, PolicyTargets: policyTargets})
+				}
+			case wellknown.GRPCRouteGVK.GroupKind():
+				for _, route := range krt.Fetch(krtctx, agw.GRPCRoutes, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.GRPCRoutesByNamespace, policyNamespace)) {
+					policyTargets := []*api.PolicyTarget{{
+						Kind: utils.RouteTarget(route.Namespace, route.Name, wellknown.GRPCRouteGVK.Kind, sectionName),
+					}}
+					targets = append(targets, ResolvedPolicySelectorTarget{Name: gwv1.ObjectName(route.Name), Namespace: route.Namespace, PolicyTargets: policyTargets})
+				}
+			case wellknown.ListenerSetGVK.GroupKind():
+				for _, ls := range krt.Fetch(krtctx, agw.ListenerSets, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.ListenerSetsByNamespace, policyNamespace)) {
+					targets = append(targets, ResolvedPolicySelectorTarget{Name: gwv1.ObjectName(ls.Name), Namespace: ls.Namespace})
+				}
+			case wellknown.AgentgatewayBackendGVK.GroupKind():
+				for _, backend := range krt.Fetch(krtctx, agw.Backends, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.BackendsByNamespace, policyNamespace)) {
+					policyTargets := []*api.PolicyTarget{{
+						Kind: utils.BackendTarget(backend.Namespace, backend.Name, sectionName),
+					}}
+					targets = append(targets, ResolvedPolicySelectorTarget{Name: gwv1.ObjectName(backend.Name), Namespace: backend.Namespace, PolicyTargets: policyTargets})
+				}
+			case wellknown.ServiceGVK.GroupKind():
+				for _, svc := range krt.Fetch(krtctx, agw.Services, krt.FilterLabel(selector.MatchLabels), krt.FilterIndex(agw.ServicesByNamespace, policyNamespace)) {
+					policyTargets := []*api.PolicyTarget{{
+						Kind: utils.ServiceTarget(svc.Namespace, svc.Name, sectionName),
+					}}
+					targets = append(targets, ResolvedPolicySelectorTarget{Name: gwv1.ObjectName(svc.Name), Namespace: svc.Namespace, PolicyTargets: policyTargets})
+				}
+			}
+
+			slices.SortFunc(targets, func(a, b ResolvedPolicySelectorTarget) int {
+				if a.Namespace != b.Namespace {
+					return strings.Compare(a.Namespace, b.Namespace)
+				}
+				return strings.Compare(string(a.Name), string(b.Name))
+			})
+			return targets
 		},
 		// AgentgatewayPolicy targets to backends (for things like ext_authz, etc)
 		PolicyBackend: func(krtctx krt.HandlerContext, defaultNamespace string, gk schema.GroupKind, name gwv1.ObjectName, namespace *gwv1.Namespace, port *gwv1.PortNumber) (*api.BackendReference, error) {
@@ -348,6 +412,10 @@ func (p ReferenceIndex) WithPolicyAttachments(references krt.IndexCollection[uti
 
 func (p ReferenceIndex) PolicyTarget(krtctx krt.HandlerContext, namespace string, name gwv1.ObjectName, gk schema.GroupKind, sectionName *gwv1.SectionName) ([]*api.PolicyTarget, bool) {
 	return p.explicitReferences.PolicyTargets(krtctx, namespace, name, gk, sectionName)
+}
+
+func (p ReferenceIndex) PolicyTargetsBySelector(krtctx krt.HandlerContext, policyNamespace string, selector shared.LocalPolicyTargetSelectorWithSectionName) []ResolvedPolicySelectorTarget {
+	return p.explicitReferences.PolicyTargetsBySelector(krtctx, policyNamespace, selector)
 }
 
 func (p ReferenceIndex) PolicyBackend(krtctx krt.HandlerContext, defaultNamespace string, gk schema.GroupKind, name gwv1.ObjectName, namespace *gwv1.Namespace, port *gwv1.PortNumber) (*api.BackendReference, error) {
