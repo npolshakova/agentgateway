@@ -804,10 +804,18 @@ impl Store {
 	pub fn gateway_policies(&self, name: &ListenerName) -> GatewayPolicies {
 		let gateway = self.policies_by_target.get(&name.as_gateway_target_ref());
 		let listener = self.policies_by_target.get(&name.as_listener_target_ref());
+		let listener_set = name
+			.as_listenerset_target_ref()
+			.and_then(|r| self.policies_by_target.get(&r));
+		let listener_set_section = name
+			.as_listenerset_listener_target_ref()
+			.and_then(|r| self.policies_by_target.get(&r));
 		let rules = listener
 			.iter()
 			.copied()
 			.flatten()
+			.chain(listener_set_section.iter().copied().flatten())
+			.chain(listener_set.iter().copied().flatten())
 			.chain(gateway.iter().copied().flatten())
 			.filter_map(|n| self.policies_by_key.get(n))
 			.filter_map(|p| p.policy.as_traffic_gateway_phase());
@@ -1094,6 +1102,12 @@ impl Store {
 	) -> FrontendPolices {
 		let gateway = self.policies_by_target.get(&name.as_gateway_target_ref());
 		let listener = self.policies_by_target.get(&name.as_listener_target_ref());
+		let listener_set = name
+			.as_listenerset_target_ref()
+			.and_then(|r| self.policies_by_target.get(&r));
+		let listener_set_section = name
+			.as_listenerset_listener_target_ref()
+			.and_then(|r| self.policies_by_target.get(&r));
 		let svc = service.and_then(|s| self.policies_by_target.get(&s));
 		let gateway_port = port.and_then(|port| {
 			self.policies_by_target.get(&PolicyTargetRef::Gateway {
@@ -1108,6 +1122,8 @@ impl Store {
 			.copied()
 			.flatten()
 			.chain(listener.iter().copied().flatten())
+			.chain(listener_set_section.iter().copied().flatten())
+			.chain(listener_set.iter().copied().flatten())
 			.chain(gateway_port.iter().copied().flatten())
 			.chain(gateway.iter().copied().flatten())
 			.filter_map(|n| self.policies_by_key.get(n))
@@ -1744,7 +1760,8 @@ mod tests {
 	use super::*;
 	use crate::telemetry::log::OrderedStringMap;
 	use crate::types::agent::{
-		BackendTarget, BindProtocol, ListenerProtocol, ListenerSet, PolicyType, TunnelProtocol,
+		BackendTarget, BindProtocol, ListenerProtocol, ListenerSet, ListenerSetTarget, PolicyType,
+		ResourceName, TunnelProtocol,
 	};
 	use crate::types::frontend::LoggingPolicy;
 
@@ -2478,6 +2495,122 @@ mod tests {
 			modifier.set[0],
 			(strng::new("x-foo"), strng::new("bar3")),
 			"Section attached policy (bar3) should win over backend attached policy (bar)"
+		);
+	}
+
+	#[test]
+	fn listenerset_targeted_policy_is_found_via_listener_frontend_policies() {
+		let mut store = Store::default();
+
+		// Insert a policy targeting a ListenerSet
+		let policy_key: PolicyKey = strng::new("ls-policy");
+		let targeted = TargetedPolicy {
+			key: policy_key.clone(),
+			name: None,
+			target: PolicyTarget::ListenerSet(ListenerSetTarget {
+				name: strng::new("my-ls"),
+				namespace: strng::new("default"),
+				section: None,
+			}),
+			policy: agent::PolicyType::Frontend(create_access_log_policy("ls_remove")),
+		};
+		store
+			.policies_by_key
+			.insert(policy_key.clone(), Arc::new(targeted));
+		store
+			.policies_by_target
+			.entry(PolicyTarget::ListenerSet(ListenerSetTarget {
+				name: strng::new("my-ls"),
+				namespace: strng::new("default"),
+				section: None,
+			}))
+			.or_default()
+			.insert(policy_key);
+
+		// Create a ListenerName that belongs to the ListenerSet
+		let listener = ListenerName {
+			gateway_name: strng::new("gw"),
+			gateway_namespace: strng::new("ns"),
+			listener_name: strng::new("listener"),
+			listener_set: Some(ResourceName::new(
+				strng::new("my-ls"),
+				strng::new("default"),
+			)),
+		};
+
+		let pols = store.listener_frontend_policies(&listener, None, None);
+		let access_log = pols
+			.access_log
+			.as_ref()
+			.expect("expected access log policy from ListenerSet target");
+		assert!(
+			access_log.remove.contains("ls_remove"),
+			"ListenerSet-targeted policy should be found via listener_frontend_policies"
+		);
+	}
+
+	#[test]
+	fn listenerset_section_targeted_policy_applies_only_to_named_listener() {
+		let mut store = Store::default();
+
+		let policy_key: PolicyKey = strng::new("ls-section-policy");
+		// Policy targets ListenerSet/my-ls with sectionName: listener-a
+		let targeted = TargetedPolicy {
+			key: policy_key.clone(),
+			name: None,
+			target: PolicyTarget::ListenerSet(ListenerSetTarget {
+				name: strng::new("my-ls"),
+				namespace: strng::new("default"),
+				section: Some(strng::new("listener-a")),
+			}),
+			policy: agent::PolicyType::Frontend(create_access_log_policy("section_remove")),
+		};
+		store
+			.policies_by_key
+			.insert(policy_key.clone(), Arc::new(targeted));
+		store
+			.policies_by_target
+			.entry(PolicyTarget::ListenerSet(ListenerSetTarget {
+				name: strng::new("my-ls"),
+				namespace: strng::new("default"),
+				section: Some(strng::new("listener-a")),
+			}))
+			.or_default()
+			.insert(policy_key);
+
+		// listener-a: should match
+		let listener_a = ListenerName {
+			gateway_name: strng::new("gw"),
+			gateway_namespace: strng::new("ns"),
+			listener_name: strng::new("listener-a"),
+			listener_set: Some(ResourceName::new(
+				strng::new("my-ls"),
+				strng::new("default"),
+			)),
+		};
+		let pols_a = store.listener_frontend_policies(&listener_a, None, None);
+		assert!(
+			pols_a
+				.access_log
+				.as_ref()
+				.is_some_and(|p| p.remove.contains("section_remove")),
+			"section-targeted policy should apply to the named listener"
+		);
+
+		// listener-b: should NOT match
+		let listener_b = ListenerName {
+			gateway_name: strng::new("gw"),
+			gateway_namespace: strng::new("ns"),
+			listener_name: strng::new("listener-b"),
+			listener_set: Some(ResourceName::new(
+				strng::new("my-ls"),
+				strng::new("default"),
+			)),
+		};
+		let pols_b = store.listener_frontend_policies(&listener_b, None, None);
+		assert!(
+			pols_b.access_log.is_none(),
+			"section-targeted policy should NOT apply to a different listener in the same set"
 		);
 	}
 }

@@ -60,12 +60,12 @@ func InternalBackendKey(backendNamespace, backendName, targetName string) string
 	return name
 }
 
-func ListenerName(namespace, name string, listener string) *api.ListenerName {
+func ListenerName(namespace, name, listener string, listenerSet *api.ResourceName) *api.ListenerName {
 	return &api.ListenerName{
 		GatewayName:      name,
 		GatewayNamespace: namespace,
 		ListenerName:     listener,
-		ListenerSet:      nil,
+		ListenerSet:      listenerSet,
 	}
 }
 
@@ -136,6 +136,21 @@ func GatewayTarget[T ~string](namespace, name string, listener *T) *api.PolicyTa
 			Name:      name,
 			Namespace: namespace,
 			Listener:  ls,
+		},
+	}
+}
+
+func ListenerSetTarget[T ~string](namespace, name string, section *T) *api.PolicyTarget_ListenerSet {
+	var s *string
+	if section != nil {
+		s = new(string)
+		*s = string(*section)
+	}
+	return &api.PolicyTarget_ListenerSet{
+		ListenerSet: &api.PolicyTarget_ListenerSetTarget{
+			Name:      name,
+			Namespace: namespace,
+			Section:   s,
 		},
 	}
 }

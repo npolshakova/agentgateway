@@ -1472,6 +1472,12 @@ func attachmentName(target *api.PolicyTarget) string {
 			b += "/" + strconv.Itoa(int(*v.Service.Port))
 		}
 		return b
+	case *api.PolicyTarget_ListenerSet:
+		b := ":" + v.ListenerSet.Namespace + "/" + v.ListenerSet.Name
+		if v.ListenerSet.Section != nil {
+			b += "/" + *v.ListenerSet.Section
+		}
+		return b
 	default:
 		panic(fmt.Sprintf("unknown target kind %T", target))
 	}

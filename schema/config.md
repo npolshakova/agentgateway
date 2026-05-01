@@ -4859,7 +4859,7 @@
 |`policies[].name`|object||
 |`policies[].name.name`|string||
 |`policies[].name.namespace`|string||
-|`policies[].target`|object|Exactly one of gateway, route, or backend may be set.|
+|`policies[].target`|object|Exactly one of gateway, route, backend, or listenerSet may be set.|
 |`policies[].target.gateway`|object||
 |`policies[].target.gateway.gatewayName`|string||
 |`policies[].target.gateway.gatewayNamespace`|string||
@@ -4879,6 +4879,10 @@
 |`policies[].target.backend.service.hostname`|string||
 |`policies[].target.backend.service.namespace`|string||
 |`policies[].target.backend.service.port`|integer||
+|`policies[].target.listenerSet`|object||
+|`policies[].target.listenerSet.name`|string||
+|`policies[].target.listenerSet.namespace`|string||
+|`policies[].target.listenerSet.section`|string||
 |`policies[].phase`|enum|phase defines at what level the policy runs at. Gateway policies run pre-routing, while<br>Route policies apply post-routing.<br>Only a subset of policies are eligible as Gateway policies.<br>In general, normal (route level) policies should be used, except you need the policy to influence<br>routing.<br>Possible values: `route`, `gateway`.|
 |`policies[].policy`|object||
 |`policies[].policy.requestHeaderModifier`|object|Headers to be modified in the request.|
