@@ -6,7 +6,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use ::http::Uri;
 use agent_core::prelude::Strng;
-use anyhow::{Error, anyhow, bail};
+use anyhow::{Context, Error, anyhow, bail};
 use bytes::Bytes;
 use frozen_collections::Len;
 use itertools::Itertools;
@@ -212,13 +212,17 @@ fn merge_deprecated_frontend_policies(
 			Vec::new()
 		};
 		if let Some(ep) = endpoint {
-			// Strip the scheme (http:// or https://) from the endpoint URL to get host:port
+			// Strip the scheme (http://, https://), or grpc://) from the endpoint URL to get host:port
 			let host_port = ep
 				.strip_prefix("http://")
 				.or_else(|| ep.strip_prefix("https://"))
+				.or_else(|| ep.strip_prefix("grpc://"))
 				.unwrap_or(&ep);
 			frontend_policies.tracing = Some(TracingConfig {
-				provider_backend: SimpleBackendReference::InlineBackend(Target::try_from(host_port)?),
+				provider_backend: SimpleBackendReference::InlineBackend(
+					Target::try_from(host_port)
+						.with_context(|| format!("failed parsing tracing endpoint: {}", ep))?,
+				),
 				policies,
 				attributes: Arc::unwrap_or_clone(fields.add),
 				resources: Default::default(), // Not supported in the old config
