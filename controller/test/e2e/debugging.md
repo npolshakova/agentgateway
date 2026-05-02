@@ -4,7 +4,7 @@ This document describes workflows that may be useful when debugging e2e tests wi
 
 ## Overview
 
-The entry point for an e2e test is a Go test function of the form `func TestXyz(t *testing.T)` which represents a top level suite against an installation mode of kgateway. For example, the `TestAgentgatewayIntegration` function in [agent_gateway_test.go](/test/e2e/tests/agent_gateway_test.go) is a top-level suite comprising multiple feature specific suites that are invoked as subtests.
+The entry point for an e2e test is a Go test function of the form `func TestXyz(t *testing.T)` which represents a top-level integration suite for a particular installation mode. For example, the `TestAgentgatewayIntegration` function in [agent_gateway_test.go](/test/e2e/tests/agent_gateway_test.go) is a top-level suite comprising multiple feature specific suites that are invoked as subtests.
 
 Each feature suite is invoked as a subtest of the top level suite. The subtests use [testify](https://github.com/stretchr/testify) to structure the tests in the feature's test suite and make use of the library's assertions.
 

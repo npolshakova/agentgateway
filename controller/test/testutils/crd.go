@@ -53,9 +53,9 @@ const (
 	AgwCRDPath = "install/helm/agentgateway-crds/templates"
 )
 
-// GetStructuralSchemasForBothCharts returns a map of GroupVersionKind to Structural schemas for the
-// CRDs bundled with the agentgateway CRD chart.
-func GetStructuralSchemasForBothCharts() (map[schema.GroupVersionKind]*apiserverschema.Structural, error) {
+// GetStructuralSchemasForAgentgatewayCRDChart returns a map of GroupVersionKind to Structural schemas
+// for the CRDs bundled with the agentgateway CRD chart.
+func GetStructuralSchemasForAgentgatewayCRDChart() (map[schema.GroupVersionKind]*apiserverschema.Structural, error) {
 	gitRoot := ControllerRootDirectory()
 	agwCRDDir := filepath.Join(gitRoot, AgwCRDPath)
 
