@@ -775,7 +775,7 @@ func translateBackendAuth(ctx PolicyCtx, policy *agentgateway.AgentgatewayPolicy
 	return authPolicy, errors.Join(append(errs, kindErrs...)...)
 }
 
-// translateRouteType converts kgateway RouteType to agentgateway proto RouteType
+// translateRouteType converts RouteType to agentgateway proto RouteType
 func translateRouteType(rt agentgateway.RouteType) api.BackendPolicySpec_Ai_RouteType {
 	switch rt {
 	case agentgateway.RouteTypeCompletions:

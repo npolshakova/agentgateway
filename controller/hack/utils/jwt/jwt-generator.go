@@ -33,21 +33,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	jwt, err := generateJwt("ignore@kgateway.dev", kid, key)
+	jwt, err := generateJwt("ignore@agentgateway.dev", kid, key)
 	if err != nil {
 		fmt.Printf("error generating jwt: %s", err.Error())
 		os.Exit(1)
 	}
 
-	jwt1, err := generateJwt("boom@kgateway.dev", kid, key)
+	jwt1, err := generateJwt("boom@agentgateway.dev", kid, key)
 	if err != nil {
 		fmt.Printf("error generating jwt: %s", err.Error())
 		os.Exit(1)
 	}
 
 	fmt.Printf("jwks: %s\n", string(serializedJwks))
-	fmt.Printf("jwt, sub: 'ignore@kgateway.dev': %s\n", jwt)
-	fmt.Printf("jwt, sub: 'boom@kgateway.dev': %s\n", jwt1)
+	fmt.Printf("jwt, sub: 'ignore@agentgateway.dev': %s\n", jwt)
+	fmt.Printf("jwt, sub: 'boom@agentgateway.dev': %s\n", jwt1)
 }
 
 func generateJWKS(kid string) (*jose.JSONWebKeySet, *rsa.PrivateKey, error) {
@@ -63,7 +63,7 @@ func generateJWKS(kid string) (*jose.JSONWebKeySet, *rsa.PrivateKey, error) {
 	template := x509.Certificate{
 		SerialNumber: serialNumber,
 		Subject: pkix.Name{
-			Organization: []string{"kgateway.dev"},
+			Organization: []string{"agentgateway.dev"},
 		},
 		NotBefore:             time.Now(),
 		NotAfter:              time.Now().Add(2 * time.Hour),
@@ -95,7 +95,7 @@ func generateJWKS(kid string) (*jose.JSONWebKeySet, *rsa.PrivateKey, error) {
 
 func generateJwt(sub, kid string, key *rsa.PrivateKey) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.RegisteredClaims{
-		Issuer:    "https://kgateway.dev",
+		Issuer:    "https://agentgateway.dev",
 		Subject:   sub,
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 		NotBefore: jwt.NewNumericDate(time.Now()),
