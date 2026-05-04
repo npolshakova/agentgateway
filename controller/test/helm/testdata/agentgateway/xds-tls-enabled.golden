@@ -362,4 +362,4 @@ spec:
       volumes:
         - name: xds-tls
           secret:
-            secretName: agentgateway-xds-cert
+            secretName: kgateway-xds-cert
