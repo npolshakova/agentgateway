@@ -16,6 +16,7 @@ import (
 	"github.com/agentgateway/agentgateway/controller/test/e2e"
 	"github.com/agentgateway/agentgateway/controller/test/e2e/tests/base"
 	testmatchers "github.com/agentgateway/agentgateway/controller/test/gomega/matchers"
+	"github.com/agentgateway/agentgateway/controller/test/testutils/testjwt"
 )
 
 func NewTestingSuite(ctx context.Context, testInst *e2e.TestInstallation) suite.TestingSuite {
@@ -55,9 +56,7 @@ func (s *testingSuite) TestMCPAuthn() {
 		metav1.ConditionTrue,
 	)
 
-	// The token is hard coded in the mock auth0 server
-	testJwt := "eyJhbGciOiJSUzI1NiIsImtpZCI6IjUzNTAyMzEyMTkzMDYwMzg2OTIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FnZW50Z2F0ZXdheS5kZXYiLCJzdWIiOiJpZ25vcmVAYWdlbnRnYXRld2F5LmRldiIsImV4cCI6MjA3MTE2MzQwNywibmJmIjoxNzc3NzM1MTQ3LCJpYXQiOjE3Nzc3MzUxNDd9.lNeg5hUvY7SaqMcOM8hH-Ji13-1qUbwKJJ4oz8n2mnf3r99fIvErwtvJeRSs8zey_RqAl77aY72kc7q6zbY0p5R5neOQgk68fsZ7l56nM2ErXjDKKgq8e61zgk4wW1VHL7RFMAvHkFklXubj4W6RxCl2rxIm4jNHZYT_a4kGh67PUEZvhrAGDcB0xYfG0rj-x3hAa4dwpD7-1PWt16KeSEMVsUmnhvnvLwRJbsFkm1vlAC6JqSYLm4Jx4Fp-oZf9w0o59O319xGtQUbcnHQ3ZUsM2vdyCNIbOuGJs2RX08xAhrvRJ3nORyb3cvF3VaIqVswErslGpCHedeRGK0ykYlSlL_HnEyYagWuMlmYNQz9L3I-jAoeGzqQu9EO-_VN7obgVOp1CVX7lTJpeOQbUXcs0xGXHuPXYwp0GBLnapayvzN8l_Q845EsaXGuMvH3QwfjrPqGMpv7Xd_rd5VdkJfzJcpEDchJQ9gk8zGf7p8OWNPWc2WxxiBdvblKzA1s2qcszzCdJasfYY3JqExL4_uytuy1gzE7MMg0tP7zCqYfIBxWSWkhPFBeu702BPdbsFyaH3Hd9P7rf7y8pDHMo1JRbbRNtON0Q90y5mno2bsS2vfKjIpFlY97XXSj8LS-Vg6vCRyP9n490dHyCOfuuwehxiuivRjNeHpBaQaIf2mE"
-	validAuthnHeader := map[string]string{"Authorization": "Bearer " + testJwt}
+	validAuthnHeader := map[string]string{"Authorization": "Bearer " + testjwt.OrgOneJWT}
 
 	// Verify authentication is actually enforced (not just policy accepted)
 	// by waiting for an unauthenticated request to return 401
@@ -110,9 +109,7 @@ func (s *testingSuite) TestMCPAuthnRoute() {
 		metav1.ConditionTrue,
 	)
 
-	// The token is hard coded in the mock auth0 server
-	testJwt := "eyJhbGciOiJSUzI1NiIsImtpZCI6IjUzNTAyMzEyMTkzMDYwMzg2OTIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FnZW50Z2F0ZXdheS5kZXYiLCJzdWIiOiJpZ25vcmVAYWdlbnRnYXRld2F5LmRldiIsImV4cCI6MjA3MTE2MzQwNywibmJmIjoxNzc3NzM1MTQ3LCJpYXQiOjE3Nzc3MzUxNDd9.lNeg5hUvY7SaqMcOM8hH-Ji13-1qUbwKJJ4oz8n2mnf3r99fIvErwtvJeRSs8zey_RqAl77aY72kc7q6zbY0p5R5neOQgk68fsZ7l56nM2ErXjDKKgq8e61zgk4wW1VHL7RFMAvHkFklXubj4W6RxCl2rxIm4jNHZYT_a4kGh67PUEZvhrAGDcB0xYfG0rj-x3hAa4dwpD7-1PWt16KeSEMVsUmnhvnvLwRJbsFkm1vlAC6JqSYLm4Jx4Fp-oZf9w0o59O319xGtQUbcnHQ3ZUsM2vdyCNIbOuGJs2RX08xAhrvRJ3nORyb3cvF3VaIqVswErslGpCHedeRGK0ykYlSlL_HnEyYagWuMlmYNQz9L3I-jAoeGzqQu9EO-_VN7obgVOp1CVX7lTJpeOQbUXcs0xGXHuPXYwp0GBLnapayvzN8l_Q845EsaXGuMvH3QwfjrPqGMpv7Xd_rd5VdkJfzJcpEDchJQ9gk8zGf7p8OWNPWc2WxxiBdvblKzA1s2qcszzCdJasfYY3JqExL4_uytuy1gzE7MMg0tP7zCqYfIBxWSWkhPFBeu702BPdbsFyaH3Hd9P7rf7y8pDHMo1JRbbRNtON0Q90y5mno2bsS2vfKjIpFlY97XXSj8LS-Vg6vCRyP9n490dHyCOfuuwehxiuivRjNeHpBaQaIf2mE"
-	validAuthnHeader := map[string]string{"Authorization": "Bearer " + testJwt}
+	validAuthnHeader := map[string]string{"Authorization": "Bearer " + testjwt.OrgOneJWT}
 
 	// Verify authentication is actually enforced (not just policy accepted)
 	// by waiting for an unauthenticated request to return 401
