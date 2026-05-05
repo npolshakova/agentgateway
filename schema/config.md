@@ -80,6 +80,7 @@
 |`binds[].listeners[].tls.cipherSuites`|[]string|Optional cipher suite allowlist (order is preserved).|
 |`binds[].listeners[].tls.minTLSVersion`|enum|Minimum supported TLS version (only TLS 1.2 and 1.3 are supported).<br>Possible values: `TLS_V1_0`, `TLS_V1_1`, `TLS_V1_2`, `TLS_V1_3`, `null`.|
 |`binds[].listeners[].tls.maxTLSVersion`|enum|Maximum supported TLS version (only TLS 1.2 and 1.3 are supported).<br>Possible values: `TLS_V1_0`, `TLS_V1_1`, `TLS_V1_2`, `TLS_V1_3`, `null`.|
+|`binds[].listeners[].tls.keyExchangeGroups`|[]string|Key exchange groups allowed for negotiating TLS.|
 |`binds[].listeners[].routes`|[]object||
 |`binds[].listeners[].routes[].name`|string||
 |`binds[].listeners[].routes[].namespace`|string||
@@ -225,6 +226,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location`|object||
@@ -325,6 +327,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -425,6 +428,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -523,6 +527,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -657,6 +662,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -757,6 +763,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -855,6 +862,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -965,6 +973,7 @@
 |`binds[].listeners[].routes[].policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].policies.backendTunnel`|object|Tunnel to the backend.|
 |`binds[].listeners[].routes[].policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
 |`binds[].listeners[].routes[].policies.backendTunnel.proxy.service`|object||
@@ -1063,6 +1072,7 @@
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.passthrough.location`|object||
@@ -1249,6 +1259,7 @@
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].policies.extAuthz.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.passthrough.location`|object||
@@ -1370,6 +1381,7 @@
 |`binds[].listeners[].routes[].policies.extProc.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].policies.extProc.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].policies.extProc.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].policies.extProc.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.passthrough.location`|object||
@@ -1527,6 +1539,7 @@
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.passthrough.location`|object||
@@ -1658,6 +1671,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.passthrough.location`|object||
@@ -1812,6 +1826,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location`|object||
@@ -1912,6 +1927,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -2012,6 +2028,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -2110,6 +2127,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -2244,6 +2262,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -2344,6 +2363,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -2442,6 +2462,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -2601,6 +2622,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.passthrough.location`|object||
@@ -2755,6 +2777,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location`|object||
@@ -2855,6 +2878,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -2955,6 +2979,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -3053,6 +3078,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -3187,6 +3213,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -3287,6 +3314,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -3385,6 +3413,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -3519,6 +3548,7 @@
 |`binds[].listeners[].routes[].backends[].policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.passthrough.location`|object||
@@ -3673,6 +3703,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location`|object||
@@ -3773,6 +3804,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -3873,6 +3905,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -3971,6 +4004,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -4105,6 +4139,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -4205,6 +4240,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -4303,6 +4339,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -4419,6 +4456,7 @@
 |`binds[].listeners[].tcpRoutes[].policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].tcpRoutes[].policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].tcpRoutes[].policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].tcpRoutes[].policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].tcpRoutes[].backends`|[]object||
 |`binds[].listeners[].tcpRoutes[].backends[].service`|object||
 |`binds[].listeners[].tcpRoutes[].backends[].service.name`|object||
@@ -4438,6 +4476,7 @@
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].tcpRoutes[].backends[].policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel`|object|Tunnel to the backend.|
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.proxy.service`|object||
@@ -4532,6 +4571,7 @@
 |`binds[].listeners[].policies.extAuthz.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].policies.extAuthz.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].policies.extAuthz.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].policies.extAuthz.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.passthrough.location`|object||
@@ -4653,6 +4693,7 @@
 |`binds[].listeners[].policies.extProc.policies.backendTLS.insecureHost`|boolean||
 |`binds[].listeners[].policies.extProc.policies.backendTLS.alpn`|[]string||
 |`binds[].listeners[].policies.extProc.policies.backendTLS.subjectAltNames`|[]string||
+|`binds[].listeners[].policies.extProc.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`binds[].listeners[].policies.extProc.policies.backendAuth`|object|Authenticate to the backend.|
 |`binds[].listeners[].policies.extProc.policies.backendAuth.passthrough`|object||
 |`binds[].listeners[].policies.extProc.policies.backendAuth.passthrough.location`|object||
@@ -4783,6 +4824,7 @@
 |`frontendPolicies.tls.minVersion`|enum|Possible values: `TLS_V1_0`, `TLS_V1_1`, `TLS_V1_2`, `TLS_V1_3`, `null`.|
 |`frontendPolicies.tls.maxVersion`|enum|Possible values: `TLS_V1_0`, `TLS_V1_1`, `TLS_V1_2`, `TLS_V1_3`, `null`.|
 |`frontendPolicies.tls.cipherSuites`|[]string||
+|`frontendPolicies.tls.keyExchangeGroups`|[]string|Key exchange groups allowed for negotiating TLS.|
 |`frontendPolicies.tcp`|object|Settings for handling incoming TCP connections.|
 |`frontendPolicies.tcp.keepalives`|object||
 |`frontendPolicies.tcp.keepalives.enabled`|boolean||
@@ -4833,6 +4875,7 @@
 |`frontendPolicies.accessLog.otlp.policies.backendTLS.insecureHost`|boolean||
 |`frontendPolicies.accessLog.otlp.policies.backendTLS.alpn`|[]string||
 |`frontendPolicies.accessLog.otlp.policies.backendTLS.subjectAltNames`|[]string||
+|`frontendPolicies.accessLog.otlp.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`frontendPolicies.accessLog.otlp.policies.backendAuth`|object|Authenticate to the backend.|
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.passthrough`|object||
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.passthrough.location`|object||
@@ -4939,6 +4982,7 @@
 |`frontendPolicies.tracing.policies.backendTLS.insecureHost`|boolean||
 |`frontendPolicies.tracing.policies.backendTLS.alpn`|[]string||
 |`frontendPolicies.tracing.policies.backendTLS.subjectAltNames`|[]string||
+|`frontendPolicies.tracing.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`frontendPolicies.tracing.policies.backendAuth`|object|Authenticate to the backend.|
 |`frontendPolicies.tracing.policies.backendAuth.passthrough`|object||
 |`frontendPolicies.tracing.policies.backendAuth.passthrough.location`|object||
@@ -5168,6 +5212,7 @@
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location`|object||
@@ -5268,6 +5313,7 @@
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -5368,6 +5414,7 @@
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -5466,6 +5513,7 @@
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -5600,6 +5648,7 @@
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -5700,6 +5749,7 @@
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -5798,6 +5848,7 @@
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -5908,6 +5959,7 @@
 |`policies[].policy.backendTLS.insecureHost`|boolean||
 |`policies[].policy.backendTLS.alpn`|[]string||
 |`policies[].policy.backendTLS.subjectAltNames`|[]string||
+|`policies[].policy.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`policies[].policy.backendTunnel`|object|Tunnel to the backend.|
 |`policies[].policy.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
 |`policies[].policy.backendTunnel.proxy.service`|object||
@@ -6006,6 +6058,7 @@
 |`policies[].policy.remoteRateLimit.policies.backendTLS.insecureHost`|boolean||
 |`policies[].policy.remoteRateLimit.policies.backendTLS.alpn`|[]string||
 |`policies[].policy.remoteRateLimit.policies.backendTLS.subjectAltNames`|[]string||
+|`policies[].policy.remoteRateLimit.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`policies[].policy.remoteRateLimit.policies.backendAuth`|object|Authenticate to the backend.|
 |`policies[].policy.remoteRateLimit.policies.backendAuth.passthrough`|object||
 |`policies[].policy.remoteRateLimit.policies.backendAuth.passthrough.location`|object||
@@ -6192,6 +6245,7 @@
 |`policies[].policy.extAuthz.policies.backendTLS.insecureHost`|boolean||
 |`policies[].policy.extAuthz.policies.backendTLS.alpn`|[]string||
 |`policies[].policy.extAuthz.policies.backendTLS.subjectAltNames`|[]string||
+|`policies[].policy.extAuthz.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`policies[].policy.extAuthz.policies.backendAuth`|object|Authenticate to the backend.|
 |`policies[].policy.extAuthz.policies.backendAuth.passthrough`|object||
 |`policies[].policy.extAuthz.policies.backendAuth.passthrough.location`|object||
@@ -6313,6 +6367,7 @@
 |`policies[].policy.extProc.policies.backendTLS.insecureHost`|boolean||
 |`policies[].policy.extProc.policies.backendTLS.alpn`|[]string||
 |`policies[].policy.extProc.policies.backendTLS.subjectAltNames`|[]string||
+|`policies[].policy.extProc.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`policies[].policy.extProc.policies.backendAuth`|object|Authenticate to the backend.|
 |`policies[].policy.extProc.policies.backendAuth.passthrough`|object||
 |`policies[].policy.extProc.policies.backendAuth.passthrough.location`|object||
@@ -6465,6 +6520,7 @@
 |`backends[].mcp.targets[].policies.backendTLS.insecureHost`|boolean||
 |`backends[].mcp.targets[].policies.backendTLS.alpn`|[]string||
 |`backends[].mcp.targets[].policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].mcp.targets[].policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].mcp.targets[].policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].mcp.targets[].policies.backendAuth.passthrough`|object||
 |`backends[].mcp.targets[].policies.backendAuth.passthrough.location`|object||
@@ -6596,6 +6652,7 @@
 |`backends[].ai.policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.policies.backendTLS.alpn`|[]string||
 |`backends[].ai.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.policies.backendAuth.passthrough`|object||
 |`backends[].ai.policies.backendAuth.passthrough.location`|object||
@@ -6750,6 +6807,7 @@
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location`|object||
@@ -6850,6 +6908,7 @@
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -6950,6 +7009,7 @@
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -7048,6 +7108,7 @@
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -7182,6 +7243,7 @@
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -7282,6 +7344,7 @@
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -7380,6 +7443,7 @@
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -7539,6 +7603,7 @@
 |`backends[].ai.groups[].providers[].policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.groups[].providers[].policies.backendTLS.alpn`|[]string||
 |`backends[].ai.groups[].providers[].policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.groups[].providers[].policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.groups[].providers[].policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.groups[].providers[].policies.backendAuth.passthrough`|object||
 |`backends[].ai.groups[].providers[].policies.backendAuth.passthrough.location`|object||
@@ -7693,6 +7758,7 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location`|object||
@@ -7793,6 +7859,7 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -7893,6 +7960,7 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -7991,6 +8059,7 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -8125,6 +8194,7 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -8225,6 +8295,7 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -8323,6 +8394,7 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -8456,6 +8528,7 @@
 |`backends[].policies.backendTLS.insecureHost`|boolean||
 |`backends[].policies.backendTLS.alpn`|[]string||
 |`backends[].policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].policies.backendAuth.passthrough`|object||
 |`backends[].policies.backendAuth.passthrough.location`|object||
@@ -8610,6 +8683,7 @@
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location`|object||
@@ -8710,6 +8784,7 @@
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -8810,6 +8885,7 @@
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -8908,6 +8984,7 @@
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -9042,6 +9119,7 @@
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -9142,6 +9220,7 @@
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -9240,6 +9319,7 @@
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -9488,6 +9568,7 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location`|object||
@@ -9588,6 +9669,7 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -9688,6 +9770,7 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -9786,6 +9869,7 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -9920,6 +10004,7 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -10020,6 +10105,7 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -10118,6 +10204,7 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -10228,6 +10315,7 @@
 |`routeGroups[].routes[].policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].policies.backendTunnel`|object|Tunnel to the backend.|
 |`routeGroups[].routes[].policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
 |`routeGroups[].routes[].policies.backendTunnel.proxy.service`|object||
@@ -10326,6 +10414,7 @@
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.passthrough.location`|object||
@@ -10512,6 +10601,7 @@
 |`routeGroups[].routes[].policies.extAuthz.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].policies.extAuthz.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].policies.extAuthz.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.extAuthz.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.passthrough.location`|object||
@@ -10633,6 +10723,7 @@
 |`routeGroups[].routes[].policies.extProc.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].policies.extProc.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].policies.extProc.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].policies.extProc.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.passthrough.location`|object||
@@ -10790,6 +10881,7 @@
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.passthrough.location`|object||
@@ -10921,6 +11013,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.passthrough.location`|object||
@@ -11075,6 +11168,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location`|object||
@@ -11175,6 +11269,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -11275,6 +11370,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -11373,6 +11469,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -11507,6 +11604,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -11607,6 +11705,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -11705,6 +11804,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -11864,6 +11964,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.passthrough.location`|object||
@@ -12018,6 +12119,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location`|object||
@@ -12118,6 +12220,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -12218,6 +12321,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -12316,6 +12420,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -12450,6 +12555,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -12550,6 +12656,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -12648,6 +12755,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -12782,6 +12890,7 @@
 |`routeGroups[].routes[].backends[].policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].policies.backendAuth.passthrough.location`|object||
@@ -12936,6 +13045,7 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location`|object||
@@ -13036,6 +13146,7 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -13136,6 +13247,7 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -13234,6 +13346,7 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -13368,6 +13481,7 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -13468,6 +13582,7 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -13566,6 +13681,7 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -13707,6 +13823,7 @@
 |`llm.models[].backendTLS.insecureHost`|boolean||
 |`llm.models[].backendTLS.alpn`|[]string||
 |`llm.models[].backendTLS.subjectAltNames`|[]string||
+|`llm.models[].backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`llm.models[].health`|object|health configures outlier detection for this model backend.|
 |`llm.models[].health.unhealthyExpression`|string|CEL expression; `true` means unhealthy (evict). E.g. `response.code >= 500`.<br>When unset, any 5xx or connection failure is treated as unhealthy.|
 |`llm.models[].health.eviction`|object|Local/config eviction sub-policy with duration as string; mirrors `Eviction`.|
@@ -13773,6 +13890,7 @@
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`llm.models[].guardrails.request[].openAIModeration.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.passthrough`|object||
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.passthrough.location`|object||
@@ -13873,6 +13991,7 @@
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -13973,6 +14092,7 @@
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`llm.models[].guardrails.request[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -14071,6 +14191,7 @@
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`llm.models[].guardrails.request[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -14205,6 +14326,7 @@
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -14305,6 +14427,7 @@
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`llm.models[].guardrails.response[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -14403,6 +14526,7 @@
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`llm.models[].guardrails.response[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -14577,6 +14701,7 @@
 |`llm.policies.extAuthz.policies.backendTLS.insecureHost`|boolean||
 |`llm.policies.extAuthz.policies.backendTLS.alpn`|[]string||
 |`llm.policies.extAuthz.policies.backendTLS.subjectAltNames`|[]string||
+|`llm.policies.extAuthz.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`llm.policies.extAuthz.policies.backendAuth`|object|Authenticate to the backend.|
 |`llm.policies.extAuthz.policies.backendAuth.passthrough`|object||
 |`llm.policies.extAuthz.policies.backendAuth.passthrough.location`|object||
@@ -14698,6 +14823,7 @@
 |`llm.policies.extProc.policies.backendTLS.insecureHost`|boolean||
 |`llm.policies.extProc.policies.backendTLS.alpn`|[]string||
 |`llm.policies.extProc.policies.backendTLS.subjectAltNames`|[]string||
+|`llm.policies.extProc.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`llm.policies.extProc.policies.backendAuth`|object|Authenticate to the backend.|
 |`llm.policies.extProc.policies.backendAuth.passthrough`|object||
 |`llm.policies.extProc.policies.backendAuth.passthrough.location`|object||
@@ -14866,6 +14992,7 @@
 |`mcp.targets[].policies.backendTLS.insecureHost`|boolean||
 |`mcp.targets[].policies.backendTLS.alpn`|[]string||
 |`mcp.targets[].policies.backendTLS.subjectAltNames`|[]string||
+|`mcp.targets[].policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`mcp.targets[].policies.backendAuth`|object|Authenticate to the backend.|
 |`mcp.targets[].policies.backendAuth.passthrough`|object||
 |`mcp.targets[].policies.backendAuth.passthrough.location`|object||
@@ -15064,6 +15191,7 @@
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.insecureHost`|boolean||
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.alpn`|[]string||
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.subjectAltNames`|[]string||
+|`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth`|object|Authenticate to the backend.|
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough`|object||
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location`|object||
@@ -15164,6 +15292,7 @@
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -15264,6 +15393,7 @@
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -15362,6 +15492,7 @@
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -15496,6 +15627,7 @@
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.insecureHost`|boolean||
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.alpn`|[]string||
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.subjectAltNames`|[]string||
+|`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth`|object|Authenticate to the backend.|
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough`|object||
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location`|object||
@@ -15596,6 +15728,7 @@
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.insecureHost`|boolean||
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.alpn`|[]string||
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.subjectAltNames`|[]string||
+|`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth`|object|Authenticate to the backend.|
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough`|object||
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location`|object||
@@ -15694,6 +15827,7 @@
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.insecureHost`|boolean||
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.alpn`|[]string||
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.subjectAltNames`|[]string||
+|`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth`|object|Authenticate to the backend.|
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough`|object||
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location`|object||
@@ -15804,6 +15938,7 @@
 |`mcp.policies.backendTLS.insecureHost`|boolean||
 |`mcp.policies.backendTLS.alpn`|[]string||
 |`mcp.policies.backendTLS.subjectAltNames`|[]string||
+|`mcp.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`mcp.policies.backendTunnel`|object|Tunnel to the backend.|
 |`mcp.policies.backendTunnel.proxy`|object|Reference to the proxy address<br>Exactly one of service, host, or backend may be set.|
 |`mcp.policies.backendTunnel.proxy.service`|object||
@@ -15902,6 +16037,7 @@
 |`mcp.policies.remoteRateLimit.policies.backendTLS.insecureHost`|boolean||
 |`mcp.policies.remoteRateLimit.policies.backendTLS.alpn`|[]string||
 |`mcp.policies.remoteRateLimit.policies.backendTLS.subjectAltNames`|[]string||
+|`mcp.policies.remoteRateLimit.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`mcp.policies.remoteRateLimit.policies.backendAuth`|object|Authenticate to the backend.|
 |`mcp.policies.remoteRateLimit.policies.backendAuth.passthrough`|object||
 |`mcp.policies.remoteRateLimit.policies.backendAuth.passthrough.location`|object||
@@ -16088,6 +16224,7 @@
 |`mcp.policies.extAuthz.policies.backendTLS.insecureHost`|boolean||
 |`mcp.policies.extAuthz.policies.backendTLS.alpn`|[]string||
 |`mcp.policies.extAuthz.policies.backendTLS.subjectAltNames`|[]string||
+|`mcp.policies.extAuthz.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`mcp.policies.extAuthz.policies.backendAuth`|object|Authenticate to the backend.|
 |`mcp.policies.extAuthz.policies.backendAuth.passthrough`|object||
 |`mcp.policies.extAuthz.policies.backendAuth.passthrough.location`|object||
@@ -16209,6 +16346,7 @@
 |`mcp.policies.extProc.policies.backendTLS.insecureHost`|boolean||
 |`mcp.policies.extProc.policies.backendTLS.alpn`|[]string||
 |`mcp.policies.extProc.policies.backendTLS.subjectAltNames`|[]string||
+|`mcp.policies.extProc.policies.backendTLS.keyExchangeGroups`|[]enum|Key exchange groups allowed for negotiating TLS.<br>Possible values: `X25519`, `P-256`, `P-384`, `X25519_MLKEM768`.|
 |`mcp.policies.extProc.policies.backendAuth`|object|Authenticate to the backend.|
 |`mcp.policies.extProc.policies.backendAuth.passthrough`|object||
 |`mcp.policies.extProc.policies.backendAuth.passthrough.location`|object||
