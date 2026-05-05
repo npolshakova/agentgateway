@@ -31,11 +31,11 @@ use crate::http::tests_common::*;
 use crate::http::{Body, Response};
 use crate::llm::{AIProvider, openai};
 use crate::proxy::request_builder::RequestBuilder;
-use crate::test_helpers::oteltracemock;
 use crate::test_helpers::proxymock::*;
+use crate::test_helpers::{extauthmock, oteltracemock};
 use crate::types::agent::{
-	Backend, BackendPolicy, BackendWithPolicies, Bind, BindProtocol, Listener, ListenerProtocol,
-	ListenerSet, PathMatch, ResourceName, Route, RouteMatch, Target,
+	Backend, BackendTrafficPolicy, BackendWithPolicies, Bind, BindProtocol, Listener,
+	ListenerProtocol, ListenerSet, PathMatch, ResourceName, Route, RouteMatch, Target,
 };
 use crate::types::backend;
 use crate::{read_body, *};
@@ -529,7 +529,11 @@ async fn gateway_phase_oidc_callback_authenticates_and_strips_reserved_cookies()
 		.read_binds()
 		.gateway_policies(&crate::types::agent::ListenerName::default())
 		.oidc
-		.expect("compiled gateway oidc policy");
+		.iter()
+		.next()
+		.cloned()
+		.expect("compiled gateway oidc policy")
+		.pol;
 
 	let io = bind.serve_http(BIND_KEY);
 	let login = send_request(io.clone(), Method::GET, "http://lo/private").await;
@@ -1195,6 +1199,40 @@ async fn direct_response() {
 }
 
 #[tokio::test]
+async fn response_policy_short_circuit() {
+	let (_mock, mut bind, io) = basic_setup().await;
+	bind
+		.attach_route(json!({
+			"policies": {
+				"extAuthz": {
+					// Dummy host that should fail
+					"host": "127.0.0.1:1",
+				},
+				"responseHeaderModifier": {
+					"add": {
+						"x-filter": "x-filter-val"
+					},
+				},
+				"transformations": {
+					"response": {
+						"add": {
+							"x-xfm": "'x-xfm-val'",
+						},
+					},
+				},
+			},
+		}))
+		.await;
+
+	let res = send_request(io.clone(), Method::GET, "http://lo/p").await;
+	assert_eq!(res.status(), 403);
+	// Each type of response modifier should NOT run since the ext_authz short-circuits the req
+	assert_eq!(res.hdr("x-filter"), "");
+	assert_eq!(res.hdr("x-xfm"), "");
+	assert_eq!(read_body!(res).as_bytes(), b"external authorization failed");
+}
+
+#[tokio::test]
 async fn tls_termination() {
 	let mock = simple_mock().await;
 	let bind = https_bind();
@@ -1355,7 +1393,7 @@ async fn tls_backend_connection() {
 				ResourceName::new(strng::format!("{}", mock.address()), "".into()),
 				Target::Address(*mock.address()),
 			),
-			inline_policies: vec![BackendPolicy::BackendTLS(backend_tls)],
+			inline_policies: vec![BackendTrafficPolicy::BackendTLS(backend_tls)],
 		})
 		.with_bind(simple_bind())
 		.with_route(basic_route(*mock.address()));
@@ -1388,7 +1426,7 @@ async fn tls_backend_connection_alpn() {
 				ResourceName::new(strng::format!("{}", mock.address()), "".into()),
 				Target::Address(*mock.address()),
 			),
-			inline_policies: vec![BackendPolicy::BackendTLS(backend_tls)],
+			inline_policies: vec![BackendTrafficPolicy::BackendTLS(backend_tls)],
 		})
 		.with_bind(simple_bind())
 		.with_route(basic_route(*mock.address()));
@@ -1433,8 +1471,8 @@ async fn tls_backend_http2_version() {
 				Target::Address(*mock.address()),
 			),
 			inline_policies: vec![
-				BackendPolicy::BackendTLS(backend_tls),
-				BackendPolicy::HTTP(backend_version),
+				BackendTrafficPolicy::BackendTLS(backend_tls),
+				BackendTrafficPolicy::HTTP(backend_version),
 			],
 		})
 		.with_bind(simple_bind())
@@ -1474,8 +1512,8 @@ async fn tls_backend_http1_version() {
 				Target::Address(*mock.address()),
 			),
 			inline_policies: vec![
-				BackendPolicy::BackendTLS(backend_tls),
-				BackendPolicy::HTTP(backend_version),
+				BackendTrafficPolicy::BackendTLS(backend_tls),
+				BackendTrafficPolicy::HTTP(backend_version),
 			],
 		})
 		.with_bind(simple_bind())
@@ -1516,8 +1554,8 @@ async fn tls_backend_version_with_alpn() {
 				Target::Address(*mock.address()),
 			),
 			inline_policies: vec![
-				BackendPolicy::BackendTLS(backend_tls),
-				BackendPolicy::HTTP(backend_version),
+				BackendTrafficPolicy::BackendTLS(backend_tls),
+				BackendTrafficPolicy::HTTP(backend_version),
 			],
 		})
 		.with_bind(simple_bind())
@@ -1612,6 +1650,87 @@ async fn header_manipulation() {
 	assert_eq!(
 		body.headers.get("x-backend-xfm-req").unwrap().as_bytes(),
 		b"backend-xfm-req"
+	);
+}
+
+#[tokio::test]
+async fn gateway_ext_authz_response_headers_are_preserved() {
+	struct AddResponseHeader;
+
+	#[async_trait::async_trait]
+	impl extauthmock::Handler for AddResponseHeader {
+		async fn check(
+			&mut self,
+			_request: &crate::http::ext_authz::proto::CheckRequest,
+		) -> Result<crate::http::ext_authz::proto::CheckResponse, tonic::Status> {
+			use crate::http::ext_authz::proto::check_response::HttpResponse;
+			use crate::http::ext_authz::proto::{HeaderValue, HeaderValueOption, OkHttpResponse};
+
+			extauthmock::allow_response(Some(HttpResponse::OkResponse(OkHttpResponse {
+				headers: vec![],
+				headers_to_remove: vec![],
+				response_headers_to_add: vec![HeaderValueOption {
+					header: Some(HeaderValue {
+						key: "x-gateway-authz-response".to_string(),
+						value: "allowed".to_string(),
+						raw_value: vec![],
+					}),
+					append: Some(false),
+					append_action: 0,
+				}],
+				query_parameters_to_set: vec![],
+				query_parameters_to_remove: vec![],
+				..Default::default()
+			})))
+		}
+	}
+
+	let (mock, mut bind, io) = basic_setup().await;
+	let authz = extauthmock::ExtAuthMock::new(|| AddResponseHeader)
+		.spawn()
+		.await;
+	bind
+		.attach_gateway_policy(json!({
+			"extAuthz": {
+				"host": authz.address,
+			},
+		}))
+		.await;
+
+	let res = send_request(io.clone(), Method::GET, "http://lo/p").await;
+	assert_eq!(res.status(), 200);
+	assert_eq!(res.hdr("x-gateway-authz-response"), "allowed");
+	assert_eq!(read_body(res.into_body()).await.method, Method::GET);
+	drop(mock);
+}
+
+#[tokio::test]
+async fn gateway_transformation_response_headers_are_applied() {
+	let (_mock, mut bind, io) = basic_setup().await;
+	bind
+		.attach_gateway_policy(json!({
+			"transformations": {
+				"request": {
+					"set": {
+						"x-gateway-xfm-req": "'gateway-request'",
+					},
+				},
+				"response": {
+					"add": {
+						"x-gateway-xfm-resp": "'gateway-response'",
+					},
+				},
+			},
+		}))
+		.await;
+
+	let res = send_request(io.clone(), Method::GET, "http://lo/p").await;
+	assert_eq!(res.status(), 200);
+	assert_eq!(res.hdr("x-gateway-xfm-resp"), "gateway-response");
+	let body = read_body(res.into_body()).await;
+	assert_eq!(
+		body.headers.get("x-gateway-xfm-req").unwrap().as_bytes(),
+		b"gateway-request"
 	);
 }
 

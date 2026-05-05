@@ -193,6 +193,17 @@ spec:
       forwardBody:
         maxSize: 1024
 ---
+_err: 'backendRef: Required'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: traffic-extauth-no-backend
+spec:
+  traffic:
+    extAuth:
+      forwardBody:
+        maxSize: 1024
+---
 _err: 'exactly one of the fields in [requests tokens] must be set'
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayPolicy
@@ -260,6 +271,105 @@ spec:
         kind: Service
       failureMode: IgnoreErrors
       grpc: {}
+---
+_err: 'exactly one of the fields in [grpc http] must be set'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: traffic-extauth-missing-protocol
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: dummy
+  traffic:
+    extAuth:
+      backendRef:
+        name: auth-server
+        kind: Service
+        port: 8888
+---
+_err: 'exactly one of the fields in [grpc http] must be set'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: traffic-extauth-multiple-protocols
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: dummy
+  traffic:
+    extAuth:
+      backendRef:
+        name: auth-server
+        kind: Service
+        port: 8888
+      grpc: {}
+      http: {}
+---
+_err: 'conditional entries without condition must be last'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: traffic-extauth-unconditional-not-last
+spec:
+  traffic:
+    extAuth:
+      conditional:
+        - policy:
+            backendRef:
+              name: auth-server
+              kind: Service
+            grpc: {}
+        - condition: '"x-test" in request.headers'
+          policy:
+            backendRef:
+              name: auth-server
+              kind: Service
+            grpc: {}
+---
+_err: 'exactly one of the fields in [grpc http] must be set'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: traffic-extauth-conditional-missing-protocol
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: dummy
+  traffic:
+    extAuth:
+      conditional:
+        - condition: '"x-test" in request.headers'
+          policy:
+            backendRef:
+              name: auth-server
+              kind: Service
+              port: 8888
+---
+_err: 'exactly one of the fields in [grpc http] must be set'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: traffic-extauth-conditional-multiple-protocols
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: dummy
+  traffic:
+    extAuth:
+      conditional:
+        - condition: '"x-test" in request.headers'
+          policy:
+            backendRef:
+              name: auth-server
+              kind: Service
+              port: 8888
+            grpc: {}
+            http: {}
 ---
 _err: 'failureMode: Unsupported value'
 apiVersion: agentgateway.dev/v1alpha1

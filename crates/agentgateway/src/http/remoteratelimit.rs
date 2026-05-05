@@ -10,7 +10,7 @@ use crate::http::remoteratelimit::proto::{RateLimitDescriptor, RateLimitRequest}
 use crate::http::{PolicyResponse, Request, envoy_proto_common};
 use crate::proxy::ProxyError;
 use crate::proxy::httpproxy::PolicyClient;
-use crate::types::agent::{BackendPolicy, SimpleBackendReference};
+use crate::types::agent::{BackendTrafficPolicy, SimpleBackendReference};
 use crate::*;
 
 #[cfg(test)]
@@ -59,7 +59,7 @@ pub struct RemoteRateLimit {
 		feature = "schema",
 		schemars(with = "Option<crate::types::local::SimpleLocalBackendPolicies>")
 	)]
-	pub policies: Vec<BackendPolicy>,
+	pub policies: Vec<BackendTrafficPolicy>,
 	pub descriptors: Arc<DescriptorSet>,
 	/// Behavior when the remote rate limit service is unavailable or returns an error.
 	/// Defaults to failClosed, denying requests with a 500 status on service failure.
@@ -464,6 +464,21 @@ impl RemoteRateLimit {
 				.map(|entry| &entry.1)
 				.chain(v.limit_override.iter().map(|expr| expr.as_ref()))
 		})
+	}
+}
+
+impl crate::store::RequestPolicyTrait for RemoteRateLimit {
+	async fn apply(
+		&self,
+		client: &PolicyClient,
+		_log: &mut crate::telemetry::log::RequestLog,
+		req: &mut Request,
+	) -> Result<PolicyResponse, crate::proxy::ProxyResponse> {
+		Ok(self.check(client.clone(), req).await?)
+	}
+
+	fn expressions(&self) -> impl Iterator<Item = &Expression> {
+		RemoteRateLimit::expressions(self)
 	}
 }
 

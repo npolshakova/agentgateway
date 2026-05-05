@@ -415,7 +415,15 @@ func translateTrafficPolicyToAgw(
 
 	// Convert ExtAuth policy if present
 	if traffic.ExtAuth != nil {
-		appendPolicy("extAuth")(processExtAuthPolicy(ctx, traffic.ExtAuth, traffic.Phase, basePolicyName, policyName))
+		appendPolicy("extAuth")(processConditional(
+			traffic.ExtAuth,
+			processExtAuthPolicy,
+			extauthPolicySuffix,
+			ctx,
+			traffic.Phase,
+			basePolicyName,
+			policyName,
+		))
 	}
 
 	// Convert ExtProc policy if present
@@ -887,18 +895,87 @@ func processCorsPolicy(cors *agentgateway.CORS, basePolicyName string, policy ty
 	return corsPolicy
 }
 
-// processExtAuthPolicy processes ExtAuth configuration and creates corresponding agentgateway policies
-func processExtAuthPolicy(
+func processConditional[T any](
+	condPol agentgateway.ConditionalPolicy[T],
+	f func(ctx PolicyCtx, pol *T, polName types.NamespacedName) (*api.Policy_Traffic, error),
+	suffix string,
 	ctx PolicyCtx,
-	extAuth *agentgateway.ExtAuth,
 	policyPhase *agentgateway.PolicyPhase,
 	basePolicyName string,
 	policy types.NamespacedName,
 ) (*api.Policy, error) {
+	concrete, conditional := condPol.ConditionalPolicy()
+	if concrete != nil {
+		base, err := f(ctx, concrete, policy)
+		if base == nil {
+			return nil, err
+		}
+		base.Traffic.Phase = phase(policyPhase)
+		extauthPolicy := &api.Policy{
+			Key:  basePolicyName + suffix,
+			Name: TypedResourceFromName(wellknown.AgentgatewayPolicyGVK.Kind, policy),
+			Kind: base,
+		}
+
+		logger.Debug("generated policy",
+			"kind", strings.TrimPrefix(suffix, ":"),
+			"policy", basePolicyName,
+			"agentgateway_policy", extauthPolicy.Name)
+
+		return extauthPolicy, err
+	}
 	var errs []error
-	be, err := buildBackendRef(ctx, extAuth.BackendRef, policy.Namespace)
-	if err != nil {
-		errs = append(errs, fmt.Errorf("failed to build extAuth: %v", err))
+	conditionals := &api.ConditionalPolicies{}
+	for cond := range conditional {
+		base, err := f(ctx, &cond.Policy, policy)
+		if err != nil {
+			errs = append(errs, err)
+		}
+		if base == nil {
+			continue
+		}
+		base.Traffic.Phase = phase(policyPhase)
+		c := &api.ConditionalPolicy{
+			Kind: &api.ConditionalPolicy_Traffic{Traffic: base.Traffic},
+		}
+		if cond.Condition != "" {
+			if !isCEL(cond.Condition) {
+				errs = append(errs, fmt.Errorf("condition CEL expression is invalid: %s", cond.Condition))
+			}
+			c.Condition = new(string(cond.Condition))
+		}
+		conditionals.Policies = append(conditionals.Policies, c)
+	}
+	pol := &api.Policy{
+		Key:  basePolicyName + suffix,
+		Name: TypedResourceFromName(wellknown.AgentgatewayPolicyGVK.Kind, policy),
+		Kind: &api.Policy_Conditional{Conditional: conditionals},
+	}
+
+	logger.Debug("generated policy",
+		"kind", strings.TrimPrefix(suffix, ":"),
+		"policy", basePolicyName,
+		"agentgateway_policy", pol.Name)
+
+	return pol, errors.Join(errs...)
+}
+
+// processExtAuthPolicy processes ExtAuth configuration and creates corresponding agentgateway policies
+func processExtAuthPolicy(
+	ctx PolicyCtx,
+	extAuth *agentgateway.ExtAuth,
+	policy types.NamespacedName,
+) (*api.Policy_Traffic, error) {
+	var errs []error
+	var be *api.BackendReference
+	if extAuth.BackendRef == nil {
+		errs = append(errs, fmt.Errorf("failed to build extAuth: backendRef is required"))
+	} else {
+		var err error
+		be, err = buildBackendRef(ctx, *extAuth.BackendRef, policy.Namespace)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("failed to build extAuth: %v", err))
+		}
 	}
 
 	spec := &api.TrafficPolicySpec_ExternalAuth{
@@ -952,24 +1029,13 @@ func processExtAuthPolicy(
 		}
 	}
 
-	extauthPolicy := &api.Policy{
-		Key:  basePolicyName + extauthPolicySuffix,
-		Name: TypedResourceFromName(wellknown.AgentgatewayPolicyGVK.Kind, policy),
-		Kind: &api.Policy_Traffic{
-			Traffic: &api.TrafficPolicySpec{
-				Phase: phase(policyPhase),
-				Kind: &api.TrafficPolicySpec_ExtAuthz{
-					ExtAuthz: spec,
-				},
+	return &api.Policy_Traffic{
+		Traffic: &api.TrafficPolicySpec{
+			Kind: &api.TrafficPolicySpec_ExtAuthz{
+				ExtAuthz: spec,
 			},
 		},
-	}
-
-	logger.Debug("generated ExtAuth policy",
-		"policy", basePolicyName,
-		"agentgateway_policy", extauthPolicy.Name)
-
-	return extauthPolicy, errors.Join(errs...)
+	}, errors.Join(errs...)
 }
 
 // processExtProcPolicy processes ExtProc configuration and creates corresponding agentgateway policies
@@ -1587,7 +1653,14 @@ func referencedBackendsFromPolicy(policy *agentgateway.AgentgatewayPolicy) []uti
 	s := policy.Spec
 	if s.Traffic != nil {
 		if s.Traffic.ExtAuth != nil {
-			app(s.Traffic.ExtAuth.BackendRef)
+			for _, conditional := range s.Traffic.ExtAuth.Conditional {
+				if conditional.Policy.BackendRef != nil {
+					app(*conditional.Policy.BackendRef)
+				}
+			}
+			if s.Traffic.ExtAuth.BackendRef != nil {
+				app(*s.Traffic.ExtAuth.BackendRef)
+			}
 		}
 		if s.Traffic.ExtProc != nil {
 			app(s.Traffic.ExtProc.BackendRef)
