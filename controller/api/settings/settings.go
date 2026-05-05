@@ -98,7 +98,7 @@ func (r *GatewayClassParametersRefs) Decode(value string) error {
 const (
 	// TLSSecretName is the name of the Kubernetes Secret containing the TLS certificate,
 	// private key, and CA certificate for xDS communication. This secret must exist in the
-	// kgateway installation namespace when TLS is enabled.
+	// agentgateway installation namespace when TLS is enabled.
 	TLSSecretName = "kgateway-xds-cert" //nolint:gosec // G101: This is a well-known xDS TLS secret name, not a credential
 
 	// TLSCertPath is the path to the TLS certificate
@@ -113,7 +113,7 @@ const (
 
 type Settings struct {
 	// Controls the DnsLookupFamily for all static clusters created via Backend resources.
-	// If not set, kgateway will default to "V4_PREFERRED". Note that this is different
+	// If not set, agentgateway will default to "V4_PREFERRED". Note that this is different
 	// from the Envoy default of "AUTO", which is effectively "V6_PREFERRED".
 	// Supported values are: "ALL", "AUTO", "V4_PREFERRED", "V4_ONLY", "V6_ONLY"
 	// Details on the behavior of these options are available on the Envoy documentation:

@@ -132,7 +132,7 @@ func extractImageLines(output string) string {
 	return strings.Join(lines, "\n")
 }
 
-// TestHelmChartTemplate tests helm template output for both kgateway and agentgateway charts
+// TestHelmChartTemplate tests helm template output for agentgateway charts
 // with different values configurations.
 // NOTE: The test cases contain YAML blocks that are indented with 2 spaces, do not use tabs.
 func TestHelmChartTemplate(t *testing.T) {
