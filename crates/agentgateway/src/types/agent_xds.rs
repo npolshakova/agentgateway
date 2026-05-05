@@ -243,6 +243,23 @@ fn server_tls_config_from_proto(
 		convert_tls_key_exchange_groups(&value.key_exchange_groups, diagnostics);
 
 	let mtls_mode = proto::agent::tls_config::MtlsMode::try_from(value.mtls_mode).unwrap_or_default();
+	let certificate_source =
+		proto::agent::tls_config::CertificateSource::try_from(value.certificate_source)
+			.unwrap_or_default();
+
+	if certificate_source == proto::agent::tls_config::CertificateSource::IstioWorkload {
+		let require_client_cert = match mtls_mode {
+			proto::agent::tls_config::MtlsMode::Strict => true,
+			proto::agent::tls_config::MtlsMode::Disable => false,
+			proto::agent::tls_config::MtlsMode::AllowInsecureFallback => {
+				diagnostics.add_warning(
+					"ALLOW_INSECURE_FALLBACK is not supported with ISTIO_WORKLOAD certificates; disabling mTLS",
+				);
+				false
+			},
+		};
+		return ServerTLSConfig::istio_workload(require_client_cert, default_alpns);
+	}
 
 	match ServerTLSConfig::from_pem_with_profile(
 		value.cert.clone(),

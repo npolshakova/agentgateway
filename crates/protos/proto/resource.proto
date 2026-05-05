@@ -154,6 +154,11 @@ message Backend {
 }
 
 message TLSConfig {
+  enum CertificateSource {
+    INLINE = 0;
+    ISTIO_WORKLOAD = 1;
+  }
+
   enum TLSVersion {
     TLS_VERSION_UNSPECIFIED = 0;
 
@@ -172,6 +177,9 @@ message TLSConfig {
 
     // Request a TLS certificate, but if one is not presented or invalid, allow the connection.
     ALLOW_INSECURE_FALLBACK = 1;
+
+    // Do not request or require a client TLS certificate.
+    DISABLE = 2;
   }
 
   // Cipher suites supported by agentgateway
@@ -214,6 +222,7 @@ message TLSConfig {
   // Key exchange groups allowed for negotiating TLS.
   // If empty, defaults are used.
   repeated KeyExchangeGroup key_exchange_groups = 8;
+  CertificateSource certificate_source = 9;
 }
 
 enum Protocol {
