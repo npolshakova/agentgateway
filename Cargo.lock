@@ -26,6 +26,7 @@ dependencies = [
  "base64",
  "cel",
  "divan",
+ "hashbrown 0.17.0",
  "hex",
  "ipnet",
  "md-5 0.11.0",
@@ -36,6 +37,7 @@ dependencies = [
  "serde_regex",
  "sha1 0.11.0",
  "sha2 0.11.0",
+ "url",
  "uuid",
  "vector-map",
 ]
