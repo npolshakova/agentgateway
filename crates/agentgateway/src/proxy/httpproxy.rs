@@ -24,6 +24,7 @@ use crate::http::backendtls::BackendTLS;
 use crate::http::ext_proc::{ExtProcRequest, InferenceRoutingDestinationMode};
 use crate::http::filters::{AutoHostname, BackendRequestTimeout};
 use crate::http::transformation_cel::Transformation;
+use crate::http::x_headers::TRACEPARENT;
 use crate::http::{
 	Authority, HeaderName, HeaderValue, Request, Response, Scheme, StatusCode, Uri, auth, filters,
 	merge_in_headers, retry,
@@ -412,6 +413,7 @@ async fn apply_llm_request_policies(
 	Ok(store::LLMResponsePolicies {
 		local_rate_limit,
 		remote_rate_limit: response,
+		request_traceparent: req.headers().get(TRACEPARENT).cloned(),
 		prompt_guard: policies
 			.llm
 			.as_deref()
