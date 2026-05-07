@@ -991,32 +991,38 @@ impl AIProvider {
 			};
 
 			parts.headers.remove(header::CONTENT_LENGTH);
-			let resp = Response::from_parts(parts, bytes.into());
 			let llm_resp = LLMResponse {
 				count_tokens: Some(count),
 				..Default::default()
 			};
 			let llm_info = LLMInfo::new(req, llm_resp);
+			parts
+				.extensions
+				.insert(crate::cel::LLMContext::from(llm_info.clone()));
+			let resp = Response::from_parts(parts, bytes.into());
 			log.store(Some(llm_info));
 			return Ok(resp);
 		}
 
 		// embeddings has simplified response handling
 		if req.input_format == InputFormat::Embeddings {
+			parts.headers.remove(header::CONTENT_LENGTH);
 			if !parts.status.is_success() {
 				let body = self.process_error(&req, parts.status, &bytes)?;
-				parts.headers.remove(header::CONTENT_LENGTH);
-				let resp = Response::from_parts(parts, body.into());
 				let llm_info = LLMInfo::new(req, LLMResponse::default());
+				parts
+					.extensions
+					.insert(crate::cel::LLMContext::from(llm_info.clone()));
+				let resp = Response::from_parts(parts, body.into());
 				log.store(Some(llm_info));
 				return Ok(resp);
 			}
-
 			let (llm_resp, bytes) = self.process_embeddings_response(&req, &parts.headers, bytes)?;
-
-			parts.headers.remove(header::CONTENT_LENGTH);
-			let resp = Response::from_parts(parts, bytes.into());
 			let llm_info = LLMInfo::new(req, llm_resp);
+			parts
+				.extensions
+				.insert(crate::cel::LLMContext::from(llm_info.clone()));
+			let resp = Response::from_parts(parts, bytes.into());
 			log.store(Some(llm_info));
 			return Ok(resp);
 		}
@@ -1062,9 +1068,12 @@ impl AIProvider {
 			Body::from(body)
 		};
 		parts.headers.remove(header::CONTENT_LENGTH);
+		let llm_info = LLMInfo::new(req, llm_resp);
+		parts
+			.extensions
+			.insert(crate::cel::LLMContext::from(llm_info.clone()));
 		let resp = Response::from_parts(parts, body);
 
-		let llm_info = LLMInfo::new(req, llm_resp);
 		// In the initial request, we subtracted the approximate request tokens.
 		// Now we should have the real request tokens and the response tokens
 		amend_tokens(rate_limit, &llm_info);
