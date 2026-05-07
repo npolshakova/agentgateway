@@ -179,6 +179,39 @@ pub fn provider() -> Arc<CryptoProvider> {
 	provider_with_options(&[], &[])
 }
 
+/// Returns a shared rustls `KeyLog`. On release builds this always returns
+/// `NoKeyLog` so TLS session secrets can never be logged in production. On
+/// debug builds, honors `SSLKEYLOGFILE` (NSS keylog format) for use with
+/// Wireshark/tcpdump decryption.
+#[cfg(debug_assertions)]
+pub fn key_log() -> Arc<dyn rustls::KeyLog> {
+	static KEY_LOG: std::sync::LazyLock<Arc<dyn rustls::KeyLog>> = std::sync::LazyLock::new(|| {
+		// KeyLogFile uses an internal mutex even when SSLKEYLOGFILE is unset, so
+		// guard the env check to avoid any overhead when the user is not using it.
+		if std::env::var("SSLKEYLOGFILE").is_ok() {
+			Arc::new(rustls::KeyLogFile::new())
+		} else {
+			Arc::new(rustls::NoKeyLog)
+		}
+	});
+	(*KEY_LOG).clone()
+}
+
+#[cfg(not(debug_assertions))]
+pub fn key_log() -> Arc<dyn rustls::KeyLog> {
+	Arc::new(rustls::NoKeyLog)
+}
+
+/// Startup warning when SSLKEYLOGFILE is honored (debug builds only).
+pub fn warn_if_key_log_enabled() {
+	#[cfg(debug_assertions)]
+	if let Ok(path) = std::env::var("SSLKEYLOGFILE")
+		&& !path.is_empty()
+	{
+		warn!("SSLKEYLOGFILE={path}; TLS session secrets will be written to disk (debug build only).");
+	}
+}
+
 pub fn provider_with_options(
 	cipher_suites: &[CipherSuite],
 	key_exchange_groups: &[KeyExchangeGroup],
