@@ -10,7 +10,6 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use anyhow::anyhow;
 use hashbrown::Equivalent;
 use heck::ToSnakeCase;
-use itertools::Itertools;
 use macro_rules_attribute::apply;
 use once_cell::sync::Lazy;
 use openapiv3::OpenAPI;
@@ -1556,9 +1555,12 @@ impl ListenerSet {
 		if let Some(best) = self
 			.inner
 			.values()
-			.filter(|l| filter(&l.protocol))
-			.sorted_by_key(|l| -(l.hostname.len() as i64))
-			.find(|l| l.hostname.starts_with("*") && host.ends_with(&l.hostname.as_str()[1..]))
+			.filter(|l| {
+				filter(&l.protocol)
+					&& l.hostname.starts_with("*")
+					&& host.ends_with(&l.hostname.as_str()[1..])
+			})
+			.max_by_key(|l| l.hostname.len())
 		{
 			trace!("found best match for {host} (wildcard {})", best.hostname);
 			return Some(best.clone());
@@ -3218,5 +3220,77 @@ jwtValidationOptions:
 		let too_long = "a".repeat(MCP_TARGET_NAME_MAX_LEN + 1);
 		let err = validate_mcp_target_name(&too_long).expect_err("expected rejection");
 		assert!(err.contains("exceeds max"), "unexpected message: {err}");
+	}
+
+	fn listener(key: &str, hostname: &str, protocol: ListenerProtocol) -> Listener {
+		Listener {
+			key: strng::new(key),
+			name: ListenerName::default(),
+			hostname: strng::new(hostname),
+			protocol,
+		}
+	}
+
+	#[test]
+	fn best_match_filtered_picks_longest_wildcard() {
+		let set = ListenerSet::from_list([
+			listener("broad", "*.example.com", ListenerProtocol::HTTP),
+			listener("specific", "*.sub.example.com", ListenerProtocol::HTTP),
+			listener("empty", "", ListenerProtocol::HTTP),
+		]);
+
+		// Longest wildcard suffix wins.
+		let m = set.best_match("a.sub.example.com").expect("match");
+		assert_eq!(m.key.as_str(), "specific");
+
+		// Only the broader wildcard matches.
+		let m = set.best_match("a.example.com").expect("match");
+		assert_eq!(m.key.as_str(), "broad");
+
+		// Falls back to empty hostname when no wildcard matches.
+		let m = set.best_match("other.test").expect("match");
+		assert_eq!(m.key.as_str(), "empty");
+	}
+
+	#[test]
+	fn best_match_filtered_exact_beats_wildcard() {
+		let set = ListenerSet::from_list([
+			listener("wild", "*.example.com", ListenerProtocol::HTTP),
+			listener("exact", "a.example.com", ListenerProtocol::HTTP),
+		]);
+		let m = set.best_match("a.example.com").expect("match");
+		assert_eq!(m.key.as_str(), "exact");
+	}
+
+	#[test]
+	fn best_match_filtered_protocol_filter_does_not_affect_tiebreak() {
+		// More-specific wildcard belongs to TLS; HTTP filter must skip it
+		// and pick the broader HTTP wildcard rather than tying with the TLS one.
+		let set = ListenerSet::from_list([
+			listener("http-broad", "*.example.com", ListenerProtocol::HTTP),
+			listener(
+				"tls-specific",
+				"*.sub.example.com",
+				ListenerProtocol::TLS(None),
+			),
+		]);
+
+		let m = set.best_match_http("a.sub.example.com").expect("match");
+		assert_eq!(m.key.as_str(), "http-broad");
+
+		let m = set.best_match_tls("a.sub.example.com").expect("match");
+		assert_eq!(m.key.as_str(), "tls-specific");
+
+		// And when both protocols offer the same specificity, each filter
+		// returns its own bucket without cross-contamination.
+		let set = ListenerSet::from_list([
+			listener("http-spec", "*.sub.example.com", ListenerProtocol::HTTP),
+			listener("tls-spec", "*.sub.example.com", ListenerProtocol::TLS(None)),
+			listener("http-broad", "*.example.com", ListenerProtocol::HTTP),
+		]);
+		let m = set.best_match_http("a.sub.example.com").expect("match");
+		assert_eq!(m.key.as_str(), "http-spec");
+		let m = set.best_match_tls("a.sub.example.com").expect("match");
+		assert_eq!(m.key.as_str(), "tls-spec");
 	}
 }
