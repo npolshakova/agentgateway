@@ -1255,7 +1255,7 @@ pub async fn build_transport(
 	if let Some(tun) = backend_tunnel {
 		let backend = super::resolve_simple_backend_with_policies(&tun.proxy, inputs)?;
 		let pols = crate::proxy::tcpproxy::get_backend_policies(inputs, &backend, &[], None);
-		let call = TCPProxy::build_backend_call(&mut None, None, inputs, &backend.backend, pols)?;
+		let call = TCPProxy::build_backend_call(&mut None, None, inputs, &backend.backend, pols, None)?;
 		let tunnel_backend_tls = call.backend_policies.backend_tls.clone();
 		let tunnel_auth = call.backend_policies.backend_auth.clone();
 		// This is a bounded recursion; this code is only called when backend_tunnel is set, and in this call
@@ -1282,6 +1282,22 @@ pub async fn build_transport(
 			token,
 		};
 		return Ok(Transport::Tunnel(app_transport, tc));
+	}
+
+	// Check if we should route through a waypoint proxy (ingress_use_waypoint)
+	if let (Some(wp), Some(ca)) = (&backend_call.waypoint, &inputs.ca) {
+		if ca.get_identity().await.is_ok() {
+			tracing::debug!("using HBONE waypoint at {} for service", wp.address);
+			return Ok(Transport::HboneWaypoint {
+				waypoint_address: wp.address,
+				identities: wp.identities.clone(),
+				inner: app_transport,
+			});
+		} else {
+			return Err(ProxyError::Processing(anyhow::anyhow!(
+				"ingress_use_waypoint: wanted HBONE to waypoint but CA is not available"
+			)));
+		}
 	}
 
 	// Check if we need double hbone
@@ -1541,6 +1557,7 @@ async fn make_backend_call(
 				http_version_override: None,
 				transport_override: None,
 				network_gateway: None,
+				waypoint: None,
 			}
 		},
 		Backend::Service(svc, port) => build_service_call(
@@ -1551,12 +1568,14 @@ async fn make_backend_call(
 			svc,
 			port,
 			req.uri().host(),
+			hbone_source,
 		)?,
 		Backend::Opaque(_, target) => BackendCall {
 			target: target.clone(),
 			http_version_override: None,
 			transport_override: None,
 			network_gateway: None,
+			waypoint: None,
 			backend_policies: policies,
 		},
 		Backend::Aws(_, config) => {
@@ -1587,6 +1606,7 @@ async fn make_backend_call(
 				http_version_override: None,
 				transport_override: None,
 				network_gateway: None,
+				waypoint: None,
 			}
 		},
 		Backend::Dynamic(_, _) => {
@@ -1604,6 +1624,7 @@ async fn make_backend_call(
 				http_version_override: None,
 				transport_override: None,
 				network_gateway: None,
+				waypoint: None,
 				backend_policies: policies,
 			}
 		},
@@ -1919,6 +1940,7 @@ fn set_backend_cel_context(req: &mut http::Request, log: Option<&&mut RequestLog
 	}
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn build_service_call(
 	inputs: &ProxyInputs,
 	backend_policies: BackendPolicies,
@@ -1927,6 +1949,7 @@ pub fn build_service_call(
 	svc: &Arc<Service>,
 	port: &u16,
 	request_host: Option<&str>,
+	hbone_source: Option<HboneSourceRole>,
 ) -> Result<BackendCall, ProxyError> {
 	let port = *port;
 	let http_version_override = if svc.port_is_http2(port) {
@@ -1944,6 +1967,7 @@ pub fn build_service_call(
 			http_version_override,
 			transport_override: None,
 			network_gateway: None,
+			waypoint: None,
 			backend_policies,
 		});
 	}
@@ -2008,8 +2032,95 @@ pub fn build_service_call(
 		None
 	};
 
-	// For double HBONE, use hostname-based target so the gateway can resolve it
-	let target = if network_gateway.is_some() {
+	// Check if the service has ingress_use_waypoint set and a waypoint configured.
+	// When set, route traffic through the waypoint instead of directly to the workload.
+	// Skip when we are acting as a waypoint: ingress_use_waypoint should only affect
+	// ingress gateways, never waypoint-to-waypoint traffic.
+	let waypoint = if svc.ingress_use_waypoint && hbone_source.is_none() {
+		if let Some(wp) = &svc.waypoint {
+			let discovery = inputs.stores.read_discovery();
+			let wp_ip = match &wp.destination {
+				types::discovery::gatewayaddress::Destination::Address(net_addr) => Some(net_addr.address),
+				types::discovery::gatewayaddress::Destination::Hostname(nh) => {
+					// Resolve hostname-based waypoint via service discovery
+					discovery
+						.services
+						.get_by_namespaced_host(&NamespacedHostname {
+							namespace: nh.namespace.clone(),
+							hostname: nh.hostname.clone(),
+						})
+						.and_then(|wp_svc| {
+							wp_svc
+								.vips
+								.iter()
+								.find(|v| v.network == inputs.cfg.network)
+								.or_else(|| wp_svc.vips.first())
+								.map(|v| v.address)
+						})
+				},
+			};
+			// Resolve the waypoint's own SPIFFE identity for mTLS verification.
+			let waypoint_info = wp_ip.and_then(|ip| {
+				let net_addr = types::discovery::NetworkAddress {
+					network: inputs.cfg.network.clone(),
+					address: ip,
+				};
+				let identity = if let Some(wp_wl) = discovery.workloads.find_address(&net_addr) {
+					// waypoint_ip is a pod IP — use the workload identity directly
+					Some(wp_wl.identity())
+				} else if let Some(wp_svc) = discovery.services.get_by_vip(&net_addr) {
+					// waypoint_ip is a service VIP — get identity from a backing workload
+					wp_svc.endpoints.iter().iter().find_map(|(ep, _)| {
+						discovery
+							.workloads
+							.find_uid(&ep.workload_uid)
+							.map(|wl| wl.identity())
+					})
+				} else {
+					None
+				};
+				identity.map(|id| (ip, id))
+			});
+			drop(discovery);
+			match waypoint_info {
+				Some((ip, identity)) => {
+					let wp_port = if wp.hbone_mtls_port > 0 {
+						wp.hbone_mtls_port
+					} else {
+						agent_hbone::DEFAULT_HBONE_PORT
+					};
+					tracing::debug!(
+						service = %svc.hostname,
+						waypoint = %ip,
+						waypoint_port = %wp_port,
+						"ingress_use_waypoint: routing through waypoint"
+					);
+					Some(WaypointTarget {
+						address: SocketAddr::new(ip, wp_port),
+						service_hostname: svc.hostname.clone(),
+						identities: vec![identity],
+					})
+				},
+				_ => {
+					tracing::warn!(
+						service = %svc.hostname,
+						"ingress_use_waypoint set but waypoint could not be resolved"
+					);
+					None
+				},
+			}
+		} else {
+			None
+		}
+	} else {
+		None
+	};
+
+	// Waypoint: target = service hostname (becomes the inner CONNECT authority).
+	// Double HBONE: target = service hostname (resolved by the gateway).
+	let target = if let Some(wp) = &waypoint {
+		Target::Hostname(wp.service_hostname.clone(), port)
+	} else if network_gateway.is_some() {
 		tracing::debug!(
 			hostname=%svc.hostname,
 			port=%port,
@@ -2038,6 +2149,7 @@ pub fn build_service_call(
 		http_version_override,
 		transport_override: Some((wl.protocol, workload_and_service_sans(&wl, svc))),
 		network_gateway,
+		waypoint,
 		backend_policies,
 	})
 }
@@ -2169,6 +2281,7 @@ mod tests {
 			waypoint: None,
 			load_balancer: None,
 			ip_families: None,
+			ingress_use_waypoint: false,
 		}
 	}
 
@@ -2425,7 +2538,18 @@ pub struct BackendCall {
 	pub http_version_override: Option<::http::Version>,
 	pub transport_override: Option<(InboundProtocol, Vec<Identity>)>,
 	pub network_gateway: Option<(GatewayAddress, Identity)>, /* For double hbone: (gateway_address, gateway_identity) */
+	pub waypoint: Option<WaypointTarget>,                    // For ingress waypoint routing
 	pub backend_policies: BackendPolicies,
+}
+
+/// Information needed to route through a waypoint proxy.
+pub struct WaypointTarget {
+	/// The socket address of the waypoint (IP:hbone_port).
+	pub address: SocketAddr,
+	/// Destination service hostname used as the inner HBONE CONNECT authority.
+	pub service_hostname: Strng,
+	/// Identities for mTLS verification (service SANs).
+	pub identities: Vec<Identity>,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
