@@ -3851,7 +3851,7 @@ spec:
                               `maxSize`, then the request will be rejected with a response.
                             maxLength: 32
                             minLength: 1
-                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            pattern: ^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)(([KMGTPE]i)|[numkMGTPE]|[eE](\+?0*([0-9]|1[0-8])|-0*[0-9]))?$
                             x-kubernetes-int-or-string: true
                             x-kubernetes-validations:
                             - message: value must be at least 1 byte and fit within
@@ -4993,7 +4993,7 @@ spec:
                           connection-level flow control for received data.
                         maxLength: 32
                         minLength: 1
-                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        pattern: ^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)(([KMGTPE]i)|[numkMGTPE]|[eE](\+?0*([0-9]|1[0-8])|-0*[0-9]))?$
                         x-kubernetes-int-or-string: true
                         x-kubernetes-validations:
                         - message: value must be at least 1 byte and fit within uint32
@@ -5008,7 +5008,7 @@ spec:
                           If unset, this defaults to `16kb`.
                         maxLength: 32
                         minLength: 1
-                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        pattern: ^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)(([KMGTPE]i)|[numkMGTPE]|[eE](\+?0*([0-9]|1[0-8])|-0*[0-9]))?$
                         x-kubernetes-int-or-string: true
                         x-kubernetes-validations:
                         - message: http2FrameSize must be at least 16384 bytes
@@ -5042,7 +5042,7 @@ spec:
                           If unset, this defaults to `16Ki`.
                         maxLength: 32
                         minLength: 1
-                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        pattern: ^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)(([KMGTPE]i)|[numkMGTPE]|[eE](\+?0*([0-9]|1[0-8])|-0*[0-9]))?$
                         x-kubernetes-int-or-string: true
                         x-kubernetes-validations:
                         - message: value must be at least 1 byte and fit within uint32
@@ -5057,7 +5057,7 @@ spec:
                           control for received data.
                         maxLength: 32
                         minLength: 1
-                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        pattern: ^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)(([KMGTPE]i)|[numkMGTPE]|[eE](\+?0*([0-9]|1[0-8])|-0*[0-9]))?$
                         x-kubernetes-int-or-string: true
                         x-kubernetes-validations:
                         - message: value must be at least 1 byte and fit within uint32
@@ -5074,7 +5074,7 @@ spec:
                           If unset, this defaults to `2mb`.
                         maxLength: 32
                         minLength: 1
-                        pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                        pattern: ^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)(([KMGTPE]i)|[numkMGTPE]|[eE](\+?0*([0-9]|1[0-8])|-0*[0-9]))?$
                         x-kubernetes-int-or-string: true
                         x-kubernetes-validations:
                         - message: value must be at least 1 byte and fit within uint32
@@ -6582,7 +6582,7 @@ spec:
                                         `maxSize`, then the request will be rejected with a response.
                                       maxLength: 32
                                       minLength: 1
-                                      pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                      pattern: ^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)(([KMGTPE]i)|[numkMGTPE]|[eE](\+?0*([0-9]|1[0-8])|-0*[0-9]))?$
                                       x-kubernetes-int-or-string: true
                                       x-kubernetes-validations:
                                       - message: value must be at least 1 byte and
@@ -6740,7 +6740,7 @@ spec:
                               `maxSize`, then the request will be rejected with a response.
                             maxLength: 32
                             minLength: 1
-                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            pattern: ^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)(([KMGTPE]i)|[numkMGTPE]|[eE](\+?0*([0-9]|1[0-8])|-0*[0-9]))?$
                             x-kubernetes-int-or-string: true
                             x-kubernetes-validations:
                             - message: value must be at least 1 byte and fit within
