@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"maps"
 	"slices"
 
 	"helm.sh/helm/v3/pkg/action"
@@ -286,8 +285,6 @@ func (d *Deployer) DeployObjsWithSource(ctx context.Context, objs []client.Objec
 		// If the object doesn't exist or there's an error other than "not found", proceed with patching
 		switch {
 		case err == nil:
-			preserveImmutableFields(u, existing)
-
 			// zero out fields that api server changes
 			existing.SetResourceVersion("")
 			existing.SetGeneration(0)
@@ -333,31 +330,6 @@ func (d *Deployer) DeployObjsWithSource(ctx context.Context, objs []client.Objec
 		}
 	}
 	return nil
-}
-
-func preserveImmutableFields(desired, existing *unstructured.Unstructured) {
-	if desired.GetObjectKind().GroupVersionKind() != wellknown.DeploymentGVK {
-		return
-	}
-
-	existingSelector, found, err := unstructured.NestedMap(existing.Object, "spec", "selector")
-	if !found || err != nil || existingSelector == nil {
-		return
-	}
-
-	_ = unstructured.SetNestedMap(desired.Object, maps.Clone(existingSelector), "spec", "selector")
-
-	matchLabels, found, err := unstructured.NestedStringMap(existingSelector, "matchLabels")
-	if !found || err != nil || len(matchLabels) == 0 {
-		return
-	}
-
-	templateLabels, _, err := unstructured.NestedStringMap(desired.Object, "spec", "template", "metadata", "labels")
-	if err != nil || templateLabels == nil {
-		templateLabels = map[string]string{}
-	}
-	maps.Copy(templateLabels, matchLabels)
-	_ = unstructured.SetNestedStringMap(desired.Object, templateLabels, "spec", "template", "metadata", "labels")
 }
 
 // PruneRemovedResources deletes PDB/HPA/VPA resources that are owned by the owner

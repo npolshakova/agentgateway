@@ -23,6 +23,8 @@ import (
 const (
 	GatewayAcceptedMessage       = "Successfully accepted Gateway"
 	GatewayProgrammedMessage     = "Successfully programmed Gateway"
+	GatewayDeploymentErrorReason = "DeploymentError"
+	GatewayResourceErrorReason   = "ResourceApplyError"
 	ListenerSetAcceptedMessage   = "Successfully accepted ListenerSet"
 	ListenerSetProgrammedMessage = "Successfully programmed ListenerSet"
 	ListenerAcceptedMessage      = "Successfully accepted Listener"
@@ -382,7 +384,11 @@ func addMissingGatewayConditions(gwReport *GatewayReport, gw *gwv1.Gateway) {
 			Message: GatewayAcceptedMessage,
 		})
 	}
-	if cond := meta.FindStatusCondition(gwReport.GetConditions(), string(gwv1.GatewayConditionProgrammed)); cond == nil {
+	existingProgrammed := meta.FindStatusCondition(gw.Status.Conditions, string(gwv1.GatewayConditionProgrammed))
+	hasDeploymentError := existingProgrammed != nil &&
+		existingProgrammed.Status == metav1.ConditionFalse &&
+		(existingProgrammed.Reason == GatewayDeploymentErrorReason || existingProgrammed.Reason == GatewayResourceErrorReason)
+	if cond := meta.FindStatusCondition(gwReport.GetConditions(), string(gwv1.GatewayConditionProgrammed)); !hasDeploymentError && cond == nil {
 		gwReport.SetCondition(reporter.GatewayCondition{
 			Type:    gwv1.GatewayConditionProgrammed,
 			Status:  metav1.ConditionTrue,

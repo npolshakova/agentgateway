@@ -8,6 +8,7 @@ import (
 	"maps"
 	"math"
 	"slices"
+	"strings"
 
 	"istio.io/istio/pkg/config/schema/gvk"
 	"istio.io/istio/pkg/config/schema/gvr"
@@ -18,6 +19,7 @@ import (
 	"istio.io/istio/pkg/ptr"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -342,6 +344,20 @@ func (r *gatewayReconciler) Reconcile(req types.NamespacedName) (rErr error) {
 	objs = r.deployer.SetNamespaceAndOwnerWithGVK(gw, wellknown.GatewayGVK, objs)
 	err = r.deployer.DeployObjsWithSource(ctx, objs, gw)
 	if err != nil {
+		if isTerminalGatewayDeployError(err) {
+			condition := metav1.Condition{
+				Type:               string(gwv1.GatewayConditionProgrammed),
+				Status:             metav1.ConditionFalse,
+				ObservedGeneration: gw.Generation,
+				Reason:             reports.GatewayResourceErrorReason,
+				Message:            err.Error(),
+			}
+			if statusErr := r.updateGatewayStatusWithRetry(gw, condition); statusErr != nil {
+				return fmt.Errorf("failed to update status for Gateway %s: %w", req, statusErr)
+			}
+			logger.Error("terminal gateway deploy error", "ref", req, "error", err)
+			return nil
+		}
 		return err
 	}
 
@@ -367,6 +383,24 @@ func (r *gatewayReconciler) Reconcile(req types.NamespacedName) (rErr error) {
 	}
 
 	return nil
+}
+
+func isTerminalGatewayDeployError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if apierrors.IsInvalid(err) || apierrors.IsForbidden(err) || apierrors.IsAlreadyExists(err) {
+		return true
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "failed to apply object ") {
+		return false
+	}
+	return strings.Contains(msg, "field is immutable") ||
+		strings.Contains(msg, " is invalid") ||
+		strings.Contains(msg, " already exists") ||
+		strings.Contains(msg, " is forbidden") ||
+		strings.Contains(msg, ": forbidden:")
 }
 
 func (r *gatewayReconciler) updateStatus(gw *gwv1.Gateway, svcMeta *metav1.ObjectMeta) error {
