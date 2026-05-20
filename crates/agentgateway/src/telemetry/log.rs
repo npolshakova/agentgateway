@@ -662,6 +662,42 @@ impl RequestLog {
 			inner: self.trace_spans.clone(),
 		})
 	}
+
+	/// Finalizes the current backend health state.
+	/// Retry loops can call this early to evict a failed target before the next attempt.
+	pub(crate) fn finalize_request_handle(
+		&mut self,
+		end_time: Timestamp,
+		llm_response: Option<&LLMContext>,
+		mcp: Option<&MCPInfo>,
+	) {
+		let cel_end_time = cel::RequestTime(end_time.as_datetime());
+		let cel_exec = self.cel.build(CelLoggingBuildInputs {
+			req: self.request_snapshot.as_deref(),
+			resp: self.response_snapshot.as_ref(),
+			llm_response,
+			mcp: mcp.filter(|m| !m.is_empty()),
+			end_time: &cel_end_time,
+			source_context: self.source_context.as_ref(),
+		});
+		let Some(rh) = self.request_handle.take() else {
+			return;
+		};
+		let unhealthy = DropOnLog::eviction_unhealthy(self, &cel_exec);
+		let (health, eviction_duration, restore_health) = DropOnLog::eviction_decision(
+			self,
+			rh.health_score(),
+			rh.consecutive_failures(),
+			rh.times_ejected(),
+			unhealthy,
+		);
+		rh.finish_request(
+			health,
+			end_time.duration_since(&self.start),
+			eviction_duration,
+			restore_health,
+		);
+	}
 }
 
 #[derive(Debug)]
@@ -784,32 +820,17 @@ impl Drop for DropOnLog {
 		let enable_trace = log.tracer.is_some();
 
 		let llm_response = log.llm_response.take().map(Into::into);
-
 		let mcp = log.mcp_status.take();
-		let mcp_cel = mcp.as_ref().filter(|m| !m.is_empty());
+		log.finalize_request_handle(end_time, llm_response.as_ref(), mcp.as_ref());
 		let cel_end_time = cel::RequestTime(end_time.as_datetime());
 		let cel_exec = log.cel.build(CelLoggingBuildInputs {
 			req: log.request_snapshot.as_deref(),
 			resp: log.response_snapshot.as_ref(),
 			llm_response: llm_response.as_ref(),
-			mcp: mcp_cel,
+			mcp: mcp.as_ref().filter(|m| !m.is_empty()),
 			end_time: &cel_end_time,
 			source_context: log.source_context.as_ref(),
 		});
-		if let Some(rh) = log.request_handle.take() {
-			let current_health = rh.health_score();
-			let consecutive_failures = rh.consecutive_failures();
-			let times_ejected = rh.times_ejected();
-			let unhealthy = Self::eviction_unhealthy(&log, &cel_exec);
-			let (health, eviction_duration, restore_health) = Self::eviction_decision(
-				&log,
-				current_health,
-				consecutive_failures,
-				times_ejected,
-				unhealthy,
-			);
-			rh.finish_request(health, duration, eviction_duration, restore_health);
-		}
 
 		let custom_metric_fields = CustomField::new(
 			// For metrics, keep empty values which will become 'unknown'
