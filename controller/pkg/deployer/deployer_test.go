@@ -2,16 +2,19 @@ package deployer_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"testing"
 
 	"istio.io/istio/pkg/config/schema/gvk"
 	"istio.io/istio/pkg/test/util/assert"
 	"istio.io/istio/pkg/util/smallset"
+	appsv1 "k8s.io/api/apps/v1"
 	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	corev1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
@@ -156,6 +159,64 @@ func TestDeployObjs(t *testing.T) {
 		err := d.DeployObjsWithSource(ctx, []client.Object{cm}, gw)
 		assert.NoError(t, err)
 		assert.Equal(t, wellknown.DefaultAgwControllerName, usedFieldManager)
+	})
+
+	t.Run("preserves existing deployment selector during apply", func(t *testing.T) {
+		existingDeployment := &appsv1.Deployment{
+			TypeMeta: metav1.TypeMeta{Kind: wellknown.DeploymentGVK.Kind, APIVersion: wellknown.DeploymentGVK.GroupVersion().String()},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      name,
+				Namespace: ns,
+			},
+			Spec: appsv1.DeploymentSpec{
+				Selector: &metav1.LabelSelector{
+					MatchLabels: map[string]string{
+						"app.kubernetes.io/name":     name,
+						"app.kubernetes.io/instance": name,
+					},
+				},
+				Template: corev1.PodTemplateSpec{
+					ObjectMeta: metav1.ObjectMeta{
+						Labels: map[string]string{
+							"app.kubernetes.io/name":     name,
+							"app.kubernetes.io/instance": name,
+						},
+					},
+				},
+			},
+		}
+		desiredDeployment := existingDeployment.DeepCopy()
+		desiredDeployment.Spec.Selector.MatchLabels["gateway.networking.k8s.io/gateway-name"] = name
+		desiredDeployment.Spec.Template.Labels["gateway.networking.k8s.io/gateway-name"] = name
+
+		fc := fake.NewClient(t, existingDeployment.DeepCopy())
+		var patchedObj unstructured.Unstructured
+		d := getDeployer(t, fc, func(client apiclient.Client, fieldManager string, gvr schema.GroupVersionResource, name string, namespace string, data []byte, subresources ...string) error {
+			if err := json.Unmarshal(data, &patchedObj.Object); err != nil {
+				return err
+			}
+			patchedObj.SetGroupVersionKind(wellknown.DeploymentGVK)
+			return nil
+		})
+		fc.RunAndWait(context.Background().Done())
+
+		err := d.DeployObjs(ctx, []client.Object{desiredDeployment})
+		assert.NoError(t, err)
+
+		selector, found, err := unstructured.NestedStringMap(patchedObj.Object, "spec", "selector", "matchLabels")
+		assert.NoError(t, err)
+		assert.Equal(t, true, found)
+		assert.Equal(t, map[string]string{
+			"app.kubernetes.io/name":     name,
+			"app.kubernetes.io/instance": name,
+		}, selector)
+
+		templateLabels, found, err := unstructured.NestedStringMap(patchedObj.Object, "spec", "template", "metadata", "labels")
+		assert.NoError(t, err)
+		assert.Equal(t, true, found)
+		assert.Equal(t, name, templateLabels["gateway.networking.k8s.io/gateway-name"])
+		assert.Equal(t, name, templateLabels["app.kubernetes.io/name"])
+		assert.Equal(t, name, templateLabels["app.kubernetes.io/instance"])
 	})
 
 	t.Run("falls back to class name comparison when GatewayClass lookup fails", func(t *testing.T) {
