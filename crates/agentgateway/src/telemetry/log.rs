@@ -666,24 +666,12 @@ impl RequestLog {
 	/// Finalizes the current backend health state.
 	/// Retry loops can call this early to evict a failed target before the next attempt.
 	pub(crate) fn finalize_request_handle(
-		&mut self,
+		&self,
+		rh: ActiveHandle,
 		end_time: Timestamp,
-		llm_response: Option<&LLMContext>,
-		mcp: Option<&MCPInfo>,
+		cel_exec: &CelLoggingExecutor<'_>,
 	) {
-		let cel_end_time = cel::RequestTime(end_time.as_datetime());
-		let cel_exec = self.cel.build(CelLoggingBuildInputs {
-			req: self.request_snapshot.as_deref(),
-			resp: self.response_snapshot.as_ref(),
-			llm_response,
-			mcp: mcp.filter(|m| !m.is_empty()),
-			end_time: &cel_end_time,
-			source_context: self.source_context.as_ref(),
-		});
-		let Some(rh) = self.request_handle.take() else {
-			return;
-		};
-		let unhealthy = DropOnLog::eviction_unhealthy(self, &cel_exec);
+		let unhealthy = DropOnLog::eviction_unhealthy(self, cel_exec);
 		let (health, eviction_duration, restore_health) = DropOnLog::eviction_decision(
 			self,
 			rh.health_score(),
@@ -821,7 +809,7 @@ impl Drop for DropOnLog {
 
 		let llm_response = log.llm_response.take().map(Into::into);
 		let mcp = log.mcp_status.take();
-		log.finalize_request_handle(end_time, llm_response.as_ref(), mcp.as_ref());
+		let request_handle = log.request_handle.take();
 		let cel_end_time = cel::RequestTime(end_time.as_datetime());
 		let cel_exec = log.cel.build(CelLoggingBuildInputs {
 			req: log.request_snapshot.as_deref(),
@@ -831,6 +819,9 @@ impl Drop for DropOnLog {
 			end_time: &cel_end_time,
 			source_context: log.source_context.as_ref(),
 		});
+		if let Some(rh) = request_handle {
+			log.finalize_request_handle(rh, end_time, &cel_exec);
+		}
 
 		let custom_metric_fields = CustomField::new(
 			// For metrics, keep empty values which will become 'unknown'

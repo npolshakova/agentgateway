@@ -2319,9 +2319,27 @@ fn finalize_retryable_attempt(
 		},
 	}
 	let end_time = agent_core::Timestamp::now();
-	let llm_response = log.llm_response.take().map(Into::into);
+	// Retryable attempts may finalize backend health before the overall request completes.
+	// So we snapshot async log fields for CEL eviction here without consuming them, so the final access logs
+	// and metrics still have the LLM/MCP data.
+	let llm_response = log.llm_response.take();
 	let mcp = log.mcp_status.take();
-	log.finalize_request_handle(end_time, llm_response.as_ref(), mcp.as_ref());
+	log.llm_response.store(llm_response.clone());
+	log.mcp_status.store(mcp.clone());
+	let request_handle = log.request_handle.take();
+	let llm_response = llm_response.map(Into::into);
+	let cel_end_time = cel::RequestTime(end_time.as_datetime());
+	let cel_exec = log.cel.build(crate::telemetry::log::CelLoggingBuildInputs {
+		req: log.request_snapshot.as_deref(),
+		resp: log.response_snapshot.as_ref(),
+		llm_response: llm_response.as_ref(),
+		mcp: mcp.as_ref().filter(|m| !m.is_empty()),
+		end_time: &cel_end_time,
+		source_context: log.source_context.as_ref(),
+	});
+	if let Some(rh) = request_handle {
+		log.finalize_request_handle(rh, end_time, &cel_exec);
+	}
 }
 
 fn should_retry(res: &Result<Response, SnapshottedProxyResponse>, pol: &retry::Policy) -> bool {
