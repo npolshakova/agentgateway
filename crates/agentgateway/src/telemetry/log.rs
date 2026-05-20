@@ -663,9 +663,7 @@ impl RequestLog {
 		})
 	}
 
-	/// Finalizes the current backend health state.
-	/// Retry loops can call this early to evict a failed target before the next attempt.
-	pub(crate) fn finalize_request_handle(
+	fn finish_request_handle(
 		&self,
 		rh: ActiveHandle,
 		end_time: Timestamp,
@@ -685,6 +683,29 @@ impl RequestLog {
 			eviction_duration,
 			restore_health,
 		);
+	}
+
+	/// Finalizes the current backend health state.
+	/// Retry loops can call this early to evict a failed target before the next attempt.
+	pub(crate) fn finalize_request_handle(
+		&mut self,
+		end_time: Timestamp,
+		llm_response: Option<&LLMContext>,
+		mcp: Option<&MCPInfo>,
+	) {
+		let cel_end_time = cel::RequestTime(end_time.as_datetime());
+		let cel_exec = self.cel.build(CelLoggingBuildInputs {
+			req: self.request_snapshot.as_deref(),
+			resp: self.response_snapshot.as_ref(),
+			llm_response,
+			mcp: mcp.filter(|m| !m.is_empty()),
+			end_time: &cel_end_time,
+			source_context: self.source_context.as_ref(),
+		});
+		let Some(rh) = self.request_handle.take() else {
+			return;
+		};
+		self.finish_request_handle(rh, end_time, &cel_exec);
 	}
 }
 
@@ -820,7 +841,7 @@ impl Drop for DropOnLog {
 			source_context: log.source_context.as_ref(),
 		});
 		if let Some(rh) = request_handle {
-			log.finalize_request_handle(rh, end_time, &cel_exec);
+			log.finish_request_handle(rh, end_time, &cel_exec);
 		}
 
 		let custom_metric_fields = CustomField::new(

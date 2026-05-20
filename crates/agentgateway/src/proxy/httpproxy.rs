@@ -1665,6 +1665,16 @@ async fn make_backend_call(
 		},
 		Backend::Invalid => return Err(ProxyResponse::from(ProxyError::BackendDoesNotExist)),
 	};
+	log.add(|l| l.health_policy = backend_call.backend_policies.health.clone());
+	if let Some(log) = log.as_mut()
+		&& let Some(expr) = backend_call
+			.backend_policies
+			.health
+			.as_ref()
+			.and_then(|policy| policy.unhealthy_expression.as_ref())
+	{
+		log.cel.ctx().register_expression(expr.as_ref());
+	}
 	// Apply auth before LLM request setup, so the providers can assume auth is in standardized header
 	// Apply auth as early as possible so any ext_proc or transformations won't be repeated on retries in case it fails.
 	let backend_info = auth::BackendInfo {
@@ -2326,20 +2336,8 @@ fn finalize_retryable_attempt(
 	let mcp = log.mcp_status.take();
 	log.llm_response.store(llm_response.clone());
 	log.mcp_status.store(mcp.clone());
-	let request_handle = log.request_handle.take();
 	let llm_response = llm_response.map(Into::into);
-	let cel_end_time = cel::RequestTime(end_time.as_datetime());
-	let cel_exec = log.cel.build(crate::telemetry::log::CelLoggingBuildInputs {
-		req: log.request_snapshot.as_deref(),
-		resp: log.response_snapshot.as_ref(),
-		llm_response: llm_response.as_ref(),
-		mcp: mcp.as_ref().filter(|m| !m.is_empty()),
-		end_time: &cel_end_time,
-		source_context: log.source_context.as_ref(),
-	});
-	if let Some(rh) = request_handle {
-		log.finalize_request_handle(rh, end_time, &cel_exec);
-	}
+	log.finalize_request_handle(end_time, llm_response.as_ref(), mcp.as_ref());
 }
 
 fn should_retry(res: &Result<Response, SnapshottedProxyResponse>, pol: &retry::Policy) -> bool {
