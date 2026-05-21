@@ -2026,6 +2026,33 @@ fn external_auth_from_proto(
 				allow_partial_message: body_opts.allow_partial_message,
 				pack_as_bytes: body_opts.pack_as_bytes,
 			});
+	let cache = ea
+		.cache
+		.as_ref()
+		.map(|cache| {
+			let key: Vec<_> = cache
+				.key
+				.iter()
+				.map(|expr| permissive_cel_expression_arc(diagnostics, "traffic.extAuthz.cache.key", expr))
+				.collect();
+			if key.is_empty() {
+				return Err(ProtoError::Generic(
+					"traffic.extAuthz.cache.key must contain at least one expression".to_string(),
+				));
+			}
+			let ttl = cache
+				.ttl
+				.as_ref()
+				.ok_or(ProtoError::MissingRequiredField)
+				.map(|ttl| convert_duration(*ttl))?;
+			let max_entries = http::ext_authz::effective_cache_entries(cache.max_entries as usize);
+			Ok::<_, ProtoError>(http::ext_authz::CacheConfig {
+				key,
+				ttl,
+				max_entries,
+			})
+		})
+		.transpose()?;
 	let protocol = match ea
 		.protocol
 		.as_ref()
@@ -2094,6 +2121,10 @@ fn external_auth_from_proto(
 				.collect::<Result<_, _>>()?,
 		},
 	};
+	let cache_store = cache
+		.as_ref()
+		.map(|cache| crate::http::ext_authz::cache_store(cache.max_entries))
+		.unwrap_or_else(crate::http::ext_authz::default_cache_store);
 	Ok(http::ext_authz::ExtAuthz {
 		protocol,
 		target: Arc::new(target),
@@ -2115,6 +2146,8 @@ fn external_auth_from_proto(
 			)
 			.collect(),
 		include_request_body,
+		cache,
+		cache_store,
 	})
 }
 

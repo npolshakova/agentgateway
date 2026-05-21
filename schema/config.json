@@ -4265,6 +4265,17 @@
               "type": "null"
             }
           ]
+        },
+        "cache": {
+          "description": "Cache gRPC authorization results by CEL-derived request key.\n\nWarning: the safety of this feature depends on the cache key accurately capturing the fields\nthe server operates on. For example, if you return a different result based on header A but only\ncache header B, users may get incorrect cache hits.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CacheConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "oneOf": [
@@ -4477,6 +4488,35 @@
       },
       "additionalProperties": false
     },
+    "CacheConfig": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "description": "Non-empty list of CEL expressions that make up the cache key.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Expression"
+          },
+          "minItems": 1
+        },
+        "ttl": {
+          "description": "How long cached authorization results are reused.",
+          "type": "string"
+        },
+        "maxEntries": {
+          "description": "Maximum number of authorization results to keep in the cache.",
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0,
+          "default": 10000
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "key",
+        "ttl"
+      ]
+    },
     "ExtAuthz": {
       "type": "object",
       "properties": {
@@ -4515,6 +4555,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/BodyOptions"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cache": {
+          "description": "Cache gRPC authorization results by CEL-derived request key.\n\nWarning: the safety of this feature depends on the cache key accurately capturing the fields\nthe server operates on. For example, if you return a different result based on header A but only\ncache header B, users may get incorrect cache hits.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CacheConfig"
             },
             {
               "type": "null"
