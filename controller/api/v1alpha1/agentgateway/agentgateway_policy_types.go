@@ -942,8 +942,14 @@ type JWTMCPConfig struct {
 	ResourceMetadata map[string]apiextensionsv1.JSON `json:"resourceMetadata,omitempty"`
 
 	// `provider` specifies the identity provider to use for MCP authentication flows.
+	// +kubebuilder:validation:Enum=Auth0;Keycloak;Okta
 	// +optional
 	Provider *McpIDP `json:"provider,omitempty"`
+
+	// `clientId` is an optional client ID to use for short-circuiting Dynamic Client Registration.
+	// If set, the gateway will not proxy registration requests to the IDP and instead return this client ID.
+	// +optional
+	ClientID *string `json:"clientId,omitempty"`
 }
 
 // +kubebuilder:validation:ExactlyOneOf=remote;inline
@@ -1390,6 +1396,7 @@ type MCPAuthentication struct {
 	ResourceMetadata map[string]apiextensionsv1.JSON `json:"resourceMetadata"`
 
 	// `provider` specifies the identity provider to use for authentication.
+	// +kubebuilder:validation:Enum=Auth0;Keycloak;Okta
 	// +optional
 	McpIDP *McpIDP `json:"provider,omitempty"`
 
@@ -1416,6 +1423,11 @@ type MCPAuthentication struct {
 	// +kubebuilder:default=Strict
 	// +optional
 	Mode JWTAuthenticationMode `json:"mode,omitempty"`
+
+	// `clientId` is an optional client ID to use for short-circuiting Dynamic Client Registration.
+	// If set, the gateway will not proxy registration requests to the IDP and instead return this client ID.
+	// +optional
+	ClientID *string `json:"clientId,omitempty"`
 }
 
 // +k8s:enum
@@ -1424,6 +1436,7 @@ type McpIDP string
 const (
 	Auth0    McpIDP = "Auth0"
 	Keycloak McpIDP = "Keycloak"
+	Okta     McpIDP = "Okta"
 )
 
 type BackendTunnel struct {

@@ -820,6 +820,7 @@ message TrafficPolicySpec {
     message MCP {
       BackendPolicySpec.McpAuthentication.McpIDP provider = 1;
       BackendPolicySpec.McpAuthentication.ResourceMetadata resource_metadata = 2;
+      optional string client_id = 3;
     }
 
     // Validation mode for JWT authentication
@@ -1258,6 +1259,7 @@ message BackendPolicySpec {
       UNSPECIFIED = 0;
       AUTH0 = 1;
       KEYCLOAK = 2;
+      OKTA = 3;
     }
 
     // Validation mode for JWT authentication
@@ -1280,6 +1282,7 @@ message BackendPolicySpec {
     // JWT validation options controlling which claims must be present.
     JWTValidationOptions jwt_validation_options = 7;
     AuthorizationLocation authorization_location = 8;
+    optional string client_id = 9;
   }
 
   oneof kind {

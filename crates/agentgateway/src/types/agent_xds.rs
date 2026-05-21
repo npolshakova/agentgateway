@@ -396,6 +396,7 @@ fn mcp_authentication_from_proto(
 		convert_mcp_resource_metadata(m.resource_metadata.as_ref().map(|rm| rm.extra.iter())),
 		std::sync::Arc::new(jwt_validator),
 		mode,
+		m.client_id.clone(),
 	))
 }
 
@@ -405,6 +406,7 @@ fn convert_mcp_provider(provider: i32) -> Option<McpIDP> {
 		x if x == McpIdp::Unspecified as i32 => None,
 		x if x == McpIdp::Auth0 as i32 => Some(McpIDP::Auth0 {}),
 		x if x == McpIdp::Keycloak as i32 => Some(McpIDP::Keycloak {}),
+		x if x == McpIdp::Okta as i32 => Some(McpIDP::Okta {}),
 		_ => None,
 	}
 }
@@ -435,6 +437,7 @@ fn build_mcp_authentication(
 	resource_metadata: ResourceMetadata,
 	jwt_validator: Arc<http::jwt::Jwt>,
 	mode: McpAuthenticationMode,
+	client_id: Option<String>,
 ) -> McpAuthentication {
 	McpAuthentication {
 		issuer,
@@ -443,6 +446,7 @@ fn build_mcp_authentication(
 		resource_metadata,
 		jwt_validator,
 		mode,
+		client_id,
 	}
 }
 
@@ -1676,6 +1680,7 @@ fn traffic_policy_from_proto(
 							tps::jwt::Mode::Strict => McpAuthenticationMode::Strict,
 							tps::jwt::Mode::Permissive => McpAuthenticationMode::Permissive,
 						},
+						mcp.client_id.clone(),
 					))
 				},
 				None => None,
