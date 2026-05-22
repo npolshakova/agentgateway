@@ -1608,11 +1608,102 @@ type HeaderTransformation struct {
 	Value shared.CELExpression `json:"value"`
 }
 
+// BodySendMode controls how HTTP bodies are delivered to the external processor.
+// +kubebuilder:validation:Enum=None;Buffered;BufferedPartial;FullDuplexStreamed
+type BodySendMode string
+
+const (
+	// BodySendModeNone does not send the body to the external processor.
+	BodySendModeNone BodySendMode = "None"
+	// BodySendModeBuffered buffers the full body before sending it to the
+	// external processor. It returns an error if the body exceeds 8KB.
+	BodySendModeBuffered BodySendMode = "Buffered"
+	// BodySendModeBufferedPartial buffers up to 8KB. If the body exceeds that
+	// limit, it sends the buffered prefix instead of returning an error.
+	BodySendModeBufferedPartial BodySendMode = "BufferedPartial"
+	// BodySendModeFullDuplexStreamed streams the body to the external processor.
+	BodySendModeFullDuplexStreamed BodySendMode = "FullDuplexStreamed"
+)
+
+// HeaderSendMode controls whether HTTP headers are delivered to the external processor.
+// +kubebuilder:validation:Enum=Send;Skip
+type HeaderSendMode string
+
+const (
+	// HeaderSendModeSend sends headers to the external processor.
+	HeaderSendModeSend HeaderSendMode = "Send"
+	// HeaderSendModeSkip does not send headers to the external processor.
+	HeaderSendModeSkip HeaderSendMode = "Skip"
+)
+
+// TrailerSendMode controls whether HTTP trailers are delivered to the external processor.
+// +kubebuilder:validation:Enum=Skip;Send
+type TrailerSendMode string
+
+const (
+	// TrailerSendModeSkip does not send trailers to the external processor.
+	TrailerSendModeSkip TrailerSendMode = "Skip"
+	// TrailerSendModeSend sends trailers to the external processor.
+	TrailerSendModeSend TrailerSendMode = "Send"
+)
+
+// ProcessingOptions configures how ext_proc handles request and response phases.
+type ProcessingOptions struct {
+	// requestBodyMode controls how request bodies are sent to the external processor.
+	// `Buffered` buffers the full body and returns an error if it exceeds 8KB.
+	// `BufferedPartial` buffers up to 8KB and sends the buffered prefix if the
+	// body exceeds that limit. Defaults to `FullDuplexStreamed`.
+	// +optional
+	// +kubebuilder:default=FullDuplexStreamed
+	RequestBodyMode *BodySendMode `json:"requestBodyMode,omitempty"`
+
+	// responseBodyMode controls how response bodies are sent to the external processor.
+	// `Buffered` buffers the full body and returns an error if it exceeds 8KB.
+	// `BufferedPartial` buffers up to 8KB and sends the buffered prefix if the
+	// body exceeds that limit. Defaults to `FullDuplexStreamed`.
+	// +optional
+	// +kubebuilder:default=FullDuplexStreamed
+	ResponseBodyMode *BodySendMode `json:"responseBodyMode,omitempty"`
+
+	// requestHeaderMode controls whether request headers are sent to the external processor.
+	// Defaults to `Send`.
+	// +optional
+	// +kubebuilder:default=Send
+	RequestHeaderMode *HeaderSendMode `json:"requestHeaderMode,omitempty"`
+
+	// responseHeaderMode controls whether response headers are sent to the external processor.
+	// Defaults to `Send`.
+	// +optional
+	// +kubebuilder:default=Send
+	ResponseHeaderMode *HeaderSendMode `json:"responseHeaderMode,omitempty"`
+
+	// requestTrailerMode controls whether request trailers are sent to the external processor.
+	// Defaults to `Send`.
+	// +optional
+	// +kubebuilder:default=Send
+	RequestTrailerMode *TrailerSendMode `json:"requestTrailerMode,omitempty"`
+
+	// responseTrailerMode controls whether response trailers are sent to the external processor.
+	// Defaults to `Send`.
+	// +optional
+	// +kubebuilder:default=Send
+	ResponseTrailerMode *TrailerSendMode `json:"responseTrailerMode,omitempty"`
+
+	// allowModeOverride allows ext_proc `mode_override` values from matching headers responses to update
+	// subsequent request/response processing phases for this exchange. Defaults to `false`.
+	// +optional
+	// +kubebuilder:default=false
+	AllowModeOverride bool `json:"allowModeOverride,omitempty"`
+}
+
 type ExtProc struct {
 	// `backendRef` references the External Processor server to reach.
 	// Supported types: `Service` and `Backend`.
 	// +optional // This is actually required, but making it required breaks Conditional
 	BackendRef *gwv1.BackendObjectReference `json:"backendRef,omitempty"`
+	// processingOptions configures how request and response phases are sent to ext_proc.
+	// +optional
+	ProcessingOptions *ProcessingOptions `json:"processingOptions,omitempty"`
 }
 
 type ExtProcConditional struct {

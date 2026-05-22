@@ -926,6 +926,19 @@ message TrafficPolicySpec {
       FAIL_CLOSED = 0;
       FAIL_OPEN = 1;
     }
+    // TODO(keithmattix): Should we depend on the actual Envoy types?
+    enum BodySendMode {
+      NONE = 0;
+      reserved 1; // STREAMED
+      BUFFERED = 2;
+      BUFFERED_PARTIAL = 3;
+      FULL_DUPLEX_STREAMED = 4;
+    }
+    enum HeaderTrailerSendMode {
+      UNSET = 0;
+      SEND = 1;
+      SKIP = 2;
+    }
     BackendReference target = 1;
     FailureMode failure_mode = 2;
 
@@ -935,7 +948,19 @@ message TrafficPolicySpec {
     message NamespacedMetadataContext {
       map<string, string> context = 1;
     }
+    message ProcessingOptions {
+      BodySendMode request_body_mode = 1;
+      BodySendMode response_body_mode = 2;
+      HeaderTrailerSendMode request_header_mode = 3;
+      HeaderTrailerSendMode response_header_mode = 4;
+      HeaderTrailerSendMode request_trailer_mode = 5;
+      HeaderTrailerSendMode response_trailer_mode = 6;
+      // Allow ext_proc mode_override values from matching headers responses to update
+      // subsequent request/response processing phases for this exchange.
+      bool allow_mode_override = 7;
+    }
     map<string, NamespacedMetadataContext> metadata_context = 5;
+    ProcessingOptions processing_options = 6;
   }
   enum PolicyPhase {
     ROUTE = 0;
