@@ -2319,9 +2319,9 @@ fn finalize_attempt_for_retry(
 		Err(SnapshottedProxyResponse(_)) => (None, None, None),
 	};
 	let end_time = agent_core::Timestamp::now();
+	// This is an intermediate retry snapshot, so a best-effort clone is fine here.
 	let llm_response = log.llm_response.load_clone().map(Into::into);
 	let mcp = log.mcp_status.load_clone();
-	let llm_response = llm_response.map(Into::into);
 	log.finalize_request_handle_for_attempt(
 		end_time,
 		status,
@@ -2625,7 +2625,7 @@ mod tests {
 			.attach_route_policy(json!({
 				"retry": {
 					"attempts": 1,
-					"backoff": "10s",
+					"backoff": "10ms",
 					"codes": [429]
 				},
 				"ai": {

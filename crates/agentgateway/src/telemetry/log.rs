@@ -52,6 +52,9 @@ use crate::{cel, llm, mcp};
 pub struct AsyncLog<T>(Arc<AtomicCell<Option<T>>>);
 
 impl<T: Clone> AsyncLog<T> {
+	// load_clone is only a best-effort snapshot. It temporarily removes the value so it can clone it,
+	// then stores the clone back. A concurrent store/non_atomic_mutate between those operations can be
+	// lost when we restore `cur`, so callers must not rely on this as an atomic read.
 	pub fn load_clone(&self) -> Option<T> {
 		let cur = self.0.take();
 		self.0.store(cur.clone());
@@ -467,6 +470,7 @@ impl DropOnLog {
 	/// `unhealthy` should already be evaluated (preferably with the shared CEL executor when available).
 	/// When no CEL expression is set, the default treats 5xx, connection failures, or non-zero
 	/// gRPC status as unhealthy.
+	#[cfg(test)]
 	fn default_unhealthy(log: &RequestLog) -> bool {
 		Self::default_unhealthy_for_status(log, log.status)
 	}
