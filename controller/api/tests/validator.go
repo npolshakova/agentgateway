@@ -15,11 +15,17 @@ import (
 )
 
 var validator = lazy.New(func() (*crd.Validator, error) {
-	return newAgentgatewayValidator(false)
+	return newAgentgatewayValidator(false, true)
 })
 var validatorSkipMissing = lazy.New(func() (*crd.Validator, error) {
-	return newAgentgatewayValidator(true)
+	return newAgentgatewayValidator(true, true)
 })
+
+func NewAgentgatewayValidatorStrict(t *testing.T) *crd.Validator {
+	v, err := newAgentgatewayValidator(false, false)
+	assert.NoError(t, err)
+	return v
+}
 
 func NewAgentgatewayValidator(t *testing.T) *crd.Validator {
 	v, err := validator.Get()
@@ -33,7 +39,7 @@ func NewAgentgatewayValidatorSkipMissing(t test.Failer) *crd.Validator {
 	return v
 }
 
-func newAgentgatewayValidator(skipMissing bool) (*crd.Validator, error) {
+func newAgentgatewayValidator(skipMissing bool, skipCrdValidation bool) (*crd.Validator, error) {
 	root := fsutils.GetModuleRoot()
 	dirs := []string{}
 	agentgatewayDir, err := os.ReadDir(filepath.Join(root, "controller/install/helm/agentgateway-crds/templates/"))
@@ -45,8 +51,13 @@ func newAgentgatewayValidator(skipMissing bool) (*crd.Validator, error) {
 			dirs = append(dirs, filepath.Join(root, "controller/install/helm/agentgateway-crds/templates", d.Name()))
 		}
 	}
-	v, err := crd.NewValidatorFromFiles(
-		dirs...,
+	opts := []crd.ValidatorOption{}
+	if skipCrdValidation {
+		opts = append(opts, crd.WithoutCRDValidation())
+	}
+	v, err := crd.NewValidatorFromFilesWithOptions(
+		dirs,
+		opts...,
 	)
 	if err != nil {
 		return nil, err
