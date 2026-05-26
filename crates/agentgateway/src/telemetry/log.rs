@@ -719,29 +719,6 @@ impl RequestLog {
 		);
 	}
 
-	/// Finalizes the current backend health state.
-	/// Retry loops can call this early to evict a failed target before the next attempt.
-	pub(crate) fn finalize_request_handle(
-		&mut self,
-		end_time: Timestamp,
-		llm_response: Option<&LLMContext>,
-		mcp: Option<&MCPInfo>,
-	) {
-		let cel_end_time = cel::RequestTime(end_time.as_datetime());
-		let cel_exec = self.cel.build(CelLoggingBuildInputs {
-			req: self.request_snapshot.as_deref(),
-			resp: self.response_snapshot.as_ref(),
-			llm_response,
-			mcp: mcp.filter(|m| !m.is_empty()),
-			end_time: &cel_end_time,
-			source_context: self.source_context.as_ref(),
-		});
-		let Some(rh) = self.request_handle.take() else {
-			return;
-		};
-		self.finish_request_handle(rh, end_time, &cel_exec);
-	}
-
 	pub(crate) fn finalize_request_handle_for_attempt(
 		&mut self,
 		end_time: Timestamp,

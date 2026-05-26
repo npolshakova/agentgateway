@@ -2319,7 +2319,7 @@ fn finalize_attempt_for_retry(
 		Err(SnapshottedProxyResponse(_)) => (None, None, None),
 	};
 	let end_time = agent_core::Timestamp::now();
-	let llm_response = log.llm_response.load_clone();
+	let llm_response = log.llm_response.load_clone().map(Into::into);
 	let mcp = log.mcp_status.load_clone();
 	let llm_response = llm_response.map(Into::into);
 	log.finalize_request_handle_for_attempt(
