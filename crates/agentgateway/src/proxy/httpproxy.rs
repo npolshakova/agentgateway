@@ -570,12 +570,7 @@ impl HTTPProxy {
 
 		// Pass the log into the body so it finishes once the stream is entirely complete.
 		// We will also record trailer info there.
-		log.with(|l| {
-			l.status = Some(resp.status());
-			l.reason = Some(reason);
-			l.retry_after = http::outlierdetection::retry_after(resp.status(), resp.headers());
-			l.response_snapshot = l.cel.cel_context.maybe_snapshot_response(&mut resp);
-		});
+		log.with(|l| set_final_response_fields(l, &reason, &mut resp));
 
 		if resp.status() == StatusCode::SWITCHING_PROTOCOLS {
 			let Some(req_upgrade) = resp.extensions_mut().remove::<RequestUpgrade>() else {
@@ -770,11 +765,6 @@ impl HTTPProxy {
 		backend_policies.register_cel_expressions(log.cel.ctx());
 		log.cel.ctx().maybe_buffer_request_body(&mut req).await;
 		log.health_policy = backend_policies.health.clone();
-		if let Some(ev) = &backend_policies.health
-			&& let Some(expr) = &ev.unhealthy_expression
-		{
-			log.cel.ctx().register_expression(expr.as_ref());
-		}
 		log.backend_info = Some(selected_backend.backend.backend.backend_info());
 		if let Some(bp) = selected_backend.backend.backend.backend_protocol() {
 			log.backend_protocol = Some(bp)
@@ -874,7 +864,7 @@ impl HTTPProxy {
 				);
 			}
 			let req = Request::from_parts(head, http::Body::new(this));
-			let res = self
+			let mut res = self
 				.attempt_upstream(
 					log,
 					&mut req_upgrade,
@@ -897,8 +887,7 @@ impl HTTPProxy {
 				res.is_err(),
 				res.as_ref().map(|r| r.status())
 			);
-			let mut res = res;
-			finalize_retryable_attempt(log, &mut res);
+			finalize_attempt_for_retry(log, &mut res);
 			last_res = Some(res);
 			if let Some(bo) = retry_backoff {
 				let fut = if let Some(request_timeout) = request_timeout {
@@ -1666,14 +1655,10 @@ async fn make_backend_call(
 		Backend::Invalid => return Err(ProxyResponse::from(ProxyError::BackendDoesNotExist)),
 	};
 	log.add(|l| l.health_policy = backend_call.backend_policies.health.clone());
-	if let Some(log) = log.as_mut()
-		&& let Some(expr) = backend_call
+	if let Some(log) = log.as_mut() {
+		backend_call
 			.backend_policies
-			.health
-			.as_ref()
-			.and_then(|policy| policy.unhealthy_expression.as_ref())
-	{
-		log.cel.ctx().register_expression(expr.as_ref());
+			.register_cel_expressions(log.cel.ctx());
 	}
 	// Apply auth before LLM request setup, so the providers can assume auth is in standardized header
 	// Apply auth as early as possible so any ext_proc or transformations won't be repeated on retries in case it fails.
@@ -2310,34 +2295,41 @@ fn resolved_workload_target_hostname<'a>(
 	}
 }
 
-fn finalize_retryable_attempt(
+fn set_final_response_fields(
+	log: &mut RequestLog,
+	reason: &ProxyResponseReason,
+	resp: &mut Response,
+) {
+	log.status = Some(resp.status());
+	log.reason = Some(*reason);
+	log.retry_after = http::outlierdetection::retry_after(resp.status(), resp.headers());
+	log.response_snapshot = log.cel.cel_context.maybe_snapshot_response(resp);
+}
+
+fn finalize_attempt_for_retry(
 	log: &mut RequestLog,
 	res: &mut Result<Response, SnapshottedProxyResponse>,
 ) {
-	match res {
-		Ok(resp) => {
-			log.status = Some(resp.status());
-			log.reason = Some(ProxyResponseReason::Upstream);
-			log.retry_after = http::outlierdetection::retry_after(resp.status(), resp.headers());
-			log.response_snapshot = log.cel.cel_context.maybe_snapshot_response(resp);
-		},
-		Err(SnapshottedProxyResponse(proxy_response)) => {
-			log.status = None;
-			log.reason = Some(proxy_response.as_reason());
-			log.retry_after = None;
-			log.response_snapshot = None;
-		},
-	}
+	let (status, retry_after, response_snapshot) = match res {
+		Ok(resp) => (
+			Some(resp.status()),
+			http::outlierdetection::retry_after(resp.status(), resp.headers()),
+			log.cel.cel_context.maybe_snapshot_response(resp),
+		),
+		Err(SnapshottedProxyResponse(_)) => (None, None, None),
+	};
 	let end_time = agent_core::Timestamp::now();
-	// Retryable attempts may finalize backend health before the overall request completes.
-	// So we snapshot async log fields for CEL eviction here without consuming them, so the final access logs
-	// and metrics still have the LLM/MCP data.
-	let llm_response = log.llm_response.take();
-	let mcp = log.mcp_status.take();
-	log.llm_response.store(llm_response.clone());
-	log.mcp_status.store(mcp.clone());
+	let llm_response = log.llm_response.load_clone();
+	let mcp = log.mcp_status.load_clone();
 	let llm_response = llm_response.map(Into::into);
-	log.finalize_request_handle(end_time, llm_response.as_ref(), mcp.as_ref());
+	log.finalize_request_handle_for_attempt(
+		end_time,
+		status,
+		retry_after,
+		response_snapshot.as_ref(),
+		llm_response.as_ref(),
+		mcp.as_ref(),
+	);
 }
 
 fn should_retry(res: &Result<Response, SnapshottedProxyResponse>, pol: &retry::Policy) -> bool {
