@@ -344,6 +344,10 @@ func (r *gatewayReconciler) Reconcile(req types.NamespacedName) (rErr error) {
 	objs = r.deployer.SetNamespaceAndOwnerWithGVK(gw, wellknown.GatewayGVK, objs)
 	err = r.deployer.DeployObjsWithSource(ctx, objs, gw)
 	if err != nil {
+		if isGatewayDeployWarning(err) {
+			logger.Warn("retryable gateway deploy error", "ref", req, "error", err)
+			return err
+		}
 		if isTerminalGatewayDeployError(err) {
 			condition := metav1.Condition{
 				Type:               string(gwv1.GatewayConditionProgrammed),
@@ -385,7 +389,7 @@ func (r *gatewayReconciler) Reconcile(req types.NamespacedName) (rErr error) {
 	return nil
 }
 
-func isTerminalGatewayDeployError(err error) bool {
+func isGatewayDeployWarning(err error) bool {
 	if err == nil {
 		return false
 	}
@@ -396,11 +400,21 @@ func isTerminalGatewayDeployError(err error) bool {
 	if !strings.Contains(msg, "failed to apply object ") {
 		return false
 	}
-	return strings.Contains(msg, "field is immutable") ||
-		strings.Contains(msg, " is invalid") ||
+	return strings.Contains(msg, " is invalid") ||
 		strings.Contains(msg, " already exists") ||
 		strings.Contains(msg, " is forbidden") ||
 		strings.Contains(msg, ": forbidden:")
+}
+
+func isTerminalGatewayDeployError(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	if !strings.Contains(msg, "failed to apply object ") {
+		return false
+	}
+	return strings.Contains(msg, "field is immutable")
 }
 
 func (r *gatewayReconciler) updateStatus(gw *gwv1.Gateway, svcMeta *metav1.ObjectMeta) error {
@@ -429,7 +443,7 @@ func (r *gatewayReconciler) updateStatus(gw *gwv1.Gateway, svcMeta *metav1.Objec
 
 	// update gateway addresses in the status
 	desiredAddresses := getDesiredAddresses(gw, svc)
-	return updateGatewayAddresses(r.gwClient, client.ObjectKeyFromObject(gw), desiredAddresses)
+	return updateGatewayStatusAfterSuccessfulDeploy(r.gwClient, client.ObjectKeyFromObject(gw), desiredAddresses)
 }
 
 func getDesiredAddresses(gw *gwv1.Gateway, svc *corev1.Service) []gwv1.GatewayStatusAddress {
@@ -510,8 +524,9 @@ func updateGatewayStatusWithRetryFunc(
 	return nil
 }
 
-// updateGatewayAddresses updates the addresses of a Gateway resource.
-func updateGatewayAddresses(
+// updateGatewayStatusAfterSuccessfulDeploy updates Gateway addresses and clears the
+// controller-owned terminal deploy error after a successful deploy/prune cycle.
+func updateGatewayStatusAfterSuccessfulDeploy(
 	cli kclient.Client[*gwv1.Gateway],
 	gwNN types.NamespacedName,
 	desired []gwv1.GatewayStatusAddress,
@@ -520,17 +535,39 @@ func updateGatewayAddresses(
 		cli,
 		gwNN,
 		func(gw *gwv1.Gateway) (gwv1.GatewayStatus, bool) {
-			// Check if an update is needed
-			if slices.EqualFunc(desired, gw.Status.Addresses, func(a gwv1.GatewayStatusAddress, b gwv1.GatewayStatusAddress) bool {
-				return a.Value == b.Value && ptr.Equal(a.Type, b.Type)
-			}) {
-				return gw.Status, false
-			}
-			newStatus := gw.Status.DeepCopy()
-			newStatus.Addresses = desired
-			return *newStatus, true
+			return buildGatewayStatusAfterSuccessfulDeploy(gw, desired)
 		},
 	)
+}
+
+func buildGatewayStatusAfterSuccessfulDeploy(
+	gw *gwv1.Gateway,
+	desired []gwv1.GatewayStatusAddress,
+) (gwv1.GatewayStatus, bool) {
+	newStatus := gw.Status.DeepCopy()
+	needsUpdate := false
+
+	if !slices.EqualFunc(desired, gw.Status.Addresses, func(a gwv1.GatewayStatusAddress, b gwv1.GatewayStatusAddress) bool {
+		return a.Value == b.Value && ptr.Equal(a.Type, b.Type)
+	}) {
+		newStatus.Addresses = desired
+		needsUpdate = true
+	}
+
+	if programmed := meta.FindStatusCondition(newStatus.Conditions, string(gwv1.GatewayConditionProgrammed)); programmed != nil &&
+		programmed.Status == metav1.ConditionFalse &&
+		programmed.Reason == reports.GatewayResourceErrorReason {
+		meta.SetStatusCondition(&newStatus.Conditions, metav1.Condition{
+			Type:               string(gwv1.GatewayConditionProgrammed),
+			Status:             metav1.ConditionTrue,
+			ObservedGeneration: gw.Generation,
+			Reason:             string(gwv1.GatewayReasonProgrammed),
+			Message:            reports.GatewayProgrammedMessage,
+		})
+		needsUpdate = true
+	}
+
+	return *newStatus, needsUpdate
 }
 
 // updateGatewayStatusWithRetry attempts to update the Gateway status with retry logic

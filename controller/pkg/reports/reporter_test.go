@@ -82,10 +82,11 @@ func TestBuildGatewayStatus(t *testing.T) {
 	t.Run("shows current status shape when gateway already has a programmed false condition", func(t *testing.T) {
 		gw := gw()
 		gw.Status.Conditions = append(gw.Status.Conditions, metav1.Condition{
-			Type:    string(gwv1.GatewayConditionProgrammed),
-			Status:  metav1.ConditionFalse,
-			Reason:  reports.GatewayDeploymentErrorReason,
-			Message: "failed to apply object apps/v1, Kind=Deployment test-ns/test-gw: spec.selector is immutable",
+			Type:               string(gwv1.GatewayConditionProgrammed),
+			Status:             metav1.ConditionFalse,
+			Reason:             reports.GatewayDeploymentErrorReason,
+			ObservedGeneration: gw.Generation,
+			Message:            "failed to apply object apps/v1, Kind=Deployment test-ns/test-gw: spec.selector is immutable",
 		})
 
 		rm := reports.NewReportMap()
@@ -100,6 +101,31 @@ func TestBuildGatewayStatus(t *testing.T) {
 		assert.Equal(t, metav1.ConditionFalse, programmed.Status)
 		assert.Equal(t, reports.GatewayDeploymentErrorReason, programmed.Reason)
 		assert.Equal(t, "failed to apply object apps/v1, Kind=Deployment test-ns/test-gw: spec.selector is immutable", programmed.Message)
+	})
+
+	t.Run("replaces stale programmed deployment failure with programmed true after a later successful deploy", func(t *testing.T) {
+		gw := gw()
+		gw.Generation = 2
+		gw.Status.Conditions = append(gw.Status.Conditions, metav1.Condition{
+			Type:               string(gwv1.GatewayConditionProgrammed),
+			Status:             metav1.ConditionFalse,
+			Reason:             reports.GatewayDeploymentErrorReason,
+			ObservedGeneration: 1,
+			Message:            "failed to apply object apps/v1, Kind=Deployment test-ns/test-gw: spec.selector is immutable",
+		})
+
+		rm := reports.NewReportMap()
+		r := reports.NewReporter(&rm)
+		r.Gateway(gw)
+
+		status := rm.BuildGWStatus(context.Background(), *gw, 0)
+
+		assert.Equal(t, true, status != nil)
+		programmed := meta.FindStatusCondition(status.Conditions, string(gwv1.GatewayConditionProgrammed))
+		assert.Equal(t, true, programmed != nil)
+		assert.Equal(t, metav1.ConditionTrue, programmed.Status)
+		assert.Equal(t, string(gwv1.GatewayReasonProgrammed), programmed.Reason)
+		assert.Equal(t, gw.Generation, programmed.ObservedGeneration)
 	})
 
 	t.Run("set negative listener conditions from report and not add extra conditions", func(t *testing.T) {

@@ -387,7 +387,8 @@ func addMissingGatewayConditions(gwReport *GatewayReport, gw *gwv1.Gateway) {
 	existingProgrammed := meta.FindStatusCondition(gw.Status.Conditions, string(gwv1.GatewayConditionProgrammed))
 	hasDeploymentError := existingProgrammed != nil &&
 		existingProgrammed.Status == metav1.ConditionFalse &&
-		(existingProgrammed.Reason == GatewayDeploymentErrorReason || existingProgrammed.Reason == GatewayResourceErrorReason)
+		(existingProgrammed.Reason == GatewayDeploymentErrorReason || existingProgrammed.Reason == GatewayResourceErrorReason) &&
+		existingProgrammed.ObservedGeneration == gw.Generation
 	if cond := meta.FindStatusCondition(gwReport.GetConditions(), string(gwv1.GatewayConditionProgrammed)); !hasDeploymentError && cond == nil {
 		gwReport.SetCondition(reporter.GatewayCondition{
 			Type:    gwv1.GatewayConditionProgrammed,
