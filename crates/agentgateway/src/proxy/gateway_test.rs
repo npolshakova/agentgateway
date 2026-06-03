@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex as StdMutex};
 use std::time::Duration;
 
-use ::http::{Method, Version, header};
+use ::http::{Method, StatusCode, Version, header};
 use agent_core::strng;
 use assert_matches::assert_matches;
 use http_body_util::BodyExt;
@@ -28,14 +28,15 @@ use wiremock::{Mock, MockServer, ResponseTemplate};
 use x509_parser::nom::AsBytes;
 
 use crate::http::tests_common::*;
-use crate::http::{Body, Response};
-use crate::llm::{AIProvider, openai};
+use crate::http::{Body, Response, ext_proc};
+use crate::llm::{AIProvider, custom, openai};
 use crate::proxy::request_builder::RequestBuilder;
 use crate::test_helpers::proxymock::*;
 use crate::test_helpers::{extauthmock, oteltracemock, ratelimitmock};
 use crate::types::agent::{
 	Backend, BackendTrafficPolicy, BackendWithPolicies, Bind, BindProtocol, Listener,
-	ListenerProtocol, ListenerSet, PathMatch, ResourceName, Route, RouteMatch, Target,
+	ListenerProtocol, ListenerSet, PathMatch, ResourceName, Route, RouteMatch,
+	SimpleBackendReference, Target,
 };
 use crate::types::backend;
 use crate::{read_body, *};
@@ -1116,6 +1117,169 @@ async fn llm_openai_tokenize() {
 		want,
 	)
 	.await;
+}
+
+fn setup_custom_llm_provider_backend_mock(
+	mock: MockServer,
+	supported_formats: Vec<custom::ProviderFormat>,
+) -> (MockServer, TestBind, Client<MemoryConnector, Body>) {
+	setup_custom_llm_provider_backend_mock_with_formats(
+		mock,
+		supported_formats
+			.into_iter()
+			.map(|format| custom::ProviderFormatConfig { format, path: None })
+			.collect(),
+	)
+}
+
+fn setup_custom_llm_provider_backend_mock_with_formats(
+	mock: MockServer,
+	formats: Vec<custom::ProviderFormatConfig>,
+) -> (MockServer, TestBind, Client<MemoryConnector, Body>) {
+	let backend_name = "custom-ai";
+	let t = setup_proxy_test("{}")
+		.unwrap()
+		.with_bind(simple_bind())
+		.with_raw_backend(custom_llm_backend_with_formats(
+			backend_name,
+			SimpleBackendReference::InlineBackend(Target::Address(*mock.address())),
+			formats,
+		))
+		.with_route(basic_named_route(strng::format!("/{backend_name}")));
+	let io = t.serve_http(BIND_KEY);
+	(mock, t, io)
+}
+
+#[tokio::test]
+async fn llm_custom_provider_routes_to_provider_backend() {
+	let mock = body_mock(include_bytes!(
+		"../llm/tests/response/completions/basic.json"
+	))
+	.await;
+	let (mock, _bind, io) =
+		setup_custom_llm_provider_backend_mock(mock, vec![custom::ProviderFormat::Completions]);
+
+	let res = send_request_body(
+		io,
+		Method::POST,
+		"http://lo/v1/chat/completions",
+		include_bytes!("../llm/tests/requests/completions/basic.json"),
+	)
+	.await;
+	assert_eq!(res.status(), 200);
+	let _ = res.into_body().collect().await.unwrap();
+
+	let requests = mock
+		.received_requests()
+		.await
+		.expect("request recording should be enabled");
+	assert_eq!(requests.len(), 1);
+	assert_eq!(
+		&requests[0].url[Position::BeforePath..Position::AfterPath],
+		"/v1/chat/completions"
+	);
+	let upstream_body: Value =
+		serde_json::from_slice(&requests[0].body).expect("upstream request should be JSON");
+	assert_eq!(upstream_body["model"], "replaceme");
+}
+
+#[tokio::test]
+async fn llm_custom_provider_uses_native_format_fallback() {
+	let mock = body_mock(include_bytes!("../llm/tests/response/anthropic/basic.json")).await;
+	let (mock, _bind, io) =
+		setup_custom_llm_provider_backend_mock(mock, vec![custom::ProviderFormat::Messages]);
+
+	let res = send_request_body(
+		io,
+		Method::POST,
+		"http://lo/v1/chat/completions",
+		include_bytes!("../llm/tests/requests/completions/basic.json"),
+	)
+	.await;
+	assert_eq!(res.status(), 200);
+	let response_body: Value =
+		serde_json::from_slice(&read_body_raw(res.into_body()).await).expect("response is JSON");
+	assert_eq!(response_body["object"], "chat.completion");
+	assert_eq!(response_body["usage"]["prompt_tokens"], 15);
+	assert_eq!(response_body["usage"]["completion_tokens"], 21);
+
+	let requests = mock
+		.received_requests()
+		.await
+		.expect("request recording should be enabled");
+	assert_eq!(requests.len(), 1);
+	assert_eq!(
+		&requests[0].url[Position::BeforePath..Position::AfterPath],
+		"/v1/messages"
+	);
+	let upstream_body: Value =
+		serde_json::from_slice(&requests[0].body).expect("upstream request should be JSON");
+	assert_eq!(upstream_body["system"], "You are a helpful assistant.");
+	assert_eq!(upstream_body["messages"][0]["role"], "user");
+}
+
+#[tokio::test]
+async fn llm_custom_provider_uses_format_path_override() {
+	let mock = body_mock(include_bytes!("../llm/tests/response/anthropic/basic.json")).await;
+	let (mock, _bind, io) = setup_custom_llm_provider_backend_mock_with_formats(
+		mock,
+		vec![custom::ProviderFormatConfig {
+			format: custom::ProviderFormat::Messages,
+			path: Some(strng::literal!("/api/messages")),
+		}],
+	);
+
+	let res = send_request_body(
+		io,
+		Method::POST,
+		"http://lo/v1/chat/completions",
+		include_bytes!("../llm/tests/requests/completions/basic.json"),
+	)
+	.await;
+	assert_eq!(res.status(), 200);
+	let _ = res.into_body().collect().await.unwrap();
+
+	let requests = mock
+		.received_requests()
+		.await
+		.expect("request recording should be enabled");
+	assert_eq!(requests.len(), 1);
+	assert_eq!(
+		&requests[0].url[Position::BeforePath..Position::AfterPath],
+		"/api/messages"
+	);
+}
+
+#[tokio::test]
+async fn llm_custom_provider_rejects_unsupported_format_before_upstream_call() {
+	let mock = body_mock(include_bytes!(
+		"../llm/tests/response/completions/basic.json"
+	))
+	.await;
+	let (mock, _bind, io) =
+		setup_custom_llm_provider_backend_mock(mock, vec![custom::ProviderFormat::Embeddings]);
+
+	let res = send_request_body(
+		io,
+		Method::POST,
+		"http://lo/v1/chat/completions",
+		include_bytes!("../llm/tests/requests/completions/basic.json"),
+	)
+	.await;
+	assert_eq!(res.status(), 503);
+	let body = res.into_body().collect().await.unwrap().to_bytes();
+	assert!(
+		String::from_utf8_lossy(&body)
+			.contains("unsupported conversion: from Completions to provider custom"),
+		"unexpected response body: {}",
+		String::from_utf8_lossy(&body)
+	);
+
+	let requests = mock
+		.received_requests()
+		.await
+		.expect("request recording should be enabled");
+	assert_eq!(requests.len(), 0);
 }
 
 #[derive(Clone)]
@@ -2511,6 +2675,44 @@ fn setup_dfp_https() -> (TestBind, Client<MemoryConnector, Body>) {
 	let t = t.with_bind(bind).with_route(route);
 	let io = t.serve_https(BIND_KEY, None);
 	(t, io)
+}
+
+/// DFP and inference routing are orthogonal: DFP chooses the upstream from the request authority,
+/// while inference routing expects an endpoint picker to choose the upstream endpoint.
+#[tokio::test]
+async fn dfp_rejects_inference_routing() {
+	let backend_name = ResourceName::new("dynamic".into(), "".into());
+	let dynamic_backend = BackendWithPolicies {
+		backend: Backend::Dynamic(backend_name, ()),
+		inline_policies: vec![BackendTrafficPolicy::InferenceRouting(
+			ext_proc::InferenceRouting {
+				target: Arc::new(SimpleBackendReference::InlineBackend(Target::from((
+					"127.0.0.1",
+					9002,
+				)))),
+				destination_mode: ext_proc::InferenceRoutingDestinationMode::Passthrough,
+				failure_mode: ext_proc::FailureMode::FailClosed,
+			},
+		)],
+	};
+
+	let route = basic_named_route("/dynamic".into());
+	let t = setup_proxy_test("{}").unwrap();
+	let pi = t.inputs();
+	pi.stores
+		.binds
+		.write()
+		.insert_backend(dynamic_backend.backend.name(), dynamic_backend);
+	let t = t.with_bind(simple_bind()).with_route(route);
+	let io = t.serve_http(BIND_KEY);
+
+	let res = send_request(io, Method::GET, "http://example.com/dynamic").await;
+	assert_eq!(res.status(), StatusCode::SERVICE_UNAVAILABLE);
+	let body = res.into_body().collect().await.unwrap().to_bytes();
+	assert_eq!(
+		String::from_utf8_lossy(&body),
+		"processing failed: inferenceRouting is not supported with dynamic backends"
+	);
 }
 
 /// DFP resolves the destination from the request's Host/URI authority, including the port.
