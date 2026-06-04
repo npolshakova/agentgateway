@@ -82,8 +82,6 @@ spec:
         app.kubernetes.io/name: gw
         gateway.networking.k8s.io/gateway-class-name: agentgateway
         gateway.networking.k8s.io/gateway-name: gw
-        istio.io/dataplane-mode: none
-        sidecar.istio.io/inject: "false"
     spec:
       containers:
       - args:
@@ -136,12 +134,6 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.serviceAccountName
-        - name: CA_ADDRESS
-          value: https://foo:443
-        - name: TRUST_DOMAIN
-          value: not.cluster.local
-        - name: ADDITIONAL_TRUST_DOMAINS
-          value: extra.domain.com,another.domain.com
         image: cr.agentgateway.dev/agentgateway:99.99.99
         name: agentgateway
         ports:
@@ -181,12 +173,6 @@ spec:
         - mountPath: /var/run/secrets/xds-tokens
           name: xds-token
           readOnly: true
-        - mountPath: /var/run/secrets/istio
-          name: istiod-ca-cert
-          readOnly: true
-        - mountPath: /var/run/secrets/tokens
-          name: istio-token
-          readOnly: true
       securityContext:
         sysctls:
         - name: net.ipv4.ip_unprivileged_port_start
@@ -206,16 +192,6 @@ spec:
               path: xds-token
       - emptyDir: {}
         name: tmp
-      - configMap:
-          name: istio-ca-root-cert
-        name: istiod-ca-cert
-      - name: istio-token
-        projected:
-          sources:
-          - serviceAccountToken:
-              audience: istio-ca
-              expirationSeconds: 43200
-              path: istio-token
 status: {}
 ---
 apiVersion: v1

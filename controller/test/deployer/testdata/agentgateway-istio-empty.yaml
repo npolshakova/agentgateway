@@ -17,11 +17,9 @@ metadata:
   name: my-agwp
   namespace: default
 spec:
-  istio:
-    caAddress: https://foo:443
-    trustDomain: not.cluster.local
-    clusterId: cluster-1
-    network: network-1
+  # An empty istio block opts the gateway in to integration using all defaults,
+  # even when the control plane does not auto-enable it.
+  istio: {}
 ---
 kind: Gateway
 apiVersion: gateway.networking.k8s.io/v1

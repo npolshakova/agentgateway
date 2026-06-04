@@ -18,10 +18,8 @@ metadata:
   namespace: default
 spec:
   istio:
-    caAddress: https://foo:443
-    trustDomain: not.cluster.local
-    clusterId: cluster-1
-    network: network-1
+    # Control plane auto-enables Istio integration; this gateway opts out.
+    enabled: false
 ---
 kind: Gateway
 apiVersion: gateway.networking.k8s.io/v1

@@ -5,23 +5,18 @@ metadata:
 spec:
   controllerName: agentgateway.dev/agentgateway
   description: Specialized class for agentgateway.
-  parametersRef:
-    group: agentgateway.dev
-    kind: AgentgatewayParameters
-    name: my-agwp
-    namespace: default
 ---
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayParameters
+# Control plane has mesh values (cluster/network) set but auto-enable is off, so Istio
+# integration must NOT turn on for this gateway. The mesh ConfigMap is present to prove
+# that mesh config alone doesn't enable integration either.
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: my-agwp
-  namespace: default
-spec:
-  istio:
-    caAddress: https://foo:443
-    trustDomain: not.cluster.local
-    clusterId: cluster-1
-    network: network-1
+  name: istio-1-30
+  namespace: istio-system
+data:
+  mesh: |
+    trustDomain: custom.example.com
 ---
 kind: Gateway
 apiVersion: gateway.networking.k8s.io/v1
