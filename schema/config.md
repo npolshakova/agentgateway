@@ -276,6 +276,8 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -380,6 +382,8 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -484,6 +488,8 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -586,6 +592,8 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -724,6 +732,8 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -828,6 +838,8 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -930,6 +942,8 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -1053,6 +1067,8 @@
 |`binds[].listeners[].routes[].policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -1154,6 +1170,8 @@
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -1270,6 +1288,8 @@
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -1460,6 +1480,8 @@
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -1588,6 +1610,8 @@
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -1719,6 +1743,8 @@
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -1838,6 +1864,8 @@
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -2021,6 +2049,8 @@
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -2161,6 +2191,8 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -2290,6 +2322,8 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -2448,6 +2482,8 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -2552,6 +2588,8 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -2656,6 +2694,8 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -2758,6 +2798,8 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -2896,6 +2938,8 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -3000,6 +3044,8 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -3102,6 +3148,8 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -3270,6 +3318,8 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -3399,6 +3449,8 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -3557,6 +3609,8 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -3661,6 +3715,8 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -3765,6 +3821,8 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -3867,6 +3925,8 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -4005,6 +4065,8 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -4109,6 +4171,8 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -4211,6 +4275,8 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -4349,6 +4415,8 @@
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -4478,6 +4546,8 @@
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -4636,6 +4706,8 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -4740,6 +4812,8 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -4844,6 +4918,8 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -4946,6 +5022,8 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -5084,6 +5162,8 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -5188,6 +5268,8 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -5290,6 +5372,8 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -5520,6 +5604,8 @@
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -5648,6 +5734,8 @@
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].policies.extAuthz.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].policies.extAuthz.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -5779,6 +5867,8 @@
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -5898,6 +5988,8 @@
 |`binds[].listeners[].policies.extProc.policies.backendAuth.aws.region`|string||
 |`binds[].listeners[].policies.extProc.policies.backendAuth.aws.sessionToken`|string||
 |`binds[].listeners[].policies.extProc.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`binds[].listeners[].policies.extProc.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`binds[].listeners[].policies.extProc.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`binds[].listeners[].policies.extProc.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`binds[].listeners[].policies.extProc.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`binds[].listeners[].policies.extProc.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -6113,6 +6205,8 @@
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.aws.region`|string||
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.aws.sessionToken`|string||
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`frontendPolicies.accessLog.otlp.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`frontendPolicies.accessLog.otlp.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -6223,6 +6317,8 @@
 |`frontendPolicies.tracing.policies.backendAuth.aws.region`|string||
 |`frontendPolicies.tracing.policies.backendAuth.aws.sessionToken`|string||
 |`frontendPolicies.tracing.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`frontendPolicies.tracing.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`frontendPolicies.tracing.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`frontendPolicies.tracing.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`frontendPolicies.tracing.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`frontendPolicies.tracing.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -6468,6 +6564,8 @@
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -6572,6 +6670,8 @@
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -6676,6 +6776,8 @@
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -6778,6 +6880,8 @@
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -6916,6 +7020,8 @@
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -7020,6 +7126,8 @@
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -7122,6 +7230,8 @@
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -7245,6 +7355,8 @@
 |`policies[].policy.backendAuth.aws.region`|string||
 |`policies[].policy.backendAuth.aws.sessionToken`|string||
 |`policies[].policy.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`policies[].policy.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`policies[].policy.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`policies[].policy.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`policies[].policy.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`policies[].policy.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -7346,6 +7458,8 @@
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.aws.region`|string||
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -7462,6 +7576,8 @@
 |`policies[].policy.remoteRateLimit.policies.backendAuth.aws.region`|string||
 |`policies[].policy.remoteRateLimit.policies.backendAuth.aws.sessionToken`|string||
 |`policies[].policy.remoteRateLimit.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`policies[].policy.remoteRateLimit.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`policies[].policy.remoteRateLimit.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`policies[].policy.remoteRateLimit.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`policies[].policy.remoteRateLimit.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`policies[].policy.remoteRateLimit.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -7652,6 +7768,8 @@
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.aws.region`|string||
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`policies[].policy.extAuthz.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`policies[].policy.extAuthz.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -7780,6 +7898,8 @@
 |`policies[].policy.extAuthz.policies.backendAuth.aws.region`|string||
 |`policies[].policy.extAuthz.policies.backendAuth.aws.sessionToken`|string||
 |`policies[].policy.extAuthz.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`policies[].policy.extAuthz.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`policies[].policy.extAuthz.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`policies[].policy.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`policies[].policy.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`policies[].policy.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -7911,6 +8031,8 @@
 |`policies[].policy.extProc.conditional[].policies.backendAuth.aws.region`|string||
 |`policies[].policy.extProc.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`policies[].policy.extProc.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`policies[].policy.extProc.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`policies[].policy.extProc.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`policies[].policy.extProc.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`policies[].policy.extProc.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`policies[].policy.extProc.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -8030,6 +8152,8 @@
 |`policies[].policy.extProc.policies.backendAuth.aws.region`|string||
 |`policies[].policy.extProc.policies.backendAuth.aws.sessionToken`|string||
 |`policies[].policy.extProc.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`policies[].policy.extProc.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`policies[].policy.extProc.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`policies[].policy.extProc.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`policies[].policy.extProc.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`policies[].policy.extProc.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -8208,6 +8332,8 @@
 |`backends[].mcp.targets[].policies.backendAuth.aws.region`|string||
 |`backends[].mcp.targets[].policies.backendAuth.aws.sessionToken`|string||
 |`backends[].mcp.targets[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].mcp.targets[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].mcp.targets[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].mcp.targets[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -8348,6 +8474,8 @@
 |`backends[].ai.policies.backendAuth.aws.region`|string||
 |`backends[].ai.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -8477,6 +8605,8 @@
 |`backends[].ai.policies.extAuthz.policies.backendAuth.aws.region`|string||
 |`backends[].ai.policies.extAuthz.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.policies.extAuthz.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.policies.extAuthz.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.policies.extAuthz.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.policies.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.policies.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -8635,6 +8765,8 @@
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -8739,6 +8871,8 @@
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -8843,6 +8977,8 @@
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -8945,6 +9081,8 @@
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -9083,6 +9221,8 @@
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -9187,6 +9327,8 @@
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -9289,6 +9431,8 @@
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -9457,6 +9601,8 @@
 |`backends[].ai.groups[].providers[].policies.backendAuth.aws.region`|string||
 |`backends[].ai.groups[].providers[].policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.groups[].providers[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.groups[].providers[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.groups[].providers[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.groups[].providers[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -9586,6 +9732,8 @@
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.aws.region`|string||
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -9744,6 +9892,8 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -9848,6 +9998,8 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -9952,6 +10104,8 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -10054,6 +10208,8 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -10192,6 +10348,8 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -10296,6 +10454,8 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -10398,6 +10558,8 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -10535,6 +10697,8 @@
 |`backends[].policies.backendAuth.aws.region`|string||
 |`backends[].policies.backendAuth.aws.sessionToken`|string||
 |`backends[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -10664,6 +10828,8 @@
 |`backends[].policies.extAuthz.policies.backendAuth.aws.region`|string||
 |`backends[].policies.extAuthz.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].policies.extAuthz.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].policies.extAuthz.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].policies.extAuthz.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].policies.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].policies.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -10822,6 +10988,8 @@
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -10926,6 +11094,8 @@
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -11030,6 +11200,8 @@
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -11132,6 +11304,8 @@
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -11270,6 +11444,8 @@
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -11374,6 +11550,8 @@
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -11476,6 +11654,8 @@
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -11740,6 +11920,8 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -11844,6 +12026,8 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -11948,6 +12132,8 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -12050,6 +12236,8 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -12188,6 +12376,8 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -12292,6 +12482,8 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -12394,6 +12586,8 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -12517,6 +12711,8 @@
 |`routeGroups[].routes[].policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -12618,6 +12814,8 @@
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -12734,6 +12932,8 @@
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -12924,6 +13124,8 @@
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -13052,6 +13254,8 @@
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -13183,6 +13387,8 @@
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -13302,6 +13508,8 @@
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -13485,6 +13693,8 @@
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -13625,6 +13835,8 @@
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -13754,6 +13966,8 @@
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -13912,6 +14126,8 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -14016,6 +14232,8 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -14120,6 +14338,8 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -14222,6 +14442,8 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -14360,6 +14582,8 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -14464,6 +14688,8 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -14566,6 +14792,8 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -14734,6 +14962,8 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -14863,6 +15093,8 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -15021,6 +15253,8 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -15125,6 +15359,8 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -15229,6 +15465,8 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -15331,6 +15569,8 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -15469,6 +15709,8 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -15573,6 +15815,8 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -15675,6 +15919,8 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -15813,6 +16059,8 @@
 |`routeGroups[].routes[].backends[].policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -15942,6 +16190,8 @@
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -16100,6 +16350,8 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -16204,6 +16456,8 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -16308,6 +16562,8 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -16410,6 +16666,8 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -16548,6 +16806,8 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -16652,6 +16912,8 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -16754,6 +17016,8 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -16905,6 +17169,8 @@
 |`llm.models[].auth.aws.region`|string||
 |`llm.models[].auth.aws.sessionToken`|string||
 |`llm.models[].auth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`llm.models[].auth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`llm.models[].auth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`llm.models[].auth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`llm.models[].auth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`llm.models[].auth.azure.explicitConfig.clientSecret`|object||
@@ -17023,6 +17289,8 @@
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.aws.region`|string||
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -17127,6 +17395,8 @@
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -17231,6 +17501,8 @@
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -17333,6 +17605,8 @@
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -17471,6 +17745,8 @@
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -17575,6 +17851,8 @@
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -17677,6 +17955,8 @@
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -17850,6 +18130,8 @@
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.aws.region`|string||
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`llm.policies.extAuthz.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`llm.policies.extAuthz.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -17978,6 +18260,8 @@
 |`llm.policies.extAuthz.policies.backendAuth.aws.region`|string||
 |`llm.policies.extAuthz.policies.backendAuth.aws.sessionToken`|string||
 |`llm.policies.extAuthz.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`llm.policies.extAuthz.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`llm.policies.extAuthz.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`llm.policies.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`llm.policies.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`llm.policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -18109,6 +18393,8 @@
 |`llm.policies.extProc.conditional[].policies.backendAuth.aws.region`|string||
 |`llm.policies.extProc.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`llm.policies.extProc.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`llm.policies.extProc.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`llm.policies.extProc.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`llm.policies.extProc.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`llm.policies.extProc.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`llm.policies.extProc.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -18228,6 +18514,8 @@
 |`llm.policies.extProc.policies.backendAuth.aws.region`|string||
 |`llm.policies.extProc.policies.backendAuth.aws.sessionToken`|string||
 |`llm.policies.extProc.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`llm.policies.extProc.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`llm.policies.extProc.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`llm.policies.extProc.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`llm.policies.extProc.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`llm.policies.extProc.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -18413,6 +18701,8 @@
 |`llm.policies.remoteRateLimit.policies.backendAuth.aws.region`|string||
 |`llm.policies.remoteRateLimit.policies.backendAuth.aws.sessionToken`|string||
 |`llm.policies.remoteRateLimit.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`llm.policies.remoteRateLimit.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`llm.policies.remoteRateLimit.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`llm.policies.remoteRateLimit.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`llm.policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`llm.policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -18548,6 +18838,8 @@
 |`mcp.targets[].policies.backendAuth.aws.region`|string||
 |`mcp.targets[].policies.backendAuth.aws.sessionToken`|string||
 |`mcp.targets[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`mcp.targets[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`mcp.targets[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`mcp.targets[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`mcp.targets[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`mcp.targets[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -18762,6 +19054,8 @@
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.region`|string||
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.sessionToken`|string||
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -18866,6 +19160,8 @@
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -18970,6 +19266,8 @@
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -19072,6 +19370,8 @@
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -19210,6 +19510,8 @@
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.region`|string||
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.sessionToken`|string||
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -19314,6 +19616,8 @@
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.region`|string||
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.sessionToken`|string||
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -19416,6 +19720,8 @@
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.region`|string||
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.sessionToken`|string||
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -19539,6 +19845,8 @@
 |`mcp.policies.backendAuth.aws.region`|string||
 |`mcp.policies.backendAuth.aws.sessionToken`|string||
 |`mcp.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`mcp.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`mcp.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`mcp.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`mcp.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`mcp.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -19640,6 +19948,8 @@
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.aws.region`|string||
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -19756,6 +20066,8 @@
 |`mcp.policies.remoteRateLimit.policies.backendAuth.aws.region`|string||
 |`mcp.policies.remoteRateLimit.policies.backendAuth.aws.sessionToken`|string||
 |`mcp.policies.remoteRateLimit.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`mcp.policies.remoteRateLimit.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`mcp.policies.remoteRateLimit.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`mcp.policies.remoteRateLimit.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`mcp.policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`mcp.policies.remoteRateLimit.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -19946,6 +20258,8 @@
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.aws.region`|string||
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`mcp.policies.extAuthz.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`mcp.policies.extAuthz.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -20074,6 +20388,8 @@
 |`mcp.policies.extAuthz.policies.backendAuth.aws.region`|string||
 |`mcp.policies.extAuthz.policies.backendAuth.aws.sessionToken`|string||
 |`mcp.policies.extAuthz.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`mcp.policies.extAuthz.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`mcp.policies.extAuthz.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`mcp.policies.extAuthz.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`mcp.policies.extAuthz.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`mcp.policies.extAuthz.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -20205,6 +20521,8 @@
 |`mcp.policies.extProc.conditional[].policies.backendAuth.aws.region`|string||
 |`mcp.policies.extProc.conditional[].policies.backendAuth.aws.sessionToken`|string||
 |`mcp.policies.extProc.conditional[].policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`mcp.policies.extProc.conditional[].policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`mcp.policies.extProc.conditional[].policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`mcp.policies.extProc.conditional[].policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`mcp.policies.extProc.conditional[].policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`mcp.policies.extProc.conditional[].policies.backendAuth.azure.explicitConfig.clientSecret`|object||
@@ -20324,6 +20642,8 @@
 |`mcp.policies.extProc.policies.backendAuth.aws.region`|string||
 |`mcp.policies.extProc.policies.backendAuth.aws.sessionToken`|string||
 |`mcp.policies.extProc.policies.backendAuth.aws.serviceName`|string|AWS SigV4 signing service name (for example, "bedrock", "bedrock-agentcore", or "execute-api").|
+|`mcp.policies.extProc.policies.backendAuth.aws.assumeRole`|object|Optional AWS STS role to assume before signing requests.|
+|`mcp.policies.extProc.policies.backendAuth.aws.assumeRole.roleArn`|string|AWS IAM role ARN to assume.|
 |`mcp.policies.extProc.policies.backendAuth.azure`|object|Exactly one of explicitConfig, developerImplicit, or implicit may be set.|
 |`mcp.policies.extProc.policies.backendAuth.azure.explicitConfig`|object|Exactly one of clientSecret, managedIdentity, or workloadIdentity may be set.|
 |`mcp.policies.extProc.policies.backendAuth.azure.explicitConfig.clientSecret`|object||
