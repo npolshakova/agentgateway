@@ -376,9 +376,7 @@ async fn stateless_multiplex_delete_session_skips_uninitialized_targets() {
 			..Default::default()
 		},
 		empty_mcp_policies(),
-		PolicyClient {
-			inputs: setup_proxy_test("{}").unwrap().pi,
-		},
+		PolicyClient::new(setup_proxy_test("{}").unwrap().pi),
 	)
 	.unwrap();
 	let session_manager =
@@ -1169,7 +1167,10 @@ fn access_log_payload_policy() -> crate::types::frontend::LoggingPolicy {
 				"mcp_prompt_target_cel": "mcp.prompt.target",
 				"mcp_args_cel": "mcp.tool.arguments",
 				"mcp_result_cel": "mcp.tool.result",
-				"mcp_error_cel": "mcp.tool.error"
+				"mcp_error_cel": "mcp.tool.error",
+				"proxy_request_processing_duration_cel": "proxy.requestProcessingDuration",
+				"proxy_upstream_duration_cel": "proxy.upstreamDuration",
+				"proxy_response_processing_duration_cel": "proxy.responseProcessingDuration"
 			}
 		}))
 		.unwrap();
@@ -1272,6 +1273,9 @@ async fn tool_call_exposes_payload_fields_to_access_log_cel() {
 	assert_eq!(result_json["traceId"], trace_id);
 	assert_eq!(result_json["hi"], "world");
 	assert!(log.get("mcp_error_cel").is_none());
+	assert_duration_log_field(&log, "proxy_request_processing_duration_cel");
+	assert_duration_log_field(&log, "proxy_upstream_duration_cel");
+	assert_duration_log_field(&log, "proxy_response_processing_duration_cel");
 
 	assert_eq!(
 		log.get("gen_ai.tool.name"),
@@ -1279,6 +1283,16 @@ async fn tool_call_exposes_payload_fields_to_access_log_cel() {
 	);
 	assert!(log.get("gen_ai.tool.call.arguments").is_none());
 	assert!(log.get("gen_ai.tool.call.result").is_none());
+}
+
+fn assert_duration_log_field(log: &serde_json::Value, field: &str) {
+	assert!(
+		log
+			.get(field)
+			.and_then(|value| value.as_str())
+			.is_some_and(|value| !value.is_empty()),
+		"{field} should be present and non-empty"
+	);
 }
 
 #[tokio::test]
@@ -2183,9 +2197,7 @@ async fn test_zero_targets_fail_closed() {
 		targets: vec![],
 		..Default::default()
 	};
-	let client = PolicyClient {
-		inputs: setup_proxy_test("{}").unwrap().pi,
-	};
+	let client = PolicyClient::new(setup_proxy_test("{}").unwrap().pi);
 	let err = crate::mcp::upstream::UpstreamGroup::new(client, backend).unwrap_err();
 	assert!(matches!(err, crate::mcp::Error::NoBackends));
 }
@@ -2197,9 +2209,7 @@ async fn test_zero_targets_fail_open() {
 		failure_mode: FailureMode::FailOpen,
 		..Default::default()
 	};
-	let client = PolicyClient {
-		inputs: setup_proxy_test("{}").unwrap().pi,
-	};
+	let client = PolicyClient::new(setup_proxy_test("{}").unwrap().pi);
 	crate::mcp::upstream::UpstreamGroup::new(client, backend).unwrap();
 }
 
@@ -2237,9 +2247,7 @@ async fn test_setup_partial_success_fail_open() {
 		failure_mode: FailureMode::FailOpen,
 		..Default::default()
 	};
-	let client = PolicyClient {
-		inputs: setup_proxy_test("{}").unwrap().pi,
-	};
+	let client = PolicyClient::new(setup_proxy_test("{}").unwrap().pi);
 	let group = crate::mcp::upstream::UpstreamGroup::new(client, backend).unwrap();
 	assert_eq!(group.size(), 1);
 }
@@ -2277,9 +2285,7 @@ async fn test_all_targets_fail_open_still_errors() {
 		failure_mode: FailureMode::FailOpen,
 		..Default::default()
 	};
-	let client = PolicyClient {
-		inputs: setup_proxy_test("{}").unwrap().pi,
-	};
+	let client = PolicyClient::new(setup_proxy_test("{}").unwrap().pi);
 	let err = crate::mcp::upstream::UpstreamGroup::new(client, backend).unwrap_err();
 	assert!(matches!(err, crate::mcp::Error::NoBackends));
 }
@@ -2401,9 +2407,7 @@ fn test_openapi_targets_emit_stateless_session_state() {
 			..Default::default()
 		},
 		empty_mcp_policies(),
-		PolicyClient {
-			inputs: setup_proxy_test("{}").unwrap().pi,
-		},
+		PolicyClient::new(setup_proxy_test("{}").unwrap().pi),
 	)
 	.unwrap();
 
@@ -2448,9 +2452,7 @@ fn test_sse_targets_emit_stateless_session_state() {
 			..Default::default()
 		},
 		empty_mcp_policies(),
-		PolicyClient {
-			inputs: setup_proxy_test("{}").unwrap().pi,
-		},
+		PolicyClient::new(setup_proxy_test("{}").unwrap().pi),
 	)
 	.unwrap();
 
@@ -2493,9 +2495,7 @@ async fn test_stdio_targets_remain_non_stateless() {
 			..Default::default()
 		},
 		empty_mcp_policies(),
-		PolicyClient {
-			inputs: setup_proxy_test("{}").unwrap().pi,
-		},
+		PolicyClient::new(setup_proxy_test("{}").unwrap().pi),
 	)
 	.unwrap();
 
@@ -2517,9 +2517,7 @@ async fn test_fanout_deletion_fail_open_skips_failed_upstreams() {
 			session_idle_ttl: crate::mcp::DEFAULT_SESSION_IDLE_TTL,
 		},
 		empty_mcp_policies(),
-		PolicyClient {
-			inputs: setup_proxy_test("{}").unwrap().pi,
-		},
+		PolicyClient::new(setup_proxy_test("{}").unwrap().pi),
 	)
 	.unwrap();
 
@@ -2549,9 +2547,7 @@ fn test_set_sessions_matches_by_target_name() {
 			..Default::default()
 		},
 		empty_mcp_policies(),
-		PolicyClient {
-			inputs: setup_proxy_test("{}").unwrap().pi,
-		},
+		PolicyClient::new(setup_proxy_test("{}").unwrap().pi),
 	)
 	.unwrap();
 
@@ -2597,9 +2593,7 @@ fn test_set_sessions_rejects_mismatched_target_set() {
 			..Default::default()
 		},
 		empty_mcp_policies(),
-		PolicyClient {
-			inputs: setup_proxy_test("{}").unwrap().pi,
-		},
+		PolicyClient::new(setup_proxy_test("{}").unwrap().pi),
 	)
 	.unwrap();
 
@@ -2640,9 +2634,7 @@ fn test_merge_initialize_merges_upstream_instructions_when_multiplexing() {
 			..Default::default()
 		},
 		empty_mcp_policies(),
-		PolicyClient {
-			inputs: setup_proxy_test("{}").unwrap().pi,
-		},
+		PolicyClient::new(setup_proxy_test("{}").unwrap().pi),
 	)
 	.unwrap();
 
@@ -2713,9 +2705,7 @@ fn test_merge_initialize_no_instructions_when_multiplexing() {
 			..Default::default()
 		},
 		empty_mcp_policies(),
-		PolicyClient {
-			inputs: setup_proxy_test("{}").unwrap().pi,
-		},
+		PolicyClient::new(setup_proxy_test("{}").unwrap().pi),
 	)
 	.unwrap();
 
@@ -2763,9 +2753,7 @@ fn test_merge_initialize_forwards_single_backend_without_multiplexing() {
 			..Default::default()
 		},
 		empty_mcp_policies(),
-		PolicyClient {
-			inputs: setup_proxy_test("{}").unwrap().pi,
-		},
+		PolicyClient::new(setup_proxy_test("{}").unwrap().pi),
 	)
 	.unwrap();
 

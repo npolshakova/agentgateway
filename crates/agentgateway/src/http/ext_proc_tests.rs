@@ -1989,9 +1989,7 @@ fn build_ext_proc_request_for_test(
 	processing_options: ext_proc::ProcessingOptions,
 ) -> super::ExtProcRequest {
 	let bind = setup_proxy_test("{}").unwrap().with_backend(ext_proc_addr);
-	let client = crate::proxy::httpproxy::PolicyClient {
-		inputs: bind.inputs(),
-	};
+	let client = crate::proxy::httpproxy::PolicyClient::new(bind.inputs());
 	super::ExtProc {
 		target: Arc::new(crate::types::agent::SimpleBackendReference::Backend(
 			strng::format!("/{}", ext_proc_addr),
