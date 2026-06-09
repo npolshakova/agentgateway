@@ -4,11 +4,11 @@
 //! dynamic CA so agentgateway can terminate TLS using a certificate that matches
 //! the downstream client's SNI.
 
-use std::collections::{HashMap, VecDeque};
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use anyhow::anyhow;
+use quick_cache::sync::Cache;
 use rcgen::{CertificateParams, DnType, Issuer, KeyPair};
 use rustls::pki_types::pem::PemObject;
 use rustls::pki_types::{CertificateDer, PrivatePkcs8KeyDer};
@@ -54,23 +54,17 @@ impl DynamicCa {
 	}
 }
 
+#[derive(Clone)]
 struct CachedDynamicCaCert {
 	certified_key: Arc<CertifiedKey>,
 	issued_at: Instant,
 }
 
-#[derive(Default)]
-struct DynamicCaCertCache {
-	entries: HashMap<String, CachedDynamicCaCert>,
-	order: VecDeque<String>,
-}
-
 struct DynamicCaCertResolver {
 	ca: Arc<DynamicCa>,
 	provider: Arc<rustls::crypto::CryptoProvider>,
-	cache: Mutex<DynamicCaCertCache>,
+	cache: Cache<String, CachedDynamicCaCert>,
 	cache_ttl: Duration,
-	cache_capacity: usize,
 }
 
 impl std::fmt::Debug for DynamicCaCertResolver {
@@ -80,20 +74,11 @@ impl std::fmt::Debug for DynamicCaCertResolver {
 }
 
 impl DynamicCaCertResolver {
-	fn lock_cache(&self) -> MutexGuard<'_, DynamicCaCertCache> {
-		self
-			.cache
-			.lock()
-			.unwrap_or_else(|poisoned| poisoned.into_inner())
-	}
-
 	fn cached_fresh_entry(
-		cache: &DynamicCaCertCache,
-		domain: &str,
+		entry: &CachedDynamicCaCert,
 		now: Instant,
 		cache_ttl: Duration,
 	) -> Option<Arc<CertifiedKey>> {
-		let entry = cache.entries.get(domain)?;
 		if now.duration_since(entry.issued_at) <= cache_ttl {
 			return Some(Arc::clone(&entry.certified_key));
 		}
@@ -119,42 +104,35 @@ impl DynamicCaCertResolver {
 	}
 
 	fn cached_certified_key(&self, domain: &str) -> Option<Arc<CertifiedKey>> {
-		{
-			let now = Instant::now();
-			let mut cache = self.lock_cache();
-
-			if let Some(certified_key) = Self::cached_fresh_entry(&cache, domain, now, self.cache_ttl) {
+		let now = Instant::now();
+		if let Some(entry) = self.cache.get(domain) {
+			if let Some(certified_key) = Self::cached_fresh_entry(&entry, now, self.cache_ttl) {
 				return Some(certified_key);
 			}
-
-			cache.entries.remove(domain);
-			cache.order.retain(|cached| cached != domain);
+			self.cache.remove_if(domain, |entry| {
+				Self::cached_fresh_entry(entry, now, self.cache_ttl).is_none()
+			});
 		}
 
 		let certified_key = self.generate_certified_key(domain)?;
 
 		let now = Instant::now();
-		let mut cache = self.lock_cache();
-		if let Some(existing) = Self::cached_fresh_entry(&cache, domain, now, self.cache_ttl) {
-			return Some(existing);
+		if let Some(entry) = self.cache.get(domain) {
+			if let Some(existing) = Self::cached_fresh_entry(&entry, now, self.cache_ttl) {
+				return Some(existing);
+			}
+			self.cache.remove_if(domain, |entry| {
+				Self::cached_fresh_entry(entry, now, self.cache_ttl).is_none()
+			});
 		}
 
-		cache.entries.remove(domain);
-		cache.order.retain(|cached| cached != domain);
-		cache.entries.insert(
+		self.cache.insert(
 			domain.to_string(),
 			CachedDynamicCaCert {
 				certified_key: Arc::clone(&certified_key),
 				issued_at: now,
 			},
 		);
-		cache.order.push_back(domain.to_string());
-
-		while cache.order.len() > self.cache_capacity {
-			if let Some(oldest) = cache.order.pop_front() {
-				cache.entries.remove(&oldest);
-			}
-		}
 
 		Some(certified_key)
 	}
@@ -189,9 +167,8 @@ pub(super) fn build_dynamic_ca_server_config(
 		.with_cert_resolver(Arc::new(DynamicCaCertResolver {
 			ca: Arc::new(DynamicCa::from_pem(ca_cert_pem, ca_key_pem)?),
 			provider,
-			cache: Mutex::new(DynamicCaCertCache::default()),
+			cache: Cache::new(cache_config.capacity),
 			cache_ttl: cache_config.ttl,
-			cache_capacity: cache_config.capacity,
 		}));
 	config.key_log = tls::key_log();
 	config.alpn_protocols = alpns
@@ -240,9 +217,8 @@ mod tests {
 					.expect("parse CA"),
 			),
 			provider: tls::provider_with_options(&[], &[]),
-			cache: Mutex::new(DynamicCaCertCache::default()),
+			cache: Cache::new(crate::DynamicCaCertCacheConfig::default().capacity),
 			cache_ttl: crate::DynamicCaCertCacheConfig::default().ttl,
-			cache_capacity: crate::DynamicCaCertCacheConfig::default().capacity,
 		}
 	}
 
@@ -261,13 +237,19 @@ mod tests {
 	}
 
 	#[test]
-	fn cached_certified_key_recovers_from_poisoned_cache_lock() {
-		let resolver = test_resolver();
-		let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-			let _cache = resolver.cache.lock().expect("lock cache");
-			panic!("poison dynamic CA cache lock");
-		}));
+	fn cached_certified_key_replaces_expired_entry() {
+		let resolver = DynamicCaCertResolver {
+			cache_ttl: Duration::from_nanos(0),
+			..test_resolver()
+		};
 
-		assert!(resolver.cached_certified_key("example.com").is_some());
+		let first = resolver
+			.cached_certified_key("example.com")
+			.expect("generate cert");
+		let second = resolver
+			.cached_certified_key("example.com")
+			.expect("generate replacement cert");
+
+		assert!(!Arc::ptr_eq(&first, &second));
 	}
 }

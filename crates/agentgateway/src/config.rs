@@ -1111,6 +1111,43 @@ config:
 	}
 
 	#[test]
+	fn dynamic_ca_cert_cache_uses_defaults_without_env() {
+		let _env_lock = lock_env();
+		let defaults = crate::DynamicCaCertCacheConfig::default();
+
+		let config = parse_config("{}".to_string(), None).expect("config should parse");
+
+		assert_eq!(config.dynamic_ca_cert_cache, defaults);
+	}
+
+	#[test]
+	fn dynamic_ca_cert_cache_uses_config_env_overrides() {
+		let _env_lock = lock_env();
+		let _ttl = TempEnvVar::set("DYNAMIC_CA_CERT_CACHE_TTL", "2m");
+		let _capacity = TempEnvVar::set("DYNAMIC_CA_CERT_CACHE_CAPACITY", "17");
+
+		let config = parse_config("{}".to_string(), None).expect("config should parse");
+
+		assert_eq!(config.dynamic_ca_cert_cache.ttl, Duration::from_secs(120));
+		assert_eq!(config.dynamic_ca_cert_cache.capacity, 17);
+	}
+
+	#[test]
+	fn dynamic_ca_cert_cache_rejects_zero_capacity() {
+		let _env_lock = lock_env();
+		let _capacity = TempEnvVar::set("DYNAMIC_CA_CERT_CACHE_CAPACITY", "0");
+
+		let err = parse_config("{}".to_string(), None).expect_err("zero capacity should fail");
+
+		assert!(
+			err
+				.to_string()
+				.contains("invalid env var DYNAMIC_CA_CERT_CACHE_CAPACITY=0 (must be greater than 0)"),
+			"unexpected error: {err}"
+		);
+	}
+
+	#[test]
 	fn session_key_env_overrides_inline_session_config() {
 		let _env_lock = lock_env();
 
