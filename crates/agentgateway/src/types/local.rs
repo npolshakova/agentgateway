@@ -698,6 +698,10 @@ enum LocalListenerProtocol {
 #[derive(Default)]
 #[apply(schema_de!)]
 pub struct LocalTLSServerConfig {
+	/// Certificate source mode. Static mode uses cert/key as the leaf certificate; MITM dynamic
+	/// mode uses cert/key as a CA for on-demand SNI leaf certificate issuance.
+	#[serde(default)]
+	pub mode: LocalTLSServerMode,
 	pub cert: PathBuf,
 	pub key: PathBuf,
 	pub root: Option<PathBuf>,
@@ -725,6 +729,14 @@ pub struct LocalTLSServerConfig {
 	#[cfg_attr(feature = "schema", schemars(with = "Option<Vec<String>>"))]
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub key_exchange_groups: Option<Vec<crate::transport::tls::KeyExchangeGroup>>,
+}
+
+#[apply(schema_enum!)]
+#[derive(Default)]
+pub enum LocalTLSServerMode {
+	#[default]
+	Static,
+	MitmDynamic,
 }
 
 #[apply(schema_de!)]
@@ -3289,17 +3301,33 @@ impl TryInto<ServerTLSConfig> for LocalTLSServerConfig {
 		let cert_pem = fs_err::read(self.cert)?;
 		let key_pem = fs_err::read(self.key)?;
 		let root_pem = self.root.map(fs_err::read).transpose()?;
-		ServerTLSConfig::from_pem_with_profile(
-			cert_pem,
-			key_pem,
-			root_pem,
-			vec![b"h2".to_vec(), b"http/1.1".to_vec()],
-			self.min_tls_version.map(Into::into),
-			self.max_tls_version.map(Into::into),
-			self.cipher_suites,
-			self.key_exchange_groups,
-			false,
-		)
+		match self.mode {
+			LocalTLSServerMode::Static => ServerTLSConfig::from_pem_with_profile(
+				cert_pem,
+				key_pem,
+				root_pem,
+				vec![b"h2".to_vec(), b"http/1.1".to_vec()],
+				self.min_tls_version.map(Into::into),
+				self.max_tls_version.map(Into::into),
+				self.cipher_suites,
+				self.key_exchange_groups,
+				false,
+			),
+			LocalTLSServerMode::MitmDynamic => {
+				if root_pem.is_some() {
+					anyhow::bail!("tls.root is not supported with tls.mode=mitmDynamic")
+				}
+				super::mitm::build_mitm_tls_config_with_profile(
+					cert_pem,
+					key_pem,
+					vec![b"h2".to_vec(), b"http/1.1".to_vec()],
+					self.min_tls_version.map(Into::into),
+					self.max_tls_version.map(Into::into),
+					self.cipher_suites,
+					self.key_exchange_groups,
+				)
+			},
+		}
 	}
 }
 

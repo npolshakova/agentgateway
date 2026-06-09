@@ -1198,7 +1198,10 @@ var dummyTls = &TLSInfo{
 	Key:  []byte("invalid"),
 }
 
-const gatewayTLSTerminateModeKey = "gateway.istio.io/tls-terminate-mode"
+const (
+	gatewayTLSTerminateModeKey          = "gateway.istio.io/tls-terminate-mode"
+	agentgatewayTLSCertificateSourceKey = "agentgateway.dev/tls-certificate-source"
+)
 
 func validateTLS(certInfo *TLSInfo) *ConfigError {
 	if certInfo.IstioWorkloadCert {
@@ -1271,6 +1274,14 @@ func buildTLS(
 			}
 		}
 
+		mitmDynamic := tls.Options != nil && tls.Options[agentgatewayTLSCertificateSourceKey] == "MITM_DYNAMIC"
+		if mitmDynamic && gatewayTLS != nil && gatewayTLS.Validation != nil && len(gatewayTLS.Validation.CACertificateRefs) > 0 {
+			return dummyTls, &ConfigError{
+				Reason:  InvalidTLSCA,
+				Message: "GatewayTLSConfig validation caCertificateRefs cannot be configured with MITM_DYNAMIC TLS certificate source",
+			}
+		}
+
 		if gatewayTLS != nil && gatewayTLS.Validation != nil && len(gatewayTLS.Validation.CACertificateRefs) > 0 {
 			// TODO: add 'Mode'
 			if len(gatewayTLS.Validation.CACertificateRefs) > 1 {
@@ -1298,6 +1309,9 @@ func buildTLS(
 			if gatewayTLS.Validation.Mode == gwv1.AllowInsecureFallback {
 				tlsRes.Info.MtlsFallbackEnabled = true
 			}
+		}
+		if mitmDynamic {
+			tlsRes.Info.MitmDynamic = true
 		}
 		return &tlsRes.Info, nil
 	case gwv1.TLSModePassthrough:

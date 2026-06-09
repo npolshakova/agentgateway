@@ -5,4 +5,5 @@ pub mod discovery;
 pub mod frontend;
 pub mod loadbalancer;
 pub mod local;
+pub(crate) mod mitm;
 pub(crate) mod proto;

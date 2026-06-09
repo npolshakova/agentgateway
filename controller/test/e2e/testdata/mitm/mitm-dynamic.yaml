@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mitm-ca
+  namespace: agentgateway-base
+type: kubernetes.io/tls
+stringData:
+  tls.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIBezCCASCgAwIBAgIRAOnmoc9aVSZkyJ59U9r+6KAwCgYIKoZIzj0EAwIwGzEZ
+    MBcGA1UEAxMQYWdlbnRnYXRld2F5LmRldjAeFw0yNTEwMTUxOTQzMzZaFw0zNTEw
+    MTMxOTQzMzZaMBsxGTAXBgNVBAMTEGFnZW50Z2F0ZXdheS5kZXYwWTATBgcqhkjO
+    PQIBBggqhkjOPQMBBwNCAAScPuAg65+9D2YuOrFl4xAYOB6h2460QhZTIStE1PHP
+    MIOUJAAqBdAWAH5JG4UiVUH/tKYEd73CfaBsHSNrOJlLo0UwQzAOBgNVHQ8BAf8E
+    BAMCAQYwEgYDVR0TAQH/BAgwBgEB/wIBATAdBgNVHQ4EFgQUcwtMh/9FfJvcR9JU
+    bISOus7YDMowCgYIKoZIzj0EAwIDSQAwRgIhAL2agfEI9TBl060Y0aGQ7SX69aLC
+    7/ifjLmH38SGOWCJAiEA63NRyf5oz6rzvvIHpK8OM2hSHqWQFQnhBTCbyzNAe5U=
+    -----END CERTIFICATE-----
+  tls.key: |
+    -----BEGIN EC PRIVATE KEY-----
+    MHcCAQEEIFdgbQqn9jrTCbfs5qANaeBwC22ljVJOY9xY6f2g1PRWoAoGCCqGSM49
+    AwEHoUQDQgAEnD7gIOufvQ9mLjqxZeMQGDgeoduOtEIWUyErRNTxzzCDlCQAKgXQ
+    FgB+SRuFIlVB/7SmBHe9wn2gbB0jaziZSw==
+    -----END EC PRIVATE KEY-----
+---
+kind: Gateway
+apiVersion: gateway.networking.k8s.io/v1
+metadata:
+  name: mitm-gateway
+  namespace: agentgateway-base
+spec:
+  gatewayClassName: agentgateway
+  listeners:
+    - protocol: HTTPS
+      port: 443
+      name: https
+      hostname: "*.mitm.example.com"
+      tls:
+        mode: Terminate
+        options:
+          agentgateway.dev/tls-certificate-source: MITM_DYNAMIC
+        certificateRefs:
+          - name: mitm-ca
+            kind: Secret
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: mitm-route
+  namespace: agentgateway-base
+spec:
+  parentRefs:
+    - name: mitm-gateway
+  hostnames:
+    - first.mitm.example.com
+    - second.mitm.example.com
+  rules:
+    - backendRefs:
+        - name: backend
+          port: 80

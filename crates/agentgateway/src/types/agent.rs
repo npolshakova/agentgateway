@@ -161,6 +161,7 @@ pub struct ServerTLSConfig {
 #[derive(Debug, Clone, Eq, PartialEq)]
 enum ServerTlsCertificateSource {
 	Static,
+	MitmDynamic,
 	IstioWorkload { mtls: bool, default_alpns: Alpns },
 }
 
@@ -250,6 +251,46 @@ impl ServerTLSConfig {
 		})
 	}
 
+	#[allow(clippy::too_many_arguments)]
+	pub(crate) fn mitm_dynamic_with_profile(
+		ca_cert_pem: Vec<u8>,
+		ca_key_pem: Vec<u8>,
+		default_alpns: Vec<Vec<u8>>,
+		min_version: Option<TLSVersion>,
+		max_version: Option<TLSVersion>,
+		cipher_suites: Option<Vec<crate::transport::tls::CipherSuite>>,
+		key_exchange_groups: Option<Vec<crate::transport::tls::KeyExchangeGroup>>,
+	) -> anyhow::Result<Self> {
+		let inputs = Arc::new(ServerTlsInputs {
+			cert_pem: ca_cert_pem,
+			key_pem: ca_key_pem,
+			root_pem: None,
+			allow_insecure_mtls: false,
+			default_alpns,
+			default_cipher_suites: cipher_suites.clone().unwrap_or_default(),
+			default_key_exchange_groups: key_exchange_groups.clone().unwrap_or_default(),
+		});
+		let suites = cipher_suites.as_deref().filter(|s| !s.is_empty());
+		let groups = key_exchange_groups.as_deref().filter(|g| !g.is_empty());
+		let base = crate::types::mitm::build_mitm_server_config(
+			&inputs.cert_pem,
+			&inputs.key_pem,
+			None,
+			&inputs.default_alpns,
+			min_version,
+			max_version,
+			suites.unwrap_or(&[]),
+			groups.unwrap_or(&[]),
+		)?;
+		Ok(Self {
+			source: ServerTlsCertificateSource::MitmDynamic,
+			base_config: Some(Arc::new(base)),
+			inputs: Some(inputs),
+			insecure_fallback_verifier: None,
+			per_profile_config: Arc::new(Default::default()),
+		})
+	}
+
 	/// new_invalid returns a ServerTLSConfig that always rejects connections
 	pub fn new_invalid() -> Self {
 		Self {
@@ -333,14 +374,30 @@ impl ServerTLSConfig {
 			return Ok(Arc::clone(cached_config));
 		}
 
-		let (base, _insecure_fallback_verifier) = Self::build_server_config(
-			&inputs,
-			Some(&key.alpns),
-			key.min_version,
-			key.max_version,
-			&key.cipher_suites,
-			&key.key_exchange_groups,
-		)?;
+		let base = match self.source {
+			ServerTlsCertificateSource::Static => {
+				let (base, _insecure_fallback_verifier) = Self::build_server_config(
+					&inputs,
+					Some(&key.alpns),
+					key.min_version,
+					key.max_version,
+					&key.cipher_suites,
+					&key.key_exchange_groups,
+				)?;
+				base
+			},
+			ServerTlsCertificateSource::MitmDynamic => crate::types::mitm::build_mitm_server_config(
+				&inputs.cert_pem,
+				&inputs.key_pem,
+				Some(&key.alpns),
+				&inputs.default_alpns,
+				key.min_version,
+				key.max_version,
+				&key.cipher_suites,
+				&key.key_exchange_groups,
+			)?,
+			ServerTlsCertificateSource::IstioWorkload { .. } => unreachable!(),
+		};
 		let base = Arc::new(base);
 		writer.insert(key.clone(), Arc::clone(&base));
 		Ok(base)
@@ -439,7 +496,7 @@ impl ServerTLSConfig {
 	}
 }
 
-fn tls_versions_for_range(
+pub(super) fn tls_versions_for_range(
 	min_version: Option<TLSVersion>,
 	max_version: Option<TLSVersion>,
 ) -> anyhow::Result<Vec<&'static rustls::SupportedProtocolVersion>> {
@@ -2785,6 +2842,43 @@ mod tests {
 		let key = tls.server_tls_profile_key(&inputs);
 		assert_eq!(key.cipher_suites, vec![CipherSuite::TLS_AES_256_GCM_SHA384]);
 		assert_eq!(key.key_exchange_groups, vec![KeyExchangeGroup::X25519]);
+	}
+
+	#[tokio::test]
+	async fn mitm_tls_config_applies_frontend_tls_profile() {
+		let ca_key = rcgen::KeyPair::generate().expect("generate CA key");
+		let mut ca_params = rcgen::CertificateParams::default();
+		ca_params.is_ca = rcgen::IsCa::Ca(rcgen::BasicConstraints::Unconstrained);
+		let ca_cert = ca_params.self_signed(&ca_key).expect("generate CA cert");
+
+		let tls_config = ServerTLSConfig::mitm_dynamic_with_profile(
+			ca_cert.pem().into_bytes(),
+			ca_key.serialize_pem().into_bytes(),
+			vec![b"h2".to_vec()],
+			None,
+			None,
+			None,
+			None,
+		)
+		.expect("build MITM TLS config");
+
+		let base = tls_config
+			.config_for(None, None)
+			.await
+			.expect("base config");
+		assert_eq!(base.alpn_protocols, vec![b"h2".to_vec()]);
+
+		let frontend_tls = frontend::TLS {
+			alpn: Some(vec![b"http/1.1".to_vec()]),
+			..Default::default()
+		};
+		let profiled = tls_config
+			.config_for(Some(&frontend_tls), None)
+			.await
+			.expect("profiled config");
+
+		assert!(!Arc::ptr_eq(&base, &profiled));
+		assert_eq!(profiled.alpn_protocols, vec![b"http/1.1".to_vec()]);
 	}
 
 	#[test]

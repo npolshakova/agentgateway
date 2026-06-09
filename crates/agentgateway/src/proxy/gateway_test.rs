@@ -146,6 +146,7 @@ fn https_bind() -> Bind {
 			hostname: strng::new("*.example.com"),
 			protocol: ListenerProtocol::HTTPS(
 				types::local::LocalTLSServerConfig {
+					mode: Default::default(),
 					cert: "../../examples/tls/certs/cert.pem".into(),
 					key: "../../examples/tls/certs/key.pem".into(),
 					root: None,
@@ -3197,6 +3198,7 @@ fn setup_dfp_https() -> (TestBind, Client<MemoryConnector, Body>) {
 			hostname: Default::default(),
 			protocol: ListenerProtocol::HTTPS(
 				types::local::LocalTLSServerConfig {
+					mode: Default::default(),
 					cert: "../../examples/tls/certs/cert.pem".into(),
 					key: "../../examples/tls/certs/key.pem".into(),
 					root: None,
@@ -3529,6 +3531,7 @@ async fn auto_protocol_mixed_listeners() {
 				hostname: strng::new("*.example.com"),
 				protocol: ListenerProtocol::HTTPS(
 					types::local::LocalTLSServerConfig {
+						mode: Default::default(),
 						cert: "../../examples/tls/certs/cert.pem".into(),
 						key: "../../examples/tls/certs/key.pem".into(),
 						root: None,

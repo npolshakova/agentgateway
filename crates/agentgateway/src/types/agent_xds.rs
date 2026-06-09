@@ -298,6 +298,27 @@ fn server_tls_config_from_proto(
 		return ServerTLSConfig::istio_workload(require_client_cert, default_alpns);
 	}
 
+	if certificate_source == proto::agent::tls_config::CertificateSource::MitmDynamic {
+		if value.root.is_some() {
+			diagnostics.add_warning("mTLS is not supported with MITM_DYNAMIC certificates");
+		}
+		return match super::mitm::build_mitm_tls_config_with_profile(
+			value.cert.clone(),
+			value.private_key.clone(),
+			default_alpns,
+			min_version,
+			max_version,
+			cipher_suites,
+			key_exchange_groups,
+		) {
+			Ok(sc) => sc,
+			Err(e) => {
+				diagnostics.add_warning(format!("MITM TLS CA is invalid: {e}"));
+				ServerTLSConfig::new_invalid()
+			},
+		};
+	}
+
 	match ServerTLSConfig::from_pem_with_profile(
 		value.cert.clone(),
 		value.private_key.clone(),
