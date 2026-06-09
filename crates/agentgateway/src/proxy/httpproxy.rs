@@ -20,6 +20,7 @@ use types::discovery::*;
 use crate::cel::{BackendContext, RequestTime};
 use crate::client::{ApplicationTransport, HboneHeaders, HboneSourceRole, Transport};
 use crate::http::backendtls::BackendTLS;
+use crate::http::buffer::Buffer;
 use crate::http::ext_proc::{ExtProcRequest, InferenceRoutingDestinationMode};
 use crate::http::filters::{AutoHostname, BackendRequestTimeout};
 use crate::http::transformation_cel::Transformation;
@@ -174,6 +175,8 @@ async fn apply_request_policies(
 		.apply_selected("remote rate limit", c, l, req, rp.headers())
 		.await?;
 
+	rp.buffer = pol.buffer.apply("buffer", c, l, req, rp.headers()).await?;
+
 	// ExtProc uses RequestPolicy for conditional selection and CEL registration only.
 	// The selected config is built into per-request state, which must be retained for
 	// the response mutation phase instead of applying ExtProc directly.
@@ -232,7 +235,6 @@ async fn apply_request_policies(
 		.direct_response
 		.apply_without_response("direct response", c, l, req, rp.headers())
 		.await?;
-
 	// Mirror, timeout, and retry are handled separately.
 
 	Ok(())
@@ -338,6 +340,7 @@ async fn apply_gateway_policies(
 	response_policies: &mut ResponsePolicies,
 ) -> Result<(), ProxyResponse> {
 	let c = &client;
+
 	policies
 		.oidc
 		.apply_without_response("gateway oidc", c, l, req, response_policies.headers())
@@ -3306,6 +3309,7 @@ struct ResponsePolicies {
 	timeout: Option<http::timeout::Policy>,
 	route_response_header: ResponsePolicy<filters::HeaderModifier>,
 	backend_response_header: ResponsePolicy<filters::HeaderModifier>,
+	buffer: ResponsePolicy<Buffer>,
 	transformation: ResponsePolicy<Transformation>,
 	backend_transformation: ResponsePolicy<Transformation>,
 	gateway_transformation: ResponsePolicy<Transformation>,
@@ -3351,6 +3355,7 @@ impl ResponsePolicies {
 			.backend_response_header
 			.apply("backend response header modifier", l, resp, rh)
 			.await?;
+		self.buffer.apply("buffer", l, resp, rh).await?;
 		self
 			.transformation
 			.apply("transformation", l, resp, rh)

@@ -758,7 +758,7 @@ const (
 	PolicyPhasePostRouting PolicyPhase = "PostRouting"
 )
 
-// +kubebuilder:validation:IfThenOnlyFields:if="has(self.phase) && self.phase == 'PreRouting'",fields=phase;transformation;extProc;extAuth;jwtAuthentication;basicAuthentication;apiKeyAuthentication,message="phase PreRouting only supports extAuth, transformation, extProc, jwtAuthentication, basicAuthentication, and apiKeyAuthentication"
+// +kubebuilder:validation:IfThenOnlyFields:if="has(self.phase) && self.phase == 'PreRouting'",fields=phase;transformation;extProc;extAuth;jwtAuthentication;basicAuthentication;apiKeyAuthentication,message="phase PreRouting only supports extAuth, transformation, extProc, jwtAuthentication, basicAuthentication and apiKeyAuthentication"
 type Traffic struct {
 	// The phase to apply the traffic policy to. If the phase is `PreRouting`,
 	// the `targetRef` must be a `Gateway` or a `Listener`. `PreRouting` is
@@ -861,6 +861,14 @@ type Traffic struct {
 	// client.
 	// +optional
 	DirectResponse *DirectResponseOrConditional `json:"directResponse,omitempty"`
+
+	// `buffer` defines the policy for buffer requests and responses bodies. Buffered bodies will be accumulated in memory
+	// by the proxy until completion before being forwarded. This changes the proxies default behavior, which streams bodies.
+	//
+	// Warning: large bodies can lead to excessive memory usage in the proxy. Utilize with care, or with strict limits.
+	//
+	// +optional
+	Buffer *Buffer `json:"buffer,omitempty"`
 }
 
 // DirectResponse defines the policy to send a direct response to the client.
@@ -1254,6 +1262,23 @@ type APIKeyAuthentication struct {
 	// If omitted, credentials are read from the `Authorization` header with the `Bearer ` prefix.
 	// +optional
 	Location *AuthorizationExtractionLocation `json:"location,omitempty"`
+}
+
+type BufferBody struct {
+	// `maxBytes` specifies the maximum number of bytes to buffer of the request/response body.
+	// +optional
+	// if unset, defaults to the global proxy setting, which defaults to 2Mi.
+	MaxBytes *ByteSize `json:"maxBytes,omitempty"`
+}
+
+// +kubebuilder:validation:AtLeastOneFieldSet
+type Buffer struct {
+	// `request` configures buffering of the request body.
+	// +optional
+	Request *BufferBody `json:"request,omitempty"`
+	// `response` configures buffering of the response body.
+	// +optional
+	Response *BufferBody `json:"response,omitempty"`
 }
 
 type SecretSelector struct {

@@ -26,6 +26,7 @@ use llm::{AIBackend, AIProvider, NamedAIProvider};
 
 use super::agent::*;
 use crate::http::auth::{AwsAuth, BackendAuth, GcpAuth};
+use crate::http::buffer::BufferBody;
 use crate::http::transformation_cel::{LocalTransform, LocalTransformationConfig, Transformation};
 use crate::http::{HeaderOrPseudo, Scheme, auth, authorization, health};
 use crate::mcp::{FailureMode, McpAuthorization};
@@ -2175,6 +2176,17 @@ fn traffic_policy_from_proto(
 				Mode::Auto => agent::HostRedirectOverride::Auto,
 			})
 		},
+		Some(tps::Kind::Buffer(buffer)) => {
+			let to_body = |b: Option<proto::agent::BufferBody>| {
+				b.map(|bb| BufferBody {
+					max_bytes: bb.max_bytes.map(|v| v as usize),
+				})
+			};
+			TrafficPolicy::Buffer(RequestPolicy::single(http::buffer::Buffer {
+				request: to_body(buffer.request),
+				response: to_body(buffer.response),
+			}))
+		},
 		None => return Err(ProtoError::MissingRequiredField),
 	})
 }
@@ -2897,6 +2909,7 @@ fn conditional_traffic_policy_to_policy(
 		TrafficPolicy::UrlRewrite(_) => build!(UrlRewrite),
 		TrafficPolicy::DirectResponse(_) => build!(DirectResponse),
 		TrafficPolicy::CORS(_) => build!(CORS),
+		TrafficPolicy::Buffer(_) => build!(Buffer),
 		other => Err(ProtoError::Generic(format!(
 			"conditional traffic policy kind {} is not supported",
 			traffic_policy_kind_name(other)
@@ -2927,6 +2940,7 @@ fn traffic_policy_kind_name(policy: &TrafficPolicy) -> &'static str {
 		TrafficPolicy::HostRewrite(_) => "hostRewrite",
 		TrafficPolicy::RequestMirror(_) => "requestMirror",
 		TrafficPolicy::DirectResponse(_) => "directResponse",
+		TrafficPolicy::Buffer(_) => "buffer",
 		TrafficPolicy::CORS(_) => "cors",
 	}
 }

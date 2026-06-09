@@ -323,6 +323,7 @@ pub struct RoutePolicies {
 	pub hostname_rewrite: RequestPolicy<agent::HostRedirectOverride>,
 	pub request_mirror: RequestPolicy<Vec<filters::RequestMirror>>,
 	pub cors: RequestPolicy<http::cors::Cors>,
+	pub buffer: RequestPolicy<http::buffer::Buffer>,
 }
 
 #[derive(Debug, Default)]
@@ -334,6 +335,7 @@ pub struct GatewayPolicies {
 	pub transformation: RequestPolicy<http::transformation_cel::Transformation>,
 	pub basic_auth: RequestPolicy<http::basicauth::BasicAuthentication>,
 	pub api_key: RequestPolicy<http::apikey::APIKeyAuthentication>,
+	pub buffer: RequestPolicy<http::buffer::Buffer>,
 }
 
 impl GatewayPolicies {
@@ -868,6 +870,9 @@ impl Store {
 				},
 				TrafficPolicy::CORS(p) => {
 					pol.cors.merge_with_inheritance(p, lock_inheritance);
+				},
+				TrafficPolicy::Buffer(p) => {
+					pol.buffer.set_if_unset(p);
 				},
 			}
 		}
