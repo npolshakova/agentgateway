@@ -15,11 +15,13 @@ use rustls::pki_types::{CertificateDer, PrivatePkcs8KeyDer};
 use rustls::server::ResolvesServerCert;
 use rustls::sign::CertifiedKey;
 
+use agent_core::durfmt;
+
 use crate::transport::tls;
 use crate::types::agent::{ServerTLSConfig, TLSVersion};
 
-const MITM_CERT_CACHE_TTL: Duration = Duration::from_secs(300);
-const MITM_CERT_CACHE_CAPACITY: usize = 256;
+const DEFAULT_MITM_CERT_CACHE_TTL: Duration = Duration::from_secs(300);
+const DEFAULT_MITM_CERT_CACHE_CAPACITY: usize = 256;
 
 struct MitmCa {
 	cert_der: Vec<u8>,
@@ -72,6 +74,8 @@ struct MitmCertResolver {
 	ca: Arc<MitmCa>,
 	provider: Arc<rustls::crypto::CryptoProvider>,
 	cache: Mutex<MitmCertCache>,
+	cache_ttl: Duration,
+	cache_capacity: usize,
 }
 
 impl std::fmt::Debug for MitmCertResolver {
@@ -92,9 +96,10 @@ impl MitmCertResolver {
 		cache: &MitmCertCache,
 		domain: &str,
 		now: Instant,
+		cache_ttl: Duration,
 	) -> Option<Arc<CertifiedKey>> {
 		let entry = cache.entries.get(domain)?;
-		if now.duration_since(entry.issued_at) <= MITM_CERT_CACHE_TTL {
+		if now.duration_since(entry.issued_at) <= cache_ttl {
 			return Some(Arc::clone(&entry.certified_key));
 		}
 		None
@@ -123,7 +128,9 @@ impl MitmCertResolver {
 			let now = Instant::now();
 			let mut cache = self.lock_cache();
 
-			if let Some(certified_key) = Self::cached_fresh_entry(&cache, domain, now) {
+			if let Some(certified_key) =
+				Self::cached_fresh_entry(&cache, domain, now, self.cache_ttl)
+			{
 				return Some(certified_key);
 			}
 
@@ -135,7 +142,7 @@ impl MitmCertResolver {
 
 		let now = Instant::now();
 		let mut cache = self.lock_cache();
-		if let Some(existing) = Self::cached_fresh_entry(&cache, domain, now) {
+		if let Some(existing) = Self::cached_fresh_entry(&cache, domain, now, self.cache_ttl) {
 			return Some(existing);
 		}
 
@@ -150,13 +157,38 @@ impl MitmCertResolver {
 		);
 		cache.order.push_back(domain.to_string());
 
-		while cache.order.len() > MITM_CERT_CACHE_CAPACITY {
+		while cache.order.len() > self.cache_capacity {
 			if let Some(oldest) = cache.order.pop_front() {
 				cache.entries.remove(&oldest);
 			}
 		}
 
 		Some(certified_key)
+	}
+}
+
+fn parse_mitm_cert_cache_ttl() -> anyhow::Result<Duration> {
+	match std::env::var("MITM_CERT_CACHE_TTL") {
+		Ok(raw) => durfmt::parse(&raw)
+			.map_err(|e| anyhow!("invalid env var MITM_CERT_CACHE_TTL={raw} ({e})")),
+		Err(std::env::VarError::NotPresent) => Ok(DEFAULT_MITM_CERT_CACHE_TTL),
+		Err(e) => Err(anyhow!("error reading MITM_CERT_CACHE_TTL: {e}")),
+	}
+}
+
+fn parse_mitm_cert_cache_capacity() -> anyhow::Result<usize> {
+	match std::env::var("MITM_CERT_CACHE_CAPACITY") {
+		Ok(raw) => {
+			let capacity = raw
+				.parse::<usize>()
+				.map_err(|e| anyhow!("invalid env var MITM_CERT_CACHE_CAPACITY={raw} ({e})"))?;
+			if capacity == 0 {
+				anyhow::bail!("invalid env var MITM_CERT_CACHE_CAPACITY={raw} (must be greater than 0)");
+			}
+			Ok(capacity)
+		},
+		Err(std::env::VarError::NotPresent) => Ok(DEFAULT_MITM_CERT_CACHE_CAPACITY),
+		Err(e) => Err(anyhow!("error reading MITM_CERT_CACHE_CAPACITY: {e}")),
 	}
 }
 
@@ -179,6 +211,8 @@ pub(super) fn build_mitm_server_config(
 	key_exchange_groups: &[tls::KeyExchangeGroup],
 ) -> anyhow::Result<rustls::ServerConfig> {
 	let provider = tls::provider_with_options(cipher_suites, key_exchange_groups);
+	let cache_ttl = parse_mitm_cert_cache_ttl()?;
+	let cache_capacity = parse_mitm_cert_cache_capacity()?;
 
 	let versions = super::agent::tls_versions_for_range(min_version, max_version)?;
 	let mut config = rustls::ServerConfig::builder_with_provider(Arc::clone(&provider))
@@ -189,6 +223,8 @@ pub(super) fn build_mitm_server_config(
 			ca: Arc::new(MitmCa::from_pem(ca_cert_pem, ca_key_pem)?),
 			provider,
 			cache: Mutex::new(MitmCertCache::default()),
+			cache_ttl,
+			cache_capacity,
 		}));
 	config.key_log = tls::key_log();
 	config.alpn_protocols = alpns
@@ -236,6 +272,8 @@ mod tests {
 			),
 			provider: tls::provider_with_options(&[], &[]),
 			cache: Mutex::new(MitmCertCache::default()),
+			cache_ttl: DEFAULT_MITM_CERT_CACHE_TTL,
+			cache_capacity: DEFAULT_MITM_CERT_CACHE_CAPACITY,
 		}
 	}
 

@@ -1,3 +1,18 @@
+# Regenerate this intentionally invalid MITM CA fixture with a leaf cert/key:
+#   openssl ecparam -name prime256v1 -genkey -noout -out mitm-ca.key
+#   openssl req -x509 -new -key mitm-ca.key -sha256 -days 3650 -subj "/CN=agentgateway.dev" \
+#     -addext "keyUsage=critical,keyCertSign" \
+#     -addext "basicConstraints=critical,CA:TRUE,pathlen:1" \
+#     -out mitm-ca.crt
+#   openssl ecparam -name prime256v1 -genkey -noout -out mitm-invalid-ca.key
+#   openssl req -new -key mitm-invalid-ca.key -subj "/CN=localhost" -out mitm-invalid-ca.csr
+#   printf '%s\n' \
+#     'keyUsage=critical,digitalSignature,keyEncipherment' \
+#     'extendedKeyUsage=serverAuth,clientAuth' \
+#     'subjectAltName=DNS:localhost' > mitm-invalid-ca.ext
+#   openssl x509 -req -in mitm-invalid-ca.csr -CA mitm-ca.crt -CAkey mitm-ca.key -CAcreateserial \
+#     -days 3650 -sha256 -extfile mitm-invalid-ca.ext -out mitm-invalid-ca.crt
+# Then paste mitm-invalid-ca.crt into stringData.tls.crt and mitm-invalid-ca.key into stringData.tls.key.
 apiVersion: v1
 kind: Secret
 metadata:

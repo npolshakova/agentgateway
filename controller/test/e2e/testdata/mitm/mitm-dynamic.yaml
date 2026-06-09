@@ -1,3 +1,10 @@
+# Regenerate the MITM CA cert/key with:
+#   openssl ecparam -name prime256v1 -genkey -noout -out mitm-ca.key
+#   openssl req -x509 -new -key mitm-ca.key -sha256 -days 3650 -subj "/CN=agentgateway.dev" \
+#     -addext "keyUsage=critical,keyCertSign" \
+#     -addext "basicConstraints=critical,CA:TRUE,pathlen:1" \
+#     -out mitm-ca.crt
+# Then paste mitm-ca.crt into stringData.tls.crt and mitm-ca.key into stringData.tls.key.
 apiVersion: v1
 kind: Secret
 metadata:
