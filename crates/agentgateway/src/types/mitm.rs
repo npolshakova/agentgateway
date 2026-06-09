@@ -128,9 +128,7 @@ impl MitmCertResolver {
 			let now = Instant::now();
 			let mut cache = self.lock_cache();
 
-			if let Some(certified_key) =
-				Self::cached_fresh_entry(&cache, domain, now, self.cache_ttl)
-			{
+			if let Some(certified_key) = Self::cached_fresh_entry(&cache, domain, now, self.cache_ttl) {
 				return Some(certified_key);
 			}
 
@@ -169,8 +167,9 @@ impl MitmCertResolver {
 
 fn parse_mitm_cert_cache_ttl() -> anyhow::Result<Duration> {
 	match std::env::var("MITM_CERT_CACHE_TTL") {
-		Ok(raw) => durfmt::parse(&raw)
-			.map_err(|e| anyhow!("invalid env var MITM_CERT_CACHE_TTL={raw} ({e})")),
+		Ok(raw) => {
+			durfmt::parse(&raw).map_err(|e| anyhow!("invalid env var MITM_CERT_CACHE_TTL={raw} ({e})"))
+		},
 		Err(std::env::VarError::NotPresent) => Ok(DEFAULT_MITM_CERT_CACHE_TTL),
 		Err(e) => Err(anyhow!("error reading MITM_CERT_CACHE_TTL: {e}")),
 	}
