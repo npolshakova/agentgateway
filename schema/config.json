@@ -770,7 +770,7 @@
       "type": "object",
       "properties": {
         "mode": {
-          "description": "Certificate source mode. Static mode uses cert/key as the leaf certificate; MITM dynamic\nmode uses cert/key as a CA for on-demand SNI leaf certificate issuance.",
+          "description": "Certificate source mode. Static mode uses cert/key as the leaf certificate; dynamic CA\nmode uses cert/key as a CA for on-demand SNI leaf certificate issuance.",
           "$ref": "#/$defs/LocalTLSServerMode",
           "default": "static"
         },
@@ -839,7 +839,7 @@
       "type": "string",
       "enum": [
         "static",
-        "mitmDynamic"
+        "dynamicCa"
       ]
     },
     "TLSVersion": {

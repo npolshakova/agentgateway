@@ -19,7 +19,7 @@ spec:
       tls:
         mode: Terminate
         options:
-          agentgateway.dev/tls-certificate-source: MITM_DYNAMIC
+          agentgateway.dev/tls-certificate-source: DYNAMIC_CA
         certificateRefs:
           - name: tls
             kind: Secret
@@ -111,7 +111,7 @@ status:
       conditions:
       - lastTransitionTime: fake
         message: GatewayTLSConfig validation caCertificateRefs cannot be configured
-          with MITM_DYNAMIC TLS certificate source
+          with DYNAMIC_CA TLS certificate source
         reason: NoValidCACertificate
         status: "False"
         type: Accepted
@@ -127,7 +127,7 @@ status:
         type: Programmed
       - lastTransitionTime: fake
         message: GatewayTLSConfig validation caCertificateRefs cannot be configured
-          with MITM_DYNAMIC TLS certificate source
+          with DYNAMIC_CA TLS certificate source
         reason: InvalidCACertificateRef
         status: "False"
         type: ResolvedRefs

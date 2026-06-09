@@ -1,14 +1,14 @@
-# Regenerate the MITM CA cert/key with:
-#   openssl ecparam -name prime256v1 -genkey -noout -out mitm-ca.key
-#   openssl req -x509 -new -key mitm-ca.key -sha256 -days 3650 -subj "/CN=agentgateway.dev" \
+# Regenerate the DynamicCA CA cert/key with:
+#   openssl ecparam -name prime256v1 -genkey -noout -out dynamic-ca-cert-root.key
+#   openssl req -x509 -new -key dynamic-ca-cert-root.key -sha256 -days 3650 -subj "/CN=agentgateway.dev" \
 #     -addext "keyUsage=critical,keyCertSign" \
 #     -addext "basicConstraints=critical,CA:TRUE,pathlen:1" \
-#     -out mitm-ca.crt
-# Then paste mitm-ca.crt into stringData.tls.crt and mitm-ca.key into stringData.tls.key.
+#     -out dynamic-ca-cert-root.crt
+# Then paste dynamic-ca-cert-root.crt into stringData.tls.crt and dynamic-ca-cert-root.key into stringData.tls.key.
 apiVersion: v1
 kind: Secret
 metadata:
-  name: mitm-ca
+  name: dynamic-ca-cert-root
   namespace: agentgateway-base
 type: kubernetes.io/tls
 stringData:
@@ -33,7 +33,7 @@ stringData:
 kind: Gateway
 apiVersion: gateway.networking.k8s.io/v1
 metadata:
-  name: mitm-gateway
+  name: dynamic-ca-cert-gateway
   namespace: agentgateway-base
 spec:
   gatewayClassName: agentgateway
@@ -41,13 +41,13 @@ spec:
     - protocol: HTTPS
       port: 443
       name: https
-      hostname: "*.mitm.example.com"
+      hostname: "*.dynamic-ca-cert.example.com"
       tls:
         mode: Terminate
         options:
-          agentgateway.dev/tls-certificate-source: MITM_DYNAMIC
+          agentgateway.dev/tls-certificate-source: DYNAMIC_CA
         certificateRefs:
-          - name: mitm-ca
+          - name: dynamic-ca-cert-root
             kind: Secret
       allowedRoutes:
         namespaces:
@@ -56,14 +56,14 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: mitm-route
+  name: dynamic-ca-cert-route
   namespace: agentgateway-base
 spec:
   parentRefs:
-    - name: mitm-gateway
+    - name: dynamic-ca-cert-gateway
   hostnames:
-    - first.mitm.example.com
-    - second.mitm.example.com
+    - first.dynamic-ca-cert.example.com
+    - second.dynamic-ca-cert.example.com
   rules:
     - backendRefs:
         - name: backend

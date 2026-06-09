@@ -87,6 +87,7 @@ struct ServerTlsInputs {
 	default_cipher_suites: Vec<crate::transport::tls::CipherSuite>,
 	// Default key exchange groups configured at creation time.
 	default_key_exchange_groups: Vec<crate::transport::tls::KeyExchangeGroup>,
+	dynamic_ca_cert_cache: crate::DynamicCaCertCacheConfig,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -161,7 +162,7 @@ pub struct ServerTLSConfig {
 #[derive(Debug, Clone, Eq, PartialEq)]
 enum ServerTlsCertificateSource {
 	Static,
-	MitmDynamic,
+	DynamicCa,
 	IstioWorkload { mtls: bool, default_alpns: Alpns },
 }
 
@@ -231,6 +232,7 @@ impl ServerTLSConfig {
 			default_alpns,
 			default_cipher_suites: cipher_suites.clone().unwrap_or_default(),
 			default_key_exchange_groups: key_exchange_groups.clone().unwrap_or_default(),
+			dynamic_ca_cert_cache: Default::default(),
 		});
 		let suites = cipher_suites.as_deref().filter(|s| !s.is_empty());
 		let groups = key_exchange_groups.as_deref().filter(|g| !g.is_empty());
@@ -252,7 +254,7 @@ impl ServerTLSConfig {
 	}
 
 	#[allow(clippy::too_many_arguments)]
-	pub(crate) fn mitm_dynamic_with_profile(
+	pub(crate) fn dynamic_ca_with_profile(
 		ca_cert_pem: Vec<u8>,
 		ca_key_pem: Vec<u8>,
 		default_alpns: Vec<Vec<u8>>,
@@ -260,6 +262,7 @@ impl ServerTLSConfig {
 		max_version: Option<TLSVersion>,
 		cipher_suites: Option<Vec<crate::transport::tls::CipherSuite>>,
 		key_exchange_groups: Option<Vec<crate::transport::tls::KeyExchangeGroup>>,
+		dynamic_ca_cert_cache: crate::DynamicCaCertCacheConfig,
 	) -> anyhow::Result<Self> {
 		let inputs = Arc::new(ServerTlsInputs {
 			cert_pem: ca_cert_pem,
@@ -269,10 +272,11 @@ impl ServerTLSConfig {
 			default_alpns,
 			default_cipher_suites: cipher_suites.clone().unwrap_or_default(),
 			default_key_exchange_groups: key_exchange_groups.clone().unwrap_or_default(),
+			dynamic_ca_cert_cache,
 		});
 		let suites = cipher_suites.as_deref().filter(|s| !s.is_empty());
 		let groups = key_exchange_groups.as_deref().filter(|g| !g.is_empty());
-		let base = crate::types::mitm::build_mitm_server_config(
+		let base = crate::types::dynamic_ca_cert::build_dynamic_ca_server_config(
 			&inputs.cert_pem,
 			&inputs.key_pem,
 			None,
@@ -281,9 +285,10 @@ impl ServerTLSConfig {
 			max_version,
 			suites.unwrap_or(&[]),
 			groups.unwrap_or(&[]),
+			&inputs.dynamic_ca_cert_cache,
 		)?;
 		Ok(Self {
-			source: ServerTlsCertificateSource::MitmDynamic,
+			source: ServerTlsCertificateSource::DynamicCa,
 			base_config: Some(Arc::new(base)),
 			inputs: Some(inputs),
 			insecure_fallback_verifier: None,
@@ -386,16 +391,19 @@ impl ServerTLSConfig {
 				)?;
 				base
 			},
-			ServerTlsCertificateSource::MitmDynamic => crate::types::mitm::build_mitm_server_config(
-				&inputs.cert_pem,
-				&inputs.key_pem,
-				Some(&key.alpns),
-				&inputs.default_alpns,
-				key.min_version,
-				key.max_version,
-				&key.cipher_suites,
-				&key.key_exchange_groups,
-			)?,
+			ServerTlsCertificateSource::DynamicCa => {
+				crate::types::dynamic_ca_cert::build_dynamic_ca_server_config(
+					&inputs.cert_pem,
+					&inputs.key_pem,
+					Some(&key.alpns),
+					&inputs.default_alpns,
+					key.min_version,
+					key.max_version,
+					&key.cipher_suites,
+					&key.key_exchange_groups,
+					&inputs.dynamic_ca_cert_cache,
+				)?
+			},
 			ServerTlsCertificateSource::IstioWorkload { .. } => unreachable!(),
 		};
 		let base = Arc::new(base);
@@ -2813,6 +2821,7 @@ mod tests {
 			default_alpns: vec![b"h2".to_vec()],
 			default_cipher_suites: vec![CipherSuite::TLS_AES_128_GCM_SHA256],
 			default_key_exchange_groups: vec![KeyExchangeGroup::P384],
+			dynamic_ca_cert_cache: Default::default(),
 		};
 
 		let tls = frontend::TLS {
@@ -2845,13 +2854,13 @@ mod tests {
 	}
 
 	#[tokio::test]
-	async fn mitm_tls_config_applies_frontend_tls_profile() {
+	async fn dynamic_ca_tls_config_applies_frontend_tls_profile() {
 		let ca_key = rcgen::KeyPair::generate().expect("generate CA key");
 		let mut ca_params = rcgen::CertificateParams::default();
 		ca_params.is_ca = rcgen::IsCa::Ca(rcgen::BasicConstraints::Unconstrained);
 		let ca_cert = ca_params.self_signed(&ca_key).expect("generate CA cert");
 
-		let tls_config = ServerTLSConfig::mitm_dynamic_with_profile(
+		let tls_config = ServerTLSConfig::dynamic_ca_with_profile(
 			ca_cert.pem().into_bytes(),
 			ca_key.serialize_pem().into_bytes(),
 			vec![b"h2".to_vec()],
@@ -2859,8 +2868,9 @@ mod tests {
 			None,
 			None,
 			None,
+			Default::default(),
 		)
-		.expect("build MITM TLS config");
+		.expect("build dynamic CA TLS config");
 
 		let base = tls_config
 			.config_for(None, None)

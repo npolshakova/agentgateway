@@ -74,7 +74,7 @@
 |`binds[].listeners[].hostname`|string|Can be a wildcard|
 |`binds[].listeners[].protocol`|enum|Possible values: `HTTP`, `HTTPS`, `TLS`, `TCP`, `HBONE`.|
 |`binds[].listeners[].tls`|object||
-|`binds[].listeners[].tls.mode`|enum|Certificate source mode. Static mode uses cert/key as the leaf certificate; MITM dynamic<br>mode uses cert/key as a CA for on-demand SNI leaf certificate issuance.<br>Possible values: `static`, `mitmDynamic`.|
+|`binds[].listeners[].tls.mode`|enum|Certificate source mode. Static mode uses cert/key as the leaf certificate; dynamic CA<br>mode uses cert/key as a CA for on-demand SNI leaf certificate issuance.<br>Possible values: `static`, `dynamicCa`.|
 |`binds[].listeners[].tls.cert`|string||
 |`binds[].listeners[].tls.key`|string||
 |`binds[].listeners[].tls.root`|string||
@@ -17128,7 +17128,7 @@
 |`llm`|object||
 |`llm.port`|integer||
 |`llm.tls`|object||
-|`llm.tls.mode`|enum|Certificate source mode. Static mode uses cert/key as the leaf certificate; MITM dynamic<br>mode uses cert/key as a CA for on-demand SNI leaf certificate issuance.<br>Possible values: `static`, `mitmDynamic`.|
+|`llm.tls.mode`|enum|Certificate source mode. Static mode uses cert/key as the leaf certificate; dynamic CA<br>mode uses cert/key as a CA for on-demand SNI leaf certificate issuance.<br>Possible values: `static`, `dynamicCa`.|
 |`llm.tls.cert`|string||
 |`llm.tls.key`|string||
 |`llm.tls.root`|string||

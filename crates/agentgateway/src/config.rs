@@ -329,6 +329,7 @@ pub fn parse_config(
 	let oidc_cookie_encoder = parse::<String>("OIDC_COOKIE_SECRET")?
 		.map(|key| crate::http::sessionpersistence::Encoder::aes(key.trim()))
 		.transpose()?;
+	let dynamic_ca_cert_cache = parse_dynamic_ca_cert_cache_config()?;
 
 	Ok(crate::Config {
 		ipv6_enabled,
@@ -499,6 +500,7 @@ pub fn parse_config(
 				.and_then(|m| m.session_ttl)
 				.unwrap_or(crate::mcp::DEFAULT_SESSION_IDLE_TTL),
 		},
+		dynamic_ca_cert_cache,
 		session_encoder,
 		oidc_cookie_encoder,
 		hbone: Arc::new(agent_hbone::Config {
@@ -560,6 +562,16 @@ fn parse_duration(env: &str) -> anyhow::Result<Option<Duration>> {
 			durfmt::parse(&ds).map_err(|e| anyhow::anyhow!("invalid env var {}={} ({})", env, ds, e))
 		})
 		.transpose()
+}
+
+fn parse_dynamic_ca_cert_cache_config() -> anyhow::Result<crate::DynamicCaCertCacheConfig> {
+	let defaults = crate::DynamicCaCertCacheConfig::default();
+	let ttl = parse_duration("DYNAMIC_CA_CERT_CACHE_TTL")?.unwrap_or(defaults.ttl);
+	let capacity = parse::<usize>("DYNAMIC_CA_CERT_CACHE_CAPACITY")?.unwrap_or(defaults.capacity);
+	if capacity == 0 {
+		anyhow::bail!("invalid env var DYNAMIC_CA_CERT_CACHE_CAPACITY=0 (must be greater than 0)");
+	}
+	Ok(crate::DynamicCaCertCacheConfig { ttl, capacity })
 }
 
 pub fn empty_to_none<A: AsRef<str>>(inp: Option<A>) -> Option<A> {

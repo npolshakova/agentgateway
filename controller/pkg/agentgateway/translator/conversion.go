@@ -1274,11 +1274,11 @@ func buildTLS(
 			}
 		}
 
-		mitmDynamic := tls.Options != nil && tls.Options[agentgatewayTLSCertificateSourceKey] == "MITM_DYNAMIC"
-		if mitmDynamic && gatewayTLS != nil && gatewayTLS.Validation != nil && len(gatewayTLS.Validation.CACertificateRefs) > 0 {
+		dynamicCA := tls.Options != nil && tls.Options[agentgatewayTLSCertificateSourceKey] == "DYNAMIC_CA"
+		if dynamicCA && gatewayTLS != nil && gatewayTLS.Validation != nil && len(gatewayTLS.Validation.CACertificateRefs) > 0 {
 			return dummyTls, &ConfigError{
 				Reason:  InvalidTLSCA,
-				Message: "GatewayTLSConfig validation caCertificateRefs cannot be configured with MITM_DYNAMIC TLS certificate source",
+				Message: "GatewayTLSConfig validation caCertificateRefs cannot be configured with DYNAMIC_CA TLS certificate source",
 			}
 		}
 
@@ -1310,8 +1310,8 @@ func buildTLS(
 				tlsRes.Info.MtlsFallbackEnabled = true
 			}
 		}
-		if mitmDynamic {
-			tlsRes.Info.MitmDynamic = true
+		if dynamicCA {
+			tlsRes.Info.DynamicCA = true
 		}
 		return &tlsRes.Info, nil
 	case gwv1.TLSModePassthrough:

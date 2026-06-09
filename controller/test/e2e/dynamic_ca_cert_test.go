@@ -21,7 +21,7 @@ import (
 	"github.com/agentgateway/agentgateway/controller/test/gomega/matchers"
 )
 
-const mitmRootCAPEM = `-----BEGIN CERTIFICATE-----
+const dynamicCARootCAPEM = `-----BEGIN CERTIFICATE-----
 MIIBezCCASCgAwIBAgIRAOnmoc9aVSZkyJ59U9r+6KAwCgYIKoZIzj0EAwIwGzEZ
 MBcGA1UEAxMQYWdlbnRnYXRld2F5LmRldjAeFw0yNTEwMTUxOTQzMzZaFw0zNTEw
 MTMxOTQzMzZaMBsxGTAXBgNVBAMTEGFnZW50Z2F0ZXdheS5kZXYwWTATBgcqhkjO
@@ -32,60 +32,60 @@ bISOus7YDMowCgYIKoZIzj0EAwIDSQAwRgIhAL2agfEI9TBl060Y0aGQ7SX69aLC
 7/ifjLmH38SGOWCJAiEA63NRyf5oz6rzvvIHpK8OM2hSHqWQFQnhBTCbyzNAe5U=
 -----END CERTIFICATE-----`
 
-func TestAgentgatewayMITMDynamicTLS(tt *testing.T) {
+func TestAgentgatewayDynamicCATLS(tt *testing.T) {
 	t := New(tt)
 
 	t.Run("IssuesSNICertificatesAndCaches", func(t base.Test) {
-		testMITMDynamicIssuesSNICertificatesAndCaches(t)
+		testDynamicCAIssuesSNICertificatesAndCaches(t)
 	})
 	t.Run("RejectsInvalidCA", func(t base.Test) {
-		testMITMDynamicRejectsInvalidCA(t)
+		testDynamicCARejectsInvalidCA(t)
 	})
 }
 
-func testMITMDynamicIssuesSNICertificatesAndCaches(t base.Test) {
-	t.Apply(manifest("mitm", "mitm-dynamic.yaml"))
-	gateway := agentgatewayFeatureGateway(t, "mitm-gateway")
+func testDynamicCAIssuesSNICertificatesAndCaches(t base.Test) {
+	t.Apply(manifest("dynamic-ca-cert", "dynamic-ca-cert.yaml"))
+	gateway := agentgatewayFeatureGateway(t, "dynamic-ca-cert-gateway")
 	g := gomega.NewWithT(t)
 
-	first := mitmHTTPSRequest(t, gateway, "first.mitm.example.com", true)
+	first := dynamicCAHTTPSRequest(t, gateway, "first.dynamic-ca-cert.example.com", true)
 	g.Expect(first.StatusCode).To(gomega.Equal(http.StatusOK))
-	g.Expect(first.Leaf.DNSNames).To(gomega.ContainElement("first.mitm.example.com"))
+	g.Expect(first.Leaf.DNSNames).To(gomega.ContainElement("first.dynamic-ca-cert.example.com"))
 
-	cached := mitmHTTPSRequest(t, gateway, "first.mitm.example.com", true)
+	cached := dynamicCAHTTPSRequest(t, gateway, "first.dynamic-ca-cert.example.com", true)
 	g.Expect(cached.StatusCode).To(gomega.Equal(http.StatusOK))
 	g.Expect(cached.Leaf.Raw).To(gomega.Equal(first.Leaf.Raw), "repeated SNI should reuse cached leaf certificate")
 
-	second := mitmHTTPSRequest(t, gateway, "second.mitm.example.com", true)
+	second := dynamicCAHTTPSRequest(t, gateway, "second.dynamic-ca-cert.example.com", true)
 	g.Expect(second.StatusCode).To(gomega.Equal(http.StatusOK))
-	g.Expect(second.Leaf.DNSNames).To(gomega.ContainElement("second.mitm.example.com"))
+	g.Expect(second.Leaf.DNSNames).To(gomega.ContainElement("second.dynamic-ca-cert.example.com"))
 	g.Expect(second.Leaf.Raw).NotTo(gomega.Equal(first.Leaf.Raw), "different SNI should trigger a different generated leaf certificate")
 }
 
-func testMITMDynamicRejectsInvalidCA(t base.Test) {
-	t.Apply(manifest("mitm", "mitm-dynamic-invalid-ca.yaml"))
-	gateway := agentgatewayFeatureGatewayAddress(t, "mitm-invalid-ca-gateway")
+func testDynamicCARejectsInvalidCA(t base.Test) {
+	t.Apply(manifest("dynamic-ca-cert", "dynamic-ca-cert-invalid-ca.yaml"))
+	gateway := agentgatewayFeatureGatewayAddress(t, "dynamic-ca-cert-invalid-ca-gateway")
 
 	retry.UntilSuccessOrFail(t, func() error {
-		_, err := dialMITMGateway(t, gateway, "invalid.mitm.example.com", true)
+		_, err := dialDynamicCAGateway(t, gateway, "invalid.dynamic-ca-cert.example.com", true)
 		if err == nil {
-			return fmt.Errorf("expected TLS handshake to fail with invalid MITM CA")
+			return fmt.Errorf("expected TLS handshake to fail with invalid Dynamic CA certificate source")
 		}
 		return nil
 	}, retry.Timeout(30*time.Second))
 }
 
-type mitmHTTPSResult struct {
+type dynamicCAHTTPSResult struct {
 	StatusCode int
 	Leaf       *x509.Certificate
 }
 
-func mitmHTTPSRequest(t base.Test, gateway base.Gateway, sni string, verify bool) mitmHTTPSResult {
+func dynamicCAHTTPSRequest(t base.Test, gateway base.Gateway, sni string, verify bool) dynamicCAHTTPSResult {
 	t.Helper()
 
-	var result mitmHTTPSResult
+	var result dynamicCAHTTPSResult
 	retry.UntilSuccessOrFail(t, func() error {
-		conn, err := dialMITMGateway(t, gateway, sni, verify)
+		conn, err := dialDynamicCAGateway(t, gateway, sni, verify)
 		if err != nil {
 			return err
 		}
@@ -112,7 +112,7 @@ func mitmHTTPSRequest(t base.Test, gateway base.Gateway, sni string, verify bool
 		if len(state.PeerCertificates) == 0 {
 			return fmt.Errorf("TLS peer did not present certificates")
 		}
-		result = mitmHTTPSResult{
+		result = dynamicCAHTTPSResult{
 			StatusCode: resp.StatusCode,
 			Leaf:       state.PeerCertificates[0],
 		}
@@ -122,12 +122,12 @@ func mitmHTTPSRequest(t base.Test, gateway base.Gateway, sni string, verify bool
 	return result
 }
 
-func dialMITMGateway(t base.Test, gateway base.Gateway, sni string, verify bool) (*tls.Conn, error) {
+func dialDynamicCAGateway(t base.Test, gateway base.Gateway, sni string, verify bool) (*tls.Conn, error) {
 	t.Helper()
 
 	rootCAs := x509.NewCertPool()
-	if !rootCAs.AppendCertsFromPEM([]byte(mitmRootCAPEM)) {
-		t.Fatal("failed to load MITM root CA")
+	if !rootCAs.AppendCertsFromPEM([]byte(dynamicCARootCAPEM)) {
+		t.Fatal("failed to load Dynamic CA root CA")
 	}
 
 	tlsConfig := &tls.Config{

@@ -1,22 +1,22 @@
-# Regenerate this intentionally invalid MITM CA fixture with a leaf cert/key:
-#   openssl ecparam -name prime256v1 -genkey -noout -out mitm-ca.key
-#   openssl req -x509 -new -key mitm-ca.key -sha256 -days 3650 -subj "/CN=agentgateway.dev" \
+# Regenerate this intentionally invalid Dynamic CA certificate source fixture with a leaf cert/key:
+#   openssl ecparam -name prime256v1 -genkey -noout -out dynamic-ca-cert-root.key
+#   openssl req -x509 -new -key dynamic-ca-cert-root.key -sha256 -days 3650 -subj "/CN=agentgateway.dev" \
 #     -addext "keyUsage=critical,keyCertSign" \
 #     -addext "basicConstraints=critical,CA:TRUE,pathlen:1" \
-#     -out mitm-ca.crt
-#   openssl ecparam -name prime256v1 -genkey -noout -out mitm-invalid-ca.key
-#   openssl req -new -key mitm-invalid-ca.key -subj "/CN=localhost" -out mitm-invalid-ca.csr
+#     -out dynamic-ca-cert-root.crt
+#   openssl ecparam -name prime256v1 -genkey -noout -out dynamic-ca-cert-invalid-ca.key
+#   openssl req -new -key dynamic-ca-cert-invalid-ca.key -subj "/CN=localhost" -out dynamic-ca-cert-invalid-ca.csr
 #   printf '%s\n' \
 #     'keyUsage=critical,digitalSignature,keyEncipherment' \
 #     'extendedKeyUsage=serverAuth,clientAuth' \
-#     'subjectAltName=DNS:localhost' > mitm-invalid-ca.ext
-#   openssl x509 -req -in mitm-invalid-ca.csr -CA mitm-ca.crt -CAkey mitm-ca.key -CAcreateserial \
-#     -days 3650 -sha256 -extfile mitm-invalid-ca.ext -out mitm-invalid-ca.crt
-# Then paste mitm-invalid-ca.crt into stringData.tls.crt and mitm-invalid-ca.key into stringData.tls.key.
+#     'subjectAltName=DNS:localhost' > dynamic-ca-cert-invalid-ca.ext
+#   openssl x509 -req -in dynamic-ca-cert-invalid-ca.csr -CA dynamic-ca-cert-root.crt -CAkey dynamic-ca-cert-root.key -CAcreateserial \
+#     -days 3650 -sha256 -extfile dynamic-ca-cert-invalid-ca.ext -out dynamic-ca-cert-invalid-ca.crt
+# Then paste dynamic-ca-cert-invalid-ca.crt into stringData.tls.crt and dynamic-ca-cert-invalid-ca.key into stringData.tls.key.
 apiVersion: v1
 kind: Secret
 metadata:
-  name: mitm-invalid-ca
+  name: dynamic-ca-cert-invalid-ca
   namespace: agentgateway-base
 type: kubernetes.io/tls
 stringData:
@@ -43,7 +43,7 @@ stringData:
 kind: Gateway
 apiVersion: gateway.networking.k8s.io/v1
 metadata:
-  name: mitm-invalid-ca-gateway
+  name: dynamic-ca-cert-invalid-ca-gateway
   namespace: agentgateway-base
 spec:
   gatewayClassName: agentgateway
@@ -51,11 +51,11 @@ spec:
     - protocol: HTTPS
       port: 443
       name: https
-      hostname: invalid.mitm.example.com
+      hostname: invalid.dynamic-ca-cert.example.com
       tls:
         mode: Terminate
         options:
-          agentgateway.dev/tls-certificate-source: MITM_DYNAMIC
+          agentgateway.dev/tls-certificate-source: DYNAMIC_CA
         certificateRefs:
-          - name: mitm-invalid-ca
+          - name: dynamic-ca-cert-invalid-ca
             kind: Secret

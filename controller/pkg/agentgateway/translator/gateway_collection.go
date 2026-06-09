@@ -143,7 +143,7 @@ type TLSInfo struct {
 	MtlsFallbackEnabled bool
 	IstioWorkloadCert   bool
 	IstioMutual         bool
-	MitmDynamic         bool
+	DynamicCA           bool
 }
 
 // PortBindings is a wrapper type that contains the listener on the gateway, as well as the status for the listener.
@@ -190,7 +190,7 @@ func (g GatewayListener) Equals(other GatewayListener) bool {
 			g.TLSInfo.MtlsFallbackEnabled != other.TLSInfo.MtlsFallbackEnabled ||
 			g.TLSInfo.IstioWorkloadCert != other.TLSInfo.IstioWorkloadCert ||
 			g.TLSInfo.IstioMutual != other.TLSInfo.IstioMutual ||
-			g.TLSInfo.MitmDynamic != other.TLSInfo.MitmDynamic {
+			g.TLSInfo.DynamicCA != other.TLSInfo.DynamicCA {
 			return false
 		}
 	}
@@ -430,7 +430,7 @@ func (g ListenerSet) Equals(other ListenerSet) bool {
 			g.TLSInfo.MtlsFallbackEnabled != other.TLSInfo.MtlsFallbackEnabled ||
 			g.TLSInfo.IstioWorkloadCert != other.TLSInfo.IstioWorkloadCert ||
 			g.TLSInfo.IstioMutual != other.TLSInfo.IstioMutual ||
-			g.TLSInfo.MitmDynamic != other.TLSInfo.MitmDynamic {
+			g.TLSInfo.DynamicCA != other.TLSInfo.DynamicCA {
 			return false
 		}
 	}

@@ -88,6 +88,7 @@ impl<'a> From<&'a RouteTarget> for RouteTargetRef<'a> {
 pub struct Store {
 	ipv6_enabled: bool,
 	core_ids: Option<Vec<core_affinity::CoreId>>,
+	dynamic_ca_cert_cache: crate::DynamicCaCertCacheConfig,
 	binds: HashMap<BindKey, Arc<Bind>>,
 	resources: HashMap<Strng, ResourceKind>,
 
@@ -547,14 +548,23 @@ impl Store {
 	}
 
 	pub fn with_ipv6_enabled(ipv6_enabled: bool) -> Self {
-		Self::new(ipv6_enabled, crate::ThreadingMode::Multithreaded)
+		Self::new(
+			ipv6_enabled,
+			crate::ThreadingMode::Multithreaded,
+			Default::default(),
+		)
 	}
 
-	pub fn new(ipv6_enabled: bool, threading_mode: crate::ThreadingMode) -> Self {
+	pub fn new(
+		ipv6_enabled: bool,
+		threading_mode: crate::ThreadingMode,
+		dynamic_ca_cert_cache: crate::DynamicCaCertCacheConfig,
+	) -> Self {
 		let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
 		let (listener_change_tx, listener_change_rx) = watch::channel(0);
 		Self {
 			ipv6_enabled,
+			dynamic_ca_cert_cache,
 			core_ids: match threading_mode {
 				crate::ThreadingMode::Multithreaded => None,
 				crate::ThreadingMode::ThreadPerCore => {
@@ -1568,7 +1578,8 @@ impl Store {
 		raw: XdsListener,
 		diagnostics: &mut Diagnostics,
 	) -> anyhow::Result<()> {
-		let (lis, bind_name) = Listener::from_xds(&raw, diagnostics)?;
+		let (lis, bind_name) =
+			Listener::from_xds(&raw, diagnostics, self.dynamic_ca_cert_cache.clone())?;
 		self.insert_listener(lis, bind_name);
 		Ok(())
 	}
