@@ -59,8 +59,8 @@ type AgentgatewayPolicyList struct {
 // +kubebuilder:validation:XValidation:rule="!has(self.backend) || !has(self.backend.mcp) || ((!has(self.targetRefs) || !self.targetRefs.exists(t, t.kind == 'AgentgatewayBackend' && has(t.sectionName))) && (!has(self.targetSelectors) || !self.targetSelectors.exists(t, t.kind == 'AgentgatewayBackend' && has(t.sectionName))))",message="backend.mcp may not target an AgentgatewayBackend sectionName"
 // +kubebuilder:validation:XValidation:rule="!has(self.backend) || !has(self.backend.ai) || ((!has(self.targetRefs) || !self.targetRefs.exists(t, t.kind == 'Service')) && (!has(self.targetSelectors) || !self.targetSelectors.exists(t, t.kind == 'Service')))",message="backend.ai may not be used with a Service target"
 // +kubebuilder:validation:XValidation:rule="!(has(self.traffic) && has(self.traffic.jwtAuthentication) && has(self.backend) && has(self.backend.mcp) && has(self.backend.mcp.authentication))",message="traffic.jwtAuthentication may not be used with backend.mcp.authentication in the same policy"
-// +kubebuilder:validation:XValidation:rule="has(self.frontend) && has(self.targetRefs) ? self.targetRefs.all(t, t.kind == 'Gateway' && !has(t.sectionName)) : true",message="the 'frontend' field can only target a Gateway"
-// +kubebuilder:validation:XValidation:rule="has(self.frontend) && has(self.targetSelectors) ? self.targetSelectors.all(t, t.kind == 'Gateway' && !has(t.sectionName)) : true",message="the 'frontend' field can only target a Gateway"
+// +kubebuilder:validation:XValidation:rule="has(self.frontend) && has(self.targetRefs) ? self.targetRefs.all(t, t.kind == 'Gateway') : true",message="the 'frontend' field can only target a Gateway"
+// +kubebuilder:validation:XValidation:rule="has(self.frontend) && has(self.targetSelectors) ? self.targetSelectors.all(t, t.kind == 'Gateway') : true",message="the 'frontend' field can only target a Gateway"
 // +kubebuilder:validation:XValidation:rule="has(self.traffic) && has(self.targetRefs) ? self.targetRefs.all(t, t.kind in ['Gateway', 'HTTPRoute', 'GRPCRoute', 'ListenerSet', 'InferencePool']) : true",message="the 'traffic' field can only target a Gateway, ListenerSet, GRPCRoute, HTTPRoute, or InferencePool"
 // +kubebuilder:validation:XValidation:rule="has(self.traffic) && has(self.targetSelectors) ? self.targetSelectors.all(t, t.kind in ['Gateway', 'HTTPRoute', 'GRPCRoute', 'ListenerSet', 'InferencePool']) : true",message="the 'traffic' field can only target a Gateway, ListenerSet, GRPCRoute, HTTPRoute, or InferencePool"
 // +kubebuilder:validation:XValidation:rule="has(self.targetRefs) && has(self.traffic) && has(self.traffic.phase) && self.traffic.phase == 'PreRouting' ? self.targetRefs.all(t, t.kind in ['Gateway', 'ListenerSet']) : true",message="the 'traffic.phase=PreRouting' field can only target a Gateway or ListenerSet"
@@ -96,8 +96,8 @@ type AgentgatewayPolicySpec struct {
 
 	// frontend defines settings for how to handle incoming traffic.
 	//
-	// A frontend policy can only target a `Gateway`. `Listener` and
-	// `ListenerSet` are not valid targets.
+	// A frontend policy can only target a `Gateway`. Set `sectionName` on the
+	// targetRef to scope the policy to a specific Gateway listener.
 	//
 	// When multiple policies are selected for a given request, they are merged on a field-level basis, but not a deep
 	// merge. For example, policy A sets `tcp` and `tls`, and policy B sets
@@ -493,6 +493,21 @@ type Frontend struct {
 	// +optional
 	Connect *FrontendConnect `json:"connect,omitempty"`
 
+	// originalDst enables transparent proxy original-destination recovery for
+	// redirected downstream TCP connections.
+	//
+	// When enabled, agentgateway reads the pre-redirect destination from Linux
+	// socket metadata (SO_ORIGINAL_DST/IP6T_SO_ORIGINAL_DST), exposes it to CEL
+	// as `originalDst.address` and `originalDst.port`, and uses it as the
+	// connection target address for routing. Connections fail closed if the
+	// original destination cannot be recovered.
+	//
+	// This is intended for Linux transparent redirect capture, for example
+	// nftables redirect rules that send egress traffic to a local agentgateway
+	// listener.
+	// +optional
+	OriginalDst *FrontendOriginalDst `json:"originalDst,omitempty"`
+
 	// `accessLog` contains access logging configuration.
 	// +optional
 	AccessLog *AccessLog `json:"accessLog,omitempty"`
@@ -507,6 +522,8 @@ type Frontend struct {
 	// +optional
 	Metrics *MetricLabels `json:"metrics,omitempty"`
 }
+
+type FrontendOriginalDst struct{}
 
 // +k8s:enum
 type ProxyProtocolVersion string

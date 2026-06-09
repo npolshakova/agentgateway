@@ -5538,8 +5538,8 @@ spec:
                 description: |-
                   frontend defines settings for how to handle incoming traffic.
 
-                  A frontend policy can only target a `Gateway`. `Listener` and
-                  `ListenerSet` are not valid targets.
+                  A frontend policy can only target a `Gateway`. Set `sectionName` on the
+                  targetRef to scope the policy to a specific Gateway listener.
 
                   When multiple policies are selected for a given request, they are merged on a field-level basis, but not a deep
                   merge. For example, policy A sets `tcp` and `tls`, and policy B sets
@@ -5969,6 +5969,21 @@ spec:
                     required:
                     - policy
                     type: object
+                  originalDst:
+                    description: |-
+                      originalDst enables transparent proxy original-destination recovery for
+                      redirected downstream TCP connections.
+
+                      When enabled, agentgateway reads the pre-redirect destination from Linux
+                      socket metadata (SO_ORIGINAL_DST/IP6T_SO_ORIGINAL_DST), exposes it to CEL
+                      as `originalDst.address` and `originalDst.port`, and uses it as the
+                      connection target address for routing. Connections fail closed if the
+                      original destination cannot be recovered.
+
+                      This is intended for Linux transparent redirect capture, for example
+                      nftables redirect rules that send egress traffic to a local agentgateway
+                      listener.
+                    type: object
                   proxyProtocol:
                     description: |-
                       proxyProtocol defines settings for downstream PROXY protocol handling.
@@ -6306,8 +6321,9 @@ spec:
                 type: object
                 x-kubernetes-validations:
                 - message: at least one of the fields in [accessLog connect http metrics
-                    networkAuthorization proxyProtocol tcp tls tracing] must be set
-                  rule: '[has(self.accessLog),has(self.connect),has(self.http),has(self.metrics),has(self.networkAuthorization),has(self.proxyProtocol),has(self.tcp),has(self.tls),has(self.tracing)].filter(x,x==true).size()
+                    networkAuthorization originalDst proxyProtocol tcp tls tracing]
+                    must be set
+                  rule: '[has(self.accessLog),has(self.connect),has(self.http),has(self.metrics),has(self.networkAuthorization),has(self.originalDst),has(self.proxyProtocol),has(self.tcp),has(self.tls),has(self.tracing)].filter(x,x==true).size()
                     >= 1'
               strategy:
                 description: |-
@@ -9982,10 +9998,10 @@ spec:
                 has(self.backend) && has(self.backend.mcp) && has(self.backend.mcp.authentication))'
             - message: the 'frontend' field can only target a Gateway
               rule: 'has(self.frontend) && has(self.targetRefs) ? self.targetRefs.all(t,
-                t.kind == ''Gateway'' && !has(t.sectionName)) : true'
+                t.kind == ''Gateway'') : true'
             - message: the 'frontend' field can only target a Gateway
               rule: 'has(self.frontend) && has(self.targetSelectors) ? self.targetSelectors.all(t,
-                t.kind == ''Gateway'' && !has(t.sectionName)) : true'
+                t.kind == ''Gateway'') : true'
             - message: the 'traffic' field can only target a Gateway, ListenerSet,
                 GRPCRoute, HTTPRoute, or InferencePool
               rule: 'has(self.traffic) && has(self.targetRefs) ? self.targetRefs.all(t,
