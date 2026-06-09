@@ -1032,6 +1032,8 @@ impl TCPRoute {
 		let r = TCPRoute {
 			key: strng::new(&s.key),
 			service_key: service_key_from_proto(s.service_key.as_ref()),
+			service_port: u16::try_from(s.service_port)
+				.map_err(|_| ProtoError::Generic(format!("invalid service_port {}", s.service_port)))?,
 			name: s
 				.name
 				.as_ref()
@@ -1065,6 +1067,8 @@ impl Route {
 		let r = Route {
 			key: strng::new(&s.key),
 			service_key: service_key_from_proto(s.service_key.as_ref()),
+			service_port: u16::try_from(s.service_port)
+				.map_err(|_| ProtoError::Generic(format!("invalid service_port {}", s.service_port)))?,
 			name,
 			hostnames: s.hostnames.iter().map(strng::new).collect(),
 			matches: s

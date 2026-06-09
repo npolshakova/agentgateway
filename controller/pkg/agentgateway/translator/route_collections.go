@@ -731,6 +731,7 @@ func resourceMapper(t any, parent RouteParentReference) *api.Resource {
 		if inner.ServiceKey != nil {
 			// if linked by Service, no need for hostname matching
 			inner.Hostnames = nil
+			inner.ServicePort = uint32(parent.Port) //nolint:gosec // G115: Gateway API PortNumber is int32 with validation 1-65535, always safe
 		}
 
 		return ToAgwResource(AgwTCPRoute{TCPRoute: inner})
@@ -743,6 +744,7 @@ func resourceMapper(t any, parent RouteParentReference) *api.Resource {
 		if inner.ServiceKey != nil {
 			// if linked by Service, no need for hostname matching
 			inner.Hostnames = nil
+			inner.ServicePort = uint32(parent.Port) //nolint:gosec // G115: Gateway API PortNumber is int32 with validation 1-65535, always safe
 		}
 
 		return ToAgwResource(AgwRoute{Route: inner})
@@ -754,7 +756,11 @@ func resourceMapper(t any, parent RouteParentReference) *api.Resource {
 
 func routeKeySuffix(parent RouteParentReference) string {
 	if parent.ServiceKey != nil {
-		return ".svc." + parent.ServiceKey.Namespace + "." + parent.ServiceKey.Name
+		suffix := ".svc." + parent.ServiceKey.Namespace + "." + parent.ServiceKey.Name
+		if parent.Port != 0 {
+			suffix += fmt.Sprintf(".%d", parent.Port)
+		}
+		return suffix
 	}
 	section := string(parent.ParentSection)
 	if section == "" {

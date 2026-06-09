@@ -2176,6 +2176,7 @@ request.path.endsWith(":streamRawPredict") || request.path.endsWith(":rawPredict
 	let model_list_route = Route {
 		key: strng::new("llm:admin:model-list"),
 		service_key: None,
+		service_port: 0,
 		name: RouteName {
 			name: strng::new("admin:model-list"),
 			namespace: strng::new("internal"),
@@ -2429,6 +2430,7 @@ request.path.endsWith(":streamRawPredict") || request.path.endsWith(":rawPredict
 		let model_route = Route {
 			key: route_key.clone(),
 			service_key: None,
+			service_port: 0,
 			name: RouteName {
 				name: strng::format!("model:{}", model_config.name),
 				namespace: strng::new("internal"),
@@ -2619,6 +2621,7 @@ async fn convert_mcp_config(
 	let route = Route {
 		key: route_key.clone(),
 		service_key: None,
+		service_port: 0,
 		name: RouteName {
 			name: strng::new("default"),
 			namespace: strng::new("internal"),
@@ -2913,6 +2916,7 @@ pub async fn convert_route(
 	let route = Route {
 		key,
 		service_key: None,
+		service_port: 0,
 		name: RouteName {
 			name: route_name,
 			namespace,
@@ -3250,6 +3254,7 @@ async fn convert_tcp_route(
 	let route = TCPRoute {
 		key,
 		service_key: None,
+		service_port: 0,
 		name: RouteName {
 			name: route_name,
 			namespace,
