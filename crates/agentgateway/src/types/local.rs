@@ -1717,6 +1717,9 @@ struct LocalFrontendPolicies {
 	/// Enable or disable downstream HTTP CONNECT handling.
 	#[serde(default)]
 	pub connect: Option<frontend::Connect>,
+	/// Recover the pre-redirect destination from Linux socket metadata.
+	#[serde(default, rename = "originalDst")]
+	pub original_dst: Option<frontend::OriginalDst>,
 	/// Settings for request access logs.
 	#[serde(default, alias = "logging")]
 	pub access_log: Option<frontend::LoggingPolicy>,
@@ -2966,6 +2969,7 @@ async fn split_frontend_policies(
 		network_authorization,
 		proxy_protocol,
 		connect,
+		original_dst,
 		access_log,
 		tracing,
 	} = pol;
@@ -2989,6 +2993,9 @@ async fn split_frontend_policies(
 	}
 	if let Some(p) = connect {
 		add(FrontendPolicy::Connect(p), "connect");
+	}
+	if let Some(p) = original_dst {
+		add(FrontendPolicy::OriginalDst(p), "originalDst");
 	}
 	if let Some(mut p) = access_log {
 		p.init_access_log_policy();
