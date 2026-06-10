@@ -4089,6 +4089,7 @@ spec:
                           - Models
                           - Passthrough
                           - Realtime
+                          - Rerank
                           - Responses
                           type: string
                         description: |-

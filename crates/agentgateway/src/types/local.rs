@@ -2270,6 +2270,8 @@ request.path.endsWith(":streamRawPredict") || request.path.endsWith(":rawPredict
 					strng::new("/v1/embeddings"),
 					crate::llm::RouteType::Embeddings,
 				),
+				(strng::new("/v1/rerank"), crate::llm::RouteType::Rerank),
+				(strng::new("/v2/rerank"), crate::llm::RouteType::Rerank),
 				(strng::new("*"), crate::llm::RouteType::Passthrough),
 			]
 		};

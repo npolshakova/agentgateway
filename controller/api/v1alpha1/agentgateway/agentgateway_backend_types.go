@@ -378,6 +378,9 @@ const (
 
 	// ProviderFormatRealtime is the OpenAI-compatible realtime API.
 	ProviderFormatRealtime ProviderFormat = "Realtime"
+
+	// ProviderFormatRerank is the Cohere-compatible rerank API.
+	ProviderFormatRerank ProviderFormat = "Rerank"
 )
 
 // OpenAIConfig settings for the [OpenAI](https://developers.openai.com/api/docs/guides/streaming-responses) LLM provider.

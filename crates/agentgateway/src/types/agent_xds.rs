@@ -523,6 +523,7 @@ fn convert_route_type(proto_rt: i32, diagnostics: &mut Diagnostics) -> llm::Rout
 		Ok(ProtoRT::AnthropicTokenCount) => llm::RouteType::AnthropicTokenCount,
 		Ok(ProtoRT::Embeddings) => llm::RouteType::Embeddings,
 		Ok(ProtoRT::Realtime) => llm::RouteType::Realtime,
+		Ok(ProtoRT::Rerank) => llm::RouteType::Rerank,
 		Err(_) => {
 			diagnostics.add_warning(format!(
 				"unknown proto RouteType value {}, defaulting to Completions",
@@ -549,6 +550,7 @@ fn convert_provider_format(
 		Ok(ProtoFormat::Embeddings) => Ok(llm::custom::ProviderFormat::Embeddings),
 		Ok(ProtoFormat::AnthropicTokenCount) => Ok(llm::custom::ProviderFormat::AnthropicTokenCount),
 		Ok(ProtoFormat::Realtime) => Ok(llm::custom::ProviderFormat::Realtime),
+		Ok(ProtoFormat::Rerank) => Ok(llm::custom::ProviderFormat::Rerank),
 		Err(_) => Err(ProtoError::Generic(format!(
 			"AI backend custom provider at index {provider_idx} has unknown supported format value {proto_format}"
 		))),

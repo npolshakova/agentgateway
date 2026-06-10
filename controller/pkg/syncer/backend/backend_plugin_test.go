@@ -753,6 +753,7 @@ func TestBuildAIBackend(t *testing.T) {
 								"/v1/embeddings":            agentgateway.RouteTypeEmbeddings,
 								"/v1/realtime":              agentgateway.RouteTypeRealtime,
 								"/v1/models":                agentgateway.RouteTypeModels,
+								"/v1/rerank":                agentgateway.RouteTypeRerank,
 							},
 						},
 					},

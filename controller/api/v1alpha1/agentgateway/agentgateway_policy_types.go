@@ -1525,6 +1525,9 @@ const (
 
 	// RouteTypeRealtime processes OpenAI `/v1/realtime` requests.
 	RouteTypeRealtime RouteType = "Realtime"
+
+	// RouteTypeRerank processes Cohere `/v2/rerank` format requests.
+	RouteTypeRerank RouteType = "Rerank"
 )
 
 // +kubebuilder:validation:AtLeastOneFieldSet

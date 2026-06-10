@@ -309,6 +309,7 @@ spec:
                                           - Embeddings
                                           - Messages
                                           - Realtime
+                                          - Rerank
                                           - Responses
                                           type: string
                                       required:
@@ -4980,6 +4981,7 @@ spec:
                                           - Models
                                           - Passthrough
                                           - Realtime
+                                          - Rerank
                                           - Responses
                                           type: string
                                         description: |-
@@ -6274,6 +6276,7 @@ spec:
                                   - Embeddings
                                   - Messages
                                   - Realtime
+                                  - Rerank
                                   - Responses
                                   type: string
                               required:
@@ -11301,6 +11304,7 @@ spec:
                           - Models
                           - Passthrough
                           - Realtime
+                          - Rerank
                           - Responses
                           type: string
                         description: |-

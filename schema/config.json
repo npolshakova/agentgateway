@@ -3533,6 +3533,11 @@
           "description": "Anthropic /v1/messages/count_tokens",
           "type": "string",
           "const": "anthropicTokenCount"
+        },
+        {
+          "description": "Cohere /v2/rerank (document reranking)",
+          "type": "string",
+          "const": "rerank"
         }
       ]
     },
@@ -6109,7 +6114,8 @@
         "responses",
         "embeddings",
         "anthropicTokenCount",
-        "realtime"
+        "realtime",
+        "rerank"
       ]
     },
     "LocalBackendPolicies": {

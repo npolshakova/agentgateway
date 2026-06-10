@@ -2127,7 +2127,7 @@
 |`binds[].listeners[].routes[].backends[].ai.provider.custom`|object||
 |`binds[].listeners[].routes[].backends[].ai.provider.custom.model`|string||
 |`binds[].listeners[].routes[].backends[].ai.provider.custom.formats`|[]object||
-|`binds[].listeners[].routes[].backends[].ai.provider.custom.formats[].type`|enum|Possible values: `completions`, `messages`, `responses`, `embeddings`, `anthropicTokenCount`, `realtime`.|
+|`binds[].listeners[].routes[].backends[].ai.provider.custom.formats[].type`|enum|Possible values: `completions`, `messages`, `responses`, `embeddings`, `anthropicTokenCount`, `realtime`, `rerank`.|
 |`binds[].listeners[].routes[].backends[].ai.provider.custom.formats[].path`|string||
 |`binds[].listeners[].routes[].backends[].ai.hostOverride`|string|Override the upstream host for this provider.|
 |`binds[].listeners[].routes[].backends[].ai.pathOverride`|string|Override the upstream path for this provider.|
@@ -3256,7 +3256,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].provider.custom`|object||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].provider.custom.model`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].provider.custom.formats`|[]object||
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].provider.custom.formats[].type`|enum|Possible values: `completions`, `messages`, `responses`, `embeddings`, `anthropicTokenCount`, `realtime`.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].provider.custom.formats[].type`|enum|Possible values: `completions`, `messages`, `responses`, `embeddings`, `anthropicTokenCount`, `realtime`, `rerank`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].provider.custom.formats[].path`|string||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].hostOverride`|string|Override the upstream host for this provider.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].pathOverride`|string|Override the upstream path for this provider.|
@@ -8423,7 +8423,7 @@
 |`backends[].ai.provider.custom`|object||
 |`backends[].ai.provider.custom.model`|string||
 |`backends[].ai.provider.custom.formats`|[]object||
-|`backends[].ai.provider.custom.formats[].type`|enum|Possible values: `completions`, `messages`, `responses`, `embeddings`, `anthropicTokenCount`, `realtime`.|
+|`backends[].ai.provider.custom.formats[].type`|enum|Possible values: `completions`, `messages`, `responses`, `embeddings`, `anthropicTokenCount`, `realtime`, `rerank`.|
 |`backends[].ai.provider.custom.formats[].path`|string||
 |`backends[].ai.hostOverride`|string|Override the upstream host for this provider.|
 |`backends[].ai.pathOverride`|string|Override the upstream path for this provider.|
@@ -9552,7 +9552,7 @@
 |`backends[].ai.groups[].providers[].provider.custom`|object||
 |`backends[].ai.groups[].providers[].provider.custom.model`|string||
 |`backends[].ai.groups[].providers[].provider.custom.formats`|[]object||
-|`backends[].ai.groups[].providers[].provider.custom.formats[].type`|enum|Possible values: `completions`, `messages`, `responses`, `embeddings`, `anthropicTokenCount`, `realtime`.|
+|`backends[].ai.groups[].providers[].provider.custom.formats[].type`|enum|Possible values: `completions`, `messages`, `responses`, `embeddings`, `anthropicTokenCount`, `realtime`, `rerank`.|
 |`backends[].ai.groups[].providers[].provider.custom.formats[].path`|string||
 |`backends[].ai.groups[].providers[].hostOverride`|string|Override the upstream host for this provider.|
 |`backends[].ai.groups[].providers[].pathOverride`|string|Override the upstream path for this provider.|
@@ -13797,7 +13797,7 @@
 |`routeGroups[].routes[].backends[].ai.provider.custom`|object||
 |`routeGroups[].routes[].backends[].ai.provider.custom.model`|string||
 |`routeGroups[].routes[].backends[].ai.provider.custom.formats`|[]object||
-|`routeGroups[].routes[].backends[].ai.provider.custom.formats[].type`|enum|Possible values: `completions`, `messages`, `responses`, `embeddings`, `anthropicTokenCount`, `realtime`.|
+|`routeGroups[].routes[].backends[].ai.provider.custom.formats[].type`|enum|Possible values: `completions`, `messages`, `responses`, `embeddings`, `anthropicTokenCount`, `realtime`, `rerank`.|
 |`routeGroups[].routes[].backends[].ai.provider.custom.formats[].path`|string||
 |`routeGroups[].routes[].backends[].ai.hostOverride`|string|Override the upstream host for this provider.|
 |`routeGroups[].routes[].backends[].ai.pathOverride`|string|Override the upstream path for this provider.|
@@ -14926,7 +14926,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.custom`|object||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.custom.model`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.custom.formats`|[]object||
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.custom.formats[].type`|enum|Possible values: `completions`, `messages`, `responses`, `embeddings`, `anthropicTokenCount`, `realtime`.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.custom.formats[].type`|enum|Possible values: `completions`, `messages`, `responses`, `embeddings`, `anthropicTokenCount`, `realtime`, `rerank`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].provider.custom.formats[].path`|string||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].hostOverride`|string|Override the upstream host for this provider.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].pathOverride`|string|Override the upstream path for this provider.|
@@ -17156,7 +17156,7 @@
 |`llm.models[].provider.custom`|object||
 |`llm.models[].provider.custom.model`|string||
 |`llm.models[].provider.custom.formats`|[]object||
-|`llm.models[].provider.custom.formats[].type`|enum|Possible values: `completions`, `messages`, `responses`, `embeddings`, `anthropicTokenCount`, `realtime`.|
+|`llm.models[].provider.custom.formats[].type`|enum|Possible values: `completions`, `messages`, `responses`, `embeddings`, `anthropicTokenCount`, `realtime`, `rerank`.|
 |`llm.models[].provider.custom.formats[].path`|string||
 |`llm.models[].passthrough`|enum|passthrough controls how requests are handled.<br>By default, requests will be parsed and translated as needed.<br>With passthrough, they will be unmodified and optionally inspected (with `detect`).<br>In this mode, requests must be sent in the native format of the provider.<br>Possible values: `detect`, `opaque`.|
 |`llm.models[].defaults`|object|defaults allows setting default values for the request. If these are not present in the request body, they will be set.<br>To override even when set, use `overrides`.|

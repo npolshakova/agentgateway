@@ -1,5 +1,6 @@
 ---
 source: crates/agentgateway/src/types/local_tests.rs
+assertion_line: 184
 description: "Config normalization test for llm_simple: YAML -> LocalConfig -> NormalizedLocalConfig -> YAML"
 ---
 binds:
@@ -50,8 +51,10 @@ listener_routes:
                 /v1/images/generations: detect
                 /v1/images/variations: detect
                 /v1/messages: messages
+                /v1/rerank: rerank
                 /v1/responses: responses
                 /v1/responses/compact: detect
+                /v2/rerank: rerank
                 ":rawPredict": messages
                 ":streamRawPredict": messages
           - cors:
@@ -85,8 +88,10 @@ listener_routes:
                 /v1/images/generations: detect
                 /v1/images/variations: detect
                 /v1/messages: messages
+                /v1/rerank: rerank
                 /v1/responses: responses
                 /v1/responses/compact: detect
+                /v2/rerank: rerank
                 ":rawPredict": messages
                 ":streamRawPredict": messages
           - cors:
@@ -117,8 +122,10 @@ listener_routes:
                 /v1/images/generations: detect
                 /v1/images/variations: detect
                 /v1/messages: messages
+                /v1/rerank: rerank
                 /v1/responses: responses
                 /v1/responses/compact: detect
+                /v2/rerank: rerank
                 ":rawPredict": messages
                 ":streamRawPredict": messages
           - cors:
@@ -149,8 +156,10 @@ listener_routes:
                 /v1/images/generations: detect
                 /v1/images/variations: detect
                 /v1/messages: messages
+                /v1/rerank: rerank
                 /v1/responses: responses
                 /v1/responses/compact: detect
+                /v2/rerank: rerank
                 ":rawPredict": messages
                 ":streamRawPredict": messages
           - cors:

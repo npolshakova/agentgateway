@@ -1511,21 +1511,24 @@ const (
 	BackendPolicySpec_Ai_EMBEDDINGS BackendPolicySpec_Ai_RouteType = 7
 	// OpenAI /v1/realtime
 	BackendPolicySpec_Ai_REALTIME BackendPolicySpec_Ai_RouteType = 8
+	// Processes Cohere /v2/rerank format requests
+	BackendPolicySpec_Ai_RERANK BackendPolicySpec_Ai_RouteType = 10
 )
 
 // Enum value maps for BackendPolicySpec_Ai_RouteType.
 var (
 	BackendPolicySpec_Ai_RouteType_name = map[int32]string{
-		0: "UNSPECIFIED",
-		1: "COMPLETIONS",
-		2: "MESSAGES",
-		3: "MODELS",
-		4: "PASSTHROUGH",
-		9: "DETECT",
-		5: "RESPONSES",
-		6: "ANTHROPIC_TOKEN_COUNT",
-		7: "EMBEDDINGS",
-		8: "REALTIME",
+		0:  "UNSPECIFIED",
+		1:  "COMPLETIONS",
+		2:  "MESSAGES",
+		3:  "MODELS",
+		4:  "PASSTHROUGH",
+		9:  "DETECT",
+		5:  "RESPONSES",
+		6:  "ANTHROPIC_TOKEN_COUNT",
+		7:  "EMBEDDINGS",
+		8:  "REALTIME",
+		10: "RERANK",
 	}
 	BackendPolicySpec_Ai_RouteType_value = map[string]int32{
 		"UNSPECIFIED":           0,
@@ -1538,6 +1541,7 @@ var (
 		"ANTHROPIC_TOKEN_COUNT": 6,
 		"EMBEDDINGS":            7,
 		"REALTIME":              8,
+		"RERANK":                10,
 	}
 )
 
@@ -1924,6 +1928,7 @@ const (
 	AIBackend_EMBEDDINGS                  AIBackend_ProviderFormat = 4
 	AIBackend_ANTHROPIC_TOKEN_COUNT       AIBackend_ProviderFormat = 5
 	AIBackend_REALTIME                    AIBackend_ProviderFormat = 6
+	AIBackend_RERANK                      AIBackend_ProviderFormat = 7
 )
 
 // Enum value maps for AIBackend_ProviderFormat.
@@ -1936,6 +1941,7 @@ var (
 		4: "EMBEDDINGS",
 		5: "ANTHROPIC_TOKEN_COUNT",
 		6: "REALTIME",
+		7: "RERANK",
 	}
 	AIBackend_ProviderFormat_value = map[string]int32{
 		"PROVIDER_FORMAT_UNSPECIFIED": 0,
@@ -1945,6 +1951,7 @@ var (
 		"EMBEDDINGS":                  4,
 		"ANTHROPIC_TOKEN_COUNT":       5,
 		"REALTIME":                    6,
+		"RERANK":                      7,
 	}
 )
 
@@ -14420,7 +14427,7 @@ const file_resource_proto_rawDesc = "" +
 	"\vPolicyPhase\x12\t\n" +
 	"\x05ROUTE\x10\x00\x12\v\n" +
 	"\aGATEWAY\x10\x01B\x06\n" +
-	"\x04kind\"\xf7K\n" +
+	"\x04kind\"\x83L\n" +
 	"\x11BackendPolicySpec\x12D\n" +
 	"\x03a2a\x18\x01 \x01(\v20.agentgateway.dev.resource.BackendPolicySpec.A2aH\x00R\x03a2a\x12l\n" +
 	"\x11inference_routing\x18\x02 \x01(\v2=.agentgateway.dev.resource.BackendPolicySpec.InferenceRoutingH\x00R\x10inferenceRouting\x12Z\n" +
@@ -14441,7 +14448,7 @@ const file_resource_proto_rawDesc = "" +
 	"\x0etransformation\x18\x0e \x01(\v2A.agentgateway.dev.resource.TrafficPolicySpec.TransformationPolicyH\x00R\x0etransformation\x12M\n" +
 	"\x06health\x18\x0f \x01(\v23.agentgateway.dev.resource.BackendPolicySpec.HealthH\x00R\x06health\x12c\n" +
 	"\x0ebackend_tunnel\x18\x10 \x01(\v2:.agentgateway.dev.resource.BackendPolicySpec.BackendTunnelH\x00R\rbackendTunnel\x12X\n" +
-	"\text_authz\x18\x11 \x01(\v29.agentgateway.dev.resource.TrafficPolicySpec.ExternalAuthH\x00R\bextAuthz\x1a\xf0(\n" +
+	"\text_authz\x18\x11 \x01(\v29.agentgateway.dev.resource.TrafficPolicySpec.ExternalAuthH\x00R\bextAuthz\x1a\xfc(\n" +
 	"\x02Ai\x12^\n" +
 	"\fprompt_guard\x18\x01 \x01(\v2;.agentgateway.dev.resource.BackendPolicySpec.Ai.PromptGuardR\vpromptGuard\x12Y\n" +
 	"\bdefaults\x18\x02 \x03(\v2=.agentgateway.dev.resource.BackendPolicySpec.Ai.DefaultsEntryR\bdefaults\x12\\\n" +
@@ -14564,7 +14571,7 @@ const file_resource_proto_rawDesc = "" +
 	"\x12ACTION_UNSPECIFIED\x10\x00\x12\b\n" +
 	"\x04MASK\x10\x01\x12\n" +
 	"\n" +
-	"\x06REJECT\x10\x02\"\xac\x01\n" +
+	"\x06REJECT\x10\x02\"\xb8\x01\n" +
 	"\tRouteType\x12\x0f\n" +
 	"\vUNSPECIFIED\x10\x00\x12\x0f\n" +
 	"\vCOMPLETIONS\x10\x01\x12\f\n" +
@@ -14578,7 +14585,10 @@ const file_resource_proto_rawDesc = "" +
 	"\x15ANTHROPIC_TOKEN_COUNT\x10\x06\x12\x0e\n" +
 	"\n" +
 	"EMBEDDINGS\x10\a\x12\f\n" +
-	"\bREALTIME\x10\b\x1a\x05\n" +
+	"\bREALTIME\x10\b\x12\n" +
+	"\n" +
+	"\x06RERANK\x10\n" +
+	"\x1a\x05\n" +
 	"\x03A2a\x1a\x92\x02\n" +
 	"\x10InferenceRouting\x12T\n" +
 	"\x0fendpoint_picker\x18\x01 \x01(\v2+.agentgateway.dev.resource.BackendReferenceR\x0eendpointPicker\x12l\n" +
@@ -14679,7 +14689,7 @@ const file_resource_proto_rawDesc = "" +
 	"\x11agent_runtime_arn\x18\x01 \x01(\tR\x0fagentRuntimeArn\x12!\n" +
 	"\tqualifier\x18\x02 \x01(\tH\x00R\tqualifier\x88\x01\x01B\f\n" +
 	"\n" +
-	"_qualifier\"\xfb\x14\n" +
+	"_qualifier\"\x87\x15\n" +
 	"\tAIBackend\x12[\n" +
 	"\x0fprovider_groups\x18\x01 \x03(\v22.agentgateway.dev.resource.AIBackend.ProviderGroupR\x0eproviderGroups\x1a6\n" +
 	"\fHostOverride\x12\x12\n" +
@@ -14760,7 +14770,7 @@ const file_resource_proto_rawDesc = "" +
 	"\tproviders\x18\x01 \x03(\v2-.agentgateway.dev.resource.AIBackend.ProviderR\tproviders\"-\n" +
 	"\x11AzureResourceType\x12\v\n" +
 	"\aOPEN_AI\x10\x00\x12\v\n" +
-	"\aFOUNDRY\x10\x01\"\x98\x01\n" +
+	"\aFOUNDRY\x10\x01\"\xa4\x01\n" +
 	"\x0eProviderFormat\x12\x1f\n" +
 	"\x1bPROVIDER_FORMAT_UNSPECIFIED\x10\x00\x12\x0f\n" +
 	"\vCOMPLETIONS\x10\x01\x12\f\n" +
@@ -14769,7 +14779,9 @@ const file_resource_proto_rawDesc = "" +
 	"\n" +
 	"EMBEDDINGS\x10\x04\x12\x19\n" +
 	"\x15ANTHROPIC_TOKEN_COUNT\x10\x05\x12\f\n" +
-	"\bREALTIME\x10\x06\"\xd5\x03\n" +
+	"\bREALTIME\x10\x06\x12\n" +
+	"\n" +
+	"\x06RERANK\x10\a\"\xd5\x03\n" +
 	"\n" +
 	"MCPBackend\x12>\n" +
 	"\atargets\x18\x02 \x03(\v2$.agentgateway.dev.resource.MCPTargetR\atargets\x12W\n" +

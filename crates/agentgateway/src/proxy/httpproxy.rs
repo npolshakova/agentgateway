@@ -1865,17 +1865,20 @@ async fn make_backend_call(
 				)
 				.await?
 			} else {
-				let (target, provider_defaults) = match &provider.host_override {
-					Some(target) => (target.clone(), provider_defaults),
+				let provider_defaults = match &provider.host_override {
+					Some(_) => provider_defaults,
 					None => {
-						let (tgt, mut pol) = provider.provider.default_connector().ok_or_else(|| {
-							ProxyError::ProcessingString(
-								"custom providers require an explicit host override or provider backend"
-									.to_string(),
-							)
-						})?;
+						let mut pol = provider
+							.provider
+							.default_connector_policies()
+							.ok_or_else(|| {
+								ProxyError::ProcessingString(
+									"custom providers require an explicit host override or provider backend"
+										.to_string(),
+								)
+							})?;
 						pol.llm_provider = Some(provider.clone());
-						(tgt, pol)
+						pol
 					},
 				};
 				// Defaults for the provider < Backend level policies < Sub Backend
@@ -1884,6 +1887,27 @@ async fn make_backend_call(
 						.merge(policies.as_ref().clone())
 						.merge(sub_backend_policies),
 				);
+				// Resolve the LLM route before picking the connection target: some providers serve
+				// routes from different hosts (e.g. Bedrock rerank uses bedrock-agent-runtime).
+				let route_type = route_policies
+					.clone()
+					.merge_backend_policies(effective_policies.llm.clone())
+					.llm
+					.as_ref()
+					.map(|policy| policy.resolve_route(req.uri().path()))
+					.unwrap_or(llm::RouteType::Completions);
+				let target = match &provider.host_override {
+					Some(target) => target.clone(),
+					None => provider
+						.provider
+						.default_connector_target(route_type)
+						.ok_or_else(|| {
+							ProxyError::ProcessingString(
+								"custom providers require an explicit host override or provider backend"
+									.to_string(),
+							)
+						})?,
+				};
 				let (maybe_inference, _) = apply_inference_routing(
 					&effective_policies,
 					policy_client.clone(),
@@ -2033,6 +2057,7 @@ async fn make_backend_call(
 				| RouteType::Responses
 				| RouteType::AnthropicTokenCount
 				| RouteType::Embeddings
+				| RouteType::Rerank
 				| RouteType::Detect => {
 					let request_body_limit = crate::http::buffer_limit(&req);
 					let req = req.map(|b| {
@@ -2067,6 +2092,15 @@ async fn make_backend_call(
 						.await
 						.map_err(|e| ProxyError::Processing(e.into()))?,
 						RouteType::Embeddings => Box::pin(llm.provider.process_embeddings_request(
+							&backend_info,
+							llm_request_policies.llm.as_deref(),
+							req,
+							llm.tokenize,
+							&mut log,
+						))
+						.await
+						.map_err(|e| ProxyError::Processing(e.into()))?,
+						RouteType::Rerank => Box::pin(llm.provider.process_rerank_request(
 							&backend_info,
 							llm_request_policies.llm.as_deref(),
 							req,
