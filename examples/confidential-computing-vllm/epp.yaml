@@ -103,6 +103,8 @@ spec:
         app.kubernetes.io/part-of: confidential-vllm
     spec:
       serviceAccountName: confidential-vllm-epp
+      nodeSelector:
+        node.agentgateway.dev/confidential-compute: simulated
       terminationGracePeriodSeconds: 130
       containers:
       - name: epp
@@ -177,4 +179,3 @@ spec:
   - name: http-metrics
     port: 9090
     targetPort: metrics
-

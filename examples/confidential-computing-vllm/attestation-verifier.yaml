@@ -10,26 +10,84 @@ metadata:
   namespace: confidential-vllm
 data:
   verifier.py: |
+    import base64
+    import hashlib
+    import hmac
     import json
     import os
+    import time
+    from urllib.parse import parse_qs, urlparse
     from http.server import BaseHTTPRequestHandler, HTTPServer
 
-    expected_hash = os.environ.get("EXPECTED_REPORT_HASH", "demo-report-hash")
-    proof_prefix = os.environ.get("PROOF_URL_PREFIX", "https://proof.t16z.com/")
+    signing_key = os.environ.get("LOCAL_ATTESTATION_KEY", "local-kind-tee-simulator-key").encode()
+    workload_hash = os.environ.get("SIMULATED_WORKLOAD_HASH", "sha256:agentgateway-vllm-kind-demo")
+    proof_url = os.environ.get("PROOF_URL", "https://proof.t16z.com/")
+    node_label_key = os.environ.get("SIMULATED_NODE_LABEL_KEY", "node.agentgateway.dev/confidential-compute")
+    node_label_value = os.environ.get("SIMULATED_NODE_LABEL_VALUE", "simulated")
+
+    def b64url_encode(raw):
+        return base64.urlsafe_b64encode(raw).decode("ascii").rstrip("=")
+
+    def b64url_decode(encoded):
+        padding = "=" * (-len(encoded) % 4)
+        return base64.urlsafe_b64decode(encoded + padding)
+
+    def canonical(payload):
+        return json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+
+    def sign(evidence):
+        return hmac.new(signing_key, canonical(evidence), hashlib.sha256).hexdigest()
+
+    def make_report(nonce):
+        evidence = {
+            "issuer": "local-kind-tee-simulator",
+            "tee": "simulated-tdx",
+            "nonce": nonce,
+            "workload_hash": workload_hash,
+            "node_selector": {node_label_key: node_label_value},
+            "proof_url": proof_url,
+            "exp": int(time.time()) + 300,
+        }
+        return {
+            "evidence": evidence,
+            "signature": sign(evidence),
+        }
 
     class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            parsed = urlparse(self.path)
+            if parsed.path != "/attestation":
+                self.reply({"error": "not found"}, status=404)
+                return
+
+            nonce = parse_qs(parsed.query).get("nonce", [""])[0]
+            if len(nonce) < 8:
+                self.reply({"error": "nonce must be at least 8 characters"}, status=400)
+                return
+
+            report = make_report(nonce)
+            self.reply({
+                "report": b64url_encode(canonical(report)),
+                "evidence": report["evidence"],
+                "signature": report["signature"],
+                "proof_url": proof_url,
+                "note": "local simulator evidence only; production uses a hardware TDX/SNP quote",
+            })
+
         def do_POST(self):
             length = int(self.headers.get("content-length", "0"))
             if length:
                 self.rfile.read(length)
 
-            report_hash = self.headers.get("x-attestation-report", "")
+            report_header = self.headers.get("x-attestation-report", "")
+            nonce_header = self.headers.get("x-attestation-nonce", "")
             report_url = self.headers.get("x-attestation-report-url", "")
 
-            if report_hash == expected_hash and report_url.startswith(proof_prefix):
+            ok, reason = self.verify_report(report_header, nonce_header, report_url)
+            if ok:
                 self.reply({
                     "action": {
-                        "reason": "attestation report accepted"
+                        "reason": reason
                     }
                 })
                 return
@@ -38,22 +96,46 @@ data:
                 "action": {
                     "body": "missing or invalid confidential-computing attestation report",
                     "status_code": 403,
-                    "reason": "attestation report rejected"
+                    "reason": reason
                 }
             })
+
+        def verify_report(self, report_header, nonce_header, report_url):
+            if not report_header or not nonce_header:
+                return False, "attestation report and nonce are required"
+            if report_url != proof_url:
+                return False, "attestation report URL does not match the expected verifier"
+            try:
+                report = json.loads(b64url_decode(report_header))
+                evidence = report["evidence"]
+                signature = report["signature"]
+            except Exception as err:
+                return False, f"attestation report is not valid simulator evidence: {err}"
+            if not hmac.compare_digest(signature, sign(evidence)):
+                return False, "attestation simulator signature is invalid"
+            if evidence.get("nonce") != nonce_header:
+                return False, "attestation nonce does not match the request"
+            if evidence.get("workload_hash") != workload_hash:
+                return False, "attested workload hash does not match the expected demo workload"
+            if evidence.get("node_selector", {}).get(node_label_key) != node_label_value:
+                return False, "workload is not scheduled onto the simulated confidential node"
+            if evidence.get("exp", 0) < int(time.time()):
+                return False, "attestation report is expired"
+            return True, "local TEE simulator evidence accepted"
 
         def log_message(self, fmt, *args):
             return
 
-        def reply(self, payload):
+        def reply(self, payload, status=200):
             body = json.dumps(payload).encode("utf-8")
-            self.send_response(200)
+            self.send_response(status)
             self.send_header("content-type", "application/json")
             self.send_header("content-length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
 
-    HTTPServer(("0.0.0.0", 8080), Handler).serve_forever()
+    if __name__ == "__main__":
+        HTTPServer(("0.0.0.0", 8080), Handler).serve_forever()
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -71,6 +153,8 @@ spec:
         app.kubernetes.io/name: attestation-verifier
         app.kubernetes.io/part-of: confidential-vllm
     spec:
+      nodeSelector:
+        node.agentgateway.dev/confidential-compute: simulated
       containers:
       - name: verifier
         image: python:3.12-alpine
@@ -79,8 +163,12 @@ spec:
         - python
         - /app/verifier.py
         env:
-        - name: EXPECTED_REPORT_HASH
-          value: demo-report-hash
+        - name: LOCAL_ATTESTATION_KEY
+          value: local-kind-tee-simulator-key
+        - name: SIMULATED_WORKLOAD_HASH
+          value: sha256:agentgateway-vllm-kind-demo
+        - name: PROOF_URL
+          value: https://proof.t16z.com/
         ports:
         - name: http
           containerPort: 8080
@@ -108,4 +196,3 @@ spec:
   - name: http
     port: 8080
     targetPort: http
-

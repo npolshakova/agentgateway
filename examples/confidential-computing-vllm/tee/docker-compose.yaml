@@ -1,0 +1,61 @@
+services:
+  tls-init:
+    build: ./attestation
+    command: ["python", "/app/server.py", "generate-tls"]
+    volumes:
+    - /var/run/dstack.sock:/var/run/dstack.sock
+    - tee-certs:/certs
+
+  agentgateway:
+    image: ${AGENTGATEWAY_IMAGE:-ghcr.io/agentgateway/agentgateway:v1.0.1-dev}
+    command: ["-f", "/etc/agentgateway/config.yaml"]
+    depends_on:
+      tls-init:
+        condition: service_completed_successfully
+      vllm:
+        condition: service_started
+      attestation:
+        condition: service_started
+    ports:
+    - "8443:8443"
+    volumes:
+    - ./agentgateway-config.yaml:/etc/agentgateway/config.yaml:ro
+    - tee-certs:/certs:ro
+
+  vllm:
+    image: ${VLLM_IMAGE:-vllm/vllm-openai-cpu:v0.18.1}
+    command:
+    - --model
+    - ${MODEL_ID:-facebook/opt-125m}
+    - --served-model-name
+    - confidential-vllm
+    - --host
+    - 0.0.0.0
+    - --port
+    - "8000"
+    - --dtype
+    - bfloat16
+    - --max-model-len
+    - "512"
+    - --chat-template
+    - /templates/chat-template.jinja
+    environment:
+    - HF_TOKEN=${HF_TOKEN:-}
+    - VLLM_CPU_KVCACHE_SPACE=2
+    - VLLM_CPU_OMP_THREADS_BIND=nobind
+    volumes:
+    - hf-cache:/root/.cache/huggingface
+    - ./chat-template.jinja:/templates/chat-template.jinja:ro
+
+  attestation:
+    build: ./attestation
+    command: ["python", "/app/server.py", "serve"]
+    volumes:
+    - /var/run/dstack.sock:/var/run/dstack.sock
+    - tee-certs:/certs:ro
+    environment:
+    - PROOF_URL=https://proof.t16z.com/
+
+volumes:
+  hf-cache:
+  tee-certs:

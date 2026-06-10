@@ -45,7 +45,7 @@ The `prompt-enrichment` example shows how to append or preprend prompts to agent
 
 ### [Confidential Computing vLLM](confidential-computing-vllm/README.md)
 
-The `confidential-computing-vllm` example shows how to route OpenAI-compatible requests to a vLLM model server through an InferencePool while using an agentgateway prompt-guard webhook to require a confidential-computing attestation report.
+The `confidential-computing-vllm` example shows confidential LLM inference with agentgateway and vLLM inside a TEE, plus a local kind simulation that exercises agentgateway policy and InferencePool routing.
 
 ### [Standalone EPP](standalone-epp/README.md)
 

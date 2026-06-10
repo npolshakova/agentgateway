@@ -1,0 +1,4 @@
+dstack-sdk
+fastapi
+uvicorn[standard]
+cryptography

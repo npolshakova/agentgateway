@@ -27,6 +27,8 @@ spec:
         app.kubernetes.io/part-of: confidential-vllm
         inference.networking.k8s.io/engine-type: vllm
     spec:
+      nodeSelector:
+        node.agentgateway.dev/confidential-compute: simulated
       containers:
       - name: vllm
         image: vllm/vllm-openai-cpu:v0.18.1

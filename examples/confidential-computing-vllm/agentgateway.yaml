@@ -5,10 +5,31 @@ metadata:
   namespace: confidential-vllm
 spec:
   gatewayClassName: agentgateway
+  infrastructure:
+    parametersRef:
+      group: agentgateway.dev
+      kind: AgentgatewayParameters
+      name: confidential-node-simulator
   listeners:
   - name: http
     port: 80
     protocol: HTTP
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayParameters
+metadata:
+  name: confidential-node-simulator
+  namespace: confidential-vllm
+spec:
+  deployment:
+    spec:
+      template:
+        metadata:
+          labels:
+            node.agentgateway.dev/confidential-compute: simulated
+        spec:
+          nodeSelector:
+            node.agentgateway.dev/confidential-compute: simulated
 ---
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
@@ -37,6 +58,13 @@ spec:
   parentRefs:
   - name: confidential-vllm
   rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /attestation
+    backendRefs:
+    - name: attestation-verifier
+      port: 8080
   - matches:
     - path:
         type: PathPrefix
@@ -69,6 +97,9 @@ spec:
             failureMode: FailClosed
             forwardHeaderMatches:
             - name: x-attestation-report
+              type: RegularExpression
+              value: .+
+            - name: x-attestation-nonce
               type: RegularExpression
               value: .+
             - name: x-attestation-report-url
