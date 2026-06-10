@@ -769,6 +769,11 @@
     "LocalTLSServerConfig": {
       "type": "object",
       "properties": {
+        "mode": {
+          "description": "Certificate source mode. Static mode uses cert/key as the leaf certificate; dynamic CA\nmode uses cert/key as a CA for on-demand SNI leaf certificate issuance.",
+          "$ref": "#/$defs/LocalTLSServerMode",
+          "default": "static"
+        },
         "cert": {
           "type": "string"
         },
@@ -828,6 +833,13 @@
       "required": [
         "cert",
         "key"
+      ]
+    },
+    "LocalTLSServerMode": {
+      "type": "string",
+      "enum": [
+        "static",
+        "dynamicCa"
       ]
     },
     "TLSVersion": {
