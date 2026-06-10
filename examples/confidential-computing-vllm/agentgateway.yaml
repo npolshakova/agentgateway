@@ -1,0 +1,75 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: confidential-vllm
+  namespace: confidential-vllm
+spec:
+  gatewayClassName: agentgateway
+  listeners:
+  - name: http
+    port: 80
+    protocol: HTTP
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: confidential-vllm
+  namespace: confidential-vllm
+spec:
+  ai:
+    provider:
+      custom:
+        backendRef:
+          group: inference.networking.k8s.io
+          kind: InferencePool
+          name: confidential-vllm
+        model: confidential-vllm
+        formats:
+        - type: Completions
+          path: /v1/chat/completions
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: confidential-vllm
+  namespace: confidential-vllm
+spec:
+  parentRefs:
+  - name: confidential-vllm
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /v1/chat/completions
+    backendRefs:
+    - group: agentgateway.dev
+      kind: AgentgatewayBackend
+      name: confidential-vllm
+    timeouts:
+      request: 300s
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: require-attestation-report
+  namespace: confidential-vllm
+spec:
+  targetRefs:
+  - group: agentgateway.dev
+    kind: AgentgatewayBackend
+    name: confidential-vllm
+  backend:
+    ai:
+      promptGuard:
+        request:
+        - webhook:
+            backendRef:
+              name: attestation-verifier
+              port: 8080
+            failureMode: FailClosed
+            forwardHeaderMatches:
+            - name: x-attestation-report
+              type: RegularExpression
+              value: .+
+            - name: x-attestation-report-url
+              value: https://proof.t16z.com/

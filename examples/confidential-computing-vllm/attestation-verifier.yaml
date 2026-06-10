@@ -1,0 +1,111 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: confidential-vllm
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: attestation-verifier
+  namespace: confidential-vllm
+data:
+  verifier.py: |
+    import json
+    import os
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    expected_hash = os.environ.get("EXPECTED_REPORT_HASH", "demo-report-hash")
+    proof_prefix = os.environ.get("PROOF_URL_PREFIX", "https://proof.t16z.com/")
+
+    class Handler(BaseHTTPRequestHandler):
+        def do_POST(self):
+            length = int(self.headers.get("content-length", "0"))
+            if length:
+                self.rfile.read(length)
+
+            report_hash = self.headers.get("x-attestation-report", "")
+            report_url = self.headers.get("x-attestation-report-url", "")
+
+            if report_hash == expected_hash and report_url.startswith(proof_prefix):
+                self.reply({
+                    "action": {
+                        "reason": "attestation report accepted"
+                    }
+                })
+                return
+
+            self.reply({
+                "action": {
+                    "body": "missing or invalid confidential-computing attestation report",
+                    "status_code": 403,
+                    "reason": "attestation report rejected"
+                }
+            })
+
+        def log_message(self, fmt, *args):
+            return
+
+        def reply(self, payload):
+            body = json.dumps(payload).encode("utf-8")
+            self.send_response(200)
+            self.send_header("content-type", "application/json")
+            self.send_header("content-length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+    HTTPServer(("0.0.0.0", 8080), Handler).serve_forever()
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: attestation-verifier
+  namespace: confidential-vllm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: attestation-verifier
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: attestation-verifier
+        app.kubernetes.io/part-of: confidential-vllm
+    spec:
+      containers:
+      - name: verifier
+        image: python:3.12-alpine
+        imagePullPolicy: IfNotPresent
+        command:
+        - python
+        - /app/verifier.py
+        env:
+        - name: EXPECTED_REPORT_HASH
+          value: demo-report-hash
+        ports:
+        - name: http
+          containerPort: 8080
+        readinessProbe:
+          tcpSocket:
+            port: http
+          periodSeconds: 2
+        volumeMounts:
+        - name: verifier
+          mountPath: /app
+      volumes:
+      - name: verifier
+        configMap:
+          name: attestation-verifier
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: attestation-verifier
+  namespace: confidential-vllm
+spec:
+  selector:
+    app.kubernetes.io/name: attestation-verifier
+  ports:
+  - name: http
+    port: 8080
+    targetPort: http
+

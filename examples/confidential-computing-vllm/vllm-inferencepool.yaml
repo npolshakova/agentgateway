@@ -1,0 +1,134 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: confidential-vllm-chat-template
+  namespace: confidential-vllm
+data:
+  chat-template.jinja: |
+    {% for message in messages -%}
+    {{ message['role'] }}: {{ message['content'] }}
+    {% endfor -%}
+    assistant:
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: confidential-vllm-model
+  namespace: confidential-vllm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: confidential-vllm-model
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: confidential-vllm-model
+        app.kubernetes.io/part-of: confidential-vllm
+        inference.networking.k8s.io/engine-type: vllm
+    spec:
+      containers:
+      - name: vllm
+        image: vllm/vllm-openai-cpu:v0.18.1
+        imagePullPolicy: IfNotPresent
+        command:
+        - python3
+        - -m
+        - vllm.entrypoints.openai.api_server
+        args:
+        - --model
+        - facebook/opt-125m
+        - --served-model-name
+        - confidential-vllm
+        - --host
+        - 0.0.0.0
+        - --port
+        - "8000"
+        - --dtype
+        - bfloat16
+        - --max-model-len
+        - "512"
+        - --chat-template
+        - /templates/chat-template.jinja
+        env:
+        - name: PORT
+          value: "8000"
+        - name: VLLM_CPU_KVCACHE_SPACE
+          value: "2"
+        - name: VLLM_CPU_OMP_THREADS_BIND
+          value: "nobind"
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 120
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          failureThreshold: 120
+        resources:
+          requests:
+            cpu: "2"
+            memory: 8Gi
+            ephemeral-storage: 10Gi
+          limits:
+            memory: 12Gi
+            ephemeral-storage: 20Gi
+        volumeMounts:
+        - name: shm
+          mountPath: /dev/shm
+        - name: data
+          mountPath: /data
+        - name: chat-template
+          mountPath: /templates
+      volumes:
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 1Gi
+      - name: data
+        emptyDir: {}
+      - name: chat-template
+        configMap:
+          name: confidential-vllm-chat-template
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: confidential-vllm-model
+  namespace: confidential-vllm
+spec:
+  selector:
+    app.kubernetes.io/name: confidential-vllm-model
+  ports:
+  - name: http
+    port: 8000
+    targetPort: http
+---
+apiVersion: inference.networking.k8s.io/v1
+kind: InferencePool
+metadata:
+  name: confidential-vllm
+  namespace: confidential-vllm
+spec:
+  endpointPickerRef:
+    failureMode: FailClose
+    group: ""
+    kind: Service
+    name: confidential-vllm-epp
+    port:
+      number: 9002
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: confidential-vllm-model
+  targetPorts:
+  - number: 8000

@@ -43,6 +43,10 @@ The `http` example shows how to use agentgateway to serve generic HTTP traffic.
 
 The `prompt-enrichment` example shows how to append or preprend prompts to agentgateway AI requests.
 
+### [Confidential Computing vLLM](confidential-computing-vllm/README.md)
+
+The `confidential-computing-vllm` example shows how to route OpenAI-compatible requests to a vLLM model server through an InferencePool while using an agentgateway prompt-guard webhook to require a confidential-computing attestation report.
+
 ### [Standalone EPP](standalone-epp/README.md)
 
 The `standalone-epp` example shows the v1 local config shape for running agentgateway as the sidecar proxy
