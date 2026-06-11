@@ -643,6 +643,14 @@ func processRetriesPolicy(retry *agentgateway.Retry, basePolicyName string, poli
 		}
 	}
 
+	if retry.Precondition != nil {
+		translatedRetry.Precondition = string(*retry.Precondition)
+	}
+
+	if retry.Condition != nil {
+		translatedRetry.Condition = string(*retry.Condition)
+	}
+
 	retryPolicy := &api.Policy{
 		Key:  basePolicyName + retryPolicySuffix,
 		Name: TypedResourceFromName(wellknown.AgentgatewayPolicyGVK.Kind, policy),
