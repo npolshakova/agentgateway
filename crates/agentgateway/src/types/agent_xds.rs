@@ -557,6 +557,126 @@ fn convert_route_type(proto_rt: i32, diagnostics: &mut Diagnostics) -> llm::Rout
 	}
 }
 
+fn convert_mcp_guardrails(
+	em: &proto::agent::backend_policy_spec::McpGuardrails,
+	diagnostics: &mut Diagnostics,
+) -> Result<crate::mcp::guardrails::McpGuardrails, ProtoError> {
+	use proto::agent::backend_policy_spec::mcp_guardrails::processor::Kind as ProtoProcessorKind;
+	use proto::agent::backend_policy_spec::mcp_guardrails::{
+		FailureMode as ProtoFailureMode, Phase as ProtoPhase, Remote as ProtoRemote,
+	};
+
+	fn convert_methods(
+		methods: &std::collections::HashMap<String, i32>,
+		diagnostics: &mut Diagnostics,
+	) -> std::collections::HashMap<String, crate::mcp::guardrails::Phase> {
+		methods
+			.iter()
+			.map(|(k, v)| {
+				let phase = match ProtoPhase::try_from(*v) {
+					Ok(ProtoPhase::Off) => crate::mcp::guardrails::Phase::Off,
+					Ok(ProtoPhase::Request) => crate::mcp::guardrails::Phase::Request,
+					Ok(ProtoPhase::Response) => crate::mcp::guardrails::Phase::Response,
+					Ok(ProtoPhase::Full) => crate::mcp::guardrails::Phase::Full,
+					Err(_) => {
+						diagnostics.add_warning(format!(
+							"mcpGuardrails method {k}: unknown phase value {v}; disabling (Off)"
+						));
+						crate::mcp::guardrails::Phase::Off
+					},
+				};
+				(k.clone(), phase)
+			})
+			.collect()
+	}
+
+	fn convert_remote(
+		r: &ProtoRemote,
+		diagnostics: &mut Diagnostics,
+	) -> Result<crate::mcp::guardrails::Remote, ProtoError> {
+		let failure_mode = match ProtoFailureMode::try_from(r.failure_mode).ok() {
+			Some(ProtoFailureMode::Allow) => crate::mcp::guardrails::FailureMode::FailOpen,
+			_ => crate::mcp::guardrails::FailureMode::FailClosed,
+		};
+		let target = Arc::new(resolve_simple_reference(r.target.as_ref()));
+		let metadata = r
+			.metadata
+			.iter()
+			.map(|(k, v)| {
+				let ve = permissive_cel_expression_arc(
+					diagnostics,
+					format!("backend.mcpGuardrails.remote.metadata.{k}"),
+					v,
+				);
+				Ok::<_, ProtoError>((k.to_owned(), ve))
+			})
+			.collect::<Result<HashMap<_, _>, _>>()?;
+		let request_headers = crate::mcp::guardrails::HeaderFilter {
+			allowed: parse_header_names(
+				diagnostics,
+				"backend.mcpGuardrails.remote.allowedRequestHeaders",
+				&r.allowed_request_headers,
+			),
+			disallowed: parse_header_names(
+				diagnostics,
+				"backend.mcpGuardrails.remote.disallowedRequestHeaders",
+				&r.disallowed_request_headers,
+			),
+		};
+		Ok(crate::mcp::guardrails::Remote {
+			target,
+			policies: Vec::new(),
+			failure_mode,
+			metadata,
+			request_headers,
+		})
+	}
+
+	let mut processors = Vec::with_capacity(em.processors.len());
+	for processor in &em.processors {
+		let kind = match processor.kind.as_ref() {
+			Some(ProtoProcessorKind::Remote(r)) => {
+				crate::mcp::guardrails::ProcessorKind::Remote(convert_remote(r, diagnostics)?)
+			},
+			None => {
+				diagnostics.add_warning("mcpGuardrails processor has no kind set; ignoring");
+				continue;
+			},
+		};
+		let methods = convert_methods(&processor.methods, diagnostics);
+		if methods.is_empty() {
+			diagnostics
+				.add_warning("mcpGuardrails processor configured with no methods; it will never run");
+		}
+		processors.push(crate::mcp::guardrails::Processor { methods, kind });
+	}
+
+	let ext = crate::mcp::guardrails::McpGuardrails { processors };
+	for w in ext.load_warnings() {
+		diagnostics.add_warning(w);
+	}
+	Ok(ext)
+}
+
+// Parse configured header names, dropping (with a warning) any that aren't valid
+// HTTP header names rather than failing the whole config.
+fn parse_header_names(
+	diagnostics: &mut Diagnostics,
+	field: &str,
+	names: &[String],
+) -> Vec<HeaderOrPseudo> {
+	names
+		.iter()
+		.filter_map(|n| match HeaderOrPseudo::try_from(n.as_str()) {
+			Ok(h) => Some(h),
+			Err(_) => {
+				diagnostics.add_warning(format!("{field}: invalid header name {n:?}; ignoring"));
+				None
+			},
+		})
+		.collect()
+}
+
 fn convert_provider_format(
 	proto_format: i32,
 	provider_idx: usize,
@@ -1606,6 +1726,9 @@ fn backend_policy_from_proto(
 		},
 		Some(bps::Kind::ExtAuthz(ea)) => {
 			BackendTrafficPolicy::ExtAuthz(Arc::new(external_auth_from_proto(ea, diagnostics)?))
+		},
+		Some(bps::Kind::McpGuardrails(em)) => {
+			BackendTrafficPolicy::McpGuardrails(Arc::new(convert_mcp_guardrails(em, diagnostics)?))
 		},
 		Some(bps::Kind::Transformation(tp)) => {
 			BackendTrafficPolicy::Transformation(Arc::new(transformation_from_proto(tp, diagnostics)?))

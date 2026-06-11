@@ -12035,11 +12035,205 @@ spec:
                         required:
                         - policy
                         type: object
+                      guardrails:
+                        description: '`guardrails` routes selected JSON-RPC methods
+                          through a remote policy server.'
+                        properties:
+                          processors:
+                            description: |-
+                              `processors` is the ordered list of policy processors applied to matched
+                              methods. Processors run in the order listed; the first to reject a request
+                              short-circuits the chain.
+                            items:
+                              description: MCPGuardrailsProcessor selects a single
+                                policy processor. Exactly one variant must be set.
+                              properties:
+                                methods:
+                                  additionalProperties:
+                                    description: MCPMethodPhase controls when an MCP
+                                      method is run through the guardrails pipeline.
+                                    enum:
+                                    - Full
+                                    - "Off"
+                                    - Request
+                                    - Response
+                                    type: string
+                                  description: |-
+                                    `methods` is the allowlist of JSON-RPC methods (e.g. `tools/call`,
+                                    `tools/list`) routed through this processor, keyed by method name with the
+                                    phase it runs in. Keys may be exact, a prefix wildcard (`tools/*`), a suffix
+                                    wildcard (`*/list`), or `*` for all methods; the most specific match wins.
+                                    Methods matching no key, including unknown ones, bypass this processor.
+                                  maxProperties: 64
+                                  minProperties: 1
+                                  type: object
+                                  x-kubernetes-validations:
+                                  - message: method wildcards must be '*', a prefix
+                                      like 'tools/*', or a suffix like '*/list'
+                                    rule: self.all(k, !k.contains('*') || (k.indexOf('*')
+                                      == k.lastIndexOf('*') && (k.indexOf('*') ==
+                                      0 || k.indexOf('*') == size(k) - 1)))
+                                remote:
+                                  description: '`remote` configures a gRPC policy
+                                    server.'
+                                  properties:
+                                    allowedRequestHeaders:
+                                      description: |-
+                                        `allowedRequestHeaders` lists the incoming request headers forwarded to
+                                        the policy server in `McpRequest.headers`. If empty, all headers and
+                                        pseudo-headers (`:authority`, `:method`, ...) are forwarded. Matching is
+                                        case-insensitive.
+                                      items:
+                                        description: HTTP header name.
+                                        maxLength: 256
+                                        minLength: 1
+                                        pattern: ^:?[A-Za-z0-9!#$%&'*+\-.^_\x60|~]+$
+                                        type: string
+                                        x-kubernetes-validations:
+                                        - message: pseudo-headers must be one of :authority,
+                                            :method, :path, :scheme, or :status
+                                          rule: '!self.startsWith('':'') || self in
+                                            ['':authority'', '':method'', '':path'',
+                                            '':scheme'', '':status'']'
+                                      maxItems: 64
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    backendRef:
+                                      description: |-
+                                        `backendRef` references the remote guardrails policy server.
+                                        Supported types: `Service` and `Backend`.
+                                      properties:
+                                        group:
+                                          default: ""
+                                          description: |-
+                                            Group is the group of the referent. For example, "gateway.networking.k8s.io".
+                                            When unspecified or empty string, core API group is inferred.
+                                          maxLength: 253
+                                          pattern: ^$|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                                          type: string
+                                        kind:
+                                          default: Service
+                                          description: |-
+                                            Kind is the Kubernetes resource kind of the referent. For example
+                                            "Service".
+
+                                            Defaults to "Service" when not specified.
+
+                                            ExternalName services can refer to CNAME DNS records that may live
+                                            outside of the cluster and as such are difficult to reason about in
+                                            terms of conformance. They also may not be safe to forward to (see
+                                            CVE-2021-25740 for more information). Implementations SHOULD NOT
+                                            support ExternalName Services.
+
+                                            Support: Core (Services with a type other than ExternalName)
+
+                                            Support: Implementation-specific (Services with type ExternalName)
+                                          maxLength: 63
+                                          minLength: 1
+                                          pattern: ^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$
+                                          type: string
+                                        name:
+                                          description: Name is the name of the referent.
+                                          maxLength: 253
+                                          minLength: 1
+                                          type: string
+                                        namespace:
+                                          description: |-
+                                            Namespace is the namespace of the backend. When unspecified, the local
+                                            namespace is inferred.
+
+                                            Note that when a namespace different than the local namespace is specified,
+                                            a ReferenceGrant object is required in the referent namespace to allow that
+                                            namespace's owner to accept the reference. See the ReferenceGrant
+                                            documentation for details.
+
+                                            Support: Core
+                                          maxLength: 63
+                                          minLength: 1
+                                          pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                                          type: string
+                                        port:
+                                          description: |-
+                                            Port specifies the destination port number to use for this resource.
+                                            Port is required when the referent is a Kubernetes Service. In this
+                                            case, the port number is the service port number, not the target port.
+                                            For other resources, destination port might be derived from the referent
+                                            resource or this field.
+                                          format: int32
+                                          maximum: 65535
+                                          minimum: 1
+                                          type: integer
+                                      required:
+                                      - name
+                                      type: object
+                                      x-kubernetes-validations:
+                                      - message: Must have port for Service reference
+                                        rule: '(size(self.group) == 0 && self.kind
+                                          == ''Service'') ? has(self.port) : true'
+                                    disallowedRequestHeaders:
+                                      description: |-
+                                        `disallowedRequestHeaders` lists header names never forwarded to the
+                                        policy server, even if listed in `allowedRequestHeaders`. Matching is
+                                        case-insensitive.
+                                      items:
+                                        description: HTTP header name.
+                                        maxLength: 256
+                                        minLength: 1
+                                        pattern: ^:?[A-Za-z0-9!#$%&'*+\-.^_\x60|~]+$
+                                        type: string
+                                        x-kubernetes-validations:
+                                        - message: pseudo-headers must be one of :authority,
+                                            :method, :path, :scheme, or :status
+                                          rule: '!self.startsWith('':'') || self in
+                                            ['':authority'', '':method'', '':path'',
+                                            '':scheme'', '':status'']'
+                                      maxItems: 64
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    failureMode:
+                                      description: |-
+                                        `failureMode` controls behavior when the policy server is unreachable
+                                        or returns an error. `FailOpen` allows the request; `FailClosed`
+                                        (default) denies it.
+                                      enum:
+                                      - FailClosed
+                                      - FailOpen
+                                      type: string
+                                    metadata:
+                                      additionalProperties:
+                                        description: A Common Expression Language
+                                          (CEL) expression.
+                                        maxLength: 16384
+                                        minLength: 1
+                                        type: string
+                                      description: |-
+                                        `metadata` is static or CEL-evaluated context surfaced to the policy
+                                        server as fields of the `metadata_context` google.protobuf.Struct,
+                                        keyed by config key. Values are CEL expressions.
+                                      maxProperties: 64
+                                      type: object
+                                  required:
+                                  - backendRef
+                                  type: object
+                              required:
+                              - methods
+                              type: object
+                              x-kubernetes-validations:
+                              - message: exactly one of the fields in [remote] must
+                                  be set
+                                rule: '[has(self.remote)].filter(x,x==true).size()
+                                  == 1'
+                            maxItems: 16
+                            minItems: 1
+                            type: array
+                        required:
+                        - processors
+                        type: object
                     type: object
                     x-kubernetes-validations:
-                    - message: at least one of the fields in [authentication authorization]
-                        must be set
-                      rule: '[has(self.authentication),has(self.authorization)].filter(x,x==true).size()
+                    - message: at least one of the fields in [authentication authorization
+                        guardrails] must be set
+                      rule: '[has(self.authentication),has(self.authorization),has(self.guardrails)].filter(x,x==true).size()
                         >= 1'
                   tcp:
                     description: Settings for managing TCP connections to the backend.

@@ -1390,6 +1390,66 @@ message BackendPolicySpec {
     optional string client_id = 9;
   }
 
+  // McpGuardrails is a backend-phase policy for MCP traffic: an ordered chain of
+  // policy processors. Today only the `remote` processor is defined — a custom
+  // gRPC policy server (the ExtMcp service) modeled on Envoy ext_authz.
+  message McpGuardrails {
+    // Phase controls whether the request side, response side, or both of a
+    // method are run through the guardrails pipeline.
+    enum Phase {
+      OFF = 0;
+      REQUEST = 1;
+      RESPONSE = 2;
+      FULL = 3;
+    }
+
+    enum FailureMode {
+      DENY = 0;
+      ALLOW = 1;
+    }
+
+    // Configuration for the custom gRPC policy server. TLS, retries, and
+    // load balancing to the policy server come from the backend referenced
+    // by `target` (same pattern as TrafficPolicySpec.ExternalAuth).
+    message Remote {
+      BackendReference target = 1;
+      FailureMode failure_mode = 2;
+      // Static or CEL-evaluated context, surfaced to the policy server as
+      // fields of the `metadata_context` google.protobuf.Struct, keyed by
+      // config key.
+      map<string, string> metadata = 3;
+      // Request headers forwarded to the policy server in `McpRequest.headers`.
+      // Empty means send all headers (modeled on Envoy ext_authz gRPC). When
+      // non-empty, only listed header names are sent. Matching is
+      // case-insensitive.
+      repeated string allowed_request_headers = 4;
+      // Header names never forwarded to the policy server, even if they appear
+      // in `allowed_request_headers`. Case-insensitive.
+      repeated string disallowed_request_headers = 5;
+    }
+
+    // Processor is a single policy processor. Today only `remote` is defined.
+    message Processor {
+      oneof kind {
+        Remote remote = 1;
+      }
+
+      // Allowlist of JSON-RPC methods (e.g. "tools/call", "tools/list") that run
+      // through this processor, keyed by method name with the phase it runs in.
+      // Keys may be exact, prefix ("tools/*") or suffix ("*/list") wildcards, or
+      // "*" for all methods; the most specific match wins when a method would match
+      // multiple entries.
+      map<string, Phase> methods = 2;
+    }
+
+    // Ordered list of processors applied to matched methods. Processors run in
+    // the order listed; the first to reject a request short-circuits the chain.
+    repeated Processor processors = 3;
+
+    reserved 1, 2;
+    reserved "remote", "methods";
+  }
+
   oneof kind {
     A2a a2a = 1;
     InferenceRouting inference_routing = 2;
@@ -1408,6 +1468,7 @@ message BackendPolicySpec {
     Health health = 15;
     BackendTunnel backend_tunnel = 16;
     TrafficPolicySpec.ExternalAuth ext_authz = 17;
+    McpGuardrails mcp_guardrails = 18;
   }
 }
 

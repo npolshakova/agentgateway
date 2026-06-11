@@ -857,6 +857,14 @@
       ],
       "additionalProperties": true
     },
+    "mcpGuardrails": {
+      "description": "`mcpGuardrails` contains dynamic metadata returned by mcpGuardrails policy processors.",
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
     "metadata": {
       "description": "`metadata` contains values set by transformation metadata expressions.",
       "type": [

@@ -1185,6 +1185,18 @@
           ],
           "default": null
         },
+        "mcpGuardrails": {
+          "description": "External MCP policy processors.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/McpGuardrails"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "authorization": {
           "description": "Authorization rules for incoming HTTP requests.",
           "anyOf": [
@@ -1902,672 +1914,145 @@
         "rules"
       ]
     },
-    "Authorization": {
-      "$ref": "#/$defs/RuleSet"
-    },
-    "LocalMcpAuthentication": {
+    "McpGuardrails": {
       "type": "object",
       "properties": {
-        "issuer": {
-          "description": "Expected token issuer, matched against the JWT `iss` claim.",
-          "type": "string"
-        },
-        "audiences": {
-          "description": "Accepted token audiences, matched against the JWT `aud` claim.",
+        "processors": {
+          "description": "Ordered list of policy processors applied to matched methods; the first\nto reject a request short-circuits the chain. Processors may run on the\nrequest or response side, or both; see `Processor.methods`.",
           "type": "array",
           "items": {
-            "type": "string"
-          }
-        },
-        "provider": {
-          "description": "Identity provider type used to derive MCP authorization metadata and default JWKS URLs.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/McpIDP"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "resourceMetadata": {
-          "description": "Protected resource metadata returned to MCP clients.",
-          "$ref": "#/$defs/ResourceMetadata"
-        },
-        "jwks": {
-          "description": "JSON Web Key Set used to verify token signatures. Can be inline, from a file, or fetched remotely.",
-          "$ref": "#/$defs/FileInlineOrRemote"
-        },
-        "mode": {
-          "description": "Controls whether MCP requests must include a valid JWT.",
-          "$ref": "#/$defs/McpAuthenticationMode",
-          "default": "strict"
-        },
-        "authorizationLocation": {
-          "description": "Where to read the JWT from in incoming MCP requests.",
-          "$ref": "#/$defs/AuthorizationLocation",
-          "default": {
-            "header": {
-              "name": "authorization",
-              "prefix": "Bearer "
-            }
-          }
-        },
-        "jwtValidationOptions": {
-          "description": "Claim requirements to enforce after the token signature is verified.",
-          "$ref": "#/$defs/JWTValidationOptions"
-        },
-        "clientId": {
-          "description": "OAuth client ID advertised to MCP clients when needed.",
-          "type": [
-            "string",
-            "null"
-          ]
+            "$ref": "#/$defs/Processor"
+          },
+          "minItems": 1
         }
       },
       "additionalProperties": false,
       "required": [
-        "issuer",
-        "audiences",
-        "resourceMetadata",
-        "jwks"
+        "processors"
       ]
     },
-    "McpIDP": {
-      "oneOf": [
-        {
-          "type": "object",
-          "properties": {
-            "auth0": {
-              "type": "object",
-              "additionalProperties": false
-            }
-          },
-          "required": [
-            "auth0"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "keycloak": {
-              "type": "object",
-              "additionalProperties": false
-            }
-          },
-          "required": [
-            "keycloak"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "okta": {
-              "type": "object",
-              "additionalProperties": false
-            }
-          },
-          "required": [
-            "okta"
-          ],
-          "additionalProperties": false
-        }
-      ]
-    },
-    "ResourceMetadata": {
+    "Processor": {
       "type": "object",
-      "additionalProperties": true
-    },
-    "FileInlineOrRemote": {
-      "anyOf": [
+      "properties": {
+        "methods": {
+          "description": "Allowlist: only methods listed here run through this processor, at the\nconfigured phase. Keys may be exact (`tools/call`), prefix (`tools/*`),\nor suffix (`*/list`) wildcards, or `*` for all methods. Methods matching\nno key bypass this processor; see [`phase::resolve`] for match precedence.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/Phase"
+          }
+        }
+      },
+      "oneOf": [
         {
           "type": "object",
           "properties": {
-            "file": {
-              "type": "string"
+            "policies": {
+              "description": "Policies to connect to the backend.",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/SimpleLocalBackendPolicies"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "failureMode": {
+              "description": "Behavior when the processor is unavailable or returns an error.",
+              "$ref": "#/$defs/FailureMode",
+              "default": "failClosed"
+            },
+            "metadata": {
+              "description": "CEL expressions evaluated per request and sent to the processor as metadata.",
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/$defs/Expression"
+              }
+            },
+            "requestHeaders": {
+              "description": "Which incoming request headers are forwarded to the policy server.",
+              "$ref": "#/$defs/HeaderFilter"
+            },
+            "kind": {
+              "type": "string",
+              "const": "remote"
             }
           },
           "required": [
-            "file"
-          ]
-        },
-        {
-          "type": "string"
-        },
-        {
-          "type": "object",
-          "properties": {
-            "url": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "url"
-          ]
-        }
-      ]
-    },
-    "McpAuthenticationMode": {
-      "oneOf": [
-        {
-          "description": "A valid token, issued by a configured issuer, must be present.\nThis is the default option.",
-          "type": "string",
-          "const": "strict"
-        },
-        {
-          "description": "If a token exists, validate it.\nWarning: this allows requests without a JWT token! Additionally, 401 errors will not be returned,\nwhich will not trigger clients to initiate an oauth flow.",
-          "type": "string",
-          "const": "optional"
-        },
-        {
-          "description": "Requests are never rejected. This is useful for usage of claims in later steps (authorization, logging, etc).\nWarning: this allows requests without a JWT token! Additionally, 401 errors will not be returned,\nwhich will not trigger clients to initiate an oauth flow.",
-          "type": "string",
-          "const": "permissive"
-        }
-      ]
-    },
-    "AuthorizationLocation": {
-      "oneOf": [
-        {
-          "description": "Read the credential from an HTTP header.",
-          "type": "object",
-          "properties": {
-            "header": {
+            "kind"
+          ],
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": [
+                "invalid"
+              ]
+            },
+            {
+              "description": "Service reference. Service must be defined in the top level services list.",
               "type": "object",
               "properties": {
-                "name": {
-                  "description": "Header name containing the credential.",
-                  "type": "string"
-                },
-                "prefix": {
-                  "description": "Prefix to remove from the header value before validation, such as `Bearer ` or `Basic `.",
-                  "type": [
-                    "string",
-                    "null"
+                "service": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "$ref": "#/$defs/NamespacedHostname"
+                    },
+                    "port": {
+                      "type": "integer",
+                      "format": "uint16",
+                      "minimum": 0,
+                      "maximum": 65535
+                    }
+                  },
+                  "additionalProperties": false,
+                  "required": [
+                    "name",
+                    "port"
                   ]
                 }
               },
-              "additionalProperties": false,
               "required": [
-                "name"
+                "service"
               ]
-            }
-          },
-          "required": [
-            "header"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "description": "Read the credential from a URL query parameter.",
-          "type": "object",
-          "properties": {
-            "queryParameter": {
+            },
+            {
+              "description": "Hostname or IP address",
               "type": "object",
               "properties": {
-                "name": {
-                  "description": "Query parameter name containing the credential.",
+                "host": {
+                  "description": "Hostname or IP address",
                   "type": "string"
                 }
               },
-              "additionalProperties": false,
               "required": [
-                "name"
+                "host"
               ]
-            }
-          },
-          "required": [
-            "queryParameter"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "description": "Read the credential from a request cookie.",
-          "type": "object",
-          "properties": {
-            "cookie": {
+            },
+            {
               "type": "object",
               "properties": {
-                "name": {
-                  "description": "Cookie name containing the credential.",
+                "backend": {
+                  "description": "Explicit backend reference. Backend must be defined in the top level backends list",
                   "type": "string"
                 }
               },
-              "additionalProperties": false,
               "required": [
-                "name"
+                "backend"
               ]
             }
-          },
-          "required": [
-            "cookie"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "description": "Read the credential from a CEL expression evaluated against the incoming request.",
-          "type": "object",
-          "properties": {
-            "expression": {
-              "type": "object",
-              "properties": {
-                "expression": {
-                  "description": "CEL expression that returns the credential string. This location can extract credentials but cannot insert them.",
-                  "$ref": "#/$defs/Expression"
-                }
-              },
-              "additionalProperties": false,
-              "required": [
-                "expression"
-              ]
-            }
-          },
-          "required": [
-            "expression"
-          ],
-          "additionalProperties": false
-        }
-      ]
-    },
-    "JWTValidationOptions": {
-      "description": "JWT validation options controlling which claims must be present in a token.\n\nThe `required_claims` set specifies which RFC 7519 registered claims must\nexist in the token payload before validation proceeds. Only the following\nvalues are recognized: `exp`, `nbf`, `aud`, `iss`, `sub`. Other registered\nclaims such as `iat` and `jti` are **not** enforced by the underlying\n`jsonwebtoken` library and will be silently ignored.\n\nThis only enforces **presence**. Standard claims like `exp` and `nbf`\nhave their values validated independently (e.g., expiry is always checked\nwhen the `exp` claim is present, regardless of this setting).\n\nDefaults to `[\"exp\"]`.",
-      "type": "object",
-      "properties": {
-        "requiredClaims": {
-          "description": "Claims that must be present in the token before validation.\nOnly \"exp\", \"nbf\", \"aud\", \"iss\", \"sub\" are enforced; others\n(including \"iat\" and \"jti\") are ignored.\nDefaults to [\"exp\"]. Use an empty list to require no claims.",
-          "type": "array",
-          "uniqueItems": true,
-          "items": {
-            "type": "string"
-          },
-          "default": [
-            "exp"
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "A2aPolicy": {
-      "type": "object",
-      "additionalProperties": false
-    },
-    "Policy": {
-      "type": "object",
-      "properties": {
-        "promptGuard": {
-          "description": "Prompt and response guardrails to apply to LLM traffic.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/PromptGuard"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "defaults": {
-          "description": "Default request body values added only when the client did not provide them.",
-          "type": [
-            "object",
-            "null"
-          ],
-          "additionalProperties": true
-        },
-        "overrides": {
-          "description": "Request body values that replace client-provided values.",
-          "type": [
-            "object",
-            "null"
-          ],
-          "additionalProperties": true
-        },
-        "transformations": {
-          "description": "Request body values computed from CEL expressions.",
-          "type": [
-            "object",
-            "null"
-          ],
-          "additionalProperties": {
-            "$ref": "#/$defs/Expression"
-          }
-        },
-        "prompts": {
-          "description": "Messages to add before or after the client prompt.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/PromptEnrichment"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "modelAliases": {
-          "description": "Model name aliases that rewrite requested model names.",
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "promptCaching": {
-          "description": "Prompt caching settings for providers that support cache markers.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/PromptCachingConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "routes": {
-          "description": "Route type overrides selected by request path suffix.",
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/RouteType"
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    "PromptGuard": {
-      "type": "object",
-      "properties": {
-        "request": {
-          "description": "Guards applied to client requests before they reach the LLM.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/RequestGuard"
-          }
-        },
-        "response": {
-          "description": "Guards applied to LLM responses before they reach the client.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/ResponseGuard"
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    "RequestGuard": {
-      "type": "object",
-      "properties": {
-        "rejection": {
-          "description": "Response returned when the request is rejected.",
-          "$ref": "#/$defs/RequestRejection",
-          "default": {
-            "body": "The request was rejected due to inappropriate content",
-            "status": 403
-          }
-        }
-      },
-      "unevaluatedProperties": false,
-      "oneOf": [
-        {
-          "description": "Apply regex-based masking or rejection rules.",
-          "type": "object",
-          "properties": {
-            "regex": {
-              "$ref": "#/$defs/RegexRules"
-            }
-          },
-          "required": [
-            "regex"
-          ]
-        },
-        {
-          "description": "Call a webhook to evaluate the prompt.",
-          "type": "object",
-          "properties": {
-            "webhook": {
-              "$ref": "#/$defs/Webhook"
-            }
-          },
-          "required": [
-            "webhook"
-          ]
-        },
-        {
-          "description": "Use OpenAI moderation to evaluate the prompt.",
-          "type": "object",
-          "properties": {
-            "openAIModeration": {
-              "$ref": "#/$defs/Moderation"
-            }
-          },
-          "required": [
-            "openAIModeration"
-          ]
-        },
-        {
-          "description": "Use AWS Bedrock Guardrails to evaluate the prompt.",
-          "type": "object",
-          "properties": {
-            "bedrockGuardrails": {
-              "$ref": "#/$defs/BedrockGuardrails"
-            }
-          },
-          "required": [
-            "bedrockGuardrails"
-          ]
-        },
-        {
-          "description": "Use Google Model Armor to evaluate the prompt.",
-          "type": "object",
-          "properties": {
-            "googleModelArmor": {
-              "$ref": "#/$defs/GoogleModelArmor"
-            }
-          },
-          "required": [
-            "googleModelArmor"
-          ]
-        },
-        {
-          "description": "Use Azure Content Safety to evaluate the prompt.",
-          "type": "object",
-          "properties": {
-            "azureContentSafety": {
-              "$ref": "#/$defs/AzureContentSafety"
-            }
-          },
-          "required": [
-            "azureContentSafety"
           ]
         }
       ]
     },
-    "RequestRejection": {
-      "type": "object",
-      "properties": {
-        "body": {
-          "description": "Response body returned when content is rejected.",
-          "$ref": "#/$defs/Bytes",
-          "default": "The request was rejected due to inappropriate content"
-        },
-        "status": {
-          "description": "HTTP status code returned when content is rejected.",
-          "type": "integer",
-          "format": "uint16",
-          "minimum": 1,
-          "maximum": 65535,
-          "default": 403
-        },
-        "headers": {
-          "description": "Headers to add, set, or remove from the rejection response.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/HeaderModifier"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "RegexRules": {
-      "type": "object",
-      "properties": {
-        "action": {
-          "description": "Action to take when a regex rule matches.",
-          "$ref": "#/$defs/Action",
-          "default": "mask"
-        },
-        "rules": {
-          "description": "Regex or built-in patterns to evaluate.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/RegexRule"
-          }
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "rules"
+    "Phase": {
+      "type": "string",
+      "enum": [
+        "off",
+        "request",
+        "response",
+        "full"
       ]
-    },
-    "Action": {
-      "oneOf": [
-        {
-          "description": "Replace matching content with masked text.",
-          "type": "string",
-          "const": "mask"
-        },
-        {
-          "description": "Reject the request or response when content matches.",
-          "type": "string",
-          "const": "reject"
-        }
-      ]
-    },
-    "RegexRule": {
-      "anyOf": [
-        {
-          "description": "Use a built-in sensitive data pattern.",
-          "type": "object",
-          "properties": {
-            "builtin": {
-              "description": "Built-in pattern name.",
-              "$ref": "#/$defs/Builtin"
-            }
-          },
-          "additionalProperties": false,
-          "required": [
-            "builtin"
-          ]
-        },
-        {
-          "description": "Use a custom regular expression.",
-          "type": "object",
-          "properties": {
-            "pattern": {
-              "description": "Regular expression pattern to evaluate.",
-              "type": "string"
-            }
-          },
-          "additionalProperties": false,
-          "required": [
-            "pattern"
-          ]
-        }
-      ]
-    },
-    "Builtin": {
-      "oneOf": [
-        {
-          "description": "U.S. Social Security number pattern.",
-          "type": "string",
-          "const": "ssn"
-        },
-        {
-          "description": "Credit card number pattern.",
-          "type": "string",
-          "const": "creditCard"
-        },
-        {
-          "description": "Phone number pattern.",
-          "type": "string",
-          "const": "phoneNumber"
-        },
-        {
-          "description": "Email address pattern.",
-          "type": "string",
-          "const": "email"
-        },
-        {
-          "description": "Canadian Social Insurance Number pattern.",
-          "type": "string",
-          "const": "caSin"
-        }
-      ]
-    },
-    "Webhook": {
-      "type": "object",
-      "properties": {
-        "target": {
-          "description": "Backend that receives guardrail webhook requests.",
-          "$ref": "#/$defs/SimpleLocalBackend"
-        },
-        "forwardHeaderMatches": {
-          "description": "Incoming request headers to forward to the webhook.",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/HeaderMatch"
-          }
-        },
-        "failureMode": {
-          "description": "Behavior when the webhook is unreachable or returns an error.\nDefaults to `failClosed`.",
-          "$ref": "#/$defs/FailureMode"
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "target"
-      ]
-    },
-    "FailureMode": {
-      "description": "Defines how the proxy behaves when a webhook guardrail is unreachable or\nreturns an error.\n\nDefaults to `failClosed`. When failing closed, the error is propagated and\nthe LLM request is rejected. When failing open, the request is allowed\nthrough despite the webhook failure.",
-      "oneOf": [
-        {
-          "description": "Reject the request when the webhook guardrail is unavailable (default).",
-          "type": "string",
-          "const": "failClosed"
-        },
-        {
-          "description": "Allow the request through when the webhook guardrail is unavailable.",
-          "type": "string",
-          "const": "failOpen"
-        }
-      ]
-    },
-    "Moderation": {
-      "type": "object",
-      "properties": {
-        "model": {
-          "description": "Moderation model to use. Defaults to `omni-moderation-latest`.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "policies": {
-          "description": "Backend policies used when calling the moderation provider.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/SimpleLocalBackendPolicies"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "additionalProperties": false
     },
     "SimpleLocalBackendPolicies": {
       "type": "object",
@@ -2924,6 +2409,109 @@
           "description": "Authenticate to GitHub Copilot.",
           "type": "string",
           "const": "copilot"
+        }
+      ]
+    },
+    "AuthorizationLocation": {
+      "oneOf": [
+        {
+          "description": "Read the credential from an HTTP header.",
+          "type": "object",
+          "properties": {
+            "header": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "description": "Header name containing the credential.",
+                  "type": "string"
+                },
+                "prefix": {
+                  "description": "Prefix to remove from the header value before validation, such as `Bearer ` or `Basic `.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "name"
+              ]
+            }
+          },
+          "required": [
+            "header"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "description": "Read the credential from a URL query parameter.",
+          "type": "object",
+          "properties": {
+            "queryParameter": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "description": "Query parameter name containing the credential.",
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "name"
+              ]
+            }
+          },
+          "required": [
+            "queryParameter"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "description": "Read the credential from a request cookie.",
+          "type": "object",
+          "properties": {
+            "cookie": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "description": "Cookie name containing the credential.",
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "name"
+              ]
+            }
+          },
+          "required": [
+            "cookie"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "description": "Read the credential from a CEL expression evaluated against the incoming request.",
+          "type": "object",
+          "properties": {
+            "expression": {
+              "type": "object",
+              "properties": {
+                "expression": {
+                  "description": "CEL expression that returns the credential string. This location can extract credentials but cannot insert them.",
+                  "$ref": "#/$defs/Expression"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "expression"
+              ]
+            }
+          },
+          "required": [
+            "expression"
+          ],
+          "additionalProperties": false
         }
       ]
     },
@@ -3319,6 +2907,599 @@
       "required": [
         "proxy"
       ]
+    },
+    "FailureMode": {
+      "type": "string",
+      "enum": [
+        "failClosed",
+        "failOpen"
+      ]
+    },
+    "HeaderFilter": {
+      "description": "Allow/deny filter over request headers, mirroring ext_authz: empty `allowed`\nforwards every header plus all pseudo-headers (`:authority`, `:method`, ...);\na non-empty `allowed` forwards only the listed names. `disallowed` always\nwins. Header names match case-insensitively; pseudo-headers match exactly.",
+      "type": "object",
+      "properties": {
+        "allowed": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/HeaderOrPseudo"
+          }
+        },
+        "disallowed": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/HeaderOrPseudo"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "HeaderOrPseudo": {
+      "type": "string"
+    },
+    "Authorization": {
+      "$ref": "#/$defs/RuleSet"
+    },
+    "LocalMcpAuthentication": {
+      "type": "object",
+      "properties": {
+        "issuer": {
+          "description": "Expected token issuer, matched against the JWT `iss` claim.",
+          "type": "string"
+        },
+        "audiences": {
+          "description": "Accepted token audiences, matched against the JWT `aud` claim.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "provider": {
+          "description": "Identity provider type used to derive MCP authorization metadata and default JWKS URLs.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/McpIDP"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resourceMetadata": {
+          "description": "Protected resource metadata returned to MCP clients.",
+          "$ref": "#/$defs/ResourceMetadata"
+        },
+        "jwks": {
+          "description": "JSON Web Key Set used to verify token signatures. Can be inline, from a file, or fetched remotely.",
+          "$ref": "#/$defs/FileInlineOrRemote"
+        },
+        "mode": {
+          "description": "Controls whether MCP requests must include a valid JWT.",
+          "$ref": "#/$defs/McpAuthenticationMode",
+          "default": "strict"
+        },
+        "authorizationLocation": {
+          "description": "Where to read the JWT from in incoming MCP requests.",
+          "$ref": "#/$defs/AuthorizationLocation",
+          "default": {
+            "header": {
+              "name": "authorization",
+              "prefix": "Bearer "
+            }
+          }
+        },
+        "jwtValidationOptions": {
+          "description": "Claim requirements to enforce after the token signature is verified.",
+          "$ref": "#/$defs/JWTValidationOptions"
+        },
+        "clientId": {
+          "description": "OAuth client ID advertised to MCP clients when needed.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "issuer",
+        "audiences",
+        "resourceMetadata",
+        "jwks"
+      ]
+    },
+    "McpIDP": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "auth0": {
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "auth0"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "keycloak": {
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "keycloak"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "okta": {
+              "type": "object",
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "okta"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ResourceMetadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "FileInlineOrRemote": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "file": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "file"
+          ]
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      ]
+    },
+    "McpAuthenticationMode": {
+      "oneOf": [
+        {
+          "description": "A valid token, issued by a configured issuer, must be present.\nThis is the default option.",
+          "type": "string",
+          "const": "strict"
+        },
+        {
+          "description": "If a token exists, validate it.\nWarning: this allows requests without a JWT token! Additionally, 401 errors will not be returned,\nwhich will not trigger clients to initiate an oauth flow.",
+          "type": "string",
+          "const": "optional"
+        },
+        {
+          "description": "Requests are never rejected. This is useful for usage of claims in later steps (authorization, logging, etc).\nWarning: this allows requests without a JWT token! Additionally, 401 errors will not be returned,\nwhich will not trigger clients to initiate an oauth flow.",
+          "type": "string",
+          "const": "permissive"
+        }
+      ]
+    },
+    "JWTValidationOptions": {
+      "description": "JWT validation options controlling which claims must be present in a token.\n\nThe `required_claims` set specifies which RFC 7519 registered claims must\nexist in the token payload before validation proceeds. Only the following\nvalues are recognized: `exp`, `nbf`, `aud`, `iss`, `sub`. Other registered\nclaims such as `iat` and `jti` are **not** enforced by the underlying\n`jsonwebtoken` library and will be silently ignored.\n\nThis only enforces **presence**. Standard claims like `exp` and `nbf`\nhave their values validated independently (e.g., expiry is always checked\nwhen the `exp` claim is present, regardless of this setting).\n\nDefaults to `[\"exp\"]`.",
+      "type": "object",
+      "properties": {
+        "requiredClaims": {
+          "description": "Claims that must be present in the token before validation.\nOnly \"exp\", \"nbf\", \"aud\", \"iss\", \"sub\" are enforced; others\n(including \"iat\" and \"jti\") are ignored.\nDefaults to [\"exp\"]. Use an empty list to require no claims.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "exp"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "A2aPolicy": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "Policy": {
+      "type": "object",
+      "properties": {
+        "promptGuard": {
+          "description": "Prompt and response guardrails to apply to LLM traffic.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PromptGuard"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "defaults": {
+          "description": "Default request body values added only when the client did not provide them.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "overrides": {
+          "description": "Request body values that replace client-provided values.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "transformations": {
+          "description": "Request body values computed from CEL expressions.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "$ref": "#/$defs/Expression"
+          }
+        },
+        "prompts": {
+          "description": "Messages to add before or after the client prompt.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PromptEnrichment"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "modelAliases": {
+          "description": "Model name aliases that rewrite requested model names.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "promptCaching": {
+          "description": "Prompt caching settings for providers that support cache markers.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PromptCachingConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "routes": {
+          "description": "Route type overrides selected by request path suffix.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/RouteType"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "PromptGuard": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "description": "Guards applied to client requests before they reach the LLM.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RequestGuard"
+          }
+        },
+        "response": {
+          "description": "Guards applied to LLM responses before they reach the client.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ResponseGuard"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "RequestGuard": {
+      "type": "object",
+      "properties": {
+        "rejection": {
+          "description": "Response returned when the request is rejected.",
+          "$ref": "#/$defs/RequestRejection",
+          "default": {
+            "body": "The request was rejected due to inappropriate content",
+            "status": 403
+          }
+        }
+      },
+      "unevaluatedProperties": false,
+      "oneOf": [
+        {
+          "description": "Apply regex-based masking or rejection rules.",
+          "type": "object",
+          "properties": {
+            "regex": {
+              "$ref": "#/$defs/RegexRules"
+            }
+          },
+          "required": [
+            "regex"
+          ]
+        },
+        {
+          "description": "Call a webhook to evaluate the prompt.",
+          "type": "object",
+          "properties": {
+            "webhook": {
+              "$ref": "#/$defs/Webhook"
+            }
+          },
+          "required": [
+            "webhook"
+          ]
+        },
+        {
+          "description": "Use OpenAI moderation to evaluate the prompt.",
+          "type": "object",
+          "properties": {
+            "openAIModeration": {
+              "$ref": "#/$defs/Moderation"
+            }
+          },
+          "required": [
+            "openAIModeration"
+          ]
+        },
+        {
+          "description": "Use AWS Bedrock Guardrails to evaluate the prompt.",
+          "type": "object",
+          "properties": {
+            "bedrockGuardrails": {
+              "$ref": "#/$defs/BedrockGuardrails"
+            }
+          },
+          "required": [
+            "bedrockGuardrails"
+          ]
+        },
+        {
+          "description": "Use Google Model Armor to evaluate the prompt.",
+          "type": "object",
+          "properties": {
+            "googleModelArmor": {
+              "$ref": "#/$defs/GoogleModelArmor"
+            }
+          },
+          "required": [
+            "googleModelArmor"
+          ]
+        },
+        {
+          "description": "Use Azure Content Safety to evaluate the prompt.",
+          "type": "object",
+          "properties": {
+            "azureContentSafety": {
+              "$ref": "#/$defs/AzureContentSafety"
+            }
+          },
+          "required": [
+            "azureContentSafety"
+          ]
+        }
+      ]
+    },
+    "RequestRejection": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "description": "Response body returned when content is rejected.",
+          "$ref": "#/$defs/Bytes",
+          "default": "The request was rejected due to inappropriate content"
+        },
+        "status": {
+          "description": "HTTP status code returned when content is rejected.",
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 403
+        },
+        "headers": {
+          "description": "Headers to add, set, or remove from the rejection response.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HeaderModifier"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "RegexRules": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "description": "Action to take when a regex rule matches.",
+          "$ref": "#/$defs/Action",
+          "default": "mask"
+        },
+        "rules": {
+          "description": "Regex or built-in patterns to evaluate.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RegexRule"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "rules"
+      ]
+    },
+    "Action": {
+      "oneOf": [
+        {
+          "description": "Replace matching content with masked text.",
+          "type": "string",
+          "const": "mask"
+        },
+        {
+          "description": "Reject the request or response when content matches.",
+          "type": "string",
+          "const": "reject"
+        }
+      ]
+    },
+    "RegexRule": {
+      "anyOf": [
+        {
+          "description": "Use a built-in sensitive data pattern.",
+          "type": "object",
+          "properties": {
+            "builtin": {
+              "description": "Built-in pattern name.",
+              "$ref": "#/$defs/Builtin"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "builtin"
+          ]
+        },
+        {
+          "description": "Use a custom regular expression.",
+          "type": "object",
+          "properties": {
+            "pattern": {
+              "description": "Regular expression pattern to evaluate.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "pattern"
+          ]
+        }
+      ]
+    },
+    "Builtin": {
+      "oneOf": [
+        {
+          "description": "U.S. Social Security number pattern.",
+          "type": "string",
+          "const": "ssn"
+        },
+        {
+          "description": "Credit card number pattern.",
+          "type": "string",
+          "const": "creditCard"
+        },
+        {
+          "description": "Phone number pattern.",
+          "type": "string",
+          "const": "phoneNumber"
+        },
+        {
+          "description": "Email address pattern.",
+          "type": "string",
+          "const": "email"
+        },
+        {
+          "description": "Canadian Social Insurance Number pattern.",
+          "type": "string",
+          "const": "caSin"
+        }
+      ]
+    },
+    "Webhook": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "description": "Backend that receives guardrail webhook requests.",
+          "$ref": "#/$defs/SimpleLocalBackend"
+        },
+        "forwardHeaderMatches": {
+          "description": "Incoming request headers to forward to the webhook.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/HeaderMatch"
+          }
+        },
+        "failureMode": {
+          "description": "Behavior when the webhook is unreachable or returns an error.\nDefaults to `failClosed`.",
+          "$ref": "#/$defs/FailureMode2"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "target"
+      ]
+    },
+    "FailureMode2": {
+      "description": "Defines how the proxy behaves when a webhook guardrail is unreachable or\nreturns an error.\n\nDefaults to `failClosed`. When failing closed, the error is propagated and\nthe LLM request is rejected. When failing open, the request is allowed\nthrough despite the webhook failure.",
+      "oneOf": [
+        {
+          "description": "Reject the request when the webhook guardrail is unavailable (default).",
+          "type": "string",
+          "const": "failClosed"
+        },
+        {
+          "description": "Allow the request through when the webhook guardrail is unavailable.",
+          "type": "string",
+          "const": "failOpen"
+        }
+      ]
+    },
+    "Moderation": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "description": "Moderation model to use. Defaults to `omni-moderation-latest`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "policies": {
+          "description": "Backend policies used when calling the moderation provider.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SimpleLocalBackendPolicies"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
     },
     "BedrockGuardrails": {
       "description": "Configuration for AWS Bedrock Guardrails integration.",
@@ -3878,7 +4059,7 @@
         },
         "failureMode": {
           "description": "Behavior when the remote rate limit service is unavailable or returns an error.\nDefaults to failClosed, denying requests with a 500 status on service failure.",
-          "$ref": "#/$defs/FailureMode2",
+          "$ref": "#/$defs/FailureMode3",
           "default": "failClosed"
         }
       },
@@ -4014,7 +4195,7 @@
         "value"
       ]
     },
-    "FailureMode2": {
+    "FailureMode3": {
       "description": "Defines how the proxy behaves when the remote rate limit service is\nunavailable or returns an error.\n\nDefaults to `FailClosed`. When failing closed, a 500 Internal Server Error\nis returned when the service is unavailable. When failing open, requests are\nallowed through despite the service failure.\n\n# Configuration\n\nBoth camelCase (`failOpen`, `failClosed`) and PascalCase (`FailOpen`,\n`FailClosed`) are accepted in configuration files",
       "oneOf": [
         {
@@ -4053,7 +4234,7 @@
         },
         "failureMode": {
           "description": "Behavior when the remote rate limit service is unavailable or returns an error.\nDefaults to failClosed, denying requests with a 500 status on service failure.",
-          "$ref": "#/$defs/FailureMode2",
+          "$ref": "#/$defs/FailureMode3",
           "default": "failClosed"
         }
       },
@@ -4535,7 +4716,7 @@
         },
         "failureMode": {
           "description": "Behavior when the authorization service is unavailable or returns an error.",
-          "$ref": "#/$defs/FailureMode3",
+          "$ref": "#/$defs/FailureMode4",
           "default": "deny"
         },
         "includeRequestHeaders": {
@@ -4729,7 +4910,7 @@
         }
       ]
     },
-    "FailureMode3": {
+    "FailureMode4": {
       "oneOf": [
         {
           "description": "Allow the request when the authorization service cannot make a decision.",
@@ -4758,9 +4939,6 @@
           "additionalProperties": false
         }
       ]
-    },
-    "HeaderOrPseudo": {
-      "type": "string"
     },
     "BodyOptions": {
       "type": "object",
@@ -4837,7 +5015,7 @@
         },
         "failureMode": {
           "description": "Behavior when the authorization service is unavailable or returns an error.",
-          "$ref": "#/$defs/FailureMode3",
+          "$ref": "#/$defs/FailureMode4",
           "default": "deny"
         },
         "includeRequestHeaders": {
@@ -4987,7 +5165,7 @@
         },
         "failureMode": {
           "description": "Behavior when the external processing service is unavailable or returns an error.",
-          "$ref": "#/$defs/FailureMode4",
+          "$ref": "#/$defs/FailureMode5",
           "default": "failClosed"
         },
         "metadataContext": {
@@ -5099,7 +5277,7 @@
         }
       ]
     },
-    "FailureMode4": {
+    "FailureMode5": {
       "oneOf": [
         {
           "description": "Reject the request when the external processing service fails.",
@@ -5222,7 +5400,7 @@
         },
         "failureMode": {
           "description": "Behavior when the external processing service is unavailable or returns an error.",
-          "$ref": "#/$defs/FailureMode4",
+          "$ref": "#/$defs/FailureMode5",
           "default": "failClosed"
         },
         "metadataContext": {
@@ -5695,7 +5873,7 @@
           "description": "Behavior when one or more MCP targets fail to initialize or fail during fanout.\nDefaults to `failClosed`.",
           "anyOf": [
             {
-              "$ref": "#/$defs/FailureMode5"
+              "$ref": "#/$defs/FailureMode6"
             },
             {
               "type": "null"
@@ -5993,6 +6171,18 @@
             }
           ],
           "default": null
+        },
+        "mcpGuardrails": {
+          "description": "External MCP policy processors.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/McpGuardrails"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "additionalProperties": false
@@ -6011,7 +6201,7 @@
         "conditional"
       ]
     },
-    "FailureMode5": {
+    "FailureMode6": {
       "oneOf": [
         {
           "description": "Fail the entire session if any target fails to initialize or any\nupstream fails during a fanout. This is the default and matches\ncurrent behavior.",
@@ -6540,6 +6730,18 @@
           "anyOf": [
             {
               "$ref": "#/$defs/McpAuthorization"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "mcpGuardrails": {
+          "description": "External MCP policy processors.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/McpGuardrails"
             },
             {
               "type": "null"
@@ -8553,7 +8755,7 @@
           "description": "Behavior when one or more MCP targets fail to initialize or fail during fanout.\nDefaults to `failClosed`.",
           "anyOf": [
             {
-              "$ref": "#/$defs/FailureMode5"
+              "$ref": "#/$defs/FailureMode6"
             },
             {
               "type": "null"

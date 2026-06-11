@@ -1547,6 +1547,89 @@ type BackendMCP struct {
 	//
 	// +optional
 	Authentication *MCPAuthentication `json:"authentication,omitempty"`
+
+	// `guardrails` routes selected JSON-RPC methods through a remote policy server.
+	// +optional
+	Guardrails *MCPGuardrails `json:"guardrails,omitempty"`
+}
+
+// MCPMethodPhase controls when an MCP method is run through the guardrails pipeline.
+// +k8s:enum
+type MCPMethodPhase string
+
+const (
+	MCPMethodPhaseOff      MCPMethodPhase = "Off"
+	MCPMethodPhaseRequest  MCPMethodPhase = "Request"
+	MCPMethodPhaseResponse MCPMethodPhase = "Response"
+	MCPMethodPhaseFull     MCPMethodPhase = "Full"
+)
+
+// MCPGuardrails is the MCP-layer analog of Envoy ext_authz: an ordered chain of
+// policy processors invoked per JSON-RPC method.
+type MCPGuardrails struct {
+	// `processors` is the ordered list of policy processors applied to matched
+	// methods. Processors run in the order listed; the first to reject a request
+	// short-circuits the chain.
+	// +required
+	// +kubebuilder:validation:MinItems=1
+	// +kubebuilder:validation:MaxItems=16
+	Processors []MCPGuardrailsProcessor `json:"processors"`
+}
+
+// MCPGuardrailsProcessor selects a single policy processor. Exactly one variant must be set.
+// +kubebuilder:validation:ExactlyOneOf=remote
+type MCPGuardrailsProcessor struct {
+	// `remote` configures a gRPC policy server.
+	// +optional
+	Remote *MCPGuardrailsRemote `json:"remote,omitempty"`
+
+	// `methods` is the allowlist of JSON-RPC methods (e.g. `tools/call`,
+	// `tools/list`) routed through this processor, keyed by method name with the
+	// phase it runs in. Keys may be exact, a prefix wildcard (`tools/*`), a suffix
+	// wildcard (`*/list`), or `*` for all methods; the most specific match wins.
+	// Methods matching no key, including unknown ones, bypass this processor.
+	// +required
+	// +kubebuilder:validation:MinProperties=1
+	// +kubebuilder:validation:MaxProperties=64
+	// +kubebuilder:validation:XValidation:rule="self.all(k, !k.contains('*') || (k.indexOf('*') == k.lastIndexOf('*') && (k.indexOf('*') == 0 || k.indexOf('*') == size(k) - 1)))",message="method wildcards must be '*', a prefix like 'tools/*', or a suffix like '*/list'"
+	Methods map[string]MCPMethodPhase `json:"methods"`
+}
+
+type MCPGuardrailsRemote struct {
+	// `backendRef` references the remote guardrails policy server.
+	// Supported types: `Service` and `Backend`.
+	// +required
+	BackendRef gwv1.BackendObjectReference `json:"backendRef"`
+
+	// `failureMode` controls behavior when the policy server is unreachable
+	// or returns an error. `FailOpen` allows the request; `FailClosed`
+	// (default) denies it.
+	// +optional
+	FailureMode FailureMode `json:"failureMode,omitempty"`
+
+	// `metadata` is static or CEL-evaluated context surfaced to the policy
+	// server as fields of the `metadata_context` google.protobuf.Struct,
+	// keyed by config key. Values are CEL expressions.
+	// +optional
+	// +kubebuilder:validation:MaxProperties=64
+	Metadata map[string]CELExpression `json:"metadata,omitempty"`
+
+	// `allowedRequestHeaders` lists the incoming request headers forwarded to
+	// the policy server in `McpRequest.headers`. If empty, all headers and
+	// pseudo-headers (`:authority`, `:method`, ...) are forwarded. Matching is
+	// case-insensitive.
+	// +optional
+	// +listType=set
+	// +kubebuilder:validation:MaxItems=64
+	AllowedRequestHeaders []HeaderName `json:"allowedRequestHeaders,omitempty"`
+
+	// `disallowedRequestHeaders` lists header names never forwarded to the
+	// policy server, even if listed in `allowedRequestHeaders`. Matching is
+	// case-insensitive.
+	// +optional
+	// +listType=set
+	// +kubebuilder:validation:MaxItems=64
+	DisallowedRequestHeaders []HeaderName `json:"disallowedRequestHeaders,omitempty"`
 }
 
 type MCPAuthentication struct {
