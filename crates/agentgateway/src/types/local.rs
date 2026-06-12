@@ -502,6 +502,9 @@ pub struct LocalLLMModels {
 	/// In this mode, requests must be sent in the native format of the provider.
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	passthrough: Option<LocalLLMPassthrough>,
+	/// authorization configures HTTP authorization rules for requests to this model.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	authorization: Option<Authorization>,
 
 	// Policies
 	/// defaults allows setting default values for the request. If these are not present in the request body, they will be set.
@@ -2174,19 +2177,16 @@ request.path.endsWith(":streamRawPredict") || request.path.endsWith(":rawPredict
 	});
 
 	// Create model list route
-	let model_list_body = serde_json::json!({
-		"data": models
+	let model_list_entries = Arc::new(
+		models
 			.iter()
-			.map(|m| serde_json::json!({
-				"id": m.name,
-				"object": "model",
-				"created": startup_timestamp,
-				"owned_by": "openai"
-			}))
+			.map(|model| filters::AuthorizationFilteredModelListEntry {
+				id: model.name.clone(),
+				created: startup_timestamp,
+				authorization: model.authorization.clone(),
+			})
 			.collect::<Vec<_>>(),
-		"object": "list"
-	})
-	.to_string();
+	);
 
 	let model_list_inline_policies = vec![
 		TrafficPolicy::ResponseHeaderModifier(RequestPolicy::single(
@@ -2197,10 +2197,13 @@ request.path.endsWith(":streamRawPredict") || request.path.endsWith(":rawPredict
 			},
 		)),
 		TrafficPolicy::DirectResponse(RequestPolicy::single(filters::DirectResponse {
-			body: Bytes::copy_from_slice(model_list_body.as_bytes()),
+			body: Bytes::new(),
 			body_expression: None,
 			headers: Vec::new(),
 			status: ::http::StatusCode::OK,
+			authorization_filtered_model_list: Some(filters::AuthorizationFilteredModelList {
+				entries: model_list_entries,
+			}),
 		})),
 	];
 	let model_list_route = Route {
@@ -2464,10 +2467,13 @@ request.path.endsWith(":streamRawPredict") || request.path.endsWith(":rawPredict
 			})
 			.collect::<anyhow::Result<Vec<_>>>()?;
 
-		let model_route_inline_policies = vec![TrafficPolicy::AI(Arc::new(crate::llm::Policy {
+		let mut model_route_inline_policies = vec![TrafficPolicy::AI(Arc::new(crate::llm::Policy {
 			routes: llm_routes.into_iter().collect(),
 			..Default::default()
 		}))];
+		if let Some(p) = model_config.authorization.clone() {
+			model_route_inline_policies.push(TrafficPolicy::Authorization(p));
+		}
 
 		let model_route = Route {
 			key: route_key.clone(),
@@ -2522,6 +2528,7 @@ request.path.endsWith(":streamRawPredict") || request.path.endsWith(":rawPredict
 			)?)),
 			headers: Vec::new(),
 			status: ::http::StatusCode::NOT_FOUND,
+			authorization_filtered_model_list: None,
 		})),
 	];
 	routes.push(Route {
