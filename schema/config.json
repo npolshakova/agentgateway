@@ -8769,6 +8769,17 @@
             }
           ]
         },
+        "guardrails": {
+          "description": "Guardrails to apply to every configured model.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PromptGuard"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "localRateLimit": {
           "description": "Local rate limits for incoming requests.",
           "type": "array",

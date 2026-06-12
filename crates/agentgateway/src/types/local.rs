@@ -1430,6 +1430,9 @@ where
 struct LocalLLMPolicy {
 	#[serde(flatten)]
 	gateway: LocalGatewayPolicy,
+	/// Guardrails to apply to every configured model.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	guardrails: Option<PromptGuard>,
 	/// Local rate limits for incoming requests.
 	#[serde(default)]
 	local_rate_limit: Vec<crate::http::localratelimit::RateLimit>,
@@ -2085,6 +2088,21 @@ fn llm_model_match_specificity(model_name: &str) -> usize {
 	model_name.chars().filter(|c| *c != '*').count()
 }
 
+fn merge_prompt_guards(
+	shared: Option<PromptGuard>,
+	model: Option<PromptGuard>,
+) -> Option<PromptGuard> {
+	match (shared, model) {
+		(None, None) => None,
+		(Some(guardrails), None) | (None, Some(guardrails)) => Some(guardrails),
+		(Some(mut shared), Some(model)) => {
+			shared.request.extend(model.request);
+			shared.response.extend(model.response);
+			Some(shared)
+		},
+	}
+}
+
 #[allow(deprecated)]
 async fn convert_llm_config(
 	client: client::Client,
@@ -2110,12 +2128,15 @@ async fn convert_llm_config(
 	let mut all_policies = vec![];
 	let mut all_backends = vec![];
 	let mut routes = Vec::new();
+	let mut shared_prompt_guard = None;
 	let (listener_gateway_policies, listener_route_policies) = if let Some(pol) = policies {
 		let LocalLLMPolicy {
 			gateway,
+			guardrails,
 			local_rate_limit,
 			remote_rate_limit,
 		} = pol;
+		shared_prompt_guard = guardrails;
 		let route_policies = split_policies(
 			client.clone(),
 			FilterOrPolicy {
@@ -2413,11 +2434,13 @@ request.path.endsWith(":streamRawPredict") || request.path.endsWith(":rawPredict
 				|e: crate::cel::Error| anyhow::anyhow!("health.unhealthyExpression: {}", e),
 			)?));
 		}
+		let prompt_guard =
+			merge_prompt_guards(shared_prompt_guard.clone(), model_config.guardrails.clone());
 		pols.push(BackendTrafficPolicy::AI(Arc::new(llm::Policy {
 			defaults: model_config.defaults.clone(),
 			overrides: model_config.overrides.clone(),
 			transformations: model_config.transformation.clone(),
-			prompt_guard: model_config.guardrails.clone(),
+			prompt_guard,
 			prompts: None,
 			model_aliases: Default::default(),
 			wildcard_patterns: Arc::new(vec![]),
