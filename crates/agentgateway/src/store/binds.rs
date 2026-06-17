@@ -482,6 +482,7 @@ pub struct LLMResponsePolicies {
 	pub remote_rate_limit: Option<http::remoteratelimit::LLMResponseAmend>,
 	pub request_traceparent: Option<HeaderValue>,
 	pub prompt_guard: Vec<ResponseGuard>,
+	pub streaming_prompt_guard_enabled: bool,
 }
 
 impl Default for Store {
@@ -2857,6 +2858,7 @@ mod tests {
 		}));
 		let prompt_guard_policy = BackendTrafficPolicy::AI(Arc::new(llm::Policy {
 			prompt_guard: Some(PromptGuard {
+				streaming: Default::default(),
 				request: vec![RequestGuard {
 					rejection: Default::default(),
 					kind: RequestGuardKind::Regex(RegexRules {
