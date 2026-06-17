@@ -1231,7 +1231,7 @@
           "description": "Return a configured response instead of forwarding the request.",
           "anyOf": [
             {
-              "$ref": "#/$defs/LocalExplicitOrConditional"
+              "$ref": "#/$defs/LocalExplicitOrConditional_DirectResponse"
             },
             {
               "type": "null"
@@ -1371,7 +1371,7 @@
           "description": "Remote rate limit checks for incoming requests.",
           "anyOf": [
             {
-              "$ref": "#/$defs/LocalExplicitOrConditional2"
+              "$ref": "#/$defs/LocalExplicitOrConditional_RemoteRateLimit"
             },
             {
               "type": "null"
@@ -1426,7 +1426,7 @@
           "description": "Authorize incoming requests by calling an external authorization service.",
           "anyOf": [
             {
-              "$ref": "#/$defs/LocalExplicitOrConditional3"
+              "$ref": "#/$defs/LocalExplicitOrConditional_ExtAuthz"
             },
             {
               "type": "null"
@@ -1437,7 +1437,7 @@
           "description": "Send request and response data to an external processing service.",
           "anyOf": [
             {
-              "$ref": "#/$defs/LocalExplicitOrConditional4"
+              "$ref": "#/$defs/LocalExplicitOrConditional_ExtProc"
             },
             {
               "type": "null"
@@ -1448,7 +1448,7 @@
           "description": "Modify request and response headers, bodies, or metadata.",
           "anyOf": [
             {
-              "$ref": "#/$defs/LocalExplicitOrConditional5"
+              "$ref": "#/$defs/LocalExplicitOrConditional_LocalTransformationConfig"
             },
             {
               "type": "null"
@@ -1483,7 +1483,7 @@
           "description": "Set request timeout limits.",
           "anyOf": [
             {
-              "$ref": "#/$defs/Policy2"
+              "$ref": "#/$defs/TimeoutPolicy"
             },
             {
               "type": "null"
@@ -1495,7 +1495,7 @@
           "description": "Retry matching failed upstream requests.",
           "anyOf": [
             {
-              "$ref": "#/$defs/Policy3"
+              "$ref": "#/$defs/RetryPolicy"
             },
             {
               "type": "null"
@@ -1790,24 +1790,24 @@
         "hostname"
       ]
     },
-    "LocalExplicitOrConditional": {
+    "LocalExplicitOrConditional_DirectResponse": {
       "anyOf": [
         {
-          "$ref": "#/$defs/LocalConditionalPolicies"
+          "$ref": "#/$defs/LocalConditionalPolicies_DirectResponse"
         },
         {
           "$ref": "#/$defs/DirectResponse"
         }
       ]
     },
-    "LocalConditionalPolicies": {
+    "LocalConditionalPolicies_DirectResponse": {
       "type": "object",
       "properties": {
         "conditional": {
           "description": "conditional policy entries. An entry without a condition must be the final fallback.",
           "type": "array",
           "items": {
-            "$ref": "#/$defs/LocalConditionalPolicy"
+            "$ref": "#/$defs/LocalConditionalPolicy_DirectResponse"
           }
         }
       },
@@ -1816,7 +1816,7 @@
         "conditional"
       ]
     },
-    "LocalConditionalPolicy": {
+    "LocalConditionalPolicy_DirectResponse": {
       "type": "object",
       "properties": {
         "condition": {
@@ -3590,7 +3590,7 @@
         },
         "failureMode": {
           "description": "Behavior when the webhook is unreachable or returns an error.\nDefaults to `failClosed`.",
-          "$ref": "#/$defs/FailureMode2"
+          "$ref": "#/$defs/WebhookFailureMode"
         }
       },
       "additionalProperties": false,
@@ -3598,7 +3598,7 @@
         "target"
       ]
     },
-    "FailureMode2": {
+    "WebhookFailureMode": {
       "description": "Defines how the proxy behaves when a webhook guardrail is unreachable or\nreturns an error.\n\nDefaults to `failClosed`. When failing closed, the error is propagated and\nthe LLM request is rejected. When failing open, the request is allowed\nthrough despite the webhook failure.",
       "oneOf": [
         {
@@ -4018,7 +4018,7 @@
     "LocalRateLimitPolicy": {
       "anyOf": [
         {
-          "$ref": "#/$defs/LocalConditionalPolicies2"
+          "$ref": "#/$defs/LocalConditionalPolicies_RateLimitSpec"
         },
         {
           "type": "array",
@@ -4028,14 +4028,14 @@
         }
       ]
     },
-    "LocalConditionalPolicies2": {
+    "LocalConditionalPolicies_RateLimitSpec": {
       "type": "object",
       "properties": {
         "conditional": {
           "description": "conditional policy entries. An entry without a condition must be the final fallback.",
           "type": "array",
           "items": {
-            "$ref": "#/$defs/LocalConditionalPolicy2"
+            "$ref": "#/$defs/LocalConditionalPolicy_RateLimitSpec"
           }
         }
       },
@@ -4044,7 +4044,7 @@
         "conditional"
       ]
     },
-    "LocalConditionalPolicy2": {
+    "LocalConditionalPolicy_RateLimitSpec": {
       "type": "object",
       "properties": {
         "condition": {
@@ -4133,24 +4133,24 @@
         "fillInterval"
       ]
     },
-    "LocalExplicitOrConditional2": {
+    "LocalExplicitOrConditional_RemoteRateLimit": {
       "anyOf": [
         {
-          "$ref": "#/$defs/LocalConditionalPolicies3"
+          "$ref": "#/$defs/LocalConditionalPolicies_RemoteRateLimit"
         },
         {
           "$ref": "#/$defs/RemoteRateLimit"
         }
       ]
     },
-    "LocalConditionalPolicies3": {
+    "LocalConditionalPolicies_RemoteRateLimit": {
       "type": "object",
       "properties": {
         "conditional": {
           "description": "conditional policy entries. An entry without a condition must be the final fallback.",
           "type": "array",
           "items": {
-            "$ref": "#/$defs/LocalConditionalPolicy3"
+            "$ref": "#/$defs/LocalConditionalPolicy_RemoteRateLimit"
           }
         }
       },
@@ -4159,7 +4159,7 @@
         "conditional"
       ]
     },
-    "LocalConditionalPolicy3": {
+    "LocalConditionalPolicy_RemoteRateLimit": {
       "type": "object",
       "properties": {
         "condition": {
@@ -4195,7 +4195,7 @@
         },
         "failureMode": {
           "description": "Behavior when the remote rate limit service is unavailable or returns an error.\nDefaults to failClosed, denying requests with a 500 status on service failure.",
-          "$ref": "#/$defs/FailureMode3",
+          "$ref": "#/$defs/RemoteRateLimitFailureMode",
           "default": "failClosed"
         }
       },
@@ -4325,7 +4325,7 @@
         "value"
       ]
     },
-    "FailureMode3": {
+    "RemoteRateLimitFailureMode": {
       "description": "Defines how the proxy behaves when the remote rate limit service is\nunavailable or returns an error.\n\nDefaults to `FailClosed`. When failing closed, a 500 Internal Server Error\nis returned when the service is unavailable. When failing open, requests are\nallowed through despite the service failure.\n\n# Configuration\n\nBoth camelCase (`failOpen`, `failClosed`) and PascalCase (`FailOpen`,\n`FailClosed`) are accepted in configuration files",
       "oneOf": [
         {
@@ -4374,7 +4374,7 @@
         },
         "failureMode": {
           "description": "Behavior when the remote rate limit service is unavailable or returns an error.\nDefaults to failClosed, denying requests with a 500 status on service failure.",
-          "$ref": "#/$defs/FailureMode3",
+          "$ref": "#/$defs/RemoteRateLimitFailureMode",
           "default": "failClosed"
         }
       },
@@ -4685,7 +4685,7 @@
         },
         "mode": {
           "description": "Controls whether requests must include valid Basic Auth credentials.",
-          "$ref": "#/$defs/Mode2",
+          "$ref": "#/$defs/BasicAuthMode",
           "default": "optional"
         },
         "authorizationLocation": {
@@ -4704,7 +4704,7 @@
         "htpasswd"
       ]
     },
-    "Mode2": {
+    "BasicAuthMode": {
       "description": "Validation mode for Basic Auth.",
       "oneOf": [
         {
@@ -4731,7 +4731,7 @@
         },
         "mode": {
           "description": "Controls whether requests must include a valid API key.",
-          "$ref": "#/$defs/Mode3",
+          "$ref": "#/$defs/APIKeyMode",
           "default": "optional"
         },
         "location": {
@@ -4769,7 +4769,7 @@
     "APIKey": {
       "type": "string"
     },
-    "Mode3": {
+    "APIKeyMode": {
       "description": "Validation mode for API key authentication.",
       "oneOf": [
         {
@@ -4789,24 +4789,24 @@
         }
       ]
     },
-    "LocalExplicitOrConditional3": {
+    "LocalExplicitOrConditional_ExtAuthz": {
       "anyOf": [
         {
-          "$ref": "#/$defs/LocalConditionalPolicies4"
+          "$ref": "#/$defs/LocalConditionalPolicies_ExtAuthz"
         },
         {
           "$ref": "#/$defs/ExtAuthz"
         }
       ]
     },
-    "LocalConditionalPolicies4": {
+    "LocalConditionalPolicies_ExtAuthz": {
       "type": "object",
       "properties": {
         "conditional": {
           "description": "conditional policy entries. An entry without a condition must be the final fallback.",
           "type": "array",
           "items": {
-            "$ref": "#/$defs/LocalConditionalPolicy4"
+            "$ref": "#/$defs/LocalConditionalPolicy_ExtAuthz"
           }
         }
       },
@@ -4815,7 +4815,7 @@
         "conditional"
       ]
     },
-    "LocalConditionalPolicy4": {
+    "LocalConditionalPolicy_ExtAuthz": {
       "type": "object",
       "properties": {
         "condition": {
@@ -4843,14 +4843,14 @@
         },
         "protocol": {
           "description": "Protocol used to call the authorization service. Use gRPC unless the service only supports HTTP.",
-          "$ref": "#/$defs/Protocol2",
+          "$ref": "#/$defs/ExtAuthzProtocol",
           "default": {
             "grpc": {}
           }
         },
         "failureMode": {
           "description": "Behavior when the authorization service is unavailable or returns an error.",
-          "$ref": "#/$defs/FailureMode4",
+          "$ref": "#/$defs/ExtAuthzFailureMode",
           "default": "deny"
         },
         "includeRequestHeaders": {
@@ -4939,7 +4939,7 @@
         }
       ]
     },
-    "Protocol2": {
+    "ExtAuthzProtocol": {
       "oneOf": [
         {
           "description": "Call the authorization service using the gRPC authorization protocol.",
@@ -5038,7 +5038,7 @@
         }
       ]
     },
-    "FailureMode4": {
+    "ExtAuthzFailureMode": {
       "oneOf": [
         {
           "description": "Allow the request when the authorization service cannot make a decision.",
@@ -5136,14 +5136,14 @@
         },
         "protocol": {
           "description": "Protocol used to call the authorization service. Use gRPC unless the service only supports HTTP.",
-          "$ref": "#/$defs/Protocol2",
+          "$ref": "#/$defs/ExtAuthzProtocol",
           "default": {
             "grpc": {}
           }
         },
         "failureMode": {
           "description": "Behavior when the authorization service is unavailable or returns an error.",
-          "$ref": "#/$defs/FailureMode4",
+          "$ref": "#/$defs/ExtAuthzFailureMode",
           "default": "deny"
         },
         "includeRequestHeaders": {
@@ -5233,24 +5233,24 @@
         }
       ]
     },
-    "LocalExplicitOrConditional4": {
+    "LocalExplicitOrConditional_ExtProc": {
       "anyOf": [
         {
-          "$ref": "#/$defs/LocalConditionalPolicies5"
+          "$ref": "#/$defs/LocalConditionalPolicies_ExtProc"
         },
         {
           "$ref": "#/$defs/ExtProc"
         }
       ]
     },
-    "LocalConditionalPolicies5": {
+    "LocalConditionalPolicies_ExtProc": {
       "type": "object",
       "properties": {
         "conditional": {
           "description": "conditional policy entries. An entry without a condition must be the final fallback.",
           "type": "array",
           "items": {
-            "$ref": "#/$defs/LocalConditionalPolicy5"
+            "$ref": "#/$defs/LocalConditionalPolicy_ExtProc"
           }
         }
       },
@@ -5259,7 +5259,7 @@
         "conditional"
       ]
     },
-    "LocalConditionalPolicy5": {
+    "LocalConditionalPolicy_ExtProc": {
       "type": "object",
       "properties": {
         "condition": {
@@ -5287,7 +5287,7 @@
         },
         "failureMode": {
           "description": "Behavior when the external processing service is unavailable or returns an error.",
-          "$ref": "#/$defs/FailureMode5",
+          "$ref": "#/$defs/ExtProcFailureMode",
           "default": "failClosed"
         },
         "metadataContext": {
@@ -5393,7 +5393,7 @@
         }
       ]
     },
-    "FailureMode5": {
+    "ExtProcFailureMode": {
       "oneOf": [
         {
           "description": "Reject the request when the external processing service fails.",
@@ -5516,7 +5516,7 @@
         },
         "failureMode": {
           "description": "Behavior when the external processing service is unavailable or returns an error.",
-          "$ref": "#/$defs/FailureMode5",
+          "$ref": "#/$defs/ExtProcFailureMode",
           "default": "failClosed"
         },
         "metadataContext": {
@@ -5623,24 +5623,24 @@
         }
       ]
     },
-    "LocalExplicitOrConditional5": {
+    "LocalExplicitOrConditional_LocalTransformationConfig": {
       "anyOf": [
         {
-          "$ref": "#/$defs/LocalConditionalPolicies6"
+          "$ref": "#/$defs/LocalConditionalPolicies_LocalTransformationConfig"
         },
         {
           "$ref": "#/$defs/LocalTransformationConfig"
         }
       ]
     },
-    "LocalConditionalPolicies6": {
+    "LocalConditionalPolicies_LocalTransformationConfig": {
       "type": "object",
       "properties": {
         "conditional": {
           "description": "conditional policy entries. An entry without a condition must be the final fallback.",
           "type": "array",
           "items": {
-            "$ref": "#/$defs/LocalConditionalPolicy6"
+            "$ref": "#/$defs/LocalConditionalPolicy_LocalTransformationConfig"
           }
         }
       },
@@ -5649,7 +5649,7 @@
         "conditional"
       ]
     },
-    "LocalConditionalPolicy6": {
+    "LocalConditionalPolicy_LocalTransformationConfig": {
       "type": "object",
       "properties": {
         "condition": {
@@ -5746,7 +5746,7 @@
       },
       "additionalProperties": false
     },
-    "Policy2": {
+    "TimeoutPolicy": {
       "type": "object",
       "properties": {
         "requestTimeout": {
@@ -5766,7 +5766,7 @@
       },
       "additionalProperties": false
     },
-    "Policy3": {
+    "RetryPolicy": {
       "type": "object",
       "properties": {
         "attempts": {
@@ -5988,7 +5988,7 @@
           "description": "Behavior when one or more MCP targets fail to initialize or fail during fanout.\nDefaults to `failClosed`.",
           "anyOf": [
             {
-              "$ref": "#/$defs/FailureMode6"
+              "$ref": "#/$defs/McpBackendFailureMode"
             },
             {
               "type": "null"
@@ -6316,7 +6316,7 @@
         "conditional"
       ]
     },
-    "FailureMode6": {
+    "McpBackendFailureMode": {
       "oneOf": [
         {
           "description": "Fail the entire session if any target fails to initialize or any\nupstream fails during a fanout. This is the default and matches\ncurrent behavior.",
@@ -6410,7 +6410,7 @@
           "type": "object",
           "properties": {
             "openAI": {
-              "$ref": "#/$defs/Provider"
+              "$ref": "#/$defs/OpenAIProvider"
             }
           },
           "required": [
@@ -6422,7 +6422,7 @@
           "type": "object",
           "properties": {
             "gemini": {
-              "$ref": "#/$defs/Provider2"
+              "$ref": "#/$defs/GeminiProvider"
             }
           },
           "required": [
@@ -6434,7 +6434,7 @@
           "type": "object",
           "properties": {
             "vertex": {
-              "$ref": "#/$defs/Provider3"
+              "$ref": "#/$defs/VertexProvider"
             }
           },
           "required": [
@@ -6446,7 +6446,7 @@
           "type": "object",
           "properties": {
             "anthropic": {
-              "$ref": "#/$defs/Provider4"
+              "$ref": "#/$defs/AnthropicProvider"
             }
           },
           "required": [
@@ -6458,7 +6458,7 @@
           "type": "object",
           "properties": {
             "bedrock": {
-              "$ref": "#/$defs/Provider5"
+              "$ref": "#/$defs/BedrockProvider"
             }
           },
           "required": [
@@ -6470,7 +6470,7 @@
           "type": "object",
           "properties": {
             "azure": {
-              "$ref": "#/$defs/Provider6"
+              "$ref": "#/$defs/AzureProvider"
             }
           },
           "required": [
@@ -6482,7 +6482,7 @@
           "type": "object",
           "properties": {
             "copilot": {
-              "$ref": "#/$defs/Provider7"
+              "$ref": "#/$defs/CopilotProvider"
             }
           },
           "required": [
@@ -6494,7 +6494,7 @@
           "type": "object",
           "properties": {
             "custom": {
-              "$ref": "#/$defs/Provider8"
+              "$ref": "#/$defs/CustomProvider"
             }
           },
           "required": [
@@ -6504,7 +6504,7 @@
         }
       ]
     },
-    "Provider": {
+    "OpenAIProvider": {
       "type": "object",
       "properties": {
         "model": {
@@ -6516,7 +6516,7 @@
       },
       "additionalProperties": false
     },
-    "Provider2": {
+    "GeminiProvider": {
       "type": "object",
       "properties": {
         "model": {
@@ -6527,7 +6527,7 @@
         }
       }
     },
-    "Provider3": {
+    "VertexProvider": {
       "type": "object",
       "properties": {
         "model": {
@@ -6551,7 +6551,7 @@
         "projectId"
       ]
     },
-    "Provider4": {
+    "AnthropicProvider": {
       "type": "object",
       "properties": {
         "model": {
@@ -6563,7 +6563,7 @@
       },
       "additionalProperties": false
     },
-    "Provider5": {
+    "BedrockProvider": {
       "type": "object",
       "properties": {
         "model": {
@@ -6592,7 +6592,7 @@
         "region"
       ]
     },
-    "Provider6": {
+    "AzureProvider": {
       "type": "object",
       "properties": {
         "model": {
@@ -6649,7 +6649,7 @@
         }
       ]
     },
-    "Provider7": {
+    "CopilotProvider": {
       "type": "object",
       "properties": {
         "model": {
@@ -6661,7 +6661,7 @@
       },
       "additionalProperties": false
     },
-    "Provider8": {
+    "CustomProvider": {
       "type": "object",
       "properties": {
         "model": {
@@ -7273,7 +7273,7 @@
           "description": "Authorize incoming requests by calling an external authorization service.",
           "anyOf": [
             {
-              "$ref": "#/$defs/LocalExplicitOrConditional3"
+              "$ref": "#/$defs/LocalExplicitOrConditional_ExtAuthz"
             },
             {
               "type": "null"
@@ -7284,7 +7284,7 @@
           "description": "Send request and response data to an external processing service.",
           "anyOf": [
             {
-              "$ref": "#/$defs/LocalExplicitOrConditional4"
+              "$ref": "#/$defs/LocalExplicitOrConditional_ExtProc"
             },
             {
               "type": "null"
@@ -7307,7 +7307,7 @@
           "description": "Modify request and response headers, bodies, or metadata.",
           "anyOf": [
             {
-              "$ref": "#/$defs/LocalExplicitOrConditional5"
+              "$ref": "#/$defs/LocalExplicitOrConditional_LocalTransformationConfig"
             },
             {
               "type": "null"
@@ -7356,7 +7356,7 @@
           "description": "Settings for handling incoming HTTP requests.",
           "anyOf": [
             {
-              "$ref": "#/$defs/HTTP2"
+              "$ref": "#/$defs/FrontendHTTP"
             },
             {
               "type": "null"
@@ -7380,7 +7380,7 @@
           "description": "Settings for handling incoming TCP connections.",
           "anyOf": [
             {
-              "$ref": "#/$defs/TCP2"
+              "$ref": "#/$defs/FrontendTCP"
             },
             {
               "type": "null"
@@ -7493,7 +7493,7 @@
         }
       ]
     },
-    "HTTP2": {
+    "FrontendHTTP": {
       "type": "object",
       "properties": {
         "maxBufferSize": {
@@ -7674,7 +7674,7 @@
       },
       "additionalProperties": false
     },
-    "TCP2": {
+    "FrontendTCP": {
       "type": "object",
       "properties": {
         "keepalives": {
@@ -8635,7 +8635,7 @@
           "type": "object",
           "properties": {
             "custom": {
-              "$ref": "#/$defs/Provider8"
+              "$ref": "#/$defs/CustomProvider"
             }
           },
           "required": [
@@ -9212,7 +9212,7 @@
           "description": "Authorize incoming requests by calling an external authorization service.",
           "anyOf": [
             {
-              "$ref": "#/$defs/LocalExplicitOrConditional3"
+              "$ref": "#/$defs/LocalExplicitOrConditional_ExtAuthz"
             },
             {
               "type": "null"
@@ -9223,7 +9223,7 @@
           "description": "Send request and response data to an external processing service.",
           "anyOf": [
             {
-              "$ref": "#/$defs/LocalExplicitOrConditional4"
+              "$ref": "#/$defs/LocalExplicitOrConditional_ExtProc"
             },
             {
               "type": "null"
@@ -9246,7 +9246,7 @@
           "description": "Modify request and response headers, bodies, or metadata.",
           "anyOf": [
             {
-              "$ref": "#/$defs/LocalExplicitOrConditional5"
+              "$ref": "#/$defs/LocalExplicitOrConditional_LocalTransformationConfig"
             },
             {
               "type": "null"
@@ -9344,7 +9344,7 @@
           "description": "Behavior when one or more MCP targets fail to initialize or fail during fanout.\nDefaults to `failClosed`.",
           "anyOf": [
             {
-              "$ref": "#/$defs/FailureMode6"
+              "$ref": "#/$defs/McpBackendFailureMode"
             },
             {
               "type": "null"
