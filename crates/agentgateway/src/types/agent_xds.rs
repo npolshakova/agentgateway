@@ -2885,6 +2885,10 @@ fn tracing_config_from_proto(
 		.client_sampling
 		.as_ref()
 		.map(|s| permissive_cel_expression_arc(diagnostics, "frontend.tracing.clientSampling", s));
+	let filter = t
+		.filter
+		.as_ref()
+		.map(|s| permissive_cel_expression_arc(diagnostics, "frontend.tracing.filter", s));
 
 	let path = t.path.clone().unwrap_or_else(|| "/v1/traces".to_string());
 
@@ -2906,8 +2910,7 @@ fn tracing_config_from_proto(
 		remove: t.remove.clone(),
 		random_sampling,
 		client_sampling,
-		// Not supported inline from xDS
-		filter: None,
+		filter,
 		path,
 		protocol,
 	}
