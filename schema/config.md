@@ -1524,6 +1524,7 @@
 |`binds[].listeners[].routes[].policies.apiKey.keys`|[]object|API keys that are accepted by this policy.|
 |`binds[].listeners[].routes[].policies.apiKey.keys[].key`|string|API key value to accept.|
 |`binds[].listeners[].routes[].policies.apiKey.keys[].metadata`|any|Optional metadata attached to requests authenticated with this key.|
+|`binds[].listeners[].routes[].policies.apiKey.keys[].keyHash`|string|SHA-256 hash of an API key value to accept, in `sha256:<hex>` format.|
 |`binds[].listeners[].routes[].policies.apiKey.mode`|enum|Controls whether requests must include a valid API key.<br>Possible values: `strict`, `optional`, `permissive`.|
 |`binds[].listeners[].routes[].policies.apiKey.location`|object|Where to read the API key from in incoming requests.<br>Exactly one of header, queryParameter, cookie, or expression may be set.|
 |`binds[].listeners[].routes[].policies.apiKey.location.header`|object|Read the credential from an HTTP header.|
@@ -6682,6 +6683,7 @@
 |`binds[].listeners[].policies.apiKey.keys`|[]object|API keys that are accepted by this policy.|
 |`binds[].listeners[].policies.apiKey.keys[].key`|string|API key value to accept.|
 |`binds[].listeners[].policies.apiKey.keys[].metadata`|any|Optional metadata attached to requests authenticated with this key.|
+|`binds[].listeners[].policies.apiKey.keys[].keyHash`|string|SHA-256 hash of an API key value to accept, in `sha256:<hex>` format.|
 |`binds[].listeners[].policies.apiKey.mode`|enum|Controls whether requests must include a valid API key.<br>Possible values: `strict`, `optional`, `permissive`.|
 |`binds[].listeners[].policies.apiKey.location`|object|Where to read the API key from in incoming requests.<br>Exactly one of header, queryParameter, cookie, or expression may be set.|
 |`binds[].listeners[].policies.apiKey.location.header`|object|Read the credential from an HTTP header.|
@@ -8517,6 +8519,7 @@
 |`policies[].policy.apiKey.keys`|[]object|API keys that are accepted by this policy.|
 |`policies[].policy.apiKey.keys[].key`|string|API key value to accept.|
 |`policies[].policy.apiKey.keys[].metadata`|any|Optional metadata attached to requests authenticated with this key.|
+|`policies[].policy.apiKey.keys[].keyHash`|string|SHA-256 hash of an API key value to accept, in `sha256:<hex>` format.|
 |`policies[].policy.apiKey.mode`|enum|Controls whether requests must include a valid API key.<br>Possible values: `strict`, `optional`, `permissive`.|
 |`policies[].policy.apiKey.location`|object|Where to read the API key from in incoming requests.<br>Exactly one of header, queryParameter, cookie, or expression may be set.|
 |`policies[].policy.apiKey.location.header`|object|Read the credential from an HTTP header.|
@@ -14456,6 +14459,7 @@
 |`routeGroups[].routes[].policies.apiKey.keys`|[]object|API keys that are accepted by this policy.|
 |`routeGroups[].routes[].policies.apiKey.keys[].key`|string|API key value to accept.|
 |`routeGroups[].routes[].policies.apiKey.keys[].metadata`|any|Optional metadata attached to requests authenticated with this key.|
+|`routeGroups[].routes[].policies.apiKey.keys[].keyHash`|string|SHA-256 hash of an API key value to accept, in `sha256:<hex>` format.|
 |`routeGroups[].routes[].policies.apiKey.mode`|enum|Controls whether requests must include a valid API key.<br>Possible values: `strict`, `optional`, `permissive`.|
 |`routeGroups[].routes[].policies.apiKey.location`|object|Where to read the API key from in incoming requests.<br>Exactly one of header, queryParameter, cookie, or expression may be set.|
 |`routeGroups[].routes[].policies.apiKey.location.header`|object|Read the credential from an HTTP header.|
@@ -20683,6 +20687,7 @@
 |`llm.policies.apiKey.keys`|[]object|API keys that are accepted by this policy.|
 |`llm.policies.apiKey.keys[].key`|string|API key value to accept.|
 |`llm.policies.apiKey.keys[].metadata`|any|Optional metadata attached to requests authenticated with this key.|
+|`llm.policies.apiKey.keys[].keyHash`|string|SHA-256 hash of an API key value to accept, in `sha256:<hex>` format.|
 |`llm.policies.apiKey.mode`|enum|Controls whether requests must include a valid API key.<br>Possible values: `strict`, `optional`, `permissive`.|
 |`llm.policies.apiKey.location`|object|Where to read the API key from in incoming requests.<br>Exactly one of header, queryParameter, cookie, or expression may be set.|
 |`llm.policies.apiKey.location.header`|object|Read the credential from an HTTP header.|
@@ -23280,6 +23285,7 @@
 |`mcp.policies.apiKey.keys`|[]object|API keys that are accepted by this policy.|
 |`mcp.policies.apiKey.keys[].key`|string|API key value to accept.|
 |`mcp.policies.apiKey.keys[].metadata`|any|Optional metadata attached to requests authenticated with this key.|
+|`mcp.policies.apiKey.keys[].keyHash`|string|SHA-256 hash of an API key value to accept, in `sha256:<hex>` format.|
 |`mcp.policies.apiKey.mode`|enum|Controls whether requests must include a valid API key.<br>Possible values: `strict`, `optional`, `permissive`.|
 |`mcp.policies.apiKey.location`|object|Where to read the API key from in incoming requests.<br>Exactly one of header, queryParameter, cookie, or expression may be set.|
 |`mcp.policies.apiKey.location.header`|object|Read the credential from an HTTP header.|
