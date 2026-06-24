@@ -2086,6 +2086,7 @@
 |`binds[].listeners[].routes[].backends[].service.port`|integer||
 |`binds[].listeners[].routes[].backends[].backend`|string||
 |`binds[].listeners[].routes[].backends[].host`|string||
+|`binds[].listeners[].routes[].backends[].internal`|string|Route to the in-process admin service instead of a network upstream.<br>Selects how an internal backend maps proxy requests to the admin API.|
 |`binds[].listeners[].routes[].backends[].dynamic`|object||
 |`binds[].listeners[].routes[].backends[].mcp`|object||
 |`binds[].listeners[].routes[].backends[].mcp.targets`|[]object||
@@ -9076,6 +9077,7 @@
 |`services`|[]object||
 |`backends`|[]object||
 |`backends[].host`|string||
+|`backends[].internal`|string|Route to the in-process admin service instead of a network upstream.<br>Selects how an internal backend maps proxy requests to the admin API.|
 |`backends[].mcp`|object||
 |`backends[].mcp.targets`|[]object||
 |`backends[].mcp.targets[].sse`|object||
@@ -15016,6 +15018,7 @@
 |`routeGroups[].routes[].backends[].service.port`|integer||
 |`routeGroups[].routes[].backends[].backend`|string||
 |`routeGroups[].routes[].backends[].host`|string||
+|`routeGroups[].routes[].backends[].internal`|string|Route to the in-process admin service instead of a network upstream.<br>Selects how an internal backend maps proxy requests to the admin API.|
 |`routeGroups[].routes[].backends[].dynamic`|object||
 |`routeGroups[].routes[].backends[].mcp`|object||
 |`routeGroups[].routes[].backends[].mcp.targets`|[]object||
