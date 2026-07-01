@@ -6992,6 +6992,14 @@ spec:
                       request:
                         description: Request body buffering settings.
                         properties:
+                          failureMode:
+                            description: |-
+                              Behavior when the request or response body exceeds the buffer limit.
+                              If unset, defaults to FailClosed, returning 413 for oversized requests and 502 for oversized responses.
+                            enum:
+                            - FailClosed
+                            - FailOpen
+                            type: string
                           maxBytes:
                             anyOf:
                             - type: integer
@@ -7012,6 +7020,14 @@ spec:
                       response:
                         description: Response body buffering settings.
                         properties:
+                          failureMode:
+                            description: |-
+                              Behavior when the request or response body exceeds the buffer limit.
+                              If unset, defaults to FailClosed, returning 413 for oversized requests and 502 for oversized responses.
+                            enum:
+                            - FailClosed
+                            - FailOpen
+                            type: string
                           maxBytes:
                             anyOf:
                             - type: integer

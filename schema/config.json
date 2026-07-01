@@ -6109,9 +6109,20 @@
           ],
           "format": "uint",
           "minimum": 0
+        },
+        "failureMode": {
+          "$ref": "#/$defs/FailureMode2",
+          "default": "failClosed"
         }
       },
       "additionalProperties": false
+    },
+    "FailureMode2": {
+      "type": "string",
+      "enum": [
+        "failClosed",
+        "failOpen"
+      ]
     },
     "TimeoutPolicy": {
       "type": "object",

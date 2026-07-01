@@ -1277,6 +1277,10 @@ type BufferBody struct {
 	// +optional
 	// If unset, defaults to the global proxy setting, which defaults to 2Mi.
 	MaxBytes *ByteSize `json:"maxBytes,omitempty"`
+	// Behavior when the request or response body exceeds the buffer limit.
+	// +optional
+	// If unset, defaults to FailClosed, returning 413 for oversized requests and 502 for oversized responses.
+	FailureMode FailureMode `json:"failureMode,omitempty"`
 }
 
 // +kubebuilder:validation:AtLeastOneFieldSet
