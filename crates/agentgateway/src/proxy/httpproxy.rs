@@ -2395,6 +2395,7 @@ async fn make_backend_call(
 								input_tokens: None,
 								params: Default::default(),
 								prompt: Default::default(),
+								provider_state: None,
 							})
 						});
 					}
@@ -3088,6 +3089,7 @@ mod tests {
 			streaming: true,
 			params: Default::default(),
 			prompt: None,
+			provider_state: None,
 		}
 	}
 

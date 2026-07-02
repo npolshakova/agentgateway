@@ -175,6 +175,15 @@ pub struct LLMRequest {
 	pub streaming: bool,
 	pub params: LLMRequestParams,
 	pub prompt: Option<Arc<Vec<SimpleChatCompletionMessage>>>,
+	pub provider_state: Option<ProviderState>,
+}
+
+#[derive(Debug, Clone)]
+pub enum ProviderState {
+	Bedrock {
+		/// Reverse mapping from Bedrock-safe tool names back to client tool names.
+		tool_names: Arc<conversion::bedrock::BedrockToolNameMap>,
+	},
 }
 
 /// Whether an upstream's reported `input_tokens` already includes cached tokens.
@@ -1139,7 +1148,6 @@ impl AIProvider {
 		{
 			llm_info.prompt = Some(req.get_messages().into());
 		}
-		parts.extensions.insert(llm_info.clone());
 
 		let request_model = llm_info.request_model.as_str();
 		let new_request = if original_format == InputFormat::CountTokens {
@@ -1221,13 +1229,23 @@ impl AIProvider {
 					}
 				},
 				AIProvider::Anthropic(_) => req.to_anthropic()?,
-				AIProvider::Bedrock(p) => req.to_bedrock(
-					p,
-					Some(&parts.headers),
-					policies.and_then(|p| p.prompt_caching.as_ref()),
-				)?,
+				AIProvider::Bedrock(p) => {
+					let bedrock = req.to_bedrock(
+						p,
+						Some(&parts.headers),
+						policies.and_then(|p| p.prompt_caching.as_ref()),
+					)?;
+					if !bedrock.tool_name_map.is_empty() {
+						llm_info.provider_state = Some(ProviderState::Bedrock {
+							tool_names: Arc::new(bedrock.tool_name_map),
+						});
+					}
+					bedrock.body
+				},
 			}
 		};
+
+		parts.extensions.insert(llm_info.clone());
 
 		parts.headers.remove(header::CONTENT_LENGTH);
 		let req = Request::from_parts(parts, Body::from(new_request));
@@ -1630,13 +1648,25 @@ impl AIProvider {
 				conversion::messages::from_completions::translate_response(bytes)
 			},
 			(AIProvider::Bedrock(_), InputFormat::Completions) => {
-				conversion::bedrock::from_completions::translate_response(bytes, &req.request_model)
+				conversion::bedrock::from_completions::translate_response(
+					bytes,
+					&req.request_model,
+					bedrock_tool_name_map(req),
+				)
 			},
 			(AIProvider::Bedrock(_), InputFormat::Messages) => {
-				conversion::bedrock::from_messages::translate_response(bytes, &req.request_model)
+				conversion::bedrock::from_messages::translate_response(
+					bytes,
+					&req.request_model,
+					bedrock_tool_name_map(req),
+				)
 			},
 			(AIProvider::Bedrock(_), InputFormat::Responses) => {
-				conversion::bedrock::from_responses::translate_response(bytes, &req.request_model)
+				conversion::bedrock::from_responses::translate_response(
+					bytes,
+					&req.request_model,
+					bedrock_tool_name_map(req),
+				)
 			},
 			(AIProvider::Vertex(p), InputFormat::Completions) => {
 				if p.is_anthropic_model(Some(&req.request_model)) {
@@ -1695,6 +1725,7 @@ impl AIProvider {
 		let model = req.request_model.clone();
 		let input_format = req.input_format;
 		let native_format = req.native_format;
+		let bedrock_tool_name_map = bedrock_tool_name_map(&req).cloned();
 		// Store an empty response, as we stream in info we will parse into it
 		let llmresp = llm::LLMInfo {
 			request: req,
@@ -1855,12 +1886,21 @@ impl AIProvider {
 			},
 			(AIProvider::Bedrock(_), InputFormat::Completions, _) => {
 				let msg = conversion::bedrock::message_id(&resp);
+				let tool_name_map = bedrock_tool_name_map.clone();
 				resp.map(move |b| {
-					conversion::bedrock::from_completions::translate_stream(b, buffer, logger, &model, &msg)
+					conversion::bedrock::from_completions::translate_stream(
+						b,
+						buffer,
+						logger,
+						&model,
+						&msg,
+						tool_name_map,
+					)
 				})
 			},
 			(AIProvider::Bedrock(_), InputFormat::Messages, _) => {
 				let msg = conversion::bedrock::message_id(&resp);
+				let tool_name_map = bedrock_tool_name_map.clone();
 				resp.map(move |b| {
 					conversion::bedrock::from_messages::translate_stream(
 						b,
@@ -1869,13 +1909,22 @@ impl AIProvider {
 						&model,
 						&msg,
 						include_completion_in_log,
+						tool_name_map,
 					)
 				})
 			},
 			(AIProvider::Bedrock(_), InputFormat::Responses, _) => {
 				let msg = conversion::bedrock::message_id(&resp);
+				let tool_name_map = bedrock_tool_name_map.clone();
 				resp.map(move |b| {
-					conversion::bedrock::from_responses::translate_stream(b, buffer, logger, &model, &msg)
+					conversion::bedrock::from_responses::translate_stream(
+						b,
+						buffer,
+						logger,
+						&model,
+						&msg,
+						tool_name_map,
+					)
 				})
 			},
 			(_, InputFormat::Realtime, _) => {
@@ -2115,6 +2164,13 @@ impl AIProvider {
 				"this provider and format is not supported"
 			))),
 		}
+	}
+}
+
+fn bedrock_tool_name_map(req: &LLMRequest) -> Option<&conversion::bedrock::BedrockToolNameMap> {
+	match &req.provider_state {
+		Some(ProviderState::Bedrock { tool_names }) => Some(tool_names.as_ref()),
+		_ => None,
 	}
 }
 

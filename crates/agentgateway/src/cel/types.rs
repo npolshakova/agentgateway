@@ -1424,6 +1424,7 @@ impl From<llm::LLMRequest> for LLMContext {
 			streaming,
 			params,
 			prompt,
+			provider_state: _,
 		} = info;
 		LLMContext {
 			streaming,
