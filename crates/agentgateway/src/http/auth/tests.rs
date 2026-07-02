@@ -407,3 +407,105 @@ async fn test_aws_sign_request_implicit_with_extension() {
 
 	result.expect("signing failed");
 }
+
+#[test]
+fn extract_subject_token_falls_back_to_claims_for_authorization_header() {
+	// Default source is the Authorization Bearer header; a JWT policy stripped it,
+	// leaving only the Claims extension.
+	let mut req = ::http::Request::builder()
+		.uri("http://example/")
+		.body(crate::http::Body::empty())
+		.unwrap();
+	req.extensions_mut().insert(Claims {
+		inner: Map::new(),
+		jwt: SecretString::from("claims-jwt"),
+	});
+
+	let token = oauth::extract_subject_token(&AuthorizationLocation::default(), &req);
+	assert_eq!(token.as_deref(), Some("claims-jwt"));
+}
+
+#[test]
+fn extract_subject_token_uses_authorization_header_without_claims() {
+	let req = ::http::Request::builder()
+		.uri("http://example/")
+		.header(::http::header::AUTHORIZATION, "Bearer header-tok")
+		.body(crate::http::Body::empty())
+		.unwrap();
+
+	let token = oauth::extract_subject_token(&AuthorizationLocation::default(), &req);
+	assert_eq!(token.as_deref(), Some("header-tok"));
+}
+
+#[test]
+fn extract_subject_token_prefers_authorization_header_over_claims() {
+	let mut req = ::http::Request::builder()
+		.uri("http://example/")
+		.header(::http::header::AUTHORIZATION, "Bearer header-tok")
+		.body(crate::http::Body::empty())
+		.unwrap();
+	req.extensions_mut().insert(Claims {
+		inner: Map::new(),
+		jwt: SecretString::from("claims-jwt"),
+	});
+
+	let token = oauth::extract_subject_token(&AuthorizationLocation::default(), &req);
+	assert_eq!(token.as_deref(), Some("header-tok"));
+}
+
+#[test]
+fn extract_subject_token_custom_source_prefers_configured_location_over_claims() {
+	let mut req = ::http::Request::builder()
+		.uri("http://example/")
+		.header("x-subject", "custom-tok")
+		.body(crate::http::Body::empty())
+		.unwrap();
+	req.extensions_mut().insert(Claims {
+		inner: Map::new(),
+		jwt: SecretString::from("claims-jwt"),
+	});
+	let source = AuthorizationLocation::Header {
+		name: ::http::HeaderName::from_static("x-subject"),
+		prefix: None,
+	};
+
+	let token = oauth::extract_subject_token(&source, &req);
+	assert_eq!(token.as_deref(), Some("custom-tok"));
+}
+
+#[test]
+fn extract_subject_token_custom_header_falls_back_to_claims() {
+	let mut req = ::http::Request::builder()
+		.uri("http://example/")
+		.body(crate::http::Body::empty())
+		.unwrap();
+	req.extensions_mut().insert(Claims {
+		inner: Map::new(),
+		jwt: SecretString::from("claims-jwt"),
+	});
+	let source = AuthorizationLocation::Header {
+		name: ::http::HeaderName::from_static("x-subject"),
+		prefix: None,
+	};
+
+	let token = oauth::extract_subject_token(&source, &req);
+	assert_eq!(token.as_deref(), Some("claims-jwt"));
+}
+
+#[test]
+fn extract_subject_token_expression_falls_back_to_claims() {
+	let mut req = ::http::Request::builder()
+		.uri("http://example/")
+		.body(crate::http::Body::empty())
+		.unwrap();
+	req.extensions_mut().insert(Claims {
+		inner: Map::new(),
+		jwt: SecretString::from("claims-jwt"),
+	});
+	let source = AuthorizationLocation::Expression(std::sync::Arc::new(
+		crate::cel::Expression::new_strict(r#"request.headers["x-subject"]"#).unwrap(),
+	));
+
+	let token = oauth::extract_subject_token(&source, &req);
+	assert_eq!(token.as_deref(), Some("claims-jwt"));
+}
