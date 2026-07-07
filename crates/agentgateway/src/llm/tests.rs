@@ -573,6 +573,7 @@ mod response {
 		// reasoning_signature on the completions path), `reasoning_unsigned` does not.
 		("reasoning", ALL_BEDROCK),
 		("reasoning_unsigned", ALL_BEDROCK),
+		("cache_write", &[BEDROCK_TO_COMPLETIONS]),
 	];
 	const BEDROCK_STREAM_RESPONSES: &[(&str, &[&str])] = &[
 		("basic", ALL_BEDROCK),
