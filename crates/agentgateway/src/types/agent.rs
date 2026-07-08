@@ -10,7 +10,6 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use anyhow::anyhow;
 use hashbrown::Equivalent;
 use heck::ToSnakeCase;
-use macro_rules_attribute::apply;
 use once_cell::sync::Lazy;
 use openapiv3::OpenAPI;
 use prometheus_client::encoding::EncodeLabelValue;
@@ -39,7 +38,7 @@ use crate::transport::tls;
 use crate::types::discovery::{NamespacedHostname, Service};
 use crate::types::local::{InternalBackend, SimpleLocalBackend, TargetOrUri};
 use crate::types::{agent, backend, frontend};
-use crate::*;
+use crate::{apply, *};
 
 #[apply(schema_ser_schema!)]
 pub struct Bind {
