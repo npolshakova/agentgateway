@@ -2406,6 +2406,16 @@ async fn make_backend_call(
 				},
 			}
 		} else {
+			// Late backend auth (AWS signing) runs before the snapshot: the snapshot
+			// should capture the final (signed) headers, and AWS session tag
+			// expressions need the extensions (JWT claims, etc.) the snapshot clears.
+			apply_auto_hostname(&mut req, &backend_call.target)?;
+			auth::apply_late_backend_auth(
+				backend_call.backend_policies.backend_auth.as_ref(),
+				&mut req,
+			)
+			.assert_size::<{ 2 * 1024 }>()
+			.await?;
 			(
 				// Clearing extensions is fine; the HTTP codepath doesn't require usage after this point.
 				req.take_and_snapshot_clearing_extensions(log.as_mut())?,
@@ -2415,15 +2425,15 @@ async fn make_backend_call(
 		};
 	if let Some(llm) = &backend_call.backend_policies.llm_provider {
 		llm.provider.strip_browser_cors_headers(&mut req);
+		apply_auto_hostname(&mut req, &backend_call.target)?;
+		// Some auth types (AWS) need to be applied after all request processing
+		auth::apply_late_backend_auth(
+			backend_call.backend_policies.backend_auth.as_ref(),
+			&mut req,
+		)
+		.assert_size::<{ 2 * 1024 }>()
+		.await?;
 	}
-	apply_auto_hostname(&mut req, &backend_call.target)?;
-	// Some auth types (AWS) need to be applied after all request processing
-	auth::apply_late_backend_auth(
-		backend_call.backend_policies.backend_auth.as_ref(),
-		&mut req,
-	)
-	.assert_size::<{ 2 * 1024 }>()
-	.await?;
 	if let Backend::Internal(_, internal) = backend {
 		apply_internal_path(&mut req, internal).map_err(ProxyError::Processing)?;
 		let admin = inputs.admin.clone().ok_or_else(|| {
