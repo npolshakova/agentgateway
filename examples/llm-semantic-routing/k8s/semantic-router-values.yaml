@@ -3,6 +3,10 @@ router:
   skipProcessing:
     enabled: true
 
+# The model runtime is configured below. Do not inherit the chart's qwen3
+# embedding override, which conflicts with the configured mmbert model.
+env: []
+
 args:
 - --secure=false
 
@@ -77,6 +81,9 @@ config:
       tags: [premium, expensive, deep-reasoning]
 
     signals:
+      # This coding policy does not use domain signals. Set an empty list to
+      # avoid inheriting the chart's general-purpose domain defaults.
+      domains: []
       keywords:
       - name: immediate_response_probe
         operator: OR
