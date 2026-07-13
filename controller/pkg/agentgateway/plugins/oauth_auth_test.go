@@ -18,18 +18,27 @@ import (
 
 func oauthTestPolicyCtx(t *testing.T, secrets ...*corev1.Secret) PolicyCtx {
 	t.Helper()
+	return oauthTestPolicyCtxWithBackend(t, func(krt.HandlerContext, string, schema.GroupKind, gwv1.ObjectName, *gwv1.Namespace, *gwv1.PortNumber) (*api.BackendReference, error) {
+		return &api.BackendReference{
+			Kind: &api.BackendReference_Backend{
+				Backend: "default/token-endpoint",
+			},
+		}, nil
+	}, secrets...)
+}
+
+func oauthTestPolicyCtxWithBackend(
+	t *testing.T,
+	policyBackend func(krt.HandlerContext, string, schema.GroupKind, gwv1.ObjectName, *gwv1.Namespace, *gwv1.PortNumber) (*api.BackendReference, error),
+	secrets ...*corev1.Secret,
+) PolicyCtx {
+	t.Helper()
 	secretCollection := krt.NewStaticCollection[*corev1.Secret](nil, secrets, krt.WithName("plugins/oauthTestPolicyCtx"))
 	return PolicyCtx{
 		Krt:         krt.TestingDummyContext{},
 		Collections: &AgwCollections{},
 		References: BuildReferenceIndex(nil, nil, ReferenceTypes{
-			PolicyBackend: func(krt.HandlerContext, string, schema.GroupKind, gwv1.ObjectName, *gwv1.Namespace, *gwv1.PortNumber) (*api.BackendReference, error) {
-				return &api.BackendReference{
-					Kind: &api.BackendReference_Backend{
-						Backend: "default/token-endpoint",
-					},
-				}, nil
-			},
+			PolicyBackend: policyBackend,
 		}),
 		CredentialResolver: kubeutils.NewSecretCredentialResolver(secretCollection),
 	}
@@ -69,6 +78,70 @@ func TestOAuthTokenExchangeTokenEndpointIsReferencedBackend(t *testing.T) {
 		ref.Group == nil || *ref.Group != "agentgateway.dev" ||
 		ref.Kind == nil || *ref.Kind != "AgentgatewayBackend" {
 		t.Fatalf("referenced backend ref = %+v, want token endpoint AgentgatewayBackend", ref)
+	}
+}
+
+func TestBuildOAuthTokenExchangeResolvesTokenEndpointWhenNil(t *testing.T) {
+	ctx := oauthTestPolicyCtx(t)
+
+	oauth, err := BuildOAuthTokenExchange(ctx, &agentgateway.OAuthTokenExchange{
+		TokenEndpoint: oauthTokenEndpointRef(),
+	}, "default", nil)
+	if err != nil {
+		t.Fatalf("BuildOAuthTokenExchange() error = %v, want nil", err)
+	}
+	if got := oauth.GetTokenEndpoint().GetBackend(); got != "default/token-endpoint" {
+		t.Fatalf("token endpoint backend = %q, want default/token-endpoint", got)
+	}
+}
+
+func TestBuildOAuthTokenExchangeRejectsNilAuth(t *testing.T) {
+	ctx := oauthTestPolicyCtx(t)
+
+	oauth, err := BuildOAuthTokenExchange(ctx, nil, "default", nil)
+	want := "oauthTokenExchange must not be nil"
+	if err == nil || err.Error() != want {
+		t.Fatalf("BuildOAuthTokenExchange() error = %v, want %q", err, want)
+	}
+	if oauth != nil {
+		t.Fatalf("BuildOAuthTokenExchange() oauth = %v, want nil", oauth)
+	}
+}
+
+func TestBuildOAuthTokenExchangeSuppliedTokenEndpointPreservesValidationErrors(t *testing.T) {
+	var calls int
+	ctx := oauthTestPolicyCtxWithBackend(t, func(krt.HandlerContext, string, schema.GroupKind, gwv1.ObjectName, *gwv1.Namespace, *gwv1.PortNumber) (*api.BackendReference, error) {
+		calls++
+		return nil, nil
+	})
+	tokenEndpoint := &api.BackendReference{
+		Kind: &api.BackendReference_Backend{
+			Backend: "default/prebuilt-token-endpoint",
+		},
+	}
+
+	oauth, err := BuildOAuthTokenExchange(ctx, &agentgateway.OAuthTokenExchange{
+		SubjectToken: &agentgateway.OAuthTokenSpec{
+			Source: &agentgateway.AuthorizationExtractionLocation{
+				Expression: ptr.Of(agentgateway.CELExpression("((")),
+			},
+		},
+	}, "default", tokenEndpoint)
+	want := "oauth subjectToken source expression is not a valid CEL expression"
+	if err == nil || !strings.Contains(err.Error(), want) {
+		t.Fatalf("BuildOAuthTokenExchange() error = %v, want containing %q", err, want)
+	}
+	if calls != 0 {
+		t.Fatalf("backend ref resolution calls = %d, want 0", calls)
+	}
+	if oauth == nil {
+		t.Fatal("BuildOAuthTokenExchange() oauth = nil, want partial object")
+	}
+	if oauth.TokenEndpoint != tokenEndpoint {
+		t.Fatalf("token endpoint = %p, want supplied endpoint %p", oauth.TokenEndpoint, tokenEndpoint)
+	}
+	if got := oauth.GetSubjectToken().GetSource().GetExpression(); got != "((" {
+		t.Fatalf("subject token expression = %q, want invalid expression preserved", got)
 	}
 }
 
