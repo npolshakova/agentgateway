@@ -213,6 +213,19 @@ func (r *defaultResolver) resolveTunnelProxy(
 		}, nil
 
 	case string(kind) == wellknown.ServiceKind && string(group) == "":
+		nn := types.NamespacedName{Name: string(backendRef.Name), Namespace: refNamespace}
+		svc := ptr.Flatten(krt.FetchOne(krtctx, r.services, krt.FilterObjectName(nn)))
+		if svc == nil {
+			// A backendRef with no group/kind silently defaults to a core
+			// Service; call that out, since the ref usually meant to target an
+			// AgentgatewayBackend and the tunnel would otherwise retry forever.
+			hint := ""
+			if backendRef.Kind == nil {
+				hint = fmt.Sprintf("; backendRef defaulted to kind Service — to tunnel through an %s, set backendRef.group=%q and backendRef.kind=%q",
+					wellknown.AgentgatewayBackendGVK.Kind, wellknown.AgentgatewayBackendGVK.Group, wellknown.AgentgatewayBackendGVK.Kind)
+			}
+			return nil, fmt.Errorf("tunnel proxy Service %s not found%s", nn, hint)
+		}
 		host := kubeutils.GetServiceHostname(string(backendRef.Name), refNamespace)
 		port := ptr.OrEmpty(backendRef.Port)
 		if port == 0 {

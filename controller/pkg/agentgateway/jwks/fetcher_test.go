@@ -455,6 +455,67 @@ func TestMakeFetchClientRejectsInvalidProxyURL(t *testing.T) {
 	assert.Contains(t, err.Error(), "error parsing proxy URL")
 }
 
+func TestFetchJwksViaEnvironmentProxy(t *testing.T) {
+	// Plain-HTTP forward proxy: requests arrive in absolute form and are
+	// answered directly without dialing the (nonexistent) target host.
+	var proxied atomic.Int32
+	proxy := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		proxied.Add(1)
+		assert.Equal(t, "jwks.env-proxy.invalid", r.Host)
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, sampleJWKS)
+	}))
+	defer proxy.Close()
+
+	t.Setenv("HTTP_PROXY", proxy.URL)
+	t.Setenv("HTTPS_PROXY", proxy.URL)
+
+	source := testSourceWithURL("http://jwks.env-proxy.invalid/keys")
+
+	ctx := t.Context()
+	f := NewFetcher(NewCache())
+	require.NoError(t, f.AddOrUpdateKeyset(source))
+	updates := f.SubscribeToUpdates()
+
+	go f.maybeFetchJwks(ctx)
+
+	awaitJwksUpdate(t, updates, source.RequestKey)
+	keyset := awaitStoredKeyset(t, f.cache, source.RequestKey)
+	assert.Equal(t, sampleJWKS, keyset.JwksJSON)
+	assert.Equal(t, int32(1), proxied.Load(), "request should have been routed through the environment proxy")
+}
+
+func TestMakeFetchClientProxyFromEnvironment(t *testing.T) {
+	t.Setenv("HTTPS_PROXY", "http://corp-proxy:3128")
+	t.Setenv("NO_PROXY", "internal.example.com")
+
+	client, err := makeFetchClient(nil, "", nil)
+	require.NoError(t, err)
+	transport := client.Transport.(*http.Transport)
+
+	proxied, err := transport.Proxy(httptest.NewRequest(http.MethodGet, "https://login.microsoftonline.com/keys", nil))
+	require.NoError(t, err)
+	require.NotNil(t, proxied)
+	assert.Equal(t, "http://corp-proxy:3128", proxied.String())
+
+	direct, err := transport.Proxy(httptest.NewRequest(http.MethodGet, "https://internal.example.com/keys", nil))
+	require.NoError(t, err)
+	assert.Nil(t, direct, "NO_PROXY hosts should not be proxied")
+}
+
+func TestMakeFetchClientTunnelProxyOverridesEnvironment(t *testing.T) {
+	t.Setenv("HTTPS_PROXY", "http://env-proxy:3128")
+
+	client, err := makeFetchClient(nil, "http://tunnel-proxy:8080", nil)
+	require.NoError(t, err)
+	transport := client.Transport.(*http.Transport)
+
+	proxied, err := transport.Proxy(httptest.NewRequest(http.MethodGet, "https://login.microsoftonline.com/keys", nil))
+	require.NoError(t, err)
+	require.NotNil(t, proxied)
+	assert.Equal(t, "http://tunnel-proxy:8080", proxied.String())
+}
+
 func TestProxyURLAffectsFetchKey(t *testing.T) {
 	a := remotehttp.FetchTarget{URL: "https://example.com/jwks"}
 	b := remotehttp.FetchTarget{URL: "https://example.com/jwks", ProxyURL: "http://proxy:8080"}

@@ -438,6 +438,75 @@ func TestResolve(t *testing.T) {
 	}
 }
 
+func TestResolveTunnelProxyServiceMustExist(t *testing.T) {
+	backendWithTunnel := func(tunnelRef gwv1.BackendObjectReference) *agentgateway.AgentgatewayBackend {
+		return &agentgateway.AgentgatewayBackend{
+			ObjectMeta: metav1.ObjectMeta{Name: "idp-jwks", Namespace: "default"},
+			Spec: agentgateway.AgentgatewayBackendSpec{
+				Static: &agentgateway.StaticBackend{Host: "idp.example.com", Port: 443},
+				Policies: &agentgateway.BackendFull{
+					BackendSimple: agentgateway.BackendSimple{
+						TLS:    &agentgateway.BackendTLS{},
+						Tunnel: &agentgateway.BackendTunnel{BackendRef: tunnelRef},
+					},
+				},
+			},
+		}
+	}
+	resolve := func(t *testing.T, inputs []any) (*remotehttp.ResolvedTarget, error) {
+		ctx := testutils.BuildMockPolicyContext(t, inputs)
+		resolver := testutils.BuildRemoteHTTPResolver(ctx.Collections)
+		return resolver.Resolve(ctx.Krt, remotehttp.ResolveInput{
+			ParentName:       "gw-policy",
+			DefaultNamespace: "default",
+			BackendRef: gwv1.BackendObjectReference{
+				Name:  gwv1.ObjectName("idp-jwks"),
+				Group: new(gwv1.Group(wellknown.AgentgatewayBackendGVK.Group)),
+				Kind:  new(gwv1.Kind(wellknown.AgentgatewayBackendGVK.Kind)),
+			},
+			Path: "/",
+		})
+	}
+
+	t.Run("existing service resolves proxy URL", func(t *testing.T) {
+		resolved, err := resolve(t, []any{
+			backendWithTunnel(gwv1.BackendObjectReference{
+				Name: gwv1.ObjectName("web-proxy"),
+				Kind: ptr.Of(gwv1.Kind("Service")),
+				Port: ptr.Of(gwv1.PortNumber(3128)),
+			}),
+			testService("web-proxy", "default", []corev1.ServicePort{{Name: "http", Port: 3128}}),
+		})
+		require.NoError(t, err)
+		require.Equal(t, "http://web-proxy.default.svc.cluster.local:3128", resolved.Target.ProxyURL)
+	})
+
+	t.Run("missing service is an error", func(t *testing.T) {
+		_, err := resolve(t, []any{
+			backendWithTunnel(gwv1.BackendObjectReference{
+				Name: gwv1.ObjectName("web-proxy"),
+				Kind: ptr.Of(gwv1.Kind("Service")),
+				Port: ptr.Of(gwv1.PortNumber(3128)),
+			}),
+		})
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "tunnel proxy Service default/web-proxy not found")
+		require.NotContains(t, err.Error(), "defaulted to kind Service")
+	})
+
+	t.Run("defaulted group and kind adds AgentgatewayBackend hint", func(t *testing.T) {
+		_, err := resolve(t, []any{
+			backendWithTunnel(gwv1.BackendObjectReference{
+				Name: gwv1.ObjectName("web-proxy"),
+				Port: ptr.Of(gwv1.PortNumber(3128)),
+			}),
+		})
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "tunnel proxy Service default/web-proxy not found")
+		require.Contains(t, err.Error(), "set backendRef.group")
+	})
+}
+
 func TestResolveWithAdditionalBackendResolver(t *testing.T) {
 	ctx := testutils.BuildMockPolicyContext(t, nil)
 	backendGK := schema.GroupKind{Group: "example.io", Kind: "ExampleBackend"}

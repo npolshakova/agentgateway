@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/go-jose/go-jose/v4"
+	"golang.org/x/net/http/httpproxy"
 	"istio.io/istio/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
@@ -136,12 +137,21 @@ func nextRetryDelay(retryAttempt int) time.Duration {
 	return next
 }
 
+// proxyFromEnvironment resolves HTTPS_PROXY/HTTP_PROXY/NO_PROXY for a request.
+// Unlike http.ProxyFromEnvironment, it re-reads the environment on each call
+// instead of caching it for the process lifetime.
+func proxyFromEnvironment(req *http.Request) (*url.URL, error) {
+	return httpproxy.FromEnvironment().ProxyFunc()(req.URL)
+}
+
 func makeFetchClient(tlsConfig *tls.Config, proxyURL string, proxyTLSConfig *tls.Config) (*http.Client, error) {
 	dialer := &net.Dialer{Timeout: 5 * time.Second}
 	transport := &http.Transport{
 		TLSClientConfig:   tlsConfig,
 		DialContext:       dialer.DialContext,
 		DisableKeepAlives: true,
+		// An explicit tunnel policy on the JWKS backend overrides this below.
+		Proxy: proxyFromEnvironment,
 	}
 	if proxyURL != "" {
 		parsed, err := url.Parse(proxyURL)
@@ -226,7 +236,8 @@ type jwksHttpClientImpl struct {
 }
 
 func NewFetcher(cache *JwksCache) *Fetcher {
-	// Default client has no TLS or proxy config, so makeFetchClient cannot fail.
+	// Default client has no TLS config or explicit tunnel proxy (it still
+	// honors HTTPS_PROXY/NO_PROXY), so makeFetchClient cannot fail.
 	defaultClient, _ := makeFetchClient(nil, "", nil)
 	return &Fetcher{
 		cache:             cache,
