@@ -17,6 +17,7 @@ mod tests;
 pub const BEDROCK_TOOL_NAME_MAX_LEN: usize = 64;
 
 /// Serialized Bedrock request body plus any tool-name remapping applied for that request.
+#[derive(Debug)]
 pub struct BedrockRequest {
 	pub body: Vec<u8>,
 	pub tool_name_map: BedrockToolNameMap,
@@ -1943,8 +1944,11 @@ pub mod from_responses {
 	use types::bedrock;
 	use types::responses::typed as responses;
 
+	use agent_core::strng;
+
 	use super::helpers;
 	use crate::bedrock::Provider;
+	use crate::conversion::completions::parse_data_url;
 	use crate::types::ResponseType;
 	use crate::{AIError, StreamingUsageGuard, json, logged_response_parsing, parse, types};
 
@@ -1966,7 +1970,7 @@ pub mod from_responses {
 			provider,
 			headers,
 			prompt_caching,
-		);
+		)?;
 		let body = serde_json::to_vec(&xlated).map_err(AIError::RequestMarshal)?;
 		Ok(super::BedrockRequest {
 			body,
@@ -1981,7 +1985,7 @@ pub mod from_responses {
 		provider: &Provider,
 		headers: Option<&http::HeaderMap>,
 		prompt_caching: Option<&crate::PromptCachingConfig>,
-	) -> (bedrock::ConverseRequest, super::BedrockToolNameMap) {
+	) -> Result<(bedrock::ConverseRequest, super::BedrockToolNameMap), AIError> {
 		use responses::{
 			CustomToolCallOutput, CustomToolCallOutputOutput, EasyInputContent, FunctionCallOutput,
 			InputContent, InputItem, InputMessage, InputParam, InputRole, InputTextContent, Item,
@@ -2089,7 +2093,9 @@ pub mod from_responses {
 			InputParam::Items(items) => items.clone(),
 		};
 
-		let input_parts_to_blocks = |parts: &[InputContent]| {
+		let input_parts_to_blocks = |parts: &[InputContent],
+		                             role: bedrock::Role|
+		 -> Result<Vec<bedrock::ContentBlock>, AIError> {
 			let mut blocks = Vec::new();
 			tracing::debug!("Processing {} content parts", parts.len());
 			for part in parts {
@@ -2098,19 +2104,59 @@ pub mod from_responses {
 						tracing::debug!("Found InputText with text: {}", input_text.text);
 						blocks.push(bedrock::ContentBlock::Text(input_text.text.clone()));
 					},
-					InputContent::InputImage(_) => {
-						// Image support requires fetching URLs or resolving file_ids
-						tracing::debug!("Image inputs not supported in Responses->Bedrock translation");
-						continue;
+					InputContent::InputImage(input_image) => {
+						if role != bedrock::Role::User {
+							return Err(AIError::UnsupportedConversion(strng::literal!(
+								"bedrock image inputs are only supported on user messages"
+							)));
+						}
+						let Some((media_type, data)) =
+							input_image.image_url.as_deref().and_then(parse_data_url)
+						else {
+							// Remote URLs and file_ids would require the gateway to fetch content itself
+							return Err(AIError::UnsupportedConversion(strng::literal!(
+								"bedrock image inputs must be base64 data URLs; remote URLs and file_ids are unsupported"
+							)));
+						};
+						let format = media_type
+							.strip_prefix("image/")
+							.unwrap_or(media_type)
+							.to_string();
+						blocks.push(bedrock::ContentBlock::Image(bedrock::ImageBlock {
+							format,
+							source: bedrock::ImageSource {
+								bytes: data.to_string(),
+							},
+						}));
 					},
 					InputContent::InputFile(_) => {
-						tracing::debug!("Skipping InputFile");
-						continue;
+						return Err(AIError::UnsupportedConversion(strng::literal!(
+							"file inputs are unsupported for bedrock"
+						)));
 					},
 				}
 			}
 			tracing::debug!("Created {} content blocks", blocks.len());
-			blocks
+			Ok(blocks)
+		};
+		let input_parts_to_system_text = |parts: &[InputContent]| -> Result<String, AIError> {
+			let mut text = Vec::new();
+			for part in parts {
+				match part {
+					InputContent::InputText(input_text) => text.push(input_text.text.clone()),
+					InputContent::InputImage(_) => {
+						return Err(AIError::UnsupportedConversion(strng::literal!(
+							"bedrock image inputs are only supported on user messages"
+						)));
+					},
+					InputContent::InputFile(_) => {
+						return Err(AIError::UnsupportedConversion(strng::literal!(
+							"file inputs are unsupported for bedrock"
+						)));
+					},
+				}
+			}
+			Ok(text.join("\n"))
 		};
 
 		// Process each input item
@@ -2123,14 +2169,7 @@ pub mod from_responses {
 						ResponsesRole::System | ResponsesRole::Developer => {
 							let text = match &msg.content {
 								EasyInputContent::Text(text) => text.clone(),
-								EasyInputContent::ContentList(parts) => parts
-									.iter()
-									.filter_map(|part| match part {
-										InputContent::InputText(input_text) => Some(input_text.text.clone()),
-										_ => None,
-									})
-									.collect::<Vec<_>>()
-									.join("\n"),
+								EasyInputContent::ContentList(parts) => input_parts_to_system_text(parts)?,
 							};
 							system_blocks.push(bedrock::SystemContentBlock::Text { text });
 							continue;
@@ -2141,7 +2180,7 @@ pub mod from_responses {
 						EasyInputContent::Text(text) => {
 							vec![bedrock::ContentBlock::Text(text.clone())]
 						},
-						EasyInputContent::ContentList(parts) => input_parts_to_blocks(parts),
+						EasyInputContent::ContentList(parts) => input_parts_to_blocks(parts, role)?,
 					};
 
 					helpers::push_or_merge_message(&mut messages, bedrock::Message { role, content });
@@ -2150,21 +2189,13 @@ pub mod from_responses {
 					let role = match msg.role {
 						InputRole::User => bedrock::Role::User,
 						InputRole::System | InputRole::Developer => {
-							let text = msg
-								.content
-								.iter()
-								.filter_map(|part| match part {
-									InputContent::InputText(input_text) => Some(input_text.text.clone()),
-									_ => None,
-								})
-								.collect::<Vec<_>>()
-								.join("\n");
+							let text = input_parts_to_system_text(&msg.content)?;
 							system_blocks.push(bedrock::SystemContentBlock::Text { text });
 							continue;
 						},
 					};
 
-					let content = input_parts_to_blocks(&msg.content);
+					let content = input_parts_to_blocks(&msg.content, role)?;
 					helpers::push_or_merge_message(&mut messages, bedrock::Message { role, content });
 				},
 				InputItem::Item(Item::Message(MessageItem::Output(msg))) => {
@@ -2431,7 +2462,7 @@ pub mod from_responses {
 				.and_then(|tc| tc.tool_choice.as_ref())
 		);
 
-		(bedrock_request, tool_name_map)
+		Ok((bedrock_request, tool_name_map))
 	}
 
 	fn extract_responses_thinking_budget_tokens(req: &types::responses::Request) -> Option<u64> {

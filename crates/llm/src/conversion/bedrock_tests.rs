@@ -1644,3 +1644,199 @@ fn test_messages_long_tool_name_round_trip_response() {
 
 	assert_eq!(tool_use_name, long_name);
 }
+
+#[test]
+fn test_responses_input_image_data_url_maps_to_converse_image_block() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	let req: types::responses::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_output_tokens": 64,
+		"input": [{
+			"role": "user",
+			"content": [
+				{ "type": "input_text", "text": "What is in this image?" },
+				{
+					"type": "input_image",
+					"image_url": "data:image/png;base64,iVBORw0KGgo=",
+					"detail": "auto"
+				}
+			]
+		}]
+	}))
+	.expect("valid responses request");
+
+	let translated = super::from_responses::translate(&req, &provider, None, None)
+		.unwrap()
+		.body;
+	let translated: serde_json::Value = serde_json::from_slice(&translated).unwrap();
+
+	let content = translated["messages"][0]["content"]
+		.as_array()
+		.expect("user message content");
+	assert_eq!(content[0]["text"], json!("What is in this image?"));
+	assert_eq!(content[1]["image"]["format"], json!("png"));
+	assert_eq!(
+		content[1]["image"]["source"]["bytes"],
+		json!("iVBORw0KGgo=")
+	);
+}
+
+#[test]
+fn test_responses_assistant_input_image_is_rejected() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	let req: types::responses::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_output_tokens": 64,
+		"input": [{
+			"role": "assistant",
+			"content": [{
+				"type": "input_image",
+				"image_url": "data:image/png;base64,iVBORw0KGgo=",
+				"detail": "auto"
+			}]
+		}]
+	}))
+	.expect("valid responses request");
+
+	let err = super::from_responses::translate(&req, &provider, None, None).unwrap_err();
+	assert!(matches!(err, crate::AIError::UnsupportedConversion(_)));
+	assert!(
+		err
+			.to_string()
+			.contains("image inputs are only supported on user messages")
+	);
+}
+
+#[test]
+fn test_responses_input_image_remote_url_is_rejected() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	let req: types::responses::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_output_tokens": 64,
+		"input": [{
+			"role": "user",
+			"content": [{
+				"type": "input_image",
+				"image_url": "https://example.com/sample.png",
+				"detail": "auto"
+			}]
+		}]
+	}))
+	.expect("valid responses request");
+
+	let err = super::from_responses::translate(&req, &provider, None, None).unwrap_err();
+	assert!(matches!(err, crate::AIError::UnsupportedConversion(_)));
+	assert!(
+		err
+			.to_string()
+			.contains("remote URLs and file_ids are unsupported")
+	);
+}
+
+#[test]
+fn test_responses_input_image_file_id_is_rejected() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	let req: types::responses::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_output_tokens": 64,
+		"input": [{
+			"role": "user",
+			"content": [{
+				"type": "input_image",
+				"file_id": "file-abc123",
+				"detail": "auto"
+			}]
+		}]
+	}))
+	.expect("valid responses request");
+
+	let err = super::from_responses::translate(&req, &provider, None, None).unwrap_err();
+	assert!(matches!(err, crate::AIError::UnsupportedConversion(_)));
+}
+
+#[test]
+fn test_responses_system_input_file_is_rejected() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	let req: types::responses::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_output_tokens": 64,
+		"input": [{
+			"type": "message",
+			"role": "system",
+			"content": [{
+				"type": "input_file",
+				"file_id": "file-abc123"
+			}]
+		}]
+	}))
+	.expect("valid responses request");
+
+	let err = super::from_responses::translate(&req, &provider, None, None).unwrap_err();
+	assert!(matches!(err, crate::AIError::UnsupportedConversion(_)));
+	assert!(
+		err
+			.to_string()
+			.contains("file inputs are unsupported for bedrock")
+	);
+}
+
+#[test]
+fn test_responses_input_file_is_rejected() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	let req: types::responses::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_output_tokens": 64,
+		"input": [{
+			"role": "user",
+			"content": [{
+				"type": "input_file",
+				"file_id": "file-abc123"
+			}]
+		}]
+	}))
+	.expect("valid responses request");
+
+	let err = super::from_responses::translate(&req, &provider, None, None).unwrap_err();
+	assert!(matches!(err, crate::AIError::UnsupportedConversion(_)));
+	assert!(
+		err
+			.to_string()
+			.contains("file inputs are unsupported for bedrock")
+	);
+}
