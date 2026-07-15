@@ -42,6 +42,8 @@ pub fn deny_response(
 
 #[async_trait]
 pub trait Handler {
+	/// Observe the gRPC request metadata (headers) of the Check call.
+	async fn on_check(&mut self, _metadata: &tonic::metadata::MetadataMap) {}
 	async fn check(&mut self, _request: &CheckRequest) -> Result<CheckResponse, Status> {
 		allow_response(None)
 	}
@@ -91,6 +93,7 @@ where
 		request: Request<CheckRequest>,
 	) -> Result<TonicResponse<CheckResponse>, Status> {
 		let mut handler = (self.handler.clone())();
+		handler.on_check(request.metadata()).await;
 		let response = handler.check(request.get_ref()).await?;
 		Ok(TonicResponse::new(response))
 	}

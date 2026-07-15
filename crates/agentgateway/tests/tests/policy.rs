@@ -1,4 +1,6 @@
-use agentgateway::test_helpers::extauthmock;
+use agentgateway::test_helpers::{
+	TEST_TRACE_ID, TEST_TRACEPARENT, TEST_TRACESTATE, ascii_metadata, extauthmock,
+};
 
 use crate::common::prelude::*;
 
@@ -153,6 +155,179 @@ async fn gateway_ext_authz_response_headers_are_preserved() {
 	assert_eq!(res.hdr("x-gateway-authz-response"), "allowed");
 	assert_eq!(read_body(res.into_body()).await.method, Method::GET);
 	drop(mock);
+}
+
+// The outbound ext_authz gRPC Check call must carry the incoming W3C trace
+// context (traceparent/tracestate) as gRPC metadata so the authz service can
+// join the trace.
+#[tokio::test]
+async fn gateway_ext_authz_grpc_check_carries_traceparent_metadata() {
+	use std::collections::HashMap;
+
+	#[derive(Clone)]
+	struct MetadataRecorder {
+		seen: Arc<StdMutex<Vec<HashMap<String, String>>>>,
+	}
+
+	#[async_trait::async_trait]
+	impl extauthmock::Handler for MetadataRecorder {
+		async fn on_check(&mut self, metadata: &tonic::metadata::MetadataMap) {
+			self.seen.lock().unwrap().push(ascii_metadata(metadata));
+		}
+	}
+
+	let seen = Arc::new(StdMutex::new(Vec::new()));
+	let authz = extauthmock::ExtAuthMock::new({
+		let seen = seen.clone();
+		move || MetadataRecorder { seen: seen.clone() }
+	})
+	.spawn()
+	.await;
+
+	let (_mock, mut bind, io) = basic_setup().await;
+	bind
+		.attach_gateway_policy(json!({
+			"extAuthz": {
+				"host": authz.address,
+			},
+		}))
+		.await;
+
+	let res = send_request_headers(
+		io.clone(),
+		Method::GET,
+		"http://lo/p",
+		&[
+			("traceparent", TEST_TRACEPARENT),
+			("tracestate", TEST_TRACESTATE),
+		],
+	)
+	.await;
+	assert_eq!(res.status(), 200);
+
+	let seen = seen.lock().unwrap();
+	assert!(!seen.is_empty(), "authz mock should have been called");
+	let tp = seen[0]
+		.get("traceparent")
+		.expect("ext_authz gRPC call should carry a traceparent metadata entry");
+	// The gateway may start its own span (new span-id), but the trace-id must be
+	// preserved so the authz service can join the trace.
+	assert_eq!(
+		tp.split('-').nth(1),
+		Some(TEST_TRACE_ID),
+		"traceparent metadata should preserve the incoming trace-id: {tp}"
+	);
+	assert_eq!(
+		seen[0].get("tracestate").map(String::as_str),
+		Some(TEST_TRACESTATE),
+		"ext_authz gRPC call should carry the incoming tracestate as metadata"
+	);
+}
+
+// The outbound HTTP ext_authz check request must carry the incoming W3C trace
+// context (traceparent/tracestate) as HTTP headers.
+#[tokio::test]
+async fn gateway_http_ext_authz_check_request_carries_traceparent() {
+	let (_mock, mut bind, io) = basic_setup().await;
+	let authz = MockServer::start().await;
+	let seen_headers: Arc<StdMutex<Vec<HeaderMap>>> = Arc::new(StdMutex::new(Vec::new()));
+	let seen_clone = seen_headers.clone();
+	Mock::given(wiremock::matchers::any())
+		.respond_with(move |req: &wiremock::Request| {
+			seen_clone.lock().unwrap().push(req.headers.clone());
+			ResponseTemplate::new(StatusCode::OK.as_u16())
+		})
+		.mount(&authz)
+		.await;
+
+	bind
+		.attach_gateway_policy(json!({
+			"extAuthz": {
+				"host": authz.address().to_string(),
+				"protocol": {"http": {}},
+			},
+		}))
+		.await;
+
+	let res = send_request_headers(
+		io.clone(),
+		Method::GET,
+		"http://lo/p",
+		&[
+			("traceparent", TEST_TRACEPARENT),
+			("tracestate", TEST_TRACESTATE),
+		],
+	)
+	.await;
+	assert_eq!(res.status(), StatusCode::OK);
+
+	let seen = seen_headers.lock().unwrap();
+	assert!(!seen.is_empty(), "authz mock should have been called");
+	let tp = seen[0]
+		.get("traceparent")
+		.and_then(|v| v.to_str().ok())
+		.expect("HTTP ext_authz check request should carry a traceparent header");
+	// The gateway may start its own span (new span-id), but the trace-id must be
+	// preserved so the authz service can join the trace.
+	assert_eq!(
+		tp.split('-').nth(1),
+		Some(TEST_TRACE_ID),
+		"traceparent header should preserve the incoming trace-id: {tp}"
+	);
+	assert_eq!(
+		seen[0].get("tracestate").and_then(|v| v.to_str().ok()),
+		Some(TEST_TRACESTATE),
+		"HTTP ext_authz check request should carry the incoming tracestate header"
+	);
+}
+
+// A traceparent explicitly set by the user via addRequestHeaders must win over
+// automatic trace context propagation, matching the gRPC precedence rule.
+#[tokio::test]
+async fn gateway_http_ext_authz_user_traceparent_takes_precedence() {
+	const USER_TRACEPARENT: &str = "00-11111111111111111111111111111111-2222222222222222-01";
+
+	let (_mock, mut bind, io) = basic_setup().await;
+	let authz = MockServer::start().await;
+	let seen_headers: Arc<StdMutex<Vec<HeaderMap>>> = Arc::new(StdMutex::new(Vec::new()));
+	let seen_clone = seen_headers.clone();
+	Mock::given(wiremock::matchers::any())
+		.respond_with(move |req: &wiremock::Request| {
+			seen_clone.lock().unwrap().push(req.headers.clone());
+			ResponseTemplate::new(StatusCode::OK.as_u16())
+		})
+		.mount(&authz)
+		.await;
+
+	bind
+		.attach_gateway_policy(json!({
+			"extAuthz": {
+				"host": authz.address().to_string(),
+				"protocol": {"http": {
+					"addRequestHeaders": {
+						"traceparent": format!("'{USER_TRACEPARENT}'"),
+					},
+				}},
+			},
+		}))
+		.await;
+
+	let res = send_request_headers(
+		io.clone(),
+		Method::GET,
+		"http://lo/p",
+		&[("traceparent", TEST_TRACEPARENT)],
+	)
+	.await;
+	assert_eq!(res.status(), StatusCode::OK);
+
+	let seen = seen_headers.lock().unwrap();
+	assert!(!seen.is_empty(), "authz mock should have been called");
+	assert_eq!(
+		seen[0].get("traceparent").and_then(|v| v.to_str().ok()),
+		Some(USER_TRACEPARENT),
+		"user-configured traceparent must not be overwritten by propagation"
+	);
 }
 
 #[tokio::test]

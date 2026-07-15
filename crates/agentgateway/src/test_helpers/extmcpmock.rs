@@ -106,6 +106,10 @@ pub fn mutated_response_json(body: serde_json::Value) -> Result<McpResponseResul
 
 #[async_trait]
 pub trait Handler {
+	/// Observe the gRPC request metadata (headers) of the CheckRequest call.
+	async fn on_check_request(&mut self, _metadata: &tonic::metadata::MetadataMap) {}
+	/// Observe the gRPC request metadata (headers) of the CheckResponse call.
+	async fn on_check_response(&mut self, _metadata: &tonic::metadata::MetadataMap) {}
 	async fn check_request(&mut self, _req: &McpRequest) -> Result<McpRequestResult, Status> {
 		pass_request()
 	}
@@ -193,6 +197,7 @@ where
 		request: Request<McpRequest>,
 	) -> Result<TonicResponse<McpRequestResult>, Status> {
 		let mut handler = (self.handler.clone())();
+		handler.on_check_request(request.metadata()).await;
 		let response = handler.check_request(request.get_ref()).await?;
 		Ok(TonicResponse::new(response))
 	}
@@ -202,6 +207,7 @@ where
 		request: Request<McpResponse>,
 	) -> Result<TonicResponse<McpResponseResult>, Status> {
 		let mut handler = (self.handler.clone())();
+		handler.on_check_response(request.metadata()).await;
 		let response = handler.check_response(request.get_ref()).await?;
 		Ok(TonicResponse::new(response))
 	}

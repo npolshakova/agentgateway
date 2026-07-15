@@ -39,6 +39,7 @@ pub mod x_headers {
 	use http::{HeaderMap, HeaderName, HeaderValue, Uri};
 
 	pub const TRACEPARENT: HeaderName = HeaderName::from_static("traceparent");
+	pub const TRACESTATE: HeaderName = HeaderName::from_static("tracestate");
 
 	pub const X_RATELIMIT_LIMIT: HeaderName = HeaderName::from_static("x-ratelimit-limit");
 	pub const X_RATELIMIT_REMAINING: HeaderName = HeaderName::from_static("x-ratelimit-remaining");

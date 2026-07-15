@@ -3572,6 +3572,142 @@ async fn mcp_guardrails_pass_through() {
 	assert!(resp_n.load(Ordering::SeqCst) >= 1);
 }
 
+// The outbound ExtMCP CheckRequest/CheckResponse gRPC calls must carry the
+// incoming W3C trace context (traceparent/tracestate) as gRPC metadata so the
+// guardrails service can join the trace.
+#[tokio::test]
+async fn mcp_guardrails_extmcp_calls_carry_traceparent_metadata() {
+	use std::collections::HashMap;
+
+	use crate::test_helpers::{
+		TEST_TRACE_ID, TEST_TRACEPARENT, TEST_TRACESTATE, ascii_metadata, extmcpmock,
+	};
+
+	type MetadataLog = Arc<std::sync::Mutex<Vec<HashMap<String, String>>>>;
+
+	#[derive(Clone)]
+	struct MetadataRecorder {
+		request_meta: MetadataLog,
+		response_meta: MetadataLog,
+	}
+
+	#[async_trait::async_trait]
+	impl extmcpmock::Handler for MetadataRecorder {
+		async fn on_check_request(&mut self, metadata: &tonic::metadata::MetadataMap) {
+			self
+				.request_meta
+				.lock()
+				.unwrap()
+				.push(ascii_metadata(metadata));
+		}
+		async fn on_check_response(&mut self, metadata: &tonic::metadata::MetadataMap) {
+			self
+				.response_meta
+				.lock()
+				.unwrap()
+				.push(ascii_metadata(metadata));
+		}
+	}
+
+	let request_meta: MetadataLog = Default::default();
+	let response_meta: MetadataLog = Default::default();
+	let extmcp_mock = extmcpmock::ExtMcpMock::new({
+		let (request_meta, response_meta) = (request_meta.clone(), response_meta.clone());
+		move || MetadataRecorder {
+			request_meta: request_meta.clone(),
+			response_meta: response_meta.clone(),
+		}
+	})
+	.spawn()
+	.await;
+
+	let mock = mock_streamable_http_server(true).await;
+	let (_bind, io) = setup_proxy_policies(
+		&mock,
+		true,
+		false,
+		vec![guardrails_test_support::policy(extmcp_mock.address)],
+	)
+	.await;
+
+	// A streamable client that sends the trace context headers on every HTTP request.
+	let client = {
+		use rmcp::ServiceExt;
+		use rmcp::model::{ClientCapabilities, ClientInfo, Implementation};
+		use rmcp::transport::StreamableHttpClientTransport;
+		use rmcp::transport::streamable_http_client::StreamableHttpClientTransportConfig;
+
+		let custom_headers = HashMap::from([
+			(
+				::http::HeaderName::from_static("traceparent"),
+				::http::HeaderValue::from_static(TEST_TRACEPARENT),
+			),
+			(
+				::http::HeaderName::from_static("tracestate"),
+				::http::HeaderValue::from_static(TEST_TRACESTATE),
+			),
+		]);
+		let transport = StreamableHttpClientTransport::with_client(
+			reqwest::Client::default(),
+			StreamableHttpClientTransportConfig::with_uri(format!("http://{io}/mcp"))
+				.custom_headers(custom_headers),
+		);
+		let client_info = ClientInfo::new(
+			ClientCapabilities::default(),
+			Implementation::new("test client".to_string(), "0.0.1".to_string()),
+		);
+		Box::pin(client_info.serve(transport)).await.unwrap()
+	};
+
+	let result = client
+		.call_tool(
+			rmcp::model::CallToolRequestParams::new("echo").with_arguments(
+				serde_json::json!({"hi": "world"})
+					.as_object()
+					.cloned()
+					.unwrap(),
+			),
+		)
+		.await
+		.expect("tool call should succeed");
+	assert!(!result.content.is_empty());
+
+	// The gateway may start its own span (new span-id), but the trace-id must be
+	// preserved so the guardrails service can join the trace.
+	let request_meta = request_meta.lock().unwrap();
+	assert!(
+		!request_meta.is_empty(),
+		"extMcp mock CheckRequest should have been called"
+	);
+	let tp = request_meta[0]
+		.get("traceparent")
+		.expect("ExtMCP CheckRequest gRPC call should carry a traceparent metadata entry");
+	assert_eq!(
+		tp.split('-').nth(1),
+		Some(TEST_TRACE_ID),
+		"CheckRequest traceparent metadata should preserve the incoming trace-id: {tp}"
+	);
+	assert_eq!(
+		request_meta[0].get("tracestate").map(String::as_str),
+		Some(TEST_TRACESTATE),
+		"ExtMCP CheckRequest gRPC call should carry the incoming tracestate as metadata"
+	);
+
+	let response_meta = response_meta.lock().unwrap();
+	assert!(
+		!response_meta.is_empty(),
+		"extMcp mock CheckResponse should have been called"
+	);
+	let tp = response_meta[0]
+		.get("traceparent")
+		.expect("ExtMCP CheckResponse gRPC call should carry a traceparent metadata entry");
+	assert_eq!(
+		tp.split('-').nth(1),
+		Some(TEST_TRACE_ID),
+		"CheckResponse traceparent metadata should preserve the incoming trace-id: {tp}"
+	);
+}
+
 #[tokio::test]
 async fn mcp_guardrails_reject_surfaces_jsonrpc_error() {
 	use protos::ext_mcp::authorization_error::Code;

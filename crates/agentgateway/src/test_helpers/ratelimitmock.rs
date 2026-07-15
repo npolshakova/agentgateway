@@ -35,6 +35,8 @@ pub fn over_limit_response(raw_body: impl Into<Vec<u8>>) -> Result<RateLimitResp
 
 #[async_trait]
 pub trait Handler {
+	/// Observe the gRPC request metadata (headers) of the ShouldRateLimit call.
+	async fn on_call(&mut self, _metadata: &tonic::metadata::MetadataMap) {}
 	async fn should_rate_limit(
 		&mut self,
 		_request: &RateLimitRequest,
@@ -87,6 +89,7 @@ where
 		request: Request<RateLimitRequest>,
 	) -> Result<TonicResponse<RateLimitResponse>, Status> {
 		let mut handler = (self.handler.clone())();
+		handler.on_call(request.metadata()).await;
 		let response = handler.should_rate_limit(request.get_ref()).await?;
 		Ok(TonicResponse::new(response))
 	}

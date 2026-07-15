@@ -22,6 +22,7 @@ use crate::mcp::guardrails::{
 };
 use crate::mcp::upstream::IncomingRequestContext;
 use crate::proxy::httpproxy::PolicyClient;
+use crate::telemetry::trc;
 
 fn with_default_timeout<T>(msg: T) -> tonic::Request<T> {
 	let mut req = tonic::Request::new(msg);
@@ -51,7 +52,11 @@ pub(crate) async fn check_request<P: serde::de::DeserializeOwned>(
 		headers,
 	};
 	let mut grpc = build_client(remote, client.clone());
-	let tonic_req = with_default_timeout(req);
+	let mut tonic_req = with_default_timeout(req);
+	// Propagate the trace context so the guardrails service can join the trace.
+	if let Some(trace) = trc::OutboundTraceContext::from_request(&http_req) {
+		trace.apply_grpc(tonic_req.metadata_mut());
+	}
 	let resp = match grpc.check_request(tonic_req).await {
 		Ok(resp) => resp.into_inner(),
 		Err(status) => return on_grpc_error(remote, method, backends, "checkRequest", status),
@@ -191,8 +196,9 @@ pub(crate) async fn check_response(
 	client: &PolicyClient,
 ) -> Outcome<ServerResult> {
 	let mcp_response = body.clone();
+	let http_req = req_ctx.as_request();
 	let metadata_context = (!remote.metadata.is_empty())
-		.then(|| build_metadata(&remote.metadata, &req_ctx.as_request()))
+		.then(|| build_metadata(&remote.metadata, &http_req))
 		.flatten();
 	let req = McpResponse {
 		service_names: backends.to_vec(),
@@ -201,7 +207,11 @@ pub(crate) async fn check_response(
 		mcp_response,
 	};
 	let mut grpc = build_client(remote, client.clone());
-	let tonic_req = with_default_timeout(req);
+	let mut tonic_req = with_default_timeout(req);
+	// Propagate the trace context so the guardrails service can join the trace.
+	if let Some(trace) = trc::OutboundTraceContext::from_request(&http_req) {
+		trace.apply_grpc(tonic_req.metadata_mut());
+	}
 	let result = match grpc.check_response(tonic_req).await {
 		Ok(resp) => resp.into_inner().result,
 		Err(status) => return on_grpc_error(remote, method, backends, "checkResponse", status),

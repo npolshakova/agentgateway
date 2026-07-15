@@ -822,3 +822,91 @@ fn build_request_jwt_sub_descriptor_evaluates_with_materialization() {
 	assert_eq!(request.descriptors[0].entries[0].key, "user");
 	assert_eq!(request.descriptors[0].entries[0].value, "rate-limit-user");
 }
+
+// --- Trace context propagation ---
+
+/// The outbound ShouldRateLimit gRPC call must carry the incoming W3C trace
+/// context (traceparent/tracestate) as gRPC metadata so the rate limit service
+/// can join the trace.
+#[tokio::test]
+async fn traceparent_propagates_to_rate_limit_grpc_metadata() {
+	use std::collections::HashMap;
+
+	use ::http::Method;
+
+	use crate::test_helpers::proxymock::*;
+	use crate::test_helpers::{
+		TEST_TRACE_ID, TEST_TRACEPARENT, TEST_TRACESTATE, ascii_metadata, ratelimitmock,
+	};
+
+	#[derive(Clone)]
+	struct MetadataRecorder {
+		seen: Arc<std::sync::Mutex<Vec<HashMap<String, String>>>>,
+	}
+
+	#[async_trait::async_trait]
+	impl ratelimitmock::Handler for MetadataRecorder {
+		async fn on_call(&mut self, metadata: &tonic::metadata::MetadataMap) {
+			self.seen.lock().unwrap().push(ascii_metadata(metadata));
+		}
+	}
+
+	let seen = Arc::new(std::sync::Mutex::new(Vec::new()));
+	let ratelimit = ratelimitmock::RateLimitMock::new({
+		let seen = seen.clone();
+		move || MetadataRecorder { seen: seen.clone() }
+	})
+	.spawn()
+	.await;
+
+	let mock = simple_mock().await;
+	let mut t = setup_proxy_test("{}")
+		.unwrap()
+		.with_backend(*mock.address())
+		.with_bind(simple_bind())
+		.with_route(basic_route(*mock.address()));
+	t.attach_route_policy(serde_json::json!({
+		"remoteRateLimit": {
+			"host": ratelimit.address.to_string(),
+			"domain": "test",
+			"descriptors": [{
+				"entries": [
+					{"key": "generic_key", "value": "\"test\""}
+				],
+				"type": "requests"
+			}]
+		}
+	}))
+	.await;
+	let io = t.serve_http(BIND_KEY);
+
+	let res = send_request_headers(
+		io,
+		Method::GET,
+		"http://lo/x",
+		&[
+			("traceparent", TEST_TRACEPARENT),
+			("tracestate", TEST_TRACESTATE),
+		],
+	)
+	.await;
+	assert_eq!(res.status(), 200);
+
+	let seen = seen.lock().unwrap();
+	assert!(!seen.is_empty(), "rate limit mock should have been called");
+	let tp = seen[0]
+		.get("traceparent")
+		.expect("ShouldRateLimit gRPC call should carry a traceparent metadata entry");
+	// The gateway may start its own span (new span-id), but the trace-id must be
+	// preserved so the rate limit service can join the trace.
+	assert_eq!(
+		tp.split('-').nth(1),
+		Some(TEST_TRACE_ID),
+		"traceparent metadata should preserve the incoming trace-id: {tp}"
+	);
+	assert_eq!(
+		seen[0].get("tracestate").map(String::as_str),
+		Some(TEST_TRACESTATE),
+		"ShouldRateLimit gRPC call should carry the incoming tracestate as metadata"
+	);
+}

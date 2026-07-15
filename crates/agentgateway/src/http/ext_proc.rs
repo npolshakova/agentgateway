@@ -24,6 +24,7 @@ use crate::proxy::ProxyError;
 use crate::proxy::dtrace::{self, pol_result};
 use crate::proxy::httpproxy::PolicyClient;
 use crate::telemetry::metrics::{OutboundCallKind, OutboundCallSubtype};
+use crate::telemetry::trc;
 use crate::types::agent::{SimpleBackendReference, SimpleBackendReferenceWithPolicies};
 use crate::{http, *};
 
@@ -417,14 +418,25 @@ impl ExtProcInstance {
 		}
 	}
 
-	fn ensure_stream_started(&mut self, exec: &Executor<'_>) -> Result<(), Error> {
+	fn ensure_stream_started(
+		&mut self,
+		exec: &Executor<'_>,
+		outbound_trace: Option<trc::OutboundTraceContext>,
+	) -> Result<(), Error> {
 		if self.tx_req.is_some() {
 			return Ok(());
 		}
 
 		// Delay stream creation until we have a request/response executor so
 		// metadata_context CEL can be resolved into gRPC initial metadata.
-		let grpc_initial_metadata = build_grpc_initial_metadata(exec, self.metadata_context.as_ref());
+		let mut grpc_initial_metadata =
+			build_grpc_initial_metadata(exec, self.metadata_context.as_ref());
+		// Propagate the trace context so the ext_proc service can join the trace.
+		// apply_grpc skips an already-present traceparent, so an explicit
+		// user-configured one (via the reserved metadata namespace) takes precedence.
+		if let Some(trace) = outbound_trace {
+			trace.apply_grpc(&mut grpc_initial_metadata);
+		}
 		let Some(mut client) = self.client.take() else {
 			return Err(Error::RequestSend);
 		};
@@ -814,7 +826,7 @@ impl ExtProcInstance {
 		let headers = req_to_header_map(&req);
 
 		let exec = cel::Executor::new_request(&req);
-		self.ensure_stream_started(&exec)?;
+		self.ensure_stream_started(&exec, trc::OutboundTraceContext::from_request(&req))?;
 		// request_attributes should only be sent on first ProcessingRequest
 		// this will need to be modified if we configure which Requests to send
 		// Wrap metadata_context in Arc for cheap cloning across body chunks
@@ -1323,7 +1335,12 @@ impl ExtProcInstance {
 		let send_response_headers = self.mode_state.response_header_mode == HeaderSendMode::Send;
 
 		let exec = cel::Executor::new_response(request, &response);
-		self.ensure_stream_started(&exec)?;
+		// The stream is normally opened during the request phase; if this is the
+		// first use, derive the trace context from the request header snapshot.
+		self.ensure_stream_started(
+			&exec,
+			request.and_then(|r| trc::OutboundTraceContext::from_headers(&r.headers)),
+		)?;
 		// Wrap metadata_context in Arc for cheap cloning across body chunks
 		let metadata_context = if self.metadata_context.is_none()
 			&& let Some(rd) = resolved_destination_metadata

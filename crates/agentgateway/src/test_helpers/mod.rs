@@ -11,6 +11,27 @@ pub use common::MockInstance;
 #[cfg(any(test, feature = "internal_benches"))]
 pub use policy::{policy_client, test_policy};
 
+/// Shared W3C trace-context fixtures for propagation tests.
+pub const TEST_TRACEPARENT: &str = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
+pub const TEST_TRACE_ID: &str = "4bf92f3577b34da6a3ce929d0e0e4736";
+pub const TEST_TRACESTATE: &str = "vendor=1";
+
+/// Collect the ASCII entries of a tonic metadata map into a `HashMap`, for
+/// assertions on gRPC request metadata observed by mock services.
+pub fn ascii_metadata(
+	metadata: &tonic::metadata::MetadataMap,
+) -> std::collections::HashMap<String, String> {
+	let mut values = std::collections::HashMap::new();
+	for key_and_value in metadata.iter() {
+		if let tonic::metadata::KeyAndValueRef::Ascii(key, value) = key_and_value
+			&& let Ok(value) = value.to_str()
+		{
+			values.insert(key.to_string(), value.to_string());
+		}
+	}
+	values
+}
+
 mod common {
 	use std::net::SocketAddr;
 

@@ -550,6 +550,11 @@ impl ExtAuthz {
 			}),
 		};
 
+		let mut authz_req = tonic::Request::new(authz_req);
+		if let Some(trace) = crate::telemetry::trc::OutboundTraceContext::from_request(req) {
+			trace.apply_grpc(authz_req.metadata_mut());
+		}
+
 		let scope = dtrace::start_scope("ext_authz");
 		let resp = grpc_client.check(authz_req).await;
 		drop(scope);
@@ -829,6 +834,10 @@ impl ExtAuthz {
 				resv,
 				http::HeaderMutationAction::OverwriteIfExistsOrAdd,
 			);
+		}
+		// Propagate the trace context so the authorization service can join the trace.
+		if let Some(trace) = crate::telemetry::trc::OutboundTraceContext::from_request(req) {
+			trace.apply_http(check_req.headers_mut());
 		}
 		// Set the default request timeout. This can be overridden by a timeout on the Backend object itself.
 		check_req

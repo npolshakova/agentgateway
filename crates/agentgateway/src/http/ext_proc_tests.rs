@@ -3804,15 +3804,11 @@ type MetadataTracker = RequestRecorder;
 #[async_trait::async_trait]
 impl Handler for RequestRecorder {
 	async fn on_open(&mut self, metadata: &tonic::metadata::MetadataMap) {
-		let mut values = HashMap::new();
-		for key_and_value in metadata.iter() {
-			if let tonic::metadata::KeyAndValueRef::Ascii(key, value) = key_and_value
-				&& let Ok(value) = value.to_str()
-			{
-				values.insert(key.to_string(), value.to_string());
-			}
-		}
-		self.open_metadata.lock().unwrap().push(values);
+		self
+			.open_metadata
+			.lock()
+			.unwrap()
+			.push(crate::test_helpers::ascii_metadata(metadata));
 	}
 
 	async fn on_request(&mut self, request: &proto::ProcessingRequest) {
@@ -4899,5 +4895,261 @@ mod metadata_context_and_attributes {
 			Some(prost_wkt_types::value::Kind::NumberValue(n)) => assert_eq!(*n, 200.0),
 			invalid => panic!("exepected a number got {:?}", invalid),
 		}
+	}
+}
+
+// W3C trace context (traceparent/tracestate) propagation to the ext_proc gRPC stream.
+mod trace_context_propagation {
+	use super::*;
+	use crate::test_helpers::{TEST_TRACEPARENT, TEST_TRACESTATE};
+
+	// When the gateway does not sample a span (clientSampling: false), the
+	// incoming traceparent and tracestate headers are passed through verbatim
+	// as gRPC initial metadata on the ext_proc stream.
+	#[tokio::test]
+	async fn unsampled_traceparent_passes_through_to_grpc_metadata() {
+		use crate::test_helpers::oteltracemock;
+
+		struct NopTraceHandler;
+		#[async_trait::async_trait]
+		impl oteltracemock::Handler for NopTraceHandler {}
+
+		let otel = oteltracemock::OtelTraceMock::new(|| NopTraceHandler)
+			.spawn()
+			.await;
+
+		let mock = simple_mock().await;
+		let tracker = MetadataTracker::new();
+		let open_metadata = tracker.open_metadata.clone();
+
+		let (_mock, _ext_proc, _bind, io) =
+			setup_ext_proc_mock_with_processing_options_and_frontend_policy(
+				mock,
+				ext_proc::FailureMode::FailClosed,
+				ExtProcMock::new(move || tracker.clone()),
+				"{}",
+				None,
+				json!({
+					"tracing": {
+						"host": otel.address.to_string(),
+						"clientSampling": false,
+					}
+				}),
+			)
+			.await;
+
+		let res = send_request_headers(
+			io,
+			Method::GET,
+			"http://lo/x",
+			&[
+				("traceparent", TEST_TRACEPARENT),
+				("tracestate", TEST_TRACESTATE),
+			],
+		)
+		.await;
+		assert_eq!(res.status(), 200);
+
+		let open = open_metadata.lock().unwrap();
+		assert!(!open.is_empty());
+		assert_eq!(
+			open[0].get("traceparent").map(String::as_str),
+			Some(TEST_TRACEPARENT),
+			"ext_proc stream should carry the incoming traceparent as gRPC metadata"
+		);
+		assert_eq!(
+			open[0].get("tracestate").map(String::as_str),
+			Some(TEST_TRACESTATE),
+			"ext_proc stream should carry the incoming tracestate as gRPC metadata"
+		);
+	}
+
+	// When the gateway samples a span (tracing frontend policy), the ext_proc
+	// stream metadata carries the *outgoing* span context: same trace-id as the
+	// incoming traceparent but a fresh span-id.
+	#[tokio::test]
+	async fn sampled_span_context_is_sent_to_grpc_metadata() {
+		use crate::test_helpers::oteltracemock;
+
+		struct NopTraceHandler;
+		#[async_trait::async_trait]
+		impl oteltracemock::Handler for NopTraceHandler {}
+
+		let otel = oteltracemock::OtelTraceMock::new(|| NopTraceHandler)
+			.spawn()
+			.await;
+
+		let mock = simple_mock().await;
+		let tracker = MetadataTracker::new();
+		let open_metadata = tracker.open_metadata.clone();
+
+		let (_mock, _ext_proc, _bind, io) =
+			setup_ext_proc_mock_with_processing_options_and_frontend_policy(
+				mock,
+				ext_proc::FailureMode::FailClosed,
+				ExtProcMock::new(move || tracker.clone()),
+				"{}",
+				None,
+				json!({
+					"tracing": {
+						"host": otel.address.to_string(),
+						"randomSampling": true,
+					}
+				}),
+			)
+			.await;
+
+		let res = send_request_headers(
+			io,
+			Method::GET,
+			"http://lo/x",
+			&[("traceparent", TEST_TRACEPARENT)],
+		)
+		.await;
+		assert_eq!(res.status(), 200);
+
+		let open = open_metadata.lock().unwrap();
+		assert!(!open.is_empty());
+		let sent = open[0]
+			.get("traceparent")
+			.expect("ext_proc stream should carry a traceparent gRPC metadata entry");
+
+		let incoming: Vec<&str> = TEST_TRACEPARENT.split('-').collect();
+		let outgoing: Vec<&str> = sent.split('-').collect();
+		assert_eq!(
+			outgoing.len(),
+			4,
+			"traceparent should be well formed: {sent}"
+		);
+		assert_eq!(
+			outgoing[1], incoming[1],
+			"trace-id should be preserved from the incoming traceparent"
+		);
+		assert_ne!(
+			outgoing[2], incoming[2],
+			"span-id should be the gateway's new span, not the incoming one"
+		);
+	}
+
+	// A traceparent explicitly configured via the reserved grpc_initial_metadata
+	// namespace wins over propagation, and the incoming request's tracestate must
+	// NOT be attached to it: pairing an unrelated tracestate with a user-chosen
+	// trace context would corrupt it.
+	#[tokio::test]
+	async fn user_traceparent_is_not_paired_with_incoming_tracestate() {
+		const USER_TRACEPARENT: &str = "00-11111111111111111111111111111111-2222222222222222-01";
+
+		let mock = simple_mock().await;
+		let tracker = MetadataTracker::new();
+		let open_metadata = tracker.open_metadata.clone();
+
+		let meta = HashMap::from([(
+			super::super::EXTPROC_GRPC_INITIAL_METADATA_NAMESPACE.to_string(),
+			[(
+				"traceparent".to_string(),
+				Arc::new(Expression::new_strict(format!("'{USER_TRACEPARENT}'")).unwrap()),
+			)]
+			.into(),
+		)]);
+
+		let (_mock, _ext_proc, _bind, io) = setup_ext_proc_mock_with_meta(
+			mock,
+			ext_proc::FailureMode::FailClosed,
+			ExtProcMock::new(move || tracker.clone()),
+			"{}",
+			Some(meta),
+			None,
+			None,
+		)
+		.await;
+
+		let res = send_request_headers(
+			io,
+			Method::GET,
+			"http://lo/x",
+			&[
+				("traceparent", TEST_TRACEPARENT),
+				("tracestate", TEST_TRACESTATE),
+			],
+		)
+		.await;
+		assert_eq!(res.status(), 200);
+
+		let open = open_metadata.lock().unwrap();
+		assert!(!open.is_empty());
+		assert_eq!(
+			open[0].get("traceparent").map(String::as_str),
+			Some(USER_TRACEPARENT),
+			"explicit user-configured traceparent must not be overwritten by propagation"
+		);
+		assert_eq!(
+			open[0].get("tracestate"),
+			None,
+			"the incoming tracestate must not be paired with a user-configured traceparent"
+		);
+	}
+
+	// When the incoming traceparent is malformed the gateway mints a fresh trace;
+	// per W3C trace-context, the stale tracestate must be discarded, not paired
+	// with the restarted trace.
+	#[tokio::test]
+	async fn tracestate_is_discarded_when_trace_restarts() {
+		use crate::test_helpers::oteltracemock;
+
+		struct NopTraceHandler;
+		#[async_trait::async_trait]
+		impl oteltracemock::Handler for NopTraceHandler {}
+
+		let otel = oteltracemock::OtelTraceMock::new(|| NopTraceHandler)
+			.spawn()
+			.await;
+
+		let mock = simple_mock().await;
+		let tracker = MetadataTracker::new();
+		let open_metadata = tracker.open_metadata.clone();
+
+		let (_mock, _ext_proc, _bind, io) =
+			setup_ext_proc_mock_with_processing_options_and_frontend_policy(
+				mock,
+				ext_proc::FailureMode::FailClosed,
+				ExtProcMock::new(move || tracker.clone()),
+				"{}",
+				None,
+				json!({
+					"tracing": {
+						"host": otel.address.to_string(),
+						"randomSampling": true,
+					}
+				}),
+			)
+			.await;
+
+		let res = send_request_headers(
+			io,
+			Method::GET,
+			"http://lo/x",
+			&[
+				("traceparent", "malformed"),
+				("tracestate", TEST_TRACESTATE),
+			],
+		)
+		.await;
+		assert_eq!(res.status(), 200);
+
+		let open = open_metadata.lock().unwrap();
+		assert!(!open.is_empty());
+		let sent = open[0]
+			.get("traceparent")
+			.expect("ext_proc stream should carry the freshly minted traceparent");
+		assert_eq!(
+			sent.split('-').count(),
+			4,
+			"traceparent should be well formed: {sent}"
+		);
+		assert_eq!(
+			open[0].get("tracestate"),
+			None,
+			"tracestate must be discarded when the trace restarts"
+		);
 	}
 }

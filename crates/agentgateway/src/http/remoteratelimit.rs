@@ -10,6 +10,7 @@ use crate::http::{PolicyResponse, Request, envoy_proto_common};
 use crate::proxy::ProxyError;
 use crate::proxy::httpproxy::PolicyClient;
 use crate::telemetry::metrics::{OutboundCallKind, OutboundCallSubtype};
+use crate::telemetry::trc;
 use crate::types::agent::SimpleBackendReferenceWithPolicies;
 use crate::*;
 
@@ -132,6 +133,9 @@ pub struct LLMResponseAmend {
 	client: PolicyClient,
 	request: proto::RateLimitRequest,
 	descriptor_costs: Vec<Option<Arc<Expression>>>,
+	// Boxed to keep this struct (held across awaits in the LLM response path)
+	// within future size limits.
+	trace: Option<Box<trc::OutboundTraceContext>>,
 }
 
 impl LLMResponseAmend {
@@ -143,7 +147,10 @@ impl LLMResponseAmend {
 			exec,
 		);
 		tokio::task::spawn(async move {
-			let _ = self.base.check_internal(self.client, self.request).await;
+			let _ = self
+				.base
+				.check_internal(self.client, self.request, self.trace.as_deref())
+				.await;
 		});
 	}
 
@@ -332,12 +339,16 @@ impl RemoteRateLimit {
 		else {
 			return Ok((PolicyResponse::default(), None));
 		};
-		let cr = self.check_internal(client.clone(), request.clone()).await;
+		let trace = trc::OutboundTraceContext::from_request(req);
+		let cr = self
+			.check_internal(client.clone(), request.clone(), trace.as_ref())
+			.await;
 		let r = LLMResponseAmend {
 			base: self.clone(),
 			client,
 			request,
 			descriptor_costs,
+			trace: trace.map(Box::new),
 		};
 
 		match cr {
@@ -374,7 +385,8 @@ impl RemoteRateLimit {
 		let Some((request, _)) = self.build_request(req, RateLimitType::Requests, None) else {
 			return Ok(PolicyResponse::default());
 		};
-		match self.check_internal(client, request).await {
+		let trace = trc::OutboundTraceContext::from_request(req);
+		match self.check_internal(client, request, trace.as_ref()).await {
 			Ok(cr) => Self::apply(req, cr),
 			Err(e) => {
 				if self.failure_mode == FailureMode::FailOpen {
@@ -390,6 +402,7 @@ impl RemoteRateLimit {
 		&self,
 		client: PolicyClient,
 		request: proto::RateLimitRequest,
+		trace: Option<&trc::OutboundTraceContext>,
 	) -> Result<proto::RateLimitResponse, ProxyError> {
 		trace!("connecting to {:?}", self.target.target);
 		trace!(
@@ -413,6 +426,11 @@ impl RemoteRateLimit {
 			.target
 			.grpc_channel(client.with_outbound(OutboundCallKind::Policy, OutboundCallSubtype::RateLimit));
 		let mut client = RateLimitServiceClient::new(chan);
+		let mut request = tonic::Request::new(request);
+		// Propagate the trace context so the rate limit service can join the trace.
+		if let Some(trace) = trace {
+			trace.apply_grpc(request.metadata_mut());
+		}
 		let resp = client.should_rate_limit(request).await;
 		trace!("check response: {:?}", resp);
 		if let Err(ref error) = resp {

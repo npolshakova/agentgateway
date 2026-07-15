@@ -26,7 +26,7 @@ use crate::http::buffer::Buffer;
 use crate::http::ext_proc::{ExtProcRequest, InferenceRoutingDestinationMode};
 use crate::http::filters::{AutoHostname, BackendRequestTimeout};
 use crate::http::transformation_cel::Transformation;
-use crate::http::x_headers::TRACEPARENT;
+use crate::http::x_headers::{TRACEPARENT, TRACESTATE};
 use crate::http::{
 	Authority, HeaderName, HeaderValue, Request, Response, Scheme, StatusCode, Uri, auth, filters,
 	merge_in_headers, retry,
@@ -1212,7 +1212,10 @@ impl HTTPProxy {
 					ns
 				},
 				None => {
-					// Build an entirely new trace
+					// Build an entirely new trace. The client's tracestate (if any)
+					// belongs to the old (absent/malformed) trace and must be
+					// discarded when the trace restarts, per W3C trace-context.
+					req.headers_mut().remove(TRACESTATE);
 					let mut ns = TraceParent::new();
 					ns.flags = 1;
 					ns

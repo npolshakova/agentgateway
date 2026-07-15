@@ -14,7 +14,7 @@ use opentelemetry_sdk::trace::{
 	BatchSpanProcessor, SdkTracerProvider, SpanData, SpanEvents, SpanExporter, SpanLinks,
 	SpanProcessor,
 };
-pub use traceparent::TraceParent;
+pub use traceparent::{OutboundTraceContext, TraceParent};
 
 use crate::cel;
 use crate::telemetry::log::{CelLoggingExecutor, LoggingFields, RequestLog};
@@ -639,9 +639,10 @@ mod traceparent {
 	use std::fmt;
 
 	use rand::RngExt;
+	use tracing::warn;
 
 	use crate::http::Request;
-	use crate::http::x_headers::TRACEPARENT;
+	use crate::http::x_headers::{TRACEPARENT, TRACESTATE};
 
 	/// Represents a traceparent, as defined by https://www.w3.org/TR/trace-context/
 	#[derive(Clone, Eq, PartialEq)]
@@ -668,9 +669,19 @@ mod traceparent {
 				flags: 0,
 			}
 		}
+		/// The W3C `traceparent` wire format of this context.
+		pub fn header_value(&self) -> String {
+			format!("{self:?}")
+		}
+		/// The W3C `traceparent` wire format of this context, as a header value.
+		pub fn to_header_value(&self) -> hyper::header::HeaderValue {
+			// The rendered form is always valid ASCII.
+			hyper::header::HeaderValue::from_bytes(self.header_value().as_bytes()).unwrap()
+		}
 		pub fn insert_header(&self, req: &mut Request) {
-			let hv = hyper::header::HeaderValue::from_bytes(format!("{self:?}").as_bytes()).unwrap();
-			req.headers_mut().insert(TRACEPARENT, hv);
+			req
+				.headers_mut()
+				.insert(TRACEPARENT, self.to_header_value());
 		}
 		pub fn from_request(req: &Request) -> Option<Self> {
 			req
@@ -728,6 +739,109 @@ mod traceparent {
 				span_id: u64::from_str_radix(segs[2], 16)?,
 				flags: u8::from_str_radix(segs[3], 16)?,
 			})
+		}
+	}
+
+	/// Outbound W3C trace context to propagate on calls to external policy
+	/// services (extAuthz, extProc, remote rate limit, ExtMCP guardrails) so
+	/// they can join the trace. Resolution mirrors upstream request forwarding:
+	/// the sampled outgoing span (request extension) wins; otherwise the
+	/// incoming `traceparent` header is passed through verbatim. `tracestate`
+	/// is forwarded verbatim, and only when a valid incoming traceparent exists:
+	/// when the gateway restarts the trace (absent/malformed incoming
+	/// traceparent), the stale tracestate is discarded per W3C trace-context.
+	///
+	/// Values are validated and rendered once at construction, so the `apply_*`
+	/// methods only insert cheap clones.
+	#[derive(Clone, Debug)]
+	pub struct OutboundTraceContext {
+		traceparent: ::http::HeaderValue,
+		tracestate: Option<::http::HeaderValue>,
+	}
+
+	impl OutboundTraceContext {
+		/// Resolve from a request: the outgoing-span extension first (sampled),
+		/// falling back to the incoming `traceparent` header (pass-through).
+		pub fn from_request(req: &Request) -> Option<Self> {
+			// A valid incoming traceparent means the trace continues and the
+			// client's tracestate stays meaningful. Absent/malformed means any
+			// context we carry was minted by the gateway (trace restart), so the
+			// stale tracestate must be dropped.
+			let valid_incoming = TraceParent::from_request(req).is_some();
+			let traceparent = match req.extensions().get::<TraceParent>() {
+				Some(tp) => tp.to_header_value(),
+				None if valid_incoming => req.headers().get(TRACEPARENT)?.clone(),
+				None => return None,
+			};
+			Some(Self {
+				traceparent,
+				tracestate: if valid_incoming {
+					req.headers().get(TRACESTATE).cloned()
+				} else {
+					None
+				},
+			})
+		}
+
+		/// Header-only variant, for callers that only retain a header snapshot.
+		pub fn from_headers(headers: &::http::HeaderMap) -> Option<Self> {
+			let traceparent = headers.get(TRACEPARENT)?;
+			// Only propagate valid trace contexts.
+			traceparent
+				.to_str()
+				.ok()
+				.and_then(|b| TraceParent::try_from(b).ok())?;
+			Some(Self {
+				traceparent: traceparent.clone(),
+				tracestate: headers.get(TRACESTATE).cloned(),
+			})
+		}
+
+		/// Apply to outbound gRPC request metadata. A `traceparent` already
+		/// present (e.g. explicitly configured by the user) wins: nothing is
+		/// inserted then, since pairing our tracestate with a foreign traceparent
+		/// would corrupt it.
+		pub fn apply_grpc(&self, md: &mut tonic::metadata::MetadataMap) {
+			if md.contains_key(TRACEPARENT.as_str()) {
+				return;
+			}
+			let Some(tp) = Self::metadata_value(&self.traceparent) else {
+				// Cannot happen for the rendered/validated traceparent, but don't panic.
+				warn!("failed to convert traceparent to gRPC metadata");
+				return;
+			};
+			md.insert(tonic::metadata::MetadataKey::from_static("traceparent"), tp);
+			if let Some(ts) = &self.tracestate
+				&& !md.contains_key(TRACESTATE.as_str())
+			{
+				match Self::metadata_value(ts) {
+					Some(v) => {
+						md.insert(tonic::metadata::MetadataKey::from_static("tracestate"), v);
+					},
+					None => warn!("skipping non-ASCII tracestate for gRPC metadata"),
+				}
+			}
+		}
+
+		fn metadata_value(
+			v: &::http::HeaderValue,
+		) -> Option<tonic::metadata::MetadataValue<tonic::metadata::Ascii>> {
+			tonic::metadata::MetadataValue::try_from(v.as_bytes()).ok()
+		}
+
+		/// Apply to outbound HTTP headers, with the same precedence as
+		/// [`Self::apply_grpc`]: an existing `traceparent` wins and suppresses
+		/// the paired tracestate as well.
+		pub fn apply_http(&self, headers: &mut ::http::HeaderMap) {
+			if headers.contains_key(TRACEPARENT) {
+				return;
+			}
+			headers.insert(TRACEPARENT, self.traceparent.clone());
+			if let Some(ts) = &self.tracestate
+				&& !headers.contains_key(TRACESTATE)
+			{
+				headers.insert(TRACESTATE, ts.clone());
+			}
 		}
 	}
 }
