@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -453,6 +454,24 @@ func TestMakeFetchClientRejectsInvalidProxyURL(t *testing.T) {
 	_, err := makeFetchClient(nil, "://missing-scheme", nil)
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "error parsing proxy URL")
+}
+
+func TestFetchJwksSetsExplicitUserAgent(t *testing.T) {
+	userAgents := make(chan string, 1)
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		userAgents <- r.Header.Get("User-Agent")
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, sampleJWKS)
+	}))
+	defer backend.Close()
+
+	f := NewFetcher(NewCache())
+	_, err := f.defaultJwksClient.FetchJwks(t.Context(), remotehttp.FetchTarget{URL: backend.URL})
+	require.NoError(t, err)
+
+	ua := <-userAgents
+	assert.Equal(t, fetchUserAgent, ua)
+	assert.True(t, strings.HasPrefix(ua, "agentgateway-controller/"), "unexpected user agent %q", ua)
 }
 
 func TestProxyURLAffectsFetchKey(t *testing.T) {

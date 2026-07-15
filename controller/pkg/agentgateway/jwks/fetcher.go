@@ -18,6 +18,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	"github.com/agentgateway/agentgateway/controller/pkg/agentgateway/remotehttp"
+	"github.com/agentgateway/agentgateway/controller/pkg/version"
 )
 
 const (
@@ -26,6 +27,11 @@ const (
 	maxRetryShift     = 30
 	clientTimeout     = 10 * time.Second
 )
+
+// fetchUserAgent identifies controller-originated JWKS fetches. Go's default
+// Go-http-client/1.1 UA is fingerprinted as automated traffic by some
+// enterprise secure web gateways, which respond with synthetic errors.
+var fetchUserAgent = "agentgateway-controller/" + version.GitVersion
 
 type fetchAt struct {
 	At           time.Time
@@ -479,6 +485,7 @@ func (c *jwksHttpClientImpl) FetchJwks(ctx context.Context, target remotehttp.Fe
 	if err != nil {
 		return jose.JSONWebKeySet{}, fmt.Errorf("could not build request to get JWKS: %w", err)
 	}
+	request.Header.Set("User-Agent", fetchUserAgent)
 
 	response, err := c.Client.Do(request)
 	if err != nil {
