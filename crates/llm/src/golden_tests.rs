@@ -225,6 +225,26 @@ fn request_conversion_golden() {
 		conversion::bedrock::from_messages::translate(&i, &bedrock_claude, None).map(|r| r.body)
 	});
 
+	// Anthropic cache_control -> OpenAI explicit prompt-cache breakpoints (GPT-5.6+), including
+	// the gate that suppresses them for models that do not support them.
+	for name in ["cache-points", "cache-points-unsupported"] {
+		let path = format!("requests/messages/{name}.json");
+		test_request(COMPLETIONS, &path, |i| {
+			conversion::completions::from_messages::translate(&i)
+		});
+	}
+	// OpenAI explicit prompt-cache breakpoints -> Anthropic cache_control / Bedrock cachePoint.
+	{
+		let path = "requests/completions/cache-points.json";
+		test_request(ANTHROPIC, path, |i| {
+			conversion::messages::from_completions::translate(&i)
+		});
+		test_request(BEDROCK, path, |i| {
+			conversion::bedrock::from_completions::translate(&i, &bedrock_claude, None, None)
+				.map(|r| r.body)
+		});
+	}
+
 	for name in ["basic", "instructions", "input-list", "parallel-tool-call"] {
 		let path = format!("requests/responses/{name}.json");
 		test_request(BEDROCK, &path, |i| {
@@ -345,6 +365,7 @@ fn response_conversion_golden() {
 	for name in [
 		"basic",
 		"audio",
+		"cache_write",
 		"openrouter_reasoning",
 		"gemini_zero_completion_tokens",
 		"gemini_with_completion_tokens",

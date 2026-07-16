@@ -7,15 +7,24 @@ use serde::Deserialize;
 use crate::types::detect;
 use crate::{StreamingUsageGuard, parse, types};
 
-#[allow(clippy::large_enum_variant)] // The large variant is used 99% of the time so just always use it.
-#[derive(Debug, Clone, Deserialize)]
-#[serde(untagged)]
-enum StreamResponse {
-	// Attempt to parse it properly
-	Typed(types::responses::typed::ResponseStreamEvent),
-	// Fallback to detect mode. This is useful if the provider breaks the spec (which happens with custom
-	// providers but also OpenAI themselves, often)
-	Raw(detect::StreamResponse),
+#[derive(Debug, Clone)]
+struct StreamResponse {
+	typed: Option<types::responses::typed::ResponseStreamEvent>,
+	raw: detect::StreamResponse,
+}
+
+impl<'de> Deserialize<'de> for StreamResponse {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		let value = serde_json::Value::deserialize(deserializer)?;
+		let typed = serde_json::from_value(value.clone()).ok();
+		Ok(Self {
+			typed,
+			raw: detect::StreamResponse { rest: value },
+		})
+	}
 }
 
 pub fn passthrough_stream(
@@ -38,12 +47,9 @@ pub fn passthrough_stream(
 			}
 			return;
 		};
-		let event = match event {
-			StreamResponse::Typed(e) => e,
-			StreamResponse::Raw(raw) => {
-				detect::amend_from_stream_response(&mut log, &raw);
-				return;
-			},
+		detect::amend_from_stream_response(&mut log, &event.raw);
+		let Some(event) = event.typed else {
+			return;
 		};
 		match event {
 			types::responses::typed::ResponseStreamEvent::ResponseCreated(created) => {
@@ -87,6 +93,10 @@ pub fn passthrough_stream(
 						r.response.output_tokens = Some(usage.output_tokens as u64);
 						r.response.total_tokens = Some(usage.total_tokens as u64);
 						r.response.cached_input_tokens = Some(usage.input_tokens_details.cached_tokens as u64);
+						// TODO(GPT-5.6 explicit prompt caching): also record
+						// `input_tokens_details.cache_write_tokens` once async-openai's
+						// `InputTokenDetails` carries it (https://github.com/64bit/async-openai/pull/572).
+						// Non-stream responses and the raw-detect fallback already capture it.
 						r.response.reasoning_tokens = Some(usage.output_tokens_details.reasoning_tokens as u64);
 					}
 					if let Some(c) = completion.take() {

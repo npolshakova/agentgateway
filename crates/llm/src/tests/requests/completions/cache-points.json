@@ -1,0 +1,89 @@
+{
+  "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+  "max_completion_tokens": 1024,
+  "prompt_cache_options": {
+    "mode": "explicit",
+    "ttl": "30m"
+  },
+  "messages": [
+    {
+      "role": "system",
+      "content": [
+        {
+          "type": "text",
+          "text": "You are a helpful assistant."
+        },
+        {
+          "type": "text",
+          "text": "Here is a large reference document that should be cached.",
+          "prompt_cache_breakpoint": {
+            "mode": "explicit"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "How is the current weather in Columbus?",
+          "prompt_cache_breakpoint": {
+            "mode": "explicit"
+          }
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [
+        {
+          "id": "call_iMGPsr4Xx1u0G5sOzFsTCbQU",
+          "type": "function",
+          "function": {
+            "name": "get_weather",
+            "arguments": "{\"format\":\"celsius\",\"location\":\"Columbus, OH\"}"
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "tool_call_id": "call_iMGPsr4Xx1u0G5sOzFsTCbQU",
+      "content": [
+        {
+          "type": "text",
+          "text": "{ \"temperature\": 15, \"condition\": \"Cloudy\" }",
+          "prompt_cache_breakpoint": {
+            "mode": "explicit"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": "Should I bring an umbrella?"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "Get the current weather",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string"
+            },
+            "format": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

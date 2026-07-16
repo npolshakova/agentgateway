@@ -121,6 +121,9 @@ pub struct UsagePromptDetails {
 	pub cached_tokens: Option<u64>,
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub audio_tokens: Option<u64>,
+	/// Tokens written to the prompt cache (GPT-5.6+ explicit prompt caching).
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub cache_write_tokens: Option<u64>,
 	#[serde(flatten, default)]
 	pub rest: serde_json::Value,
 }
@@ -186,10 +189,13 @@ impl ResponseType for Response {
 						.and_then(|d| d.cached_tokens)
 				})
 			}),
-			cache_creation_input_tokens: self
-				.usage
-				.as_ref()
-				.and_then(|u| u.cache_creation_input_tokens),
+			cache_creation_input_tokens: self.usage.as_ref().and_then(|u| {
+				u.cache_creation_input_tokens.or_else(|| {
+					u.prompt_tokens_details
+						.as_ref()
+						.and_then(|d| d.cache_write_tokens)
+				})
+			}),
 			service_tier: self.service_tier.as_deref().map(Into::into),
 			provider_model: Some(strng::new(&self.model)),
 			completion: if include_completion_in_log {
@@ -402,23 +408,10 @@ pub mod typed {
 		ChatCompletionMessageToolCalls as MessageToolCalls,
 		ChatCompletionNamedToolChoice as NamedToolChoice,
 		ChatCompletionRequestAssistantMessageAudio as RequestAssistantMessageAudio,
-		ChatCompletionRequestAssistantMessageContent as RequestAssistantMessageContent,
-		ChatCompletionRequestAssistantMessageContentPart as RequestAssistantMessageContentPart,
-		ChatCompletionRequestDeveloperMessage as RequestDeveloperMessage,
-		ChatCompletionRequestDeveloperMessageContent as RequestDeveloperMessageContent,
-		ChatCompletionRequestDeveloperMessageContentPart as RequestDeveloperMessageContentPart,
 		ChatCompletionRequestFunctionMessage as RequestFunctionMessage,
-		ChatCompletionRequestMessageContentPartImage as RequestMessageContentPartImage,
-		ChatCompletionRequestMessageContentPartText as RequestMessageContentPartText,
-		ChatCompletionRequestSystemMessage as RequestSystemMessage,
-		ChatCompletionRequestSystemMessageContent as RequestSystemMessageContent,
-		ChatCompletionRequestSystemMessageContentPart as RequestSystemMessageContentPart,
-		ChatCompletionRequestToolMessage as RequestToolMessage,
-		ChatCompletionRequestToolMessageContent as RequestToolMessageContent,
-		ChatCompletionRequestToolMessageContentPart as RequestToolMessageContentPart,
-		ChatCompletionRequestUserMessage as RequestUserMessage,
-		ChatCompletionRequestUserMessageContent as RequestUserMessageContent,
-		ChatCompletionRequestUserMessageContentPart as RequestUserMessageContentPart,
+		ChatCompletionRequestMessageContentPartAudio as RequestMessageContentPartAudio,
+		ChatCompletionRequestMessageContentPartFile as RequestMessageContentPartFile,
+		ChatCompletionRequestMessageContentPartRefusal as RequestMessageContentPartRefusal,
 		ChatCompletionStreamOptions as StreamOptions, ChatCompletionTool as FunctionTool,
 		ChatCompletionToolChoiceOption as ToolChoiceOption, ChatCompletionToolChoiceOption,
 		ChatCompletionTools as Tool, FinishReason, FunctionCall, FunctionCallStream, FunctionName,
@@ -474,6 +467,174 @@ pub mod typed {
 		pub reasoning_signature: Option<String>,
 	}
 
+	/// Marks the exact end of a reusable prompt prefix (GPT-5.6+ explicit prompt caching).
+	/// The breakpoint inherits its TTL from the request's `prompt_cache_options.ttl`.
+	#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+	pub struct PromptCacheBreakpoint {
+		pub mode: PromptCacheBreakpointMode,
+	}
+
+	impl PromptCacheBreakpoint {
+		pub fn explicit() -> Self {
+			Self {
+				mode: PromptCacheBreakpointMode::Explicit,
+			}
+		}
+	}
+
+	/// The breakpoint mode. Always `explicit`.
+	#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+	#[serde(rename_all = "lowercase")]
+	pub enum PromptCacheBreakpointMode {
+		Explicit,
+	}
+
+	/// Whether prompt-cache breakpoints are created implicitly or explicitly. With `implicit`
+	/// (the default), OpenAI creates one implicit breakpoint and writes up to the latest three
+	/// explicit breakpoints in the request. With `explicit`, OpenAI does not create an implicit
+	/// breakpoint and writes up to the latest four explicit breakpoints.
+	#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+	#[serde(rename_all = "lowercase")]
+	pub enum PromptCacheMode {
+		Implicit,
+		Explicit,
+	}
+
+	/// Minimum lifetime for a prompt-cache breakpoint. `30m` is currently the only supported value.
+	#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+	pub enum PromptCacheTtl {
+		#[serde(rename = "30m")]
+		Minutes30,
+	}
+
+	/// Options for prompt caching on a request. Supported for `gpt-5.6` and later models.
+	#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+	pub struct PromptCacheOptions {
+		#[serde(skip_serializing_if = "Option::is_none")]
+		pub ttl: Option<PromptCacheTtl>,
+		#[serde(skip_serializing_if = "Option::is_none")]
+		pub mode: Option<PromptCacheMode>,
+	}
+
+	/// Agentgateway fork of async-openai's `ChatCompletionRequestMessageContentPartText`, extended
+	/// with `prompt_cache_breakpoint` (GPT-5.6+ explicit prompt caching; not yet in the released
+	/// async-openai crate). The wire format is otherwise identical to upstream.
+	#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+	pub struct RequestMessageContentPartText {
+		pub text: String,
+		/// Marks the exact end of a reusable prompt prefix.
+		#[serde(skip_serializing_if = "Option::is_none")]
+		pub prompt_cache_breakpoint: Option<PromptCacheBreakpoint>,
+	}
+
+	/// Agentgateway fork of async-openai's `ChatCompletionRequestMessageContentPartImage`, extended
+	/// with `prompt_cache_breakpoint` (see [`RequestMessageContentPartText`]).
+	#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+	pub struct RequestMessageContentPartImage {
+		pub image_url: ImageUrl,
+		/// Marks the exact end of a reusable prompt prefix.
+		#[serde(skip_serializing_if = "Option::is_none")]
+		pub prompt_cache_breakpoint: Option<PromptCacheBreakpoint>,
+	}
+
+	/// Forks of the async-openai message/content types that reference the content-part forks
+	/// above. Wire formats are identical to upstream; only the transitive part types differ.
+	#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+	#[serde(tag = "type", rename_all = "snake_case")]
+	pub enum RequestSystemMessageContentPart {
+		Text(RequestMessageContentPartText),
+	}
+
+	#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+	#[serde(untagged)]
+	pub enum RequestSystemMessageContent {
+		Text(String),
+		Array(Vec<RequestSystemMessageContentPart>),
+	}
+
+	#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+	pub struct RequestSystemMessage {
+		pub content: RequestSystemMessageContent,
+		#[serde(skip_serializing_if = "Option::is_none")]
+		pub name: Option<String>,
+	}
+
+	#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+	#[serde(tag = "type", rename_all = "snake_case")]
+	pub enum RequestDeveloperMessageContentPart {
+		Text(RequestMessageContentPartText),
+	}
+
+	#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+	#[serde(untagged)]
+	pub enum RequestDeveloperMessageContent {
+		Text(String),
+		Array(Vec<RequestDeveloperMessageContentPart>),
+	}
+
+	#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+	pub struct RequestDeveloperMessage {
+		pub content: RequestDeveloperMessageContent,
+		#[serde(skip_serializing_if = "Option::is_none")]
+		pub name: Option<String>,
+	}
+
+	#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+	#[serde(tag = "type", rename_all = "snake_case")]
+	pub enum RequestUserMessageContentPart {
+		Text(RequestMessageContentPartText),
+		ImageUrl(RequestMessageContentPartImage),
+		InputAudio(RequestMessageContentPartAudio),
+		File(RequestMessageContentPartFile),
+	}
+
+	#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+	#[serde(untagged)]
+	pub enum RequestUserMessageContent {
+		Text(String),
+		Array(Vec<RequestUserMessageContentPart>),
+	}
+
+	#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+	pub struct RequestUserMessage {
+		pub content: RequestUserMessageContent,
+		#[serde(skip_serializing_if = "Option::is_none")]
+		pub name: Option<String>,
+	}
+
+	#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+	#[serde(tag = "type", rename_all = "snake_case")]
+	pub enum RequestToolMessageContentPart {
+		Text(RequestMessageContentPartText),
+	}
+
+	#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+	#[serde(untagged)]
+	pub enum RequestToolMessageContent {
+		Text(String),
+		Array(Vec<RequestToolMessageContentPart>),
+	}
+
+	#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+	pub struct RequestToolMessage {
+		pub content: RequestToolMessageContent,
+		pub tool_call_id: String,
+	}
+
+	#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+	#[serde(tag = "type", rename_all = "snake_case")]
+	pub enum RequestAssistantMessageContentPart {
+		Text(RequestMessageContentPartText),
+		Refusal(RequestMessageContentPartRefusal),
+	}
+
+	#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+	#[serde(untagged)]
+	pub enum RequestAssistantMessageContent {
+		Text(String),
+		Array(Vec<RequestAssistantMessageContentPart>),
+	}
+
 	/// Represents a chat completion response returned by model, based on the provided input.
 	#[derive(Debug, Deserialize, Clone, Serialize)]
 	pub struct Response {
@@ -515,6 +676,9 @@ pub mod typed {
 		pub cached_tokens: Option<u64>,
 		#[serde(skip_serializing_if = "Option::is_none")]
 		pub audio_tokens: Option<u64>,
+		/// Tokens written to the prompt cache (GPT-5.6+ explicit prompt caching).
+		#[serde(skip_serializing_if = "Option::is_none")]
+		pub cache_write_tokens: Option<u64>,
 		#[serde(flatten, default)]
 		pub rest: serde_json::Value,
 	}
@@ -868,6 +1032,11 @@ pub mod typed {
 		/// Learn more about the [web search tool](https://platform.openai.com/docs/guides/tools-web-search?api-mode=chat).
 		#[serde(skip_serializing_if = "Option::is_none")]
 		pub web_search_options: Option<WebSearchOptions>,
+
+		/// Options controlling implicit and explicit prompt-cache breakpoints.
+		/// Supported for `gpt-5.6` and later models.
+		#[serde(skip_serializing_if = "Option::is_none")]
+		pub prompt_cache_options: Option<PromptCacheOptions>,
 
 		/// Deprecated in favor of `tool_choice`.
 		///

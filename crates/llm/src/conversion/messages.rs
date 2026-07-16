@@ -67,8 +67,105 @@ pub mod from_completions {
 	use crate::types::messages::typed as messages;
 	use crate::{AIError, StreamingUsageGuard, json, logged_response_parsing, parse, types};
 
+	struct CacheControlBudget {
+		explicit_to_skip: usize,
+	}
+
+	impl CacheControlBudget {
+		fn new(explicit_breakpoints: usize) -> Self {
+			Self {
+				explicit_to_skip: explicit_breakpoints.saturating_sub(4),
+			}
+		}
+
+		fn take(
+			&mut self,
+			breakpoint: &Option<completions::PromptCacheBreakpoint>,
+		) -> Option<messages::CacheControlEphemeral> {
+			breakpoint.as_ref()?;
+			if self.explicit_to_skip > 0 {
+				self.explicit_to_skip -= 1;
+				None
+			} else {
+				Some(messages::CacheControlEphemeral::Ephemeral { ttl: None })
+			}
+		}
+	}
+
+	fn count_explicit_breakpoints(req: &completions::Request) -> usize {
+		req
+			.messages
+			.iter()
+			.map(|msg| match msg {
+				completions::RequestMessage::System(system) => match &system.content {
+					completions::RequestSystemMessageContent::Text(_) => 0,
+					completions::RequestSystemMessageContent::Array(parts) => parts
+						.iter()
+						.filter(|part| match part {
+							completions::RequestSystemMessageContentPart::Text(text) => {
+								text.prompt_cache_breakpoint.is_some()
+							},
+						})
+						.count(),
+				},
+				completions::RequestMessage::Developer(developer) => match &developer.content {
+					completions::RequestDeveloperMessageContent::Text(_) => 0,
+					completions::RequestDeveloperMessageContent::Array(parts) => parts
+						.iter()
+						.filter(|part| match part {
+							completions::RequestDeveloperMessageContentPart::Text(text) => {
+								text.prompt_cache_breakpoint.is_some()
+							},
+						})
+						.count(),
+				},
+				completions::RequestMessage::User(user) => match &user.content {
+					completions::RequestUserMessageContent::Text(_) => 0,
+					completions::RequestUserMessageContent::Array(parts) => parts
+						.iter()
+						.filter(|part| match part {
+							completions::RequestUserMessageContentPart::Text(text) => {
+								text.prompt_cache_breakpoint.is_some()
+							},
+							completions::RequestUserMessageContentPart::ImageUrl(image) => {
+								image.prompt_cache_breakpoint.is_some()
+							},
+							completions::RequestUserMessageContentPart::InputAudio(_)
+							| completions::RequestUserMessageContentPart::File(_) => false,
+						})
+						.count(),
+				},
+				completions::RequestMessage::Assistant(assistant) => match &assistant.content {
+					Some(completions::RequestAssistantMessageContent::Array(parts)) => parts
+						.iter()
+						.filter(|part| match part {
+							completions::RequestAssistantMessageContentPart::Text(text) => {
+								text.prompt_cache_breakpoint.is_some()
+							},
+							completions::RequestAssistantMessageContentPart::Refusal(_) => false,
+						})
+						.count(),
+					Some(completions::RequestAssistantMessageContent::Text(_)) | None => 0,
+				},
+				completions::RequestMessage::Tool(tool) => match &tool.content {
+					completions::RequestToolMessageContent::Text(_) => 0,
+					completions::RequestToolMessageContent::Array(parts) => parts
+						.iter()
+						.filter(|part| match part {
+							completions::RequestToolMessageContentPart::Text(text) => {
+								text.prompt_cache_breakpoint.is_some()
+							},
+						})
+						.count(),
+				},
+				completions::RequestMessage::Function(_) => 0,
+			})
+			.sum()
+	}
+
 	fn user_content_to_messages(
 		content: &completions::RequestUserMessageContent,
+		cache_controls: &mut CacheControlBudget,
 	) -> Vec<messages::ContentBlock> {
 		let mut out = Vec::new();
 		match content {
@@ -89,7 +186,7 @@ pub mod from_completions {
 								out.push(messages::ContentBlock::Text(messages::ContentTextBlock {
 									text: text.text.clone(),
 									citations: None,
-									cache_control: None,
+									cache_control: cache_controls.take(&text.prompt_cache_breakpoint),
 								}));
 							}
 						},
@@ -108,7 +205,7 @@ pub mod from_completions {
 							};
 							out.push(messages::ContentBlock::Image(messages::ContentImageBlock {
 								source,
-								cache_control: None,
+								cache_control: cache_controls.take(&image.prompt_cache_breakpoint),
 							}));
 						},
 						completions::RequestUserMessageContentPart::InputAudio(_)
@@ -122,6 +219,7 @@ pub mod from_completions {
 
 	fn assistant_content_to_messages(
 		msg: &completions::RequestAssistantMessage,
+		cache_controls: &mut CacheControlBudget,
 	) -> Vec<messages::ContentBlock> {
 		let mut out = Vec::new();
 		if let Some(content) = &msg.content {
@@ -143,7 +241,7 @@ pub mod from_completions {
 									out.push(messages::ContentBlock::Text(messages::ContentTextBlock {
 										text: text.text.clone(),
 										citations: None,
-										cache_control: None,
+										cache_control: cache_controls.take(&text.prompt_cache_breakpoint),
 									}));
 								}
 							},
@@ -201,6 +299,7 @@ pub mod from_completions {
 
 	fn tool_content_to_messages(
 		content: &completions::RequestToolMessageContent,
+		cache_controls: &mut CacheControlBudget,
 	) -> messages::ToolResultContent {
 		match content {
 			completions::RequestToolMessageContent::Text(text) => {
@@ -214,7 +313,7 @@ pub mod from_completions {
 							messages::ToolResultContentPart::Text {
 								text: text.text.clone(),
 								citations: None,
-								cache_control: None,
+								cache_control: cache_controls.take(&text.prompt_cache_breakpoint),
 							}
 						},
 					})
@@ -232,16 +331,87 @@ pub mod from_completions {
 		serde_json::to_vec(&xlated).map_err(AIError::RequestMarshal)
 	}
 
+	/// Collect a system/developer message's content as Anthropic system blocks, carrying any
+	/// explicit prompt-cache breakpoints along as `cache_control` markers.
+	fn system_blocks(
+		msg: &completions::RequestMessage,
+		cache_controls: &mut CacheControlBudget,
+	) -> Vec<messages::SystemContentBlock> {
+		fn text_part(
+			text: &completions::RequestMessageContentPartText,
+			cache_controls: &mut CacheControlBudget,
+		) -> Option<messages::SystemContentBlock> {
+			if text.text.trim().is_empty() {
+				return None;
+			}
+			Some(messages::SystemContentBlock::Text {
+				text: text.text.clone(),
+				cache_control: cache_controls.take(&text.prompt_cache_breakpoint),
+			})
+		}
+		fn plain_text(text: &str) -> Vec<messages::SystemContentBlock> {
+			if text.trim().is_empty() {
+				Vec::new()
+			} else {
+				vec![messages::SystemContentBlock::Text {
+					text: text.to_string(),
+					cache_control: None,
+				}]
+			}
+		}
+		match msg {
+			completions::RequestMessage::System(system) => match &system.content {
+				completions::RequestSystemMessageContent::Text(text) => plain_text(text),
+				completions::RequestSystemMessageContent::Array(parts) => parts
+					.iter()
+					.filter_map(|part| match part {
+						completions::RequestSystemMessageContentPart::Text(text) => {
+							text_part(text, cache_controls)
+						},
+					})
+					.collect(),
+			},
+			completions::RequestMessage::Developer(developer) => match &developer.content {
+				completions::RequestDeveloperMessageContent::Text(text) => plain_text(text),
+				completions::RequestDeveloperMessageContent::Array(parts) => parts
+					.iter()
+					.filter_map(|part| match part {
+						completions::RequestDeveloperMessageContentPart::Text(text) => {
+							text_part(text, cache_controls)
+						},
+					})
+					.collect(),
+			},
+			_ => Vec::new(),
+		}
+	}
+
 	fn translate_internal(req: completions::Request, model_id: String) -> messages::Request {
 		let max_tokens = req.max_tokens();
 		let stop_sequences = req.stop_sequence();
-		// Anthropic has all system prompts in a single field. Join them
-		let system = req
+		let mut cache_controls = CacheControlBudget::new(count_explicit_breakpoints(&req));
+		// Anthropic has all system prompts in a single field. Join them into a single string,
+		// unless a part carries an explicit prompt-cache breakpoint — then keep block structure
+		// so the marker survives as `cache_control` on its block.
+		let system_block_list = req
 			.messages
 			.iter()
-			.filter_map(extract_system_text)
-			.collect::<Vec<String>>()
-			.join("\n");
+			.flat_map(|msg| system_blocks(msg, &mut cache_controls))
+			.collect::<Vec<_>>();
+		let system_has_breakpoint = system_block_list.iter().any(|block| match block {
+			messages::SystemContentBlock::Text { cache_control, .. } => cache_control.is_some(),
+		});
+		let system = if system_has_breakpoint {
+			Some(messages::SystemPrompt::Blocks(system_block_list))
+		} else {
+			let joined = req
+				.messages
+				.iter()
+				.filter_map(extract_system_text)
+				.collect::<Vec<String>>()
+				.join("\n");
+			(!joined.is_empty()).then_some(messages::SystemPrompt::Text(joined))
+		};
 
 		// Convert messages to Anthropic format
 		let messages = req
@@ -254,17 +424,17 @@ pub mod from_completions {
 					},
 					completions::RequestMessage::User(user) => (
 						messages::Role::User,
-						user_content_to_messages(&user.content),
+						user_content_to_messages(&user.content, &mut cache_controls),
 					),
 					completions::RequestMessage::Assistant(assistant) => (
 						messages::Role::Assistant,
-						assistant_content_to_messages(assistant),
+						assistant_content_to_messages(assistant, &mut cache_controls),
 					),
 					completions::RequestMessage::Tool(tool) => (
 						messages::Role::User,
 						vec![messages::ContentBlock::ToolResult {
 							tool_use_id: tool.tool_call_id.clone(),
-							content: tool_content_to_messages(&tool.content),
+							content: tool_content_to_messages(&tool.content, &mut cache_controls),
 							cache_control: None,
 							is_error: None,
 						}],
@@ -380,11 +550,7 @@ pub mod from_completions {
 		};
 		messages::Request {
 			messages,
-			system: if system.is_empty() {
-				None
-			} else {
-				Some(messages::SystemPrompt::Text(system))
-			},
+			system,
 			model: model_id,
 			max_tokens,
 			stop_sequences,
@@ -494,20 +660,22 @@ pub mod from_completions {
 
 		let choices = vec![choice];
 		// Convert usage from Anthropic format to OpenAI format
+		let cache_read = resp.usage.cache_read_input_tokens.map(|i| i as u64);
+		let cache_write = resp.usage.cache_creation_input_tokens.map(|i| i as u64);
 		let usage = completions::Usage {
 			prompt_tokens: resp.usage.input_tokens as u32,
 			completion_tokens: resp.usage.output_tokens as u32,
 			total_tokens: (resp.usage.input_tokens + resp.usage.output_tokens) as u32,
-			cache_read_input_tokens: resp.usage.cache_read_input_tokens.map(|i| i as u64),
-			prompt_tokens_details: resp
-				.usage
-				.cache_read_input_tokens
-				.map(|i| UsagePromptDetails {
-					cached_tokens: Some(i as u64),
+			cache_read_input_tokens: cache_read,
+			prompt_tokens_details: (cache_read.is_some() || cache_write.is_some()).then(|| {
+				UsagePromptDetails {
+					cached_tokens: cache_read,
 					audio_tokens: None,
+					cache_write_tokens: cache_write,
 					rest: Default::default(),
-				}),
-			cache_creation_input_tokens: resp.usage.cache_creation_input_tokens.map(|i| i as u64),
+				}
+			}),
+			cache_creation_input_tokens: cache_write,
 
 			completion_tokens_details: None,
 		};
@@ -700,6 +868,8 @@ pub mod from_completions {
 								finish_reason: Some(finish_reason),
 							}]
 						});
+						let cache_read = usage.cache_read_input_tokens.map(|i| i as u64);
+						let cache_write = usage.cache_creation_input_tokens.map(|i| i as u64);
 						mk(
 							choices,
 							Some(completions::Usage {
@@ -709,13 +879,16 @@ pub mod from_completions {
 								total_tokens: (usage.input_tokens.unwrap_or_default()
 									+ usage.output_tokens.unwrap_or_default()) as u32,
 
-								cache_read_input_tokens: usage.cache_read_input_tokens.map(|i| i as u64),
-								prompt_tokens_details: usage.cache_read_input_tokens.map(|i| UsagePromptDetails {
-									cached_tokens: Some(i as u64),
-									audio_tokens: None,
-									rest: Default::default(),
+								cache_read_input_tokens: cache_read,
+								prompt_tokens_details: (cache_read.is_some() || cache_write.is_some()).then(|| {
+									UsagePromptDetails {
+										cached_tokens: cache_read,
+										audio_tokens: None,
+										cache_write_tokens: cache_write,
+										rest: Default::default(),
+									}
 								}),
-								cache_creation_input_tokens: usage.cache_creation_input_tokens.map(|i| i as u64),
+								cache_creation_input_tokens: cache_write,
 
 								completion_tokens_details: None,
 							}),

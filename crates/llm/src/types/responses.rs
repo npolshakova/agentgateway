@@ -150,6 +150,9 @@ pub struct UsageOutputDetails {
 #[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct UsageInputDetails {
 	pub cached_tokens: Option<u64>,
+	/// Tokens written to the prompt cache (GPT-5.6+ explicit prompt caching).
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub cache_write_tokens: Option<u64>,
 	#[serde(flatten, default)]
 	pub rest: serde_json::Value,
 }
@@ -408,7 +411,11 @@ impl ResponseType for Response {
 					.as_ref()
 					.and_then(|d| d.cached_tokens)
 			}),
-			cache_creation_input_tokens: None,
+			cache_creation_input_tokens: self.usage.as_ref().and_then(|u| {
+				u.input_tokens_details
+					.as_ref()
+					.and_then(|d| d.cache_write_tokens)
+			}),
 			service_tier: self.service_tier.as_deref().map(Into::into),
 			provider_model: Some(strng::new(&self.model)),
 			completion: if include_completion_in_log {

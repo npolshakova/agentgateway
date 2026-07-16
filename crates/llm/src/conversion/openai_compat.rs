@@ -337,6 +337,7 @@ pub mod from_responses {
 			max_completion_tokens: req.max_output_tokens,
 			parallel_tool_calls: req.parallel_tool_calls,
 			vendor_extensions: completions::RequestVendorExtensions::default(),
+			prompt_cache_options: None,
 			max_tokens: None,
 			stop: None,
 			user: None,

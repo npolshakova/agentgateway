@@ -151,6 +151,23 @@ pub mod from_messages {
 		Ok(Box::new(anthropic))
 	}
 
+	/// Extract (cache_read, cache_write) token counts from an OpenAI-format usage block.
+	/// GPT-5.6 reports these under `prompt_tokens_details`; some OpenAI-compatible providers
+	/// use the Anthropic-style top-level fields instead.
+	fn usage_cache_tokens(u: &completions::Usage) -> (Option<usize>, Option<usize>) {
+		let read = u
+			.prompt_tokens_details
+			.as_ref()
+			.and_then(|d| d.cached_tokens)
+			.or(u.cache_read_input_tokens);
+		let write = u
+			.prompt_tokens_details
+			.as_ref()
+			.and_then(|d| d.cache_write_tokens)
+			.or(u.cache_creation_input_tokens);
+		(read.map(|t| t as usize), write.map(|t| t as usize))
+	}
+
 	fn translate_response_internal(
 		resp: completions::Response,
 	) -> Result<messages::MessagesResponse, AIError> {
@@ -203,6 +220,11 @@ pub mod from_messages {
 			})
 			.unwrap_or(messages::StopReason::EndTurn);
 
+		let (cache_read_input_tokens, cache_creation_input_tokens) = usage
+			.as_ref()
+			.map(usage_cache_tokens)
+			.unwrap_or((None, None));
+
 		Ok(messages::MessagesResponse {
 			id,
 			r#type: "message".to_string(),
@@ -219,8 +241,8 @@ pub mod from_messages {
 					.as_ref()
 					.map(|u| u.completion_tokens as usize)
 					.unwrap_or(0),
-				cache_creation_input_tokens: None,
-				cache_read_input_tokens: None,
+				cache_creation_input_tokens,
+				cache_read_input_tokens,
 				service_tier,
 			},
 			input_audio_tokens: usage.as_ref().and_then(|u| {
@@ -406,6 +428,10 @@ pub mod from_messages {
 				.as_ref()
 				.map(|u| (u.prompt_tokens as usize, u.completion_tokens as usize))
 				.unwrap_or((0, 0));
+			let (cache_read_input_tokens, cache_creation_input_tokens) = usage
+				.as_ref()
+				.map(usage_cache_tokens)
+				.unwrap_or((None, None));
 
 			push_event(
 				events,
@@ -417,8 +443,8 @@ pub mod from_messages {
 					usage: messages::MessageDeltaUsage {
 						input_tokens: Some(input_tokens),
 						output_tokens: Some(output_tokens),
-						cache_creation_input_tokens: None,
-						cache_read_input_tokens: None,
+						cache_creation_input_tokens,
+						cache_read_input_tokens,
 					},
 				},
 			);
@@ -430,6 +456,8 @@ pub mod from_messages {
 					r.response.input_tokens = Some(usage.prompt_tokens as u64);
 					r.response.output_tokens = Some(usage.completion_tokens as u64);
 					r.response.total_tokens = Some(usage.total_tokens as u64);
+					r.response.cached_input_tokens = cache_read_input_tokens.map(|t| t as u64);
+					r.response.cache_creation_input_tokens = cache_creation_input_tokens.map(|t| t as u64);
 				});
 			}
 		}
@@ -621,6 +649,42 @@ pub mod from_messages {
 		}
 	}
 
+	/// GPT-5.6 introduced explicit prompt-cache breakpoints (`prompt_cache_breakpoint` on content
+	/// parts). Only emit them for models known to support them: OpenAI rejects unknown content-part
+	/// fields on older models, and other OpenAI-compatible backends may too.
+	pub(crate) fn supports_explicit_cache_points(model: &str) -> bool {
+		let Some(rest) = model.strip_prefix("gpt-") else {
+			return false;
+		};
+		let version = rest
+			.split(|c: char| !(c.is_ascii_digit() || c == '.'))
+			.next()
+			.unwrap_or_default();
+		let mut parts = version.split('.');
+		let Some(major) = parts.next().and_then(|p| p.parse::<u32>().ok()) else {
+			return false;
+		};
+		let minor = parts
+			.next()
+			.and_then(|p| p.parse::<u32>().ok())
+			.unwrap_or(0);
+		(major, minor) >= (5, 6)
+	}
+
+	/// Map an Anthropic `cache_control` marker to an OpenAI explicit prompt-cache breakpoint.
+	/// Anthropic's `ttl` has no OpenAI equivalent (the breakpoint inherits the request-level
+	/// `prompt_cache_options.ttl`), so only the marker itself carries over.
+	fn cache_control_to_breakpoint(
+		cache_control: &Option<messages::CacheControlEphemeral>,
+		enabled: bool,
+	) -> Option<completions::PromptCacheBreakpoint> {
+		if enabled && cache_control.is_some() {
+			Some(completions::PromptCacheBreakpoint::explicit())
+		} else {
+			None
+		}
+	}
+
 	fn system_message_text(content: Vec<messages::ContentBlock>) -> Option<String> {
 		let text = content
 			.into_iter()
@@ -685,23 +749,59 @@ pub mod from_messages {
 				},
 			});
 
+		let cache_points_enabled = supports_explicit_cache_points(&model);
+		let mut used_cache_breakpoint = false;
+
 		let mut msgs: Vec<completions::RequestMessage> = Vec::new();
 
-		// Handle the system prompt (convert both string and block formats to string)
+		// Handle the system prompt. Both string and block formats collapse to a single string,
+		// unless a block carries a cache_control marker the target model can honor — then keep
+		// the block structure so each marker becomes an explicit prompt-cache breakpoint.
 		if let Some(system) = system {
-			let system_text = match system {
-				messages::SystemPrompt::Text(text) => text,
-				messages::SystemPrompt::Blocks(blocks) => blocks
-					.into_iter()
-					.map(|block| match block {
-						messages::SystemContentBlock::Text { text, .. } => text,
-					})
-					.collect::<Vec<_>>()
-					.join("\n"),
+			let content = match system {
+				messages::SystemPrompt::Text(text) => completions::RequestSystemMessageContent::Text(text),
+				messages::SystemPrompt::Blocks(blocks) => {
+					let has_breakpoint = cache_points_enabled
+						&& blocks.iter().any(|block| match block {
+							messages::SystemContentBlock::Text { cache_control, .. } => cache_control.is_some(),
+						});
+					if has_breakpoint {
+						used_cache_breakpoint = true;
+						completions::RequestSystemMessageContent::Array(
+							blocks
+								.into_iter()
+								.map(|block| match block {
+									messages::SystemContentBlock::Text {
+										text,
+										cache_control,
+									} => completions::RequestSystemMessageContentPart::Text(
+										completions::RequestMessageContentPartText {
+											text,
+											prompt_cache_breakpoint: cache_control_to_breakpoint(
+												&cache_control,
+												cache_points_enabled,
+											),
+										},
+									),
+								})
+								.collect(),
+						)
+					} else {
+						completions::RequestSystemMessageContent::Text(
+							blocks
+								.into_iter()
+								.map(|block| match block {
+									messages::SystemContentBlock::Text { text, .. } => text,
+								})
+								.collect::<Vec<_>>()
+								.join("\n"),
+						)
+					}
+				},
 			};
 			msgs.push(completions::RequestMessage::System(
 				completions::RequestSystemMessage {
-					content: completions::RequestSystemMessageContent::Text(system_text),
+					content,
 					name: None,
 				},
 			));
@@ -715,16 +815,33 @@ pub mod from_messages {
 
 					for block in msg.content {
 						match block {
-							messages::ContentBlock::Text(messages::ContentTextBlock { text, .. }) => {
+							messages::ContentBlock::Text(messages::ContentTextBlock {
+								text,
+								cache_control,
+								..
+							}) => {
+								let prompt_cache_breakpoint =
+									cache_control_to_breakpoint(&cache_control, cache_points_enabled);
+								used_cache_breakpoint |= prompt_cache_breakpoint.is_some();
 								parts.push(completions::RequestUserMessageContentPart::Text(
-									completions::RequestMessageContentPartText { text },
+									completions::RequestMessageContentPartText {
+										text,
+										prompt_cache_breakpoint,
+									},
 								));
 							},
-							messages::ContentBlock::Image(messages::ContentImageBlock { source, .. }) => {
+							messages::ContentBlock::Image(messages::ContentImageBlock {
+								source,
+								cache_control,
+							}) => {
 								if let Some(url) = anthropic_source_to_url(&source) {
+									let prompt_cache_breakpoint =
+										cache_control_to_breakpoint(&cache_control, cache_points_enabled);
+									used_cache_breakpoint |= prompt_cache_breakpoint.is_some();
 									parts.push(completions::RequestUserMessageContentPart::ImageUrl(
 										completions::RequestMessageContentPartImage {
 											image_url: completions::ImageUrl { url, detail: None },
+											prompt_cache_breakpoint,
 										},
 									));
 								}
@@ -732,23 +849,60 @@ pub mod from_messages {
 							messages::ContentBlock::ToolResult {
 								tool_use_id,
 								content,
+								cache_control,
 								..
 							} => {
+								// A cache_control on the tool_result block marks the end of the reusable
+								// prefix; carry it as a breakpoint on the final content part.
+								let result_breakpoint =
+									cache_control_to_breakpoint(&cache_control, cache_points_enabled);
+								used_cache_breakpoint |= result_breakpoint.is_some();
 								let tool_content = match content {
-									ToolResultContent::Text(t) => completions::RequestToolMessageContent::Text(t),
-									ToolResultContent::Array(arr) => completions::RequestToolMessageContent::Array(
-										arr
+									ToolResultContent::Text(t) => {
+										if result_breakpoint.is_some() {
+											completions::RequestToolMessageContent::Array(vec![
+												completions::RequestToolMessageContentPart::Text(
+													completions::RequestMessageContentPartText {
+														text: t,
+														prompt_cache_breakpoint: result_breakpoint,
+													},
+												),
+											])
+										} else {
+											completions::RequestToolMessageContent::Text(t)
+										}
+									},
+									ToolResultContent::Array(arr) => {
+										let mut tool_parts = arr
 											.into_iter()
 											.filter_map(|p| match p {
-												ToolResultContentPart::Text { text, .. } => {
+												ToolResultContentPart::Text {
+													text,
+													cache_control,
+													..
+												} => {
+													let prompt_cache_breakpoint =
+														cache_control_to_breakpoint(&cache_control, cache_points_enabled);
+													used_cache_breakpoint |= prompt_cache_breakpoint.is_some();
 													Some(completions::RequestToolMessageContentPart::Text(
-														completions::RequestMessageContentPartText { text },
+														completions::RequestMessageContentPartText {
+															text,
+															prompt_cache_breakpoint,
+														},
 													))
 												},
 												_ => None,
 											})
-											.collect_vec(),
-									),
+											.collect_vec();
+										if result_breakpoint.is_some()
+											&& let Some(completions::RequestToolMessageContentPart::Text(last)) =
+												tool_parts.last_mut()
+											&& last.prompt_cache_breakpoint.is_none()
+										{
+											last.prompt_cache_breakpoint = result_breakpoint;
+										}
+										completions::RequestToolMessageContent::Array(tool_parts)
+									},
 								};
 								msgs.push(completions::RequestMessage::Tool(
 									completions::RequestToolMessage {
@@ -773,15 +927,22 @@ pub mod from_messages {
 					}
 				},
 				messages::Role::Assistant => {
-					let mut assistant_text = String::new();
+					let mut assistant_texts: Vec<completions::RequestMessageContentPartText> = Vec::new();
 					let mut tool_calls: Vec<completions::MessageToolCalls> = Vec::new();
 					for block in msg.content {
 						match block {
-							messages::ContentBlock::Text(messages::ContentTextBlock { text, .. }) => {
-								if !assistant_text.is_empty() {
-									assistant_text.push('\n');
-								}
-								assistant_text.push_str(&text);
+							messages::ContentBlock::Text(messages::ContentTextBlock {
+								text,
+								cache_control,
+								..
+							}) => {
+								let prompt_cache_breakpoint =
+									cache_control_to_breakpoint(&cache_control, cache_points_enabled);
+								used_cache_breakpoint |= prompt_cache_breakpoint.is_some();
+								assistant_texts.push(completions::RequestMessageContentPartText {
+									text,
+									prompt_cache_breakpoint,
+								});
 							},
 							messages::ContentBlock::ToolUse {
 								id, name, input, ..
@@ -805,16 +966,29 @@ pub mod from_messages {
 							_ => {},
 						}
 					}
-					if !assistant_text.is_empty() || !tool_calls.is_empty() {
+					// Preserve block structure only when a cache breakpoint needs to ride on a
+					// specific block; otherwise join the blocks as before.
+					let assistant_content = if assistant_texts.is_empty() {
+						None
+					} else if assistant_texts
+						.iter()
+						.any(|part| part.prompt_cache_breakpoint.is_some())
+					{
+						Some(completions::RequestAssistantMessageContent::Array(
+							assistant_texts
+								.into_iter()
+								.map(completions::RequestAssistantMessageContentPart::Text)
+								.collect(),
+						))
+					} else {
+						Some(completions::RequestAssistantMessageContent::Text(
+							assistant_texts.into_iter().map(|part| part.text).join("\n"),
+						))
+					};
+					if assistant_content.is_some() || !tool_calls.is_empty() {
 						msgs.push(completions::RequestMessage::Assistant(
 							completions::RequestAssistantMessage {
-								content: if assistant_text.is_empty() {
-									None
-								} else {
-									Some(completions::RequestAssistantMessageContent::Text(
-										assistant_text,
-									))
-								},
+								content: assistant_content,
 								name: None,
 								tool_calls: if tool_calls.is_empty() {
 									None
@@ -907,6 +1081,14 @@ pub mod from_messages {
 			Some(completions::Stop::StringArray(stop_sequences))
 		};
 
+		// Anthropic clients opt into caching per-block; there is no implicit mode. Mirror that by
+		// disabling OpenAI's implicit breakpoint whenever explicit breakpoints were emitted, so up
+		// to four breakpoints (the Anthropic maximum) are honored.
+		let prompt_cache_options = used_cache_breakpoint.then_some(completions::PromptCacheOptions {
+			ttl: None,
+			mode: Some(completions::PromptCacheMode::Explicit),
+		});
+
 		completions::Request {
 			model: Some(model),
 			messages: msgs,
@@ -952,6 +1134,7 @@ pub mod from_messages {
 			service_tier: None,
 			parallel_tool_calls,
 			web_search_options: None,
+			prompt_cache_options,
 		}
 	}
 }
@@ -1007,7 +1190,12 @@ pub fn passthrough_stream(
 									.prompt_tokens_details
 									.as_ref()
 									.and_then(|d| d.cached_tokens);
-								r.response.cache_creation_input_tokens = u.cache_creation_input_tokens;
+								r.response.cache_creation_input_tokens =
+									u.cache_creation_input_tokens.or_else(|| {
+										u.prompt_tokens_details
+											.as_ref()
+											.and_then(|d| d.cache_write_tokens)
+									});
 								r.response.reasoning_tokens = u
 									.completion_tokens_details
 									.as_ref()
@@ -1036,4 +1224,29 @@ pub fn passthrough_stream(
 			},
 		)
 	})
+}
+
+#[cfg(test)]
+mod tests {
+	use super::from_messages::supports_explicit_cache_points;
+
+	#[test]
+	fn explicit_cache_points_model_gate() {
+		// GPT-5.6 and later support explicit prompt-cache breakpoints.
+		assert!(supports_explicit_cache_points("gpt-5.6"));
+		assert!(supports_explicit_cache_points("gpt-5.6-sol"));
+		assert!(supports_explicit_cache_points("gpt-5.10"));
+		assert!(supports_explicit_cache_points("gpt-6"));
+		assert!(supports_explicit_cache_points("gpt-6.1-mini"));
+
+		// Older or non-GPT models do not.
+		assert!(!supports_explicit_cache_points("gpt-5.4"));
+		assert!(!supports_explicit_cache_points("gpt-5"));
+		assert!(!supports_explicit_cache_points("gpt-4o"));
+		assert!(!supports_explicit_cache_points("gpt-3.5-turbo"));
+		assert!(!supports_explicit_cache_points("o3-mini"));
+		assert!(!supports_explicit_cache_points("claude-sonnet-4-5"));
+		assert!(!supports_explicit_cache_points("gpt-"));
+		assert!(!supports_explicit_cache_points(""));
+	}
 }

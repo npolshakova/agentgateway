@@ -474,8 +474,181 @@ pub mod from_completions {
 	use crate::types::completions::typed::UsagePromptDetails;
 	use crate::{AIError, StreamingUsageGuard, json, logged_response_parsing, parse, types};
 
+	/// Tracks the shared Bedrock budget of at most four cache points per request, across
+	/// client-requested explicit breakpoints (GPT-5.6 style) and gateway policy insertion.
+	/// `enabled` is false when the target model does not support prompt caching.
+	pub(super) struct CachePointBudget {
+		pub(super) enabled: bool,
+		pub(super) used: usize,
+		pub(super) explicit_to_skip: usize,
+	}
+
+	impl CachePointBudget {
+		pub(super) fn new(enabled: bool, explicit_breakpoints: usize) -> Self {
+			Self {
+				enabled,
+				used: 0,
+				explicit_to_skip: explicit_breakpoints.saturating_sub(4),
+			}
+		}
+
+		/// Reserve a cache point slot; returns true when a cache point may be inserted.
+		pub(super) fn take(&mut self) -> bool {
+			if self.enabled && self.used < 4 {
+				self.used += 1;
+				true
+			} else {
+				false
+			}
+		}
+
+		/// Reserve a slot for a client-supplied explicit breakpoint. OpenAI explicit caching writes
+		/// the latest four breakpoints, so earlier breakpoints are skipped before spending budget.
+		pub(super) fn take_explicit(&mut self) -> bool {
+			if self.explicit_to_skip > 0 {
+				self.explicit_to_skip -= 1;
+				false
+			} else {
+				self.take()
+			}
+		}
+	}
+
+	fn count_explicit_breakpoints(messages: &[completions::RequestMessage]) -> usize {
+		fn system_content_count(content: &completions::RequestSystemMessageContent) -> usize {
+			match content {
+				completions::RequestSystemMessageContent::Text(_) => 0,
+				completions::RequestSystemMessageContent::Array(parts) => parts
+					.iter()
+					.filter(|part| match part {
+						completions::RequestSystemMessageContentPart::Text(text) => {
+							text.prompt_cache_breakpoint.is_some()
+						},
+					})
+					.count(),
+			}
+		}
+		fn developer_content_count(content: &completions::RequestDeveloperMessageContent) -> usize {
+			match content {
+				completions::RequestDeveloperMessageContent::Text(_) => 0,
+				completions::RequestDeveloperMessageContent::Array(parts) => parts
+					.iter()
+					.filter(|part| match part {
+						completions::RequestDeveloperMessageContentPart::Text(text) => {
+							text.prompt_cache_breakpoint.is_some()
+						},
+					})
+					.count(),
+			}
+		}
+		fn user_content_count(content: &completions::RequestUserMessageContent) -> usize {
+			match content {
+				completions::RequestUserMessageContent::Text(_) => 0,
+				completions::RequestUserMessageContent::Array(parts) => parts
+					.iter()
+					.filter(|part| match part {
+						completions::RequestUserMessageContentPart::Text(text) => {
+							text.prompt_cache_breakpoint.is_some()
+						},
+						completions::RequestUserMessageContentPart::ImageUrl(image) => {
+							image.prompt_cache_breakpoint.is_some()
+						},
+						completions::RequestUserMessageContentPart::InputAudio(_)
+						| completions::RequestUserMessageContentPart::File(_) => false,
+					})
+					.count(),
+			}
+		}
+		fn assistant_content_count(
+			content: &Option<completions::RequestAssistantMessageContent>,
+		) -> usize {
+			match content {
+				Some(completions::RequestAssistantMessageContent::Array(parts)) => parts
+					.iter()
+					.filter(|part| match part {
+						completions::RequestAssistantMessageContentPart::Text(text) => {
+							text.prompt_cache_breakpoint.is_some()
+						},
+						completions::RequestAssistantMessageContentPart::Refusal(_) => false,
+					})
+					.count(),
+				Some(completions::RequestAssistantMessageContent::Text(_)) | None => 0,
+			}
+		}
+		fn tool_content_count(content: &completions::RequestToolMessageContent) -> usize {
+			match content {
+				completions::RequestToolMessageContent::Text(_) => 0,
+				completions::RequestToolMessageContent::Array(parts) => parts
+					.iter()
+					.filter(|part| match part {
+						completions::RequestToolMessageContentPart::Text(text) => {
+							text.prompt_cache_breakpoint.is_some()
+						},
+					})
+					.count(),
+			}
+		}
+
+		messages
+			.iter()
+			.map(|msg| match msg {
+				completions::RequestMessage::System(system) => system_content_count(&system.content),
+				completions::RequestMessage::Developer(developer) => {
+					developer_content_count(&developer.content)
+				},
+				completions::RequestMessage::User(user) => user_content_count(&user.content),
+				completions::RequestMessage::Assistant(assistant) => {
+					assistant_content_count(&assistant.content)
+				},
+				completions::RequestMessage::Tool(tool) => tool_content_count(&tool.content),
+				completions::RequestMessage::Function(_) => 0,
+			})
+			.sum()
+	}
+
+	/// Extract a system/developer message's text parts as (text, has_breakpoint) pairs, preserving
+	/// explicit prompt-cache breakpoints so they can become Bedrock cache points.
+	fn system_text_parts(msg: &completions::RequestMessage) -> Vec<(String, bool)> {
+		fn text_part(text: &completions::RequestMessageContentPartText) -> Option<(String, bool)> {
+			if text.text.trim().is_empty() {
+				None
+			} else {
+				Some((text.text.clone(), text.prompt_cache_breakpoint.is_some()))
+			}
+		}
+		fn plain(text: &str) -> Vec<(String, bool)> {
+			if text.trim().is_empty() {
+				Vec::new()
+			} else {
+				vec![(text.to_string(), false)]
+			}
+		}
+		match msg {
+			completions::RequestMessage::System(system) => match &system.content {
+				completions::RequestSystemMessageContent::Text(text) => plain(text),
+				completions::RequestSystemMessageContent::Array(parts) => parts
+					.iter()
+					.filter_map(|part| match part {
+						completions::RequestSystemMessageContentPart::Text(text) => text_part(text),
+					})
+					.collect(),
+			},
+			completions::RequestMessage::Developer(developer) => match &developer.content {
+				completions::RequestDeveloperMessageContent::Text(text) => plain(text),
+				completions::RequestDeveloperMessageContent::Array(parts) => parts
+					.iter()
+					.filter_map(|part| match part {
+						completions::RequestDeveloperMessageContentPart::Text(text) => text_part(text),
+					})
+					.collect(),
+			},
+			_ => Vec::new(),
+		}
+	}
+
 	fn text_blocks_from_user_content(
 		content: &completions::RequestUserMessageContent,
+		cache_points: &mut CachePointBudget,
 	) -> Result<Vec<bedrock::ContentBlock>, AIError> {
 		let mut out = Vec::new();
 		match content {
@@ -490,6 +663,11 @@ pub mod from_completions {
 						completions::RequestUserMessageContentPart::Text(text) => {
 							if !text.text.trim().is_empty() {
 								out.push(bedrock::ContentBlock::Text(text.text.clone()));
+								if text.prompt_cache_breakpoint.is_some() && cache_points.take_explicit() {
+									out.push(bedrock::ContentBlock::CachePoint(
+										helpers::create_cache_point(),
+									));
+								}
 							}
 						},
 						completions::RequestUserMessageContentPart::ImageUrl(image) => {
@@ -498,6 +676,11 @@ pub mod from_completions {
 									super::CanonicalImage::from_data_url(&image.image_url.url)?
 										.into_bedrock_content_block(),
 								);
+								if image.prompt_cache_breakpoint.is_some() && cache_points.take_explicit() {
+									out.push(bedrock::ContentBlock::CachePoint(
+										helpers::create_cache_point(),
+									));
+								}
 							}
 						},
 						completions::RequestUserMessageContentPart::InputAudio(_)
@@ -512,6 +695,7 @@ pub mod from_completions {
 	fn assistant_content_to_bedrock(
 		msg: &completions::RequestAssistantMessage,
 		tool_name_map: &mut super::BedrockToolNameMap,
+		cache_points: &mut CachePointBudget,
 	) -> Vec<bedrock::ContentBlock> {
 		let mut content = Vec::new();
 		// Replay a previously-emitted thinking block first. Anthropic (via Bedrock Converse) requires
@@ -541,6 +725,11 @@ pub mod from_completions {
 							completions::RequestAssistantMessageContentPart::Text(text) => {
 								if !text.text.trim().is_empty() {
 									content.push(bedrock::ContentBlock::Text(text.text.clone()));
+									if text.prompt_cache_breakpoint.is_some() && cache_points.take_explicit() {
+										content.push(bedrock::ContentBlock::CachePoint(
+											helpers::create_cache_point(),
+										));
+									}
 								}
 							},
 							completions::RequestAssistantMessageContentPart::Refusal(refusal) => {
@@ -586,7 +775,13 @@ pub mod from_completions {
 		content
 	}
 
-	fn tool_content_to_bedrock(msg: &completions::RequestToolMessage) -> Vec<bedrock::ContentBlock> {
+	fn tool_content_to_bedrock(
+		msg: &completions::RequestToolMessage,
+		cache_points: &mut CachePointBudget,
+	) -> Vec<bedrock::ContentBlock> {
+		// Bedrock cache points cannot live inside toolResult content; a breakpoint on any tool
+		// content part becomes a cache point directly after the toolResult block.
+		let mut has_breakpoint = false;
 		let content = match &msg.content {
 			completions::RequestToolMessageContent::Text(text) => {
 				vec![bedrock::ToolResultContentBlock::Text(text.to_string())]
@@ -595,6 +790,7 @@ pub mod from_completions {
 				.iter()
 				.map(|part| match part {
 					completions::RequestToolMessageContentPart::Text(text) => {
+						has_breakpoint |= text.prompt_cache_breakpoint.is_some();
 						bedrock::ToolResultContentBlock::Text(text.text.clone())
 					},
 				})
@@ -603,7 +799,7 @@ pub mod from_completions {
 		if content.is_empty() {
 			return Vec::new();
 		}
-		vec![bedrock::ContentBlock::ToolResult(
+		let mut out = vec![bedrock::ContentBlock::ToolResult(
 			bedrock::ToolResultBlock {
 				tool_use_id: msg.tool_call_id.clone(),
 				content,
@@ -611,7 +807,13 @@ pub mod from_completions {
 				// Keep this unset rather than asserting success.
 				status: None,
 			},
-		)]
+		)];
+		if has_breakpoint && cache_points.take_explicit() {
+			out.push(bedrock::ContentBlock::CachePoint(
+				helpers::create_cache_point(),
+			));
+		}
+		out
 	}
 
 	/// translate an OpenAI completions request to a Bedrock converse  request
@@ -670,13 +872,42 @@ pub mod from_completions {
 				};
 			}
 		}
-		// Extract and join system prompts from completions format
-		let system_text = req
-			.messages
-			.iter()
-			.filter_map(extract_system_text)
-			.collect::<Vec<String>>()
-			.join("\n");
+		let supports_caching = helpers::supports_prompt_caching(&model_id);
+		let mut cache_points =
+			CachePointBudget::new(supports_caching, count_explicit_breakpoints(&req.messages));
+
+		// Extract system prompts from completions format. They are joined into a single text
+		// block, unless a part carries an explicit prompt-cache breakpoint (GPT-5.6 style) the
+		// target model can honor — then block structure is preserved so each breakpoint becomes
+		// a Bedrock cachePoint.
+		let system_parts: Vec<(String, bool)> =
+			req.messages.iter().flat_map(system_text_parts).collect();
+		let system_has_breakpoint =
+			supports_caching && system_parts.iter().any(|(_, breakpoint)| *breakpoint);
+		let mut system_blocks: Vec<bedrock::SystemContentBlock> = if system_has_breakpoint {
+			let mut blocks = Vec::with_capacity(system_parts.len() * 2);
+			for (text, breakpoint) in system_parts {
+				blocks.push(bedrock::SystemContentBlock::Text { text });
+				if breakpoint && cache_points.take_explicit() {
+					blocks.push(bedrock::SystemContentBlock::CachePoint {
+						cache_point: helpers::create_cache_point(),
+					});
+				}
+			}
+			blocks
+		} else {
+			let system_text = req
+				.messages
+				.iter()
+				.filter_map(extract_system_text)
+				.collect::<Vec<String>>()
+				.join("\n");
+			if system_text.is_empty() {
+				Vec::new()
+			} else {
+				vec![bedrock::SystemContentBlock::Text { text: system_text }]
+			}
+		};
 
 		let inference_config = bedrock::InferenceConfiguration {
 			max_tokens: req.max_tokens(),
@@ -732,21 +963,22 @@ pub mod from_completions {
 			let msg = match msg {
 				completions::RequestMessage::System(_) | completions::RequestMessage::Developer(_) => None,
 				completions::RequestMessage::User(user) => {
-					let content = text_blocks_from_user_content(&user.content)?;
+					let content = text_blocks_from_user_content(&user.content, &mut cache_points)?;
 					(!content.is_empty()).then_some(bedrock::Message {
 						role: bedrock::Role::User,
 						content,
 					})
 				},
 				completions::RequestMessage::Assistant(assistant) => {
-					let content = assistant_content_to_bedrock(assistant, &mut tool_name_map);
+					let content =
+						assistant_content_to_bedrock(assistant, &mut tool_name_map, &mut cache_points);
 					(!content.is_empty()).then_some(bedrock::Message {
 						role: bedrock::Role::Assistant,
 						content,
 					})
 				},
 				completions::RequestMessage::Tool(tool_result) => {
-					let content = tool_content_to_bedrock(tool_result);
+					let content = tool_content_to_bedrock(tool_result, &mut cache_points);
 					(!content.is_empty()).then_some(bedrock::Message {
 						role: bedrock::Role::User,
 						content,
@@ -809,11 +1041,9 @@ pub mod from_completions {
 			.as_ref()
 			.and_then(completions_response_format_to_bedrock_output_config);
 
-		let supports_caching = helpers::supports_prompt_caching(&model_id);
-		let system_content = if system_text.is_empty() {
+		let system_content = if system_blocks.is_empty() {
 			None
 		} else {
-			let mut system_blocks = vec![bedrock::SystemContentBlock::Text { text: system_text }];
 			tracing::debug!(
 				"Prompt caching policy: {:?}, model: {}, supports caching: {}",
 				prompt_caching.map(|c| (c.cache_system, c.cache_messages, c.cache_tools)),
@@ -823,13 +1053,15 @@ pub mod from_completions {
 			if let Some(caching) = prompt_caching
 				&& caching.cache_system
 				&& supports_caching
+				// The client's own system breakpoints take precedence over the gateway policy.
+				&& !system_has_breakpoint
 			{
 				let meets_minimum = if let Some(min_tokens) = caching.min_tokens {
 					helpers::estimate_system_tokens(&system_blocks) >= min_tokens
 				} else {
 					true
 				};
-				if meets_minimum {
+				if meets_minimum && cache_points.take() {
 					system_blocks.push(bedrock::SystemContentBlock::CachePoint {
 						cache_point: helpers::create_cache_point(),
 					});
@@ -853,7 +1085,13 @@ pub mod from_completions {
 			performance_config: None,
 		};
 		if let Some(caching) = prompt_caching {
-			if caching.cache_messages && supports_caching {
+			if caching.cache_messages
+				&& supports_caching
+				// insert_message_cache_point is a no-op below two messages; only spend a
+				// cache-point slot when it will actually insert one.
+				&& bedrock_request.messages.len() >= 2
+				&& cache_points.take()
+			{
 				helpers::insert_message_cache_point(
 					&mut bedrock_request.messages,
 					caching.cache_message_offset,
@@ -863,6 +1101,7 @@ pub mod from_completions {
 				&& supports_caching
 				&& let Some(ref mut tool_config) = bedrock_request.tool_config
 				&& !tool_config.tools.is_empty()
+				&& cache_points.take()
 			{
 				tool_config
 					.tools
@@ -1144,9 +1383,12 @@ pub mod from_completions {
 								total_tokens: usage.total_tokens as u32,
 								cache_read_input_tokens: usage.cache_read_input_tokens.map(|i| i as u64),
 								cache_creation_input_tokens: usage.cache_write_input_tokens.map(|i| i as u64),
-								prompt_tokens_details: usage.cache_read_input_tokens.map(|i| UsagePromptDetails {
-									cached_tokens: Some(i as u64),
+								prompt_tokens_details: (usage.cache_read_input_tokens.is_some()
+									|| usage.cache_write_input_tokens.is_some())
+								.then(|| UsagePromptDetails {
+									cached_tokens: usage.cache_read_input_tokens.map(|i| i as u64),
 									audio_tokens: None,
+									cache_write_tokens: usage.cache_write_input_tokens.map(|i| i as u64),
 									rest: Default::default(),
 								}),
 								// TODO: can we get reasoning tokens?
@@ -3451,13 +3693,14 @@ impl ConverseResponseAdapter {
 				completion_tokens_details: None,
 
 				cache_read_input_tokens: token_usage.cache_read_input_tokens.map(|i| i as u64),
-				prompt_tokens_details: token_usage
-					.cache_read_input_tokens
-					.map(|i| UsagePromptDetails {
-						cached_tokens: Some(i as u64),
-						audio_tokens: None,
-						rest: Default::default(),
-					}),
+				prompt_tokens_details: (token_usage.cache_read_input_tokens.is_some()
+					|| token_usage.cache_write_input_tokens.is_some())
+				.then(|| UsagePromptDetails {
+					cached_tokens: token_usage.cache_read_input_tokens.map(|i| i as u64),
+					audio_tokens: None,
+					cache_write_tokens: token_usage.cache_write_input_tokens.map(|i| i as u64),
+					rest: Default::default(),
+				}),
 				cache_creation_input_tokens: token_usage.cache_write_input_tokens.map(|i| i as u64),
 			})
 			.unwrap_or_default();

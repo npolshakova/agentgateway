@@ -1,0 +1,81 @@
+---
+source: crates/llm/src/golden_tests.rs
+description: src/tests/requests/messages/cache-points.json
+info:
+  model: gpt-5.6
+  max_tokens: 1024
+  system:
+    - type: text
+      text: You are a helpful assistant.
+    - type: text
+      text: Here is a large reference document that should be cached.
+      cache_control:
+        type: ephemeral
+  messages:
+    - role: user
+      content:
+        - type: text
+          text: First question about the document.
+          cache_control:
+            type: ephemeral
+            ttl: 1h
+    - role: assistant
+      content:
+        - type: text
+          text: Here is my answer.
+    - role: user
+      content:
+        - type: text
+          text: Follow up question.
+---
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": [
+        {
+          "type": "text",
+          "text": "You are a helpful assistant."
+        },
+        {
+          "type": "text",
+          "text": "Here is a large reference document that should be cached.",
+          "prompt_cache_breakpoint": {
+            "mode": "explicit"
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "First question about the document.",
+          "prompt_cache_breakpoint": {
+            "mode": "explicit"
+          }
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": "Here is my answer."
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "Follow up question."
+        }
+      ]
+    }
+  ],
+  "model": "gpt-5.6",
+  "max_completion_tokens": 1024,
+  "stream": false,
+  "prompt_cache_options": {
+    "mode": "explicit"
+  }
+}

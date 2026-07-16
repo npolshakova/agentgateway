@@ -325,11 +325,22 @@ mod lookups {
 		// Completions
 		&["usage", "completion_tokens_details", "reasoning_tokens"],
 	];
-	pub const CACHE_CREATION_INPUT_TOKENS: [&[&str]; 3] = [
+	pub const CACHE_CREATION_INPUT_TOKENS: [&[&str]; 6] = [
 		&["usage", "cache_creation_input_tokens"],
 		&["usage", "cacheWriteInputTokens"],
 		// Bedrock invoke
 		&["metadata", "usage", "cacheWriteInputTokensCount"],
+		// Completions (GPT-5.6+ explicit prompt caching)
+		&["usage", "prompt_tokens_details", "cache_write_tokens"],
+		// Responses
+		&["usage", "input_tokens_details", "cache_write_tokens"],
+		// Responses streaming
+		&[
+			"response",
+			"usage",
+			"input_tokens_details",
+			"cache_write_tokens",
+		],
 	];
 	pub const CACHED_INPUT_TOKENS: [&[&str]; 6] = [
 		// Message
