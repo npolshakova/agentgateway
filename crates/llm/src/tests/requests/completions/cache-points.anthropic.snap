@@ -61,7 +61,8 @@ info:
           "type": "text",
           "text": "How is the current weather in Columbus?",
           "cache_control": {
-            "type": "ephemeral"
+            "type": "ephemeral",
+            "ttl": "1h"
           }
         }
       ]
@@ -91,7 +92,8 @@ info:
               "type": "text",
               "text": "{ \"temperature\": 15, \"condition\": \"Cloudy\" }",
               "cache_control": {
-                "type": "ephemeral"
+                "type": "ephemeral",
+                "ttl": "1h"
               }
             }
           ]
@@ -117,7 +119,8 @@ info:
       "type": "text",
       "text": "Here is a large reference document that should be cached.",
       "cache_control": {
-        "type": "ephemeral"
+        "type": "ephemeral",
+        "ttl": "1h"
       }
     }
   ],

@@ -69,12 +69,18 @@ pub mod from_completions {
 
 	struct CacheControlBudget {
 		explicit_to_skip: usize,
+		ttl: Option<&'static str>,
 	}
 
 	impl CacheControlBudget {
-		fn new(explicit_breakpoints: usize) -> Self {
+		fn new(explicit_breakpoints: usize, ttl: Option<completions::PromptCacheTtl>) -> Self {
+			// Anthropic's extended TTL is one hour, which satisfies OpenAI's 30-minute minimum.
+			let ttl = ttl.map(|ttl| match ttl {
+				completions::PromptCacheTtl::Minutes30 => "1h",
+			});
 			Self {
 				explicit_to_skip: explicit_breakpoints.saturating_sub(4),
+				ttl,
 			}
 		}
 
@@ -87,7 +93,9 @@ pub mod from_completions {
 				self.explicit_to_skip -= 1;
 				None
 			} else {
-				Some(messages::CacheControlEphemeral::Ephemeral { ttl: None })
+				Some(messages::CacheControlEphemeral::Ephemeral {
+					ttl: self.ttl.map(str::to_string),
+				})
 			}
 		}
 	}
@@ -389,7 +397,11 @@ pub mod from_completions {
 	fn translate_internal(req: completions::Request, model_id: String) -> messages::Request {
 		let max_tokens = req.max_tokens();
 		let stop_sequences = req.stop_sequence();
-		let mut cache_controls = CacheControlBudget::new(count_explicit_breakpoints(&req));
+		let cache_ttl = req
+			.prompt_cache_options
+			.as_ref()
+			.and_then(|options| options.ttl);
+		let mut cache_controls = CacheControlBudget::new(count_explicit_breakpoints(&req), cache_ttl);
 		// Anthropic has all system prompts in a single field. Join them into a single string,
 		// unless a part carries an explicit prompt-cache breakpoint — then keep block structure
 		// so the marker survives as `cache_control` on its block.

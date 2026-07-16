@@ -93,10 +93,6 @@ pub fn passthrough_stream(
 						r.response.output_tokens = Some(usage.output_tokens as u64);
 						r.response.total_tokens = Some(usage.total_tokens as u64);
 						r.response.cached_input_tokens = Some(usage.input_tokens_details.cached_tokens as u64);
-						// TODO(GPT-5.6 explicit prompt caching): also record
-						// `input_tokens_details.cache_write_tokens` once async-openai's
-						// `InputTokenDetails` carries it (https://github.com/64bit/async-openai/pull/572).
-						// Non-stream responses and the raw-detect fallback already capture it.
 						r.response.reasoning_tokens = Some(usage.output_tokens_details.reasoning_tokens as u64);
 					}
 					if let Some(c) = completion.take() {
