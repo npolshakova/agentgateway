@@ -1752,6 +1752,102 @@ fn test_responses_input_image_remote_url_is_rejected() {
 }
 
 #[test]
+fn test_responses_input_image_non_base64_data_url_is_rejected() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	let req: types::responses::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_output_tokens": 64,
+		"input": [{
+			"role": "user",
+			"content": [{
+				"type": "input_image",
+				"image_url": "data:image/png,iVBORw0KGgo=",
+				"detail": "auto"
+			}]
+		}]
+	}))
+	.expect("valid responses request");
+
+	let err = super::from_responses::translate(&req, &provider, None, None).unwrap_err();
+	assert!(matches!(err, crate::AIError::UnsupportedConversion(_)));
+	assert!(
+		err
+			.to_string()
+			.contains("image data URLs must be base64-encoded")
+	);
+}
+
+#[test]
+fn test_responses_input_image_non_image_data_url_is_rejected() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	let req: types::responses::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_output_tokens": 64,
+		"input": [{
+			"role": "user",
+			"content": [{
+				"type": "input_image",
+				"image_url": "data:application/octet-stream;base64,iVBORw0KGgo=",
+				"detail": "auto"
+			}]
+		}]
+	}))
+	.expect("valid responses request");
+
+	let err = super::from_responses::translate(&req, &provider, None, None).unwrap_err();
+	assert!(matches!(err, crate::AIError::UnsupportedConversion(_)));
+	assert!(
+		err
+			.to_string()
+			.contains("image data URLs must use a non-empty image/* media type")
+	);
+}
+
+#[test]
+fn test_responses_input_image_empty_media_type_data_url_is_rejected() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	let req: types::responses::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_output_tokens": 64,
+		"input": [{
+			"role": "user",
+			"content": [{
+				"type": "input_image",
+				"image_url": "data:;base64,iVBORw0KGgo=",
+				"detail": "auto"
+			}]
+		}]
+	}))
+	.expect("valid responses request");
+
+	let err = super::from_responses::translate(&req, &provider, None, None).unwrap_err();
+	assert!(matches!(err, crate::AIError::UnsupportedConversion(_)));
+	assert!(
+		err
+			.to_string()
+			.contains("image data URLs must use a non-empty image/* media type")
+	);
+}
+
+#[test]
 fn test_responses_input_image_file_id_is_rejected() {
 	let provider = Provider {
 		model: None,

@@ -1929,6 +1929,7 @@ pub mod from_responses {
 	use std::collections::{HashMap, HashSet};
 	use std::time::Instant;
 
+	use agent_core::strng;
 	use axum_core::body::Body;
 	use bytes::Bytes;
 	use helpers::*;
@@ -1943,8 +1944,6 @@ pub mod from_responses {
 	};
 	use types::bedrock;
 	use types::responses::typed as responses;
-
-	use agent_core::strng;
 
 	use super::helpers;
 	use crate::bedrock::Provider;
@@ -2110,20 +2109,32 @@ pub mod from_responses {
 								"bedrock image inputs are only supported on user messages"
 							)));
 						}
-						let Some((media_type, data)) =
-							input_image.image_url.as_deref().and_then(parse_data_url)
-						else {
+						let Some(image_url) = input_image.image_url.as_deref() else {
+							return Err(AIError::UnsupportedConversion(strng::literal!(
+								"bedrock image inputs must be base64 data URLs; remote URLs and file_ids are unsupported"
+							)));
+						};
+						if !image_url.starts_with("data:") {
 							// Remote URLs and file_ids would require the gateway to fetch content itself
 							return Err(AIError::UnsupportedConversion(strng::literal!(
 								"bedrock image inputs must be base64 data URLs; remote URLs and file_ids are unsupported"
 							)));
 						};
-						let format = media_type
+						let Some((media_type, data)) = parse_data_url(image_url) else {
+							return Err(AIError::UnsupportedConversion(strng::literal!(
+								"bedrock image data URLs must be base64-encoded"
+							)));
+						};
+						let Some(format) = media_type
 							.strip_prefix("image/")
-							.unwrap_or(media_type)
-							.to_string();
+							.filter(|format| !format.is_empty())
+						else {
+							return Err(AIError::UnsupportedConversion(strng::literal!(
+								"bedrock image data URLs must use a non-empty image/* media type"
+							)));
+						};
 						blocks.push(bedrock::ContentBlock::Image(bedrock::ImageBlock {
-							format,
+							format: format.to_string(),
 							source: bedrock::ImageSource {
 								bytes: data.to_string(),
 							},
