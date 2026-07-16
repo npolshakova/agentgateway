@@ -1902,12 +1902,13 @@ fn test_responses_system_input_file_is_rejected() {
 	assert!(
 		err
 			.to_string()
-			.contains("file inputs are unsupported for bedrock")
+			.contains("bedrock document inputs are only supported on user messages"),
+		"unexpected error: {err}"
 	);
 }
 
 #[test]
-fn test_responses_input_file_is_rejected() {
+fn test_responses_input_file_id_is_rejected() {
 	let provider = Provider {
 		model: None,
 		region: strng::new("us-east-1"),
@@ -1931,8 +1932,222 @@ fn test_responses_input_file_is_rejected() {
 	let err = super::from_responses::translate(&req, &provider, None, None).unwrap_err();
 	assert!(matches!(err, crate::AIError::UnsupportedConversion(_)));
 	assert!(
+		err.to_string().contains("file_id is unsupported"),
+		"unexpected error: {err}"
+	);
+}
+
+#[test]
+fn test_responses_input_file_remote_url_is_rejected() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	let req: types::responses::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_output_tokens": 64,
+		"input": [{
+			"role": "user",
+			"content": [{
+				"type": "input_file",
+				"file_url": "https://example.com/report.pdf",
+				"filename": "report.pdf"
+			}]
+		}]
+	}))
+	.expect("valid responses request");
+
+	let err = super::from_responses::translate(&req, &provider, None, None).unwrap_err();
+	assert!(matches!(err, crate::AIError::UnsupportedConversion(_)));
+	assert!(
+		err.to_string().contains("remote URLs are unsupported"),
+		"unexpected error: {err}"
+	);
+}
+
+#[test]
+fn test_responses_input_file_data_url_maps_to_document_block() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	// PDF via file_data data URL — format derived from MIME type
+	let req: types::responses::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_output_tokens": 64,
+		"input": [{
+			"role": "user",
+			"content": [
+				{ "type": "input_text", "text": "Summarize this document." },
+				{
+					"type": "input_file",
+					"file_data": "data:application/pdf;base64,JVBERi0=",
+					"filename": "report.pdf"
+				}
+			]
+		}]
+	}))
+	.expect("valid responses request");
+
+	let bedrock_req = super::from_responses::translate(&req, &provider, None, None)
+		.expect("translation should succeed")
+		.body;
+	let body: serde_json::Value = serde_json::from_slice(&bedrock_req).expect("valid JSON");
+	let content = &body["messages"][0]["content"];
+	assert_eq!(content[0]["text"], json!("Summarize this document."));
+	assert_eq!(content[1]["document"]["format"], json!("pdf"));
+	// Bedrock doc names cannot contain periods, so the extension is stripped
+	assert_eq!(content[1]["document"]["name"], json!("report"));
+	assert_eq!(content[1]["document"]["source"]["bytes"], json!("JVBERi0="));
+}
+
+#[test]
+fn test_responses_input_file_data_url_in_file_url_field_maps_to_document_block() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	// CSV via file_url data URL — format derived from filename extension
+	let req: types::responses::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_output_tokens": 64,
+		"input": [{
+			"role": "user",
+			"content": [{
+				"type": "input_file",
+				"file_url": "data:text/csv;base64,YSxiLGM=",
+				"filename": "data.csv"
+			}]
+		}]
+	}))
+	.expect("valid responses request");
+
+	let bedrock_req = super::from_responses::translate(&req, &provider, None, None)
+		.expect("translation should succeed")
+		.body;
+	let body: serde_json::Value = serde_json::from_slice(&bedrock_req).expect("valid JSON");
+	let content = &body["messages"][0]["content"];
+	assert_eq!(content[0]["document"]["format"], json!("csv"));
+	assert_eq!(content[0]["document"]["name"], json!("data"));
+	assert_eq!(content[0]["document"]["source"]["bytes"], json!("YSxiLGM="));
+}
+
+#[test]
+fn test_responses_input_file_format_from_extension_fallback() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	// Unknown MIME type but known extension — format derived from filename
+	let req: types::responses::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_output_tokens": 64,
+		"input": [{
+			"role": "user",
+			"content": [{
+				"type": "input_file",
+				"file_data": "data:application/octet-stream;base64,dGVzdA==",
+				"filename": "notes.md"
+			}]
+		}]
+	}))
+	.expect("valid responses request");
+
+	let bedrock_req = super::from_responses::translate(&req, &provider, None, None)
+		.expect("translation should succeed")
+		.body;
+	let body: serde_json::Value = serde_json::from_slice(&bedrock_req).expect("valid JSON");
+	let content = &body["messages"][0]["content"];
+	assert_eq!(content[0]["document"]["format"], json!("md"));
+}
+
+#[test]
+fn test_responses_input_file_unknown_format_is_rejected() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	let req: types::responses::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_output_tokens": 64,
+		"input": [{
+			"role": "user",
+			"content": [{
+				"type": "input_file",
+				"file_data": "data:application/octet-stream;base64,dGVzdA==",
+				"filename": "archive.zip"
+			}]
+		}]
+	}))
+	.expect("valid responses request");
+
+	let err = super::from_responses::translate(&req, &provider, None, None).unwrap_err();
+	assert!(matches!(err, crate::AIError::UnsupportedConversion(_)));
+	assert!(
 		err
 			.to_string()
-			.contains("file inputs are unsupported for bedrock")
+			.contains("document format could not be determined"),
+		"unexpected error: {err}"
 	);
+}
+
+#[test]
+fn test_responses_input_file_duplicate_names_are_deduplicated() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	// Bedrock requires unique document names within a request
+	let req: types::responses::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_output_tokens": 64,
+		"input": [{
+			"role": "user",
+			"content": [
+				{ "type": "input_text", "text": "Compare these documents." },
+				{
+					"type": "input_file",
+					"file_data": "data:application/pdf;base64,JVBERi0=",
+					"filename": "report.pdf"
+				},
+				{
+					"type": "input_file",
+					"file_data": "data:application/pdf;base64,JVBERi1=",
+					"filename": "report.pdf"
+				},
+				{
+					"type": "input_file",
+					"file_data": "data:text/plain;base64,dGVzdA=="
+				}
+			]
+		}]
+	}))
+	.expect("valid responses request");
+
+	let bedrock_req = super::from_responses::translate(&req, &provider, None, None)
+		.expect("translation should succeed")
+		.body;
+	let body: serde_json::Value = serde_json::from_slice(&bedrock_req).expect("valid JSON");
+	let content = &body["messages"][0]["content"];
+	assert_eq!(content[1]["document"]["name"], json!("report"));
+	assert_eq!(content[2]["document"]["name"], json!("report [2]"));
+	assert_eq!(content[3]["document"]["name"], json!("document"));
 }

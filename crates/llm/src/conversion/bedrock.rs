@@ -1951,6 +1951,98 @@ pub mod from_responses {
 	use crate::types::ResponseType;
 	use crate::{AIError, StreamingUsageGuard, json, logged_response_parsing, parse, types};
 
+	// Bedrock Converse supported document formats:
+	// https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_DocumentBlock.html
+	fn media_type_to_doc_format(media_type: &str) -> Option<&'static str> {
+		match media_type {
+			"application/pdf" => Some("pdf"),
+			"text/csv" => Some("csv"),
+			"application/msword" => Some("doc"),
+			"application/vnd.openxmlformats-officedocument.wordprocessingml.document" => Some("docx"),
+			"application/vnd.ms-excel" => Some("xls"),
+			"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" => Some("xlsx"),
+			"text/html" => Some("html"),
+			"text/plain" => Some("txt"),
+			"text/markdown" | "text/x-markdown" => Some("md"),
+			_ => None,
+		}
+	}
+
+	fn ext_to_doc_format(ext: &str) -> Option<&'static str> {
+		match ext.to_ascii_lowercase().as_str() {
+			"pdf" => Some("pdf"),
+			"csv" => Some("csv"),
+			"doc" => Some("doc"),
+			"docx" => Some("docx"),
+			"xls" => Some("xls"),
+			"xlsx" => Some("xlsx"),
+			"html" | "htm" => Some("html"),
+			"txt" => Some("txt"),
+			"md" | "markdown" => Some("md"),
+			_ => None,
+		}
+	}
+
+	fn derive_doc_format(
+		media_type: Option<&str>,
+		filename: Option<&str>,
+	) -> Result<&'static str, AIError> {
+		if let Some(fmt) = media_type.and_then(media_type_to_doc_format) {
+			return Ok(fmt);
+		}
+		if let Some(fmt) = filename
+			.and_then(|name| name.rsplit_once('.'))
+			.and_then(|(_, ext)| ext_to_doc_format(ext))
+		{
+			return Ok(fmt);
+		}
+		Err(AIError::UnsupportedConversion(strng::literal!(
+			"bedrock document format could not be determined; provide a filename with a supported extension (pdf, csv, doc, docx, xls, xlsx, html, txt, md)"
+		)))
+	}
+
+	// Bedrock document names may only contain alphanumerics, whitespace, hyphens,
+	// parentheses, and square brackets, with no consecutive whitespace. Notably this
+	// excludes periods, so "notes.txt" must be rewritten before sending.
+	fn sanitize_doc_name(filename: Option<&str>) -> String {
+		let Some(name) = filename else {
+			return "document".to_string();
+		};
+		// Drop the extension; format is carried separately in the document block.
+		let stem = name.rsplit_once('.').map(|(s, _)| s).unwrap_or(name);
+		let mut out = String::with_capacity(stem.len());
+		let mut last_was_space = false;
+		for c in stem.chars() {
+			let mapped = if c.is_ascii_alphanumeric() || matches!(c, '-' | '(' | ')' | '[' | ']') {
+				last_was_space = false;
+				c
+			} else if last_was_space {
+				continue;
+			} else {
+				last_was_space = true;
+				' '
+			};
+			out.push(mapped);
+		}
+		let out = out.trim().to_string();
+		if out.is_empty() {
+			"document".to_string()
+		} else {
+			out
+		}
+	}
+
+	/// Parse a `data:` URL into its optional media type and base64 payload.
+	/// Errors if the data URL is not base64-encoded.
+	fn parse_doc_data_url(url: &str) -> Result<(Option<&str>, String), AIError> {
+		let Some((mt, data)) = parse_data_url(url) else {
+			return Err(AIError::UnsupportedConversion(strng::literal!(
+				"bedrock file data URLs must be base64-encoded"
+			)));
+		};
+		Ok((Some(mt), data.to_string()))
+	}
+
 	/// translate an OpenAI responses request to a Bedrock converse request
 	pub fn translate(
 		req: &types::responses::Request,
@@ -2092,6 +2184,9 @@ pub mod from_responses {
 			InputParam::Items(items) => items.clone(),
 		};
 
+		// Bedrock requires document names to be unique within a request; track names
+		// already used so repeated filenames (or missing ones) get a numeric suffix.
+		let used_doc_names = std::cell::RefCell::new(HashSet::<String>::new());
 		let input_parts_to_blocks = |parts: &[InputContent],
 		                             role: bedrock::Role|
 		 -> Result<Vec<bedrock::ContentBlock>, AIError> {
@@ -2140,10 +2235,60 @@ pub mod from_responses {
 							},
 						}));
 					},
-					InputContent::InputFile(_) => {
-						return Err(AIError::UnsupportedConversion(strng::literal!(
-							"file inputs are unsupported for bedrock"
-						)));
+					InputContent::InputFile(input_file) => {
+						if role != bedrock::Role::User {
+							return Err(AIError::UnsupportedConversion(strng::literal!(
+								"bedrock document inputs are only supported on user messages"
+							)));
+						}
+						// Bedrock-side constraints we do NOT pre-validate here (Bedrock enforces them
+						// and they may change; see the Converse API docs):
+						// - a document must be accompanied by a text block in the same message
+						// - at most 5 documents per request, each no larger than 4.5 MB
+						// https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html
+						//
+						// Resolve base64 bytes and optional media type from file_data or file_url.
+						// file_id cannot be resolved without an external API call.
+						let (media_type, bytes) = if let Some(file_data) = &input_file.file_data {
+							if file_data.starts_with("data:") {
+								parse_doc_data_url(file_data)?
+							} else {
+								// Raw base64 without a data URL wrapper; format comes from the filename
+								(None, file_data.clone())
+							}
+						} else if let Some(file_url) = &input_file.file_url {
+							if file_url.starts_with("data:") {
+								parse_doc_data_url(file_url)?
+							} else {
+								return Err(AIError::UnsupportedConversion(strng::literal!(
+									"bedrock file inputs must be base64 data URLs; remote URLs are unsupported"
+								)));
+							}
+						} else {
+							return Err(AIError::UnsupportedConversion(strng::literal!(
+								"bedrock file inputs must supply file_data or a base64 data URL in file_url; file_id is unsupported"
+							)));
+						};
+						let format = derive_doc_format(media_type, input_file.filename.as_deref())?;
+						let mut name = sanitize_doc_name(input_file.filename.as_deref());
+						{
+							let mut used = used_doc_names.borrow_mut();
+							if !used.insert(name.clone()) {
+								let mut i = 2;
+								name = loop {
+									let candidate = format!("{name} [{i}]");
+									if used.insert(candidate.clone()) {
+										break candidate;
+									}
+									i += 1;
+								};
+							}
+						}
+						blocks.push(bedrock::ContentBlock::Document(bedrock::DocumentBlock {
+							format: format.to_string(),
+							name,
+							source: bedrock::DocumentSource { bytes },
+						}));
 					},
 				}
 			}
@@ -2162,7 +2307,7 @@ pub mod from_responses {
 					},
 					InputContent::InputFile(_) => {
 						return Err(AIError::UnsupportedConversion(strng::literal!(
-							"file inputs are unsupported for bedrock"
+							"bedrock document inputs are only supported on user messages"
 						)));
 					},
 				}
@@ -3266,6 +3411,7 @@ impl ConverseResponseAdapter {
 					));
 				},
 				bedrock::ContentBlock::Image(_)
+				| bedrock::ContentBlock::Document(_)
 				| bedrock::ContentBlock::ToolResult(_)
 				| bedrock::ContentBlock::CachePoint(_) => {
 					continue;
@@ -3385,6 +3531,7 @@ impl ConverseResponseAdapter {
 					));
 				},
 				bedrock::ContentBlock::Image(_)
+				| bedrock::ContentBlock::Document(_)
 				| bedrock::ContentBlock::ToolResult(_)
 				| bedrock::ContentBlock::CachePoint(_) => {
 					// Skip these in responses (not part of output)
@@ -3505,6 +3652,7 @@ impl ConverseResponseAdapter {
 					},
 				)),
 				bedrock::ContentBlock::ToolResult(_) => None, // Skip tool results in responses
+				bedrock::ContentBlock::Document(_) => None,   // Input-only; never in a Bedrock response
 				bedrock::ContentBlock::CachePoint(_) => None, // Skip cache points - they're metadata only
 			}
 		}
