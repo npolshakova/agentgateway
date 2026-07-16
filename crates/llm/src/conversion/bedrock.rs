@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
+use agent_core::strng;
 use http::Response;
 use rand::RngExt;
 use tracing::trace;
@@ -128,6 +129,70 @@ fn restore_tool_name(map: Option<&BedrockToolNameMap>, name: &str) -> String {
 	map
 		.map(|m| m.restore(name))
 		.unwrap_or_else(|| name.to_string())
+}
+
+struct CanonicalImage {
+	media_type: String,
+	bytes_base64: String,
+}
+
+impl CanonicalImage {
+	fn image_format(media_type: &str) -> Option<&str> {
+		media_type
+			.strip_prefix("image/")
+			.filter(|format| !format.is_empty())
+	}
+
+	fn from_data_url(url: &str) -> Result<Self, AIError> {
+		if !url.starts_with("data:") {
+			return Err(AIError::UnsupportedConversion(strng::literal!(
+				"bedrock image inputs must be base64 data URLs; remote URLs and file_ids are unsupported"
+			)));
+		}
+		let Some((media_type, data)) = crate::conversion::completions::parse_data_url(url) else {
+			return Err(AIError::UnsupportedConversion(strng::literal!(
+				"bedrock image data URLs must be base64-encoded"
+			)));
+		};
+		let Some(_) = Self::image_format(media_type) else {
+			return Err(AIError::UnsupportedConversion(strng::literal!(
+				"bedrock image data URLs must use a non-empty image/* media type"
+			)));
+		};
+		Ok(Self {
+			media_type: media_type.to_string(),
+			bytes_base64: data.to_string(),
+		})
+	}
+
+	fn from_media_type_and_base64(media_type: &str, bytes_base64: &str) -> Result<Self, AIError> {
+		let Some(_) = Self::image_format(media_type) else {
+			return Err(AIError::UnsupportedConversion(strng::literal!(
+				"bedrock image inputs must use a non-empty image/* media type"
+			)));
+		};
+		Ok(Self {
+			media_type: media_type.to_string(),
+			bytes_base64: bytes_base64.to_string(),
+		})
+	}
+
+	fn into_bedrock_image_block(self) -> bedrock::ImageBlock {
+		bedrock::ImageBlock {
+			format: self
+				.media_type
+				.strip_prefix("image/")
+				.unwrap_or(&self.media_type)
+				.to_string(),
+			source: bedrock::ImageSource {
+				bytes: self.bytes_base64,
+			},
+		}
+	}
+
+	fn into_bedrock_content_block(self) -> bedrock::ContentBlock {
+		bedrock::ContentBlock::Image(self.into_bedrock_image_block())
+	}
 }
 
 fn error_message(bytes: &[u8]) -> String {
@@ -404,14 +469,14 @@ pub mod from_completions {
 
 	use super::helpers;
 	use crate::bedrock::Provider;
-	use crate::conversion::completions::{extract_system_text, parse_data_url};
+	use crate::conversion::completions::extract_system_text;
 	use crate::types::ResponseType;
 	use crate::types::completions::typed::UsagePromptDetails;
 	use crate::{AIError, StreamingUsageGuard, json, logged_response_parsing, parse, types};
 
 	fn text_blocks_from_user_content(
 		content: &completions::RequestUserMessageContent,
-	) -> Vec<bedrock::ContentBlock> {
+	) -> Result<Vec<bedrock::ContentBlock>, AIError> {
 		let mut out = Vec::new();
 		match content {
 			completions::RequestUserMessageContent::Text(text) => {
@@ -428,17 +493,11 @@ pub mod from_completions {
 							}
 						},
 						completions::RequestUserMessageContentPart::ImageUrl(image) => {
-							if let Some((media_type, data)) = parse_data_url(&image.image_url.url) {
-								let format = media_type
-									.strip_prefix("image/")
-									.unwrap_or(media_type)
-									.to_string();
-								out.push(bedrock::ContentBlock::Image(bedrock::ImageBlock {
-									format,
-									source: bedrock::ImageSource {
-										bytes: data.to_string(),
-									},
-								}));
+							if image.image_url.url.starts_with("data:") {
+								out.push(
+									super::CanonicalImage::from_data_url(&image.image_url.url)?
+										.into_bedrock_content_block(),
+								);
 							}
 						},
 						completions::RequestUserMessageContentPart::InputAudio(_)
@@ -447,7 +506,7 @@ pub mod from_completions {
 				}
 			},
 		}
-		out
+		Ok(out)
 	}
 
 	fn assistant_content_to_bedrock(
@@ -565,7 +624,7 @@ pub mod from_completions {
 		let typed = json::convert::<_, completions::Request>(req).map_err(AIError::RequestParsing)?;
 		let model_id = typed.model.clone().unwrap_or_default();
 		let (xlated, tool_name_map) =
-			translate_internal(typed, model_id, provider, headers, prompt_caching);
+			translate_internal(typed, model_id, provider, headers, prompt_caching)?;
 		let body = serde_json::to_vec(&xlated).map_err(AIError::RequestMarshal)?;
 		Ok(super::BedrockRequest {
 			body,
@@ -579,7 +638,7 @@ pub mod from_completions {
 		provider: &Provider,
 		headers: Option<&http::HeaderMap>,
 		prompt_caching: Option<&crate::PromptCachingConfig>,
-	) -> (bedrock::ConverseRequest, super::BedrockToolNameMap) {
+	) -> Result<(bedrock::ConverseRequest, super::BedrockToolNameMap), AIError> {
 		let mut tool_name_map = super::BedrockToolNameMap::default();
 		for tool in req.tools.iter().flatten() {
 			if let completions::Tool::Function(function_tool) = tool {
@@ -668,43 +727,30 @@ pub mod from_completions {
 		});
 		let tool_config = tools.map(|tools| bedrock::ToolConfiguration { tools, tool_choice });
 
-		let messages = req
-			.messages
-			.iter()
-			.filter_map(|msg| match msg {
+		let mut messages = Vec::new();
+		for msg in &req.messages {
+			let msg = match msg {
 				completions::RequestMessage::System(_) | completions::RequestMessage::Developer(_) => None,
 				completions::RequestMessage::User(user) => {
-					let content = text_blocks_from_user_content(&user.content);
-					if content.is_empty() {
-						None
-					} else {
-						Some(bedrock::Message {
-							role: bedrock::Role::User,
-							content,
-						})
-					}
+					let content = text_blocks_from_user_content(&user.content)?;
+					(!content.is_empty()).then_some(bedrock::Message {
+						role: bedrock::Role::User,
+						content,
+					})
 				},
 				completions::RequestMessage::Assistant(assistant) => {
 					let content = assistant_content_to_bedrock(assistant, &mut tool_name_map);
-					if content.is_empty() {
-						None
-					} else {
-						Some(bedrock::Message {
-							role: bedrock::Role::Assistant,
-							content,
-						})
-					}
+					(!content.is_empty()).then_some(bedrock::Message {
+						role: bedrock::Role::Assistant,
+						content,
+					})
 				},
 				completions::RequestMessage::Tool(tool_result) => {
 					let content = tool_content_to_bedrock(tool_result);
-					if content.is_empty() {
-						None
-					} else {
-						Some(bedrock::Message {
-							role: bedrock::Role::User,
-							content,
-						})
-					}
+					(!content.is_empty()).then_some(bedrock::Message {
+						role: bedrock::Role::User,
+						content,
+					})
 				},
 				completions::RequestMessage::Function(function) => function
 					.content
@@ -714,11 +760,11 @@ pub mod from_completions {
 						role: bedrock::Role::User,
 						content: vec![bedrock::ContentBlock::Text(s.clone())],
 					}),
-			})
-			.fold(Vec::new(), |mut msgs, msg| {
-				helpers::push_or_merge_message(&mut msgs, msg);
-				msgs
-			});
+			};
+			if let Some(msg) = msg {
+				helpers::push_or_merge_message(&mut messages, msg);
+			}
+		}
 
 		// Build guardrail configuration if specified
 		let guardrail_config = if let (Some(identifier), Some(version)) =
@@ -824,7 +870,7 @@ pub mod from_completions {
 			}
 		}
 
-		(bedrock_request, tool_name_map)
+		Ok((bedrock_request, tool_name_map))
 	}
 
 	fn reasoning_effort_to_enabled_budget(effort: &completions::ReasoningEffort) -> Option<u64> {
@@ -1371,17 +1417,9 @@ pub mod from_messages {
 						if let Some(media_type) = source.get("media_type").and_then(|v| v.as_str())
 							&& let Some(data) = source.get("data").and_then(|v| v.as_str())
 						{
-							let format = media_type
-								.strip_prefix("image/")
-								.unwrap_or(media_type)
-								.to_string();
 							(
-								bedrock::ContentBlock::Image(bedrock::ImageBlock {
-									format,
-									source: bedrock::ImageSource {
-										bytes: data.to_string(),
-									},
-								}),
+								super::CanonicalImage::from_media_type_and_base64(media_type, data)?
+									.into_bedrock_content_block(),
 								cache_control.is_some(),
 							)
 						} else {
@@ -1423,18 +1461,11 @@ pub mod from_messages {
 										if let Some(media_type) = source.get("media_type").and_then(|v| v.as_str())
 											&& let Some(data) = source.get("data").and_then(|v| v.as_str())
 										{
-											let format = media_type
-												.strip_prefix("image/")
-												.unwrap_or(media_type)
-												.to_string();
-											Some(bedrock::ToolResultContentBlock::Image(
-												bedrock::ImageBlock {
-													format,
-													source: bedrock::ImageSource {
-														bytes: data.to_string(),
-													},
-												},
-											))
+											super::CanonicalImage::from_media_type_and_base64(media_type, data)
+												.ok()
+												.map(|image| {
+													bedrock::ToolResultContentBlock::Image(image.into_bedrock_image_block())
+												})
 										} else {
 											None
 										}
@@ -1968,32 +1999,17 @@ pub mod from_responses {
 		}
 	}
 
-	fn ext_to_doc_format(ext: &str) -> Option<&'static str> {
-		match ext.to_ascii_lowercase().as_str() {
-			"pdf" => Some("pdf"),
-			"csv" => Some("csv"),
-			"doc" => Some("doc"),
-			"docx" => Some("docx"),
-			"xls" => Some("xls"),
-			"xlsx" => Some("xlsx"),
-			"html" | "htm" => Some("html"),
-			"txt" => Some("txt"),
-			"md" | "markdown" => Some("md"),
-			_ => None,
-		}
-	}
-
 	fn derive_doc_format(
 		media_type: Option<&str>,
 		filename: Option<&str>,
 	) -> Result<&'static str, AIError> {
-		if let Some(fmt) = media_type.and_then(media_type_to_doc_format) {
-			return Ok(fmt);
-		}
-		if let Some(fmt) = filename
-			.and_then(|name| name.rsplit_once('.'))
-			.and_then(|(_, ext)| ext_to_doc_format(ext))
-		{
+		if let Some(fmt) = media_type.and_then(media_type_to_doc_format).or_else(|| {
+			filename.and_then(|f| {
+				mime_guess::from_path(f)
+					.iter_raw()
+					.find_map(media_type_to_doc_format)
+			})
+		}) {
 			return Ok(fmt);
 		}
 		Err(AIError::UnsupportedConversion(strng::literal!(
@@ -2215,25 +2231,8 @@ pub mod from_responses {
 								"bedrock image inputs must be base64 data URLs; remote URLs and file_ids are unsupported"
 							)));
 						};
-						let Some((media_type, data)) = parse_data_url(image_url) else {
-							return Err(AIError::UnsupportedConversion(strng::literal!(
-								"bedrock image data URLs must be base64-encoded"
-							)));
-						};
-						let Some(format) = media_type
-							.strip_prefix("image/")
-							.filter(|format| !format.is_empty())
-						else {
-							return Err(AIError::UnsupportedConversion(strng::literal!(
-								"bedrock image data URLs must use a non-empty image/* media type"
-							)));
-						};
-						blocks.push(bedrock::ContentBlock::Image(bedrock::ImageBlock {
-							format: format.to_string(),
-							source: bedrock::ImageSource {
-								bytes: data.to_string(),
-							},
-						}));
+						blocks
+							.push(super::CanonicalImage::from_data_url(image_url)?.into_bedrock_content_block());
 					},
 					InputContent::InputFile(input_file) => {
 						if role != bedrock::Role::User {

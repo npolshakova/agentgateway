@@ -636,6 +636,49 @@ fn test_messages_image_url_to_bedrock_returns_error() {
 }
 
 #[test]
+fn test_completions_image_data_url_maps_to_converse_image_block() {
+	let provider = Provider {
+		model: None,
+		region: strng::new("us-east-1"),
+		guardrail_identifier: None,
+		guardrail_version: None,
+	};
+
+	let req: types::completions::Request = serde_json::from_value(json!({
+		"model": "gpt-4o",
+		"max_tokens": 64,
+		"messages": [{
+			"role": "user",
+			"content": [
+				{ "type": "text", "text": "What is in this image?" },
+				{
+					"type": "image_url",
+					"image_url": {
+						"url": "data:image/jpeg;base64,/9j/4AAQSkZJRg=="
+					}
+				}
+			]
+		}]
+	}))
+	.expect("valid completions request");
+
+	let translated = super::from_completions::translate(&req, &provider, None, None)
+		.unwrap()
+		.body;
+	let translated: serde_json::Value = serde_json::from_slice(&translated).unwrap();
+
+	let content = translated["messages"][0]["content"]
+		.as_array()
+		.expect("user message content");
+	assert_eq!(content[0]["text"], json!("What is in this image?"));
+	assert_eq!(content[1]["image"]["format"], json!("jpeg"));
+	assert_eq!(
+		content[1]["image"]["source"]["bytes"],
+		json!("/9j/4AAQSkZJRg==")
+	);
+}
+
+#[test]
 fn test_completions_request_metadata_only_uses_bedrock_header() {
 	let provider = Provider {
 		model: None,
@@ -705,7 +748,8 @@ fn test_completions_request_metadata_only_uses_bedrock_header() {
 		&provider,
 		Some(&headers),
 		None,
-	);
+	)
+	.unwrap();
 	let md = out.request_metadata.unwrap();
 
 	assert!(!md.contains_key("user_id"));
@@ -794,7 +838,8 @@ fn test_completions_json_schema_response_format_maps_to_converse_output_config()
 		&provider,
 		None,
 		None,
-	);
+	)
+	.unwrap();
 	assert_eq!(
 		out.output_config,
 		Some(types::bedrock::OutputConfig {
@@ -872,7 +917,8 @@ fn test_completions_reasoning_effort_maps_to_enabled_thinking_budget() {
 		&provider,
 		None,
 		None,
-	);
+	)
+	.unwrap();
 
 	assert_eq!(
 		out.additional_model_request_fields,
@@ -948,7 +994,8 @@ fn test_completions_explicit_thinking_budget_forces_enabled_thinking() {
 		&provider,
 		None,
 		None,
-	);
+	)
+	.unwrap();
 
 	assert_eq!(
 		out.additional_model_request_fields,
