@@ -100,16 +100,6 @@ func New(opts Options) (*setup, error) {
 		Options: opts,
 	}
 
-	if s.ControllerName == "" {
-		s.ControllerName = wellknown.DefaultAgwControllerName
-	}
-	if s.AgentgatewayClassName == "" {
-		s.AgentgatewayClassName = wellknown.DefaultAgwClassName
-	}
-	if s.LeaderElectionID == "" {
-		s.LeaderElectionID = wellknown.LeaderElectionID
-	}
-
 	if s.GlobalSettings == nil {
 		var err error
 		s.GlobalSettings, err = apisettings.BuildSettings()
@@ -117,6 +107,18 @@ func New(opts Options) (*setup, error) {
 			slog.Error("error loading settings from env", "error", err)
 			return nil, err
 		}
+	}
+
+	// An explicit setup.Options value takes precedence; otherwise fall back to the
+	// env-backed Settings value, which defaults to the wellknown name via its struct tag.
+	if s.ControllerName == "" {
+		s.ControllerName = s.GlobalSettings.ControllerName
+	}
+	if s.AgentgatewayClassName == "" {
+		s.AgentgatewayClassName = s.GlobalSettings.AgentgatewayClassName
+	}
+	if s.LeaderElectionID == "" {
+		s.LeaderElectionID = wellknown.LeaderElectionID
 	}
 
 	if err := SetupLogging(s.GlobalSettings.LogLevel); err != nil {
