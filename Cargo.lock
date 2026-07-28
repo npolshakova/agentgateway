@@ -312,7 +312,7 @@ dependencies = [
  "reqwest 0.12.28",
  "reqwest 0.13.4",
  "rmcp 0.10.0",
- "rmcp 2.0.0",
+ "rmcp 3.0.0-beta.3",
  "rstest",
  "rust_decimal",
  "rustls",
@@ -5979,8 +5979,8 @@ dependencies = [
 
 [[package]]
 name = "rmcp"
-version = "2.0.0"
-source = "git+https://github.com/howardjohn/rust-sdk?rev=7366ffc42beb89f27410ae348a67001beb4c6ba5#7366ffc42beb89f27410ae348a67001beb4c6ba5"
+version = "3.0.0-beta.3"
+source = "git+https://github.com/modelcontextprotocol/rust-sdk?branch=main#1f63e43479eee2c345f3a5d94ea64c32b6b6da94"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -5996,7 +5996,7 @@ dependencies = [
  "process-wrap",
  "rand 0.10.2",
  "reqwest 0.13.4",
- "rmcp-macros 2.0.0",
+ "rmcp-macros 3.0.0-beta.3",
  "schemars 1.2.1",
  "serde",
  "serde_json",
@@ -6026,8 +6026,8 @@ dependencies = [
 
 [[package]]
 name = "rmcp-macros"
-version = "2.0.0"
-source = "git+https://github.com/howardjohn/rust-sdk?rev=7366ffc42beb89f27410ae348a67001beb4c6ba5#7366ffc42beb89f27410ae348a67001beb4c6ba5"
+version = "3.0.0-beta.3"
+source = "git+https://github.com/modelcontextprotocol/rust-sdk?branch=main#1f63e43479eee2c345f3a5d94ea64c32b6b6da94"
 dependencies = [
  "darling 0.23.0",
  "proc-macro2",
