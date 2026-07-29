@@ -339,6 +339,10 @@ impl crate::llm::ResponseType for TextResponse {
 	fn serialize(&self) -> serde_json::Result<Vec<u8>> {
 		serde_json::to_vec(&self.to_webhook_choices())
 	}
+
+	fn visit_text_mut(&mut self, f: &mut dyn FnMut(&mut String)) {
+		f(&mut self.content);
+	}
 }
 
 /// Adapter that wraps plain text extracted from a realtime WebSocket event as a `RequestType`.
@@ -389,6 +393,10 @@ impl crate::llm::RequestType for TextRequest {
 		if let Some(m) = msgs.into_iter().next() {
 			self.content = m.content.to_string();
 		}
+	}
+
+	fn visit_text_mut(&mut self, f: &mut dyn FnMut(&mut String)) {
+		f(&mut self.content);
 	}
 }
 
@@ -1020,22 +1028,27 @@ impl Policy {
 		rgx: &RegexRules,
 		rej: &RequestRejection,
 	) -> anyhow::Result<GuardrailOutcome> {
-		let mut msgs = req.get_messages();
 		let mut any_changed = false;
-		for msg in &mut msgs {
-			match Self::apply_prompt_guard_regex(&msg.content, rgx) {
+		let mut rejected = false;
+		req.visit_text_mut(&mut |text| {
+			if rejected {
+				return;
+			}
+			match Self::apply_prompt_guard_regex(text, rgx) {
 				Some(RegexResult::Reject) => {
-					return Ok(GuardrailOutcome::Rejected(rej.as_response()));
+					rejected = true;
 				},
-				Some(RegexResult::Mask(content)) => {
+				Some(RegexResult::Mask(masked)) => {
 					any_changed = true;
-					msg.content = content.into();
+					*text = masked;
 				},
 				None => {},
 			}
+		});
+		if rejected {
+			return Ok(GuardrailOutcome::Rejected(rej.as_response()));
 		}
 		if any_changed {
-			req.set_messages(msgs);
 			return Ok(GuardrailOutcome::Masked);
 		}
 		Ok(GuardrailOutcome::None)
@@ -1046,22 +1059,27 @@ impl Policy {
 		rgx: &RegexRules,
 		rej: &RequestRejection,
 	) -> anyhow::Result<GuardrailOutcome> {
-		let mut msgs = resp.to_webhook_choices();
 		let mut any_changed = false;
-		for msg in &mut msgs {
-			match Self::apply_prompt_guard_regex(&msg.message.content, rgx) {
+		let mut rejected = false;
+		resp.visit_text_mut(&mut |text| {
+			if rejected {
+				return;
+			}
+			match Self::apply_prompt_guard_regex(text, rgx) {
 				Some(RegexResult::Reject) => {
-					return Ok(GuardrailOutcome::Rejected(rej.as_response()));
+					rejected = true;
 				},
-				Some(RegexResult::Mask(content)) => {
+				Some(RegexResult::Mask(masked)) => {
 					any_changed = true;
-					msg.message.content = content.into();
+					*text = masked;
 				},
 				None => {},
 			}
+		});
+		if rejected {
+			return Ok(GuardrailOutcome::Rejected(rej.as_response()));
 		}
 		if any_changed {
-			resp.set_webhook_choices(msgs)?;
 			return Ok(GuardrailOutcome::Masked);
 		}
 		Ok(GuardrailOutcome::None)
