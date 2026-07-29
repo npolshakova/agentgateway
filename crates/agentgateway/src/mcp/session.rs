@@ -39,6 +39,9 @@ pub struct Session {
 	relay: Arc<Relay>,
 	pub id: Arc<str>,
 	tx: Option<Sender<ServerJsonRpcMessage>>,
+	// Stateless requests still use Session internally, but this ID is not an MCP protocol session
+	// ID: it is neither registered nor sent to the client and must not appear in access logs.
+	synthetic: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -307,10 +310,10 @@ impl Session {
 	pub async fn delete_session(&self, parts: Parts) -> Result<Response, ProxyError> {
 		let ctx = IncomingRequestContext::new(&parts);
 		let (_span, log, _cel) = mcp::handler::setup_request_log(parts, "delete_session");
-		let session_id = self.id.to_string();
+		let session_id = (!self.synthetic).then(|| self.id.to_string());
 		log.non_atomic_mutate(|l| {
 			// NOTE: l.method_name keep None to respect the metrics logic: not handle GET, DELETE.
-			l.session_id = Some(session_id);
+			l.session_id = session_id;
 		});
 		Self::handle_error(None, self.relay.send_fanout_deletion(ctx).await, false).await
 	}
@@ -364,10 +367,10 @@ impl Session {
 	pub async fn get_stream(&self, parts: Parts) -> Result<Response, ProxyError> {
 		let ctx = IncomingRequestContext::new(&parts);
 		let (_span, log, _cel) = mcp::handler::setup_request_log(parts, "get_stream");
-		let session_id = self.id.to_string();
+		let session_id = (!self.synthetic).then(|| self.id.to_string());
 		log.non_atomic_mutate(|l| {
 			// NOTE: l.method_name keep None to respect the metrics logic: which do not want to handle GET, DELETE.
-			l.session_id = Some(session_id);
+			l.session_id = session_id;
 		});
 		Self::handle_error(None, self.relay.send_fanout_get(ctx).await, false).await
 	}
@@ -415,10 +418,10 @@ impl Session {
 		let method = init_request.method.as_str().to_string();
 		let ctx = IncomingRequestContext::new(&parts);
 		let (_, log, _) = mcp::handler::setup_request_log(parts, &method);
-		let session_id = self.id.to_string();
+		let session_id = (!self.synthetic).then(|| self.id.to_string());
 		log.non_atomic_mutate(|l| {
 			l.method_name = Some(method.clone());
-			l.session_id = Some(session_id);
+			l.session_id = session_id;
 		});
 
 		self.strip_unsupported_client_capabilities(&mut init_request.params.capabilities, &ctx);
@@ -445,10 +448,10 @@ impl Session {
 		let method = initialized.method.as_str().to_string();
 		let ctx = IncomingRequestContext::new(&parts);
 		let (_, log, _) = mcp::handler::setup_request_log(parts, &method);
-		let session_id = self.id.to_string();
+		let session_id = (!self.synthetic).then(|| self.id.to_string());
 		log.non_atomic_mutate(|l| {
 			l.method_name = Some(method.clone());
-			l.session_id = Some(session_id);
+			l.session_id = session_id;
 		});
 
 		self
@@ -474,10 +477,10 @@ impl Session {
 				let method = r.request.method().to_string();
 				let mut ctx = IncomingRequestContext::new(&parts);
 				let (mut span, log, cel) = mcp::handler::setup_request_log(parts, &method);
-				let session_id = self.id.to_string();
+				let session_id = (!self.synthetic).then(|| self.id.to_string());
 				log.non_atomic_mutate(|l| {
 					l.method_name = Some(method.clone());
-					l.session_id = Some(session_id);
+					l.session_id = session_id;
 				});
 				self.strip_unsupported_client_capabilities_from_meta(&mut r.request, &ctx);
 				match &mut r.request {
@@ -777,10 +780,10 @@ impl Session {
 				};
 				let ctx = IncomingRequestContext::new(&parts);
 				let (_span, log, _cel) = mcp::handler::setup_request_log(parts, method);
-				let session_id = self.id.to_string();
+				let session_id = (!self.synthetic).then(|| self.id.to_string());
 				log.non_atomic_mutate(|l| {
 					l.method_name = Some(method.to_string());
-					l.session_id = Some(session_id);
+					l.session_id = session_id;
 				});
 				// TODO: the notification needs to be fanned out in some cases and sent to a single one in others
 				// however, we don't have a way to map to the correct service yet
@@ -893,6 +896,7 @@ impl SessionManager {
 			id: id.into(),
 			relay: Arc::new(relay),
 			tx: None,
+			synthetic: false,
 			encoder: self.encoder.clone(),
 		};
 		let mut sm = self.sessions.write().expect("write lock");
@@ -917,6 +921,7 @@ impl SessionManager {
 			id: id.clone(),
 			relay: Arc::new(relay),
 			tx: None,
+			synthetic: false,
 			encoder: self.encoder.clone(),
 		}
 	}
@@ -944,6 +949,7 @@ impl SessionManager {
 			id,
 			relay: Arc::new(relay),
 			tx: None,
+			synthetic: true,
 			encoder: self.encoder.clone(),
 		}
 	}
@@ -962,6 +968,7 @@ impl SessionManager {
 			id: id.clone(),
 			relay: Arc::new(relay),
 			tx: Some(tx),
+			synthetic: false,
 			encoder: self.encoder.clone(),
 		};
 		let mut sm = self.sessions.write().expect("write lock");
