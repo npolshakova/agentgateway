@@ -262,6 +262,7 @@ pub enum MCPOperation {
 	Prompt,
 	Resource,
 	ResourceTemplates,
+	Task,
 }
 
 impl EncodeLabelValue for MCPOperation {
@@ -277,6 +278,7 @@ impl Display for MCPOperation {
 			MCPOperation::Prompt => write!(f, "prompt"),
 			MCPOperation::Resource => write!(f, "resource"),
 			MCPOperation::ResourceTemplates => write!(f, "templates"),
+			MCPOperation::Task => write!(f, "task"),
 		}
 	}
 }
@@ -303,6 +305,30 @@ pub struct MCPTool {
 #[apply(schema!)]
 #[derive(Default, PartialEq, ::cel::DynamicType)]
 #[dynamic(rename_all = "camelCase")]
+pub struct MCPTask {
+	/// The target handling the task.
+	pub target: String,
+	/// The task ID.
+	pub name: String,
+}
+
+impl MCPTask {
+	pub fn new(target: String, name: String) -> Self {
+		Self { target, name }
+	}
+
+	pub fn target(&self) -> &str {
+		&self.target
+	}
+
+	pub fn name(&self) -> &str {
+		&self.name
+	}
+}
+
+#[apply(schema!)]
+#[derive(Default, PartialEq, ::cel::DynamicType)]
+#[dynamic(rename_all = "camelCase")]
 pub struct MCPInfo {
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub method_name: Option<String>,
@@ -314,6 +340,8 @@ pub struct MCPInfo {
 	pub prompt: Option<ResourceId>,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	pub resource: Option<ResourceId>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub task: Option<MCPTask>,
 }
 
 impl MCPInfo {
@@ -323,6 +351,7 @@ impl MCPInfo {
 			&& self.tool.is_none()
 			&& self.prompt.is_none()
 			&& self.resource.is_none()
+			&& self.task.is_none()
 	}
 
 	pub fn resource_type(&self) -> Option<MCPOperation> {
@@ -332,6 +361,8 @@ impl MCPInfo {
 			Some(MCPOperation::Prompt)
 		} else if self.resource.is_some() {
 			Some(MCPOperation::Resource)
+		} else if self.task.is_some() {
+			Some(MCPOperation::Task)
 		} else {
 			None
 		}
@@ -344,9 +375,22 @@ impl MCPInfo {
 			.map(|tool| tool.target.as_str())
 			.or_else(|| self.prompt.as_ref().map(ResourceId::target))
 			.or_else(|| self.resource.as_ref().map(ResourceId::target))
+			.or_else(|| self.task.as_ref().map(MCPTask::target))
 	}
 
 	pub fn resource_name(&self) -> Option<&str> {
+		self
+			.tool
+			.as_ref()
+			.map(|tool| tool.name.as_str())
+			.or_else(|| self.prompt.as_ref().map(ResourceId::name))
+			.or_else(|| self.resource.as_ref().map(ResourceId::name))
+			.or_else(|| self.task.as_ref().map(MCPTask::name))
+	}
+
+	/// Like [`Self::resource_name`], but omits task IDs, which are unique per request and would
+	/// grow the metric label set without bound.
+	pub fn metric_resource_name(&self) -> Option<&str> {
 		self
 			.tool
 			.as_ref()
@@ -358,6 +402,7 @@ impl MCPInfo {
 	pub fn set_tool(&mut self, target: String, name: String) {
 		self.prompt = None;
 		self.resource = None;
+		self.task = None;
 		match self.tool.as_mut() {
 			Some(tool) => {
 				tool.target = target;
@@ -376,13 +421,22 @@ impl MCPInfo {
 	pub fn set_prompt(&mut self, target: String, name: String) {
 		self.tool = None;
 		self.resource = None;
+		self.task = None;
 		self.prompt = Some(ResourceId::new(target, name));
 	}
 
 	pub fn set_resource(&mut self, target: String, name: String) {
 		self.tool = None;
 		self.prompt = None;
+		self.task = None;
 		self.resource = Some(ResourceId::new(target, name));
+	}
+
+	pub fn set_task(&mut self, target: String, task_id: String) {
+		self.tool = None;
+		self.prompt = None;
+		self.resource = None;
+		self.task = Some(MCPTask::new(target, task_id));
 	}
 
 	pub fn capture_call_arguments(
@@ -426,6 +480,13 @@ impl From<&ResourceType> for MCPInfo {
 			},
 			ResourceType::Resource(resource) => Self {
 				resource: Some(resource.clone()),
+				..Default::default()
+			},
+			ResourceType::Task(task) => Self {
+				task: Some(MCPTask::new(
+					task.target().to_string(),
+					task.name().to_string(),
+				)),
 				..Default::default()
 			},
 		}
