@@ -568,6 +568,7 @@ mod responses {
 
 	const COMPLETIONS_TO_COMPLETIONS: &str = "completions-completions";
 	const COMPLETIONS_TO_MESSAGES: &str = "completions-messages";
+	const COMPLETIONS_TO_RESPONSES: &str = "completions-responses";
 	const COMPLETIONS_TO_DETECT: &str = "completions-detect";
 	const MESSAGES_TO_MESSAGES: &str = "messages-messages";
 	const MESSAGES_TO_COMPLETIONS: &str = "messages-completions";
@@ -658,11 +659,19 @@ mod responses {
 	const ANTHROPIC_STREAM_RESPONSES: &[(&str, &[&str])] = &[
 		("stream_basic", ALL_ANTHROPIC),
 		("stream_thinking", ALL_ANTHROPIC),
+		(
+			"stream_tool",
+			&[MESSAGES_TO_MESSAGES, MESSAGES_TO_COMPLETIONS],
+		),
 	];
 	const COMPLETIONS_STREAM_RESPONSES: &[(&str, &[&str])] = &[
 		("stream", ALL_COMPLETIONS),
-		("stream_tool_empty_content", &[COMPLETIONS_TO_MESSAGES]),
+		(
+			"stream_tool_empty_content",
+			&[COMPLETIONS_TO_MESSAGES, COMPLETIONS_TO_RESPONSES],
+		),
 	];
+	const VERTEX_GEMINI_STREAM_RESPONSES: &[&str] = &["stream_tool"];
 	const RESPONSES_STREAM_RESPONSES: &[(&str, &[&str])] = &[
 		("stream", &[RESPONSES_TO_RESPONSES, RESPONSES_TO_DETECT]),
 		(
@@ -859,8 +868,8 @@ mod responses {
 	async fn streaming() {
 		const BUFFER_LIMIT: usize = 1024 * 1024;
 		const LOG_CONTENT: LogContentFields = LogContentFields {
-			completion: false,
-			tool_calls: false,
+			completion: true,
+			tool_calls: true,
 		};
 
 		for (name, providers) in BEDROCK_STREAM_RESPONSES {
@@ -876,6 +885,7 @@ mod responses {
 								reporter,
 								"input-model",
 								&message_id,
+								LOG_CONTENT,
 								None,
 							)
 						}),
@@ -897,6 +907,7 @@ mod responses {
 								reporter,
 								"input-model",
 								&message_id,
+								LOG_CONTENT,
 								None,
 							)
 						}),
@@ -915,7 +926,12 @@ mod responses {
 						conversion::messages::passthrough_stream(body, BUFFER_LIMIT, reporter, LOG_CONTENT)
 					}),
 					MESSAGES_TO_COMPLETIONS => response.map(|body| {
-						conversion::messages::from_completions::translate_stream(body, BUFFER_LIMIT, reporter)
+						conversion::messages::from_completions::translate_stream(
+							body,
+							BUFFER_LIMIT,
+							reporter,
+							LOG_CONTENT,
+						)
 					}),
 					MESSAGES_TO_DETECT => types::detect::passthrough_stream(reporter, response),
 					_ => unreachable!(),
@@ -939,11 +955,35 @@ mod responses {
 							LOG_CONTENT,
 						)
 					}),
+					COMPLETIONS_TO_RESPONSES => response.map(|body| {
+						conversion::openai_compat::to_responses::translate_stream(
+							body,
+							BUFFER_LIMIT,
+							reporter,
+							LOG_CONTENT,
+						)
+					}),
 					COMPLETIONS_TO_DETECT => types::detect::passthrough_stream(reporter, response),
 					_ => unreachable!(),
 				})
 				.await;
 			}
+		}
+
+		for name in VERTEX_GEMINI_STREAM_RESPONSES {
+			let path = format!("response/vertex-gemini/{name}.json");
+			test_streaming(VERTEX_GEMINI_TO_COMPLETIONS, &path, |response, reporter| {
+				response.map(|body| {
+					conversion::vertex_gemini::to_completions::translate_stream(
+						body,
+						BUFFER_LIMIT,
+						strng::literal!("input-model"),
+						reporter,
+						LOG_CONTENT,
+					)
+				})
+			})
+			.await;
 		}
 
 		for (name, providers) in RESPONSES_STREAM_RESPONSES {
