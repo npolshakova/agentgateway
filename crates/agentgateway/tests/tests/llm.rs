@@ -13,7 +13,10 @@ async fn llm_openai() {
 	.await;
 	let (_mock, _bind, io) = setup_llm_mock(
 		mock,
-		AIProvider::OpenAI(openai::Provider { model: None }),
+		AIProvider::OpenAI(openai::Provider {
+			model: None,
+			moderation: None,
+		}),
 		false,
 		"{}",
 	);
@@ -42,7 +45,10 @@ async fn llm_openai_tokenize() {
 	.await;
 	let (_mock, _bind, io) = setup_llm_mock(
 		mock,
-		AIProvider::OpenAI(openai::Provider { model: None }),
+		AIProvider::OpenAI(openai::Provider {
+			model: None,
+			moderation: None,
+		}),
 		true,
 		"{}",
 	);
@@ -71,7 +77,10 @@ async fn llm_detect_mode_passthrough_without_rewrite() {
 	.await;
 	let provider = agentgateway::types::local::LocalNamedAIProvider {
 		name: "default".into(),
-		provider: AIProvider::OpenAI(openai::Provider { model: None }),
+		provider: AIProvider::OpenAI(openai::Provider {
+			model: None,
+			moderation: None,
+		}),
 		host_override: Some(Target::Address(*mock.address())),
 		path_override: None,
 		path_prefix: None,
@@ -136,7 +145,10 @@ async fn llm_detect_mode_respects_model_rewrite() {
 	.await;
 	let provider = agentgateway::types::local::LocalNamedAIProvider {
 		name: "default".into(),
-		provider: AIProvider::OpenAI(openai::Provider { model: None }),
+		provider: AIProvider::OpenAI(openai::Provider {
+			model: None,
+			moderation: None,
+		}),
 		host_override: Some(Target::Address(*mock.address())),
 		path_override: None,
 		path_prefix: None,
@@ -780,7 +792,10 @@ async fn assert_llm_remote_rate_limit_cost(
 	let mock = body_mock(response_body).await;
 	let (_mock, mut bind, io) = setup_llm_mock(
 		mock,
-		AIProvider::OpenAI(openai::Provider { model: None }),
+		AIProvider::OpenAI(openai::Provider {
+			model: None,
+			moderation: None,
+		}),
 		false,
 		"{}",
 	);
@@ -857,7 +872,10 @@ async fn llm_openai_messages_translation_with_host_override_path_behavior(
 	.await;
 	let provider = agentgateway::test_helpers::proxymock::llm_named_provider(
 		&mock,
-		AIProvider::OpenAI(openai::Provider { model: None }),
+		AIProvider::OpenAI(openai::Provider {
+			model: None,
+			moderation: None,
+		}),
 		false,
 	);
 	let provider = agentgateway::types::local::LocalNamedAIProvider {
@@ -916,7 +934,10 @@ async fn llm_openai_passthrough_applies_path_prefix(
 	let mock = body_mock(b"{}").await;
 	let provider = agentgateway::test_helpers::proxymock::llm_named_provider(
 		&mock,
-		AIProvider::OpenAI(openai::Provider { model: None }),
+		AIProvider::OpenAI(openai::Provider {
+			model: None,
+			moderation: None,
+		}),
 		false,
 	);
 	let provider = agentgateway::types::local::LocalNamedAIProvider {
@@ -1015,7 +1036,10 @@ async fn llm_log_body() {
 	.unwrap();
 	let (_mock, _bind, io) = setup_llm_mock(
 		mock,
-		AIProvider::OpenAI(openai::Provider { model: None }),
+		AIProvider::OpenAI(openai::Provider {
+			model: None,
+			moderation: None,
+		}),
 		true,
 		x.as_str(),
 	);
