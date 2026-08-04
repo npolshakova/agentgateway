@@ -367,16 +367,9 @@ impl ProxyError {
 			remaining,
 			reset_seconds,
 		} = self
+			&& let Some(hm) = rb.headers_mut()
 		{
-			if let Ok(hv) = HeaderValue::try_from(limit.to_string()) {
-				rb = rb.header(http::x_headers::X_RATELIMIT_LIMIT, hv)
-			}
-			if let Ok(hv) = HeaderValue::try_from(remaining.to_string()) {
-				rb = rb.header(http::x_headers::X_RATELIMIT_REMAINING, hv)
-			}
-			if let Ok(hv) = HeaderValue::try_from(reset_seconds.to_string()) {
-				rb = rb.header(http::x_headers::X_RATELIMIT_RESET, hv)
-			}
+			http::x_headers::set_ratelimit_headers(hm, limit, remaining, reset_seconds);
 		}
 
 		// Add WWW-Authenticate header for basic auth failures
