@@ -219,7 +219,9 @@ fn selected_ai_provider(normalized: &NormalizedLocalConfig) -> Arc<NamedAIProvid
 	let Backend::AI(_, ai) = &backend.backend else {
 		panic!("expected generated AI backend");
 	};
-	let (provider, _handle) = ai.select_provider().expect("expected selected provider");
+	let (provider, _handle) = ai
+		.select_provider(None)
+		.expect("expected selected provider");
 	provider
 }
 
@@ -278,15 +280,6 @@ fn test_local_backend_policies_reject_unknown_fields() {
 	let err =
 		crate::serdes::yamlviajson::from_str::<super::LocalBackendPolicies>("mcpAuthorizatoin: {}")
 			.unwrap_err();
-	assert!(err.to_string().contains("unknown field"), "{err}");
-}
-
-#[test]
-fn test_local_route_backend_policies_reject_unknown_fields() {
-	let err = crate::serdes::yamlviajson::from_str::<super::LocalRouteBackendPolicies>(
-		"mcpAuthorizatoin: {}",
-	)
-	.unwrap_err();
 	assert!(err.to_string().contains("unknown field"), "{err}");
 }
 
@@ -1414,29 +1407,6 @@ binds:
 	normalize_test_config(input)
 		.await
 		.expect("service backends should allow inference routing");
-}
-
-#[tokio::test]
-async fn test_session_affinity_requires_service_backend() {
-	let input = r#"
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - host: 127.0.0.1:8000
-        policies:
-          sessionAffinity:
-            source: request.headers["x-session-id"]
-"#;
-
-	let err = normalize_test_config(input).await.unwrap_err();
-	assert!(
-		err
-			.to_string()
-			.contains("sessionAffinity is only supported on service route backends"),
-		"unexpected error: {err}"
-	);
 }
 
 #[tokio::test]

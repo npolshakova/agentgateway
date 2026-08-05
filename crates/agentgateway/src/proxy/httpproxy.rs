@@ -2040,7 +2040,13 @@ async fn make_backend_call(
 
 	let (mut backend_call, mut maybe_inference) = match backend {
 		Backend::AI(n, ai) => {
-			let (provider, handle) = ai.select_provider().ok_or(ProxyError::NoHealthyEndpoints)?;
+			let affinity_key = policies
+				.session_affinity
+				.as_ref()
+				.and_then(|policy| policy.affinity_key(&req));
+			let (provider, handle) = ai
+				.select_provider(affinity_key)
+				.ok_or(ProxyError::NoHealthyEndpoints)?;
 			log.add(move |l| l.request_handle = Some(handle));
 			let sub_backend_name = BackendTargetRef::Backend {
 				name: n.name.as_ref(),
@@ -2748,7 +2754,7 @@ pub fn build_service_call(
 			svc.as_ref(),
 			port,
 			service_override.destination,
-			service_override.affinity_key.as_ref(),
+			service_override.affinity_key,
 		)
 		.ok_or(ProxyError::NoHealthyEndpoints)?;
 
@@ -3140,6 +3146,7 @@ mod tests {
 		PromptGuard, PromptGuardStreamingMode, RegexRule, RegexRules, RequestRejection, ResponseGuard,
 		ResponseGuardKind,
 	};
+	use crate::proxy::request_builder::RequestBuilder;
 	use crate::store::LLMRequestPolicies;
 	use crate::test_helpers::proxymock;
 	use crate::types::agent::{Backend, ResourceName, Target};
@@ -3469,6 +3476,84 @@ mod tests {
 			Some("trailers")
 		);
 		assert!(!req.headers().contains_key("x-original-url"));
+	}
+
+	#[tokio::test]
+	async fn llm_session_affinity_pins_provider() {
+		let first = wiremock::MockServer::start().await;
+		let second = wiremock::MockServer::start().await;
+		for mock in [&first, &second] {
+			Mock::given(wiremock::matchers::any())
+				.respond_with(ResponseTemplate::new(200).set_body_raw(
+					include_bytes!("../../../llm/src/tests/response/completions/basic.json").to_vec(),
+					"application/json",
+				))
+				.mount(mock)
+				.await;
+		}
+
+		let mut bind = proxymock::setup_proxy_test("{}").expect("proxy test harness");
+		bind
+			.attach_route(json!({
+				"name": "route",
+				"backends": [{
+					"ai": {
+						"groups": [{
+							"providers": [
+								{
+									"name": "first",
+									"hostOverride": first.address().to_string(),
+									"provider": { "openAI": {} }
+								},
+								{
+									"name": "second",
+									"hostOverride": second.address().to_string(),
+									"provider": { "openAI": {} }
+								}
+							]
+						}]
+					},
+					"policies": {
+						"sessionAffinity": {
+							"source": "request.headers['codex-session-id']"
+						},
+						"ai": {
+							"routes": { "/v1/chat/completions": "completions" }
+						}
+					}
+				}]
+			}))
+			.await;
+		bind = bind.with_bind(proxymock::simple_bind());
+		let io = bind.serve_http(proxymock::BIND_KEY);
+
+		for _ in 0..8 {
+			let response = RequestBuilder::new(Method::POST, "http://lo/v1/chat/completions")
+				.header("codex-session-id", "session-a")
+				.body(http::Body::from(
+					include_bytes!("../../../llm/src/tests/requests/completions/basic.json").to_vec(),
+				))
+				.send(io.clone())
+				.await
+				.expect("request succeeds");
+			assert_eq!(response.status(), 200);
+			proxymock::read_body_raw(response.into_body()).await;
+		}
+
+		let first_requests = first
+			.received_requests()
+			.await
+			.expect("first provider request recording")
+			.len();
+		let second_requests = second
+			.received_requests()
+			.await
+			.expect("second provider request recording")
+			.len();
+		assert!(
+			matches!((first_requests, second_requests), (8, 0) | (0, 8)),
+			"expected one provider to receive every request, got {first_requests} and {second_requests}"
+		);
 	}
 
 	#[tokio::test]
