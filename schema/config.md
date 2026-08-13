@@ -36,7 +36,7 @@
 |`config.database.url`|string|Connection URL for the request log database. A postgres:// or postgresql:// URL uses Postgres; any other value is treated as a SQLite database.|
 |`config.database.maxConnections`|integer|Maximum number of connections to open in this database's connection pool. Defaults to 5.<br>When the request log and config stores have matching database settings, they share one pool<br>with this limit.|
 |`config.storage`|object|Controls whether UI-managed configuration is written to the config file or a DB overlay.|
-|`config.storage.mode`|enum|Possible values: `file`, `hybrid`.|
+|`config.storage.mode`|enum|Possible values: `file`, `hybrid`, `readOnly`.|
 |`config.caAddress`|string|Address of the Certificate Authority used to issue SPIFFE certificates.|
 |`config.caAuthToken`|string|Authentication token for communicating with the Certificate Authority.|
 |`config.xdsAddress`|string|Address of the xDS control plane used for dynamic configuration.|
