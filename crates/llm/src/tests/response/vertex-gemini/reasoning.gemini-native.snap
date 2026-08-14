@@ -20,29 +20,31 @@ info:
 ---
 {
   "response": {
-    "model": "gemini-2.5-pro",
-    "usage": {
-      "prompt_tokens": 10,
-      "completion_tokens": 17,
-      "total_tokens": 27,
-      "completion_tokens_details": {
-        "reasoning_tokens": 5
-      }
-    },
-    "choices": [
+    "candidates": [
       {
-        "message": {
-          "content": "It is sunny.",
-          "role": "assistant",
-          "reasoning_content": "Let me think about the weather."
+        "content": {
+          "role": "model",
+          "parts": [
+            {
+              "text": "Let me think about the weather.",
+              "thought": true
+            },
+            {
+              "text": "It is sunny."
+            }
+          ]
         },
-        "index": 0,
-        "finish_reason": "stop"
+        "finishReason": "STOP",
+        "index": 0
       }
     ],
-    "id": "[id]",
-    "created": "[date]",
-    "object": "chat.completion"
+    "usageMetadata": {
+      "promptTokenCount": 10,
+      "candidatesTokenCount": 12,
+      "totalTokenCount": 27,
+      "thoughtsTokenCount": 5
+    },
+    "modelVersion": "gemini-2.5-pro"
   },
   "parsed": {
     "input_tokens": 10,
