@@ -33,7 +33,7 @@ use crate::*;
 pub mod model_router;
 pub use agent_llm::{azure, bedrock, vertex};
 
-pub mod cost;
+pub mod catalog;
 pub mod policy;
 
 use policy::streaming_guardrails::GuardedSseBody;
@@ -932,13 +932,19 @@ impl AIProvider {
 		}
 	}
 
-	fn supported_chat_formats(&self, request_model: Option<&str>) -> Vec<ChatFormat> {
+	fn supported_chat_formats(
+		&self,
+		request_model: Option<&str>,
+		catalog: agent_llm::model_catalog::Catalog<'_>,
+	) -> Vec<ChatFormat> {
 		match self {
 			AIProvider::OpenAI(_) => {
 				vec![ChatFormat::OpenAIResponses, ChatFormat::OpenAICompletions]
 			},
 
-			AIProvider::Copilot(_) => copilot::Provider::supported_formats_for_model(request_model),
+			AIProvider::Copilot(_) => {
+				copilot::Provider::supported_formats_for_model(request_model, catalog)
+			},
 
 			AIProvider::Azure(p)
 				if matches!(p.resource_type, azure::AzureResourceType::Foundry)
@@ -999,8 +1005,9 @@ impl AIProvider {
 		&self,
 		input_format: InputFormat,
 		request_model: Option<&str>,
+		catalog: agent_llm::model_catalog::Catalog<'_>,
 	) -> Result<&'static ChatTranslation, AIError> {
-		let supported = self.supported_chat_formats(request_model);
+		let supported = self.supported_chat_formats(request_model, catalog);
 		CHAT_TRANSLATIONS
 			.iter()
 			.find(|translation| {
@@ -1512,6 +1519,7 @@ impl AIProvider {
 		req: Request,
 		tokenize: bool,
 		log: &mut Option<&mut RequestLog>,
+		catalog: agent_llm::model_catalog::Catalog<'_>,
 	) -> Result<RequestResult, AIError> {
 		let (parts, mut req) = self
 			.read_body_and_default_model::<types::completions::Request>(policies, req, log)
@@ -1545,6 +1553,7 @@ impl AIProvider {
 				parts,
 				tokenize,
 				log,
+				catalog,
 				types::ChatRequest::Completions,
 			)
 			.await
@@ -1557,6 +1566,7 @@ impl AIProvider {
 		req: Request,
 		tokenize: bool,
 		log: &mut Option<&mut RequestLog>,
+		catalog: agent_llm::model_catalog::Catalog<'_>,
 	) -> Result<RequestResult, AIError> {
 		let (parts, mut req) = self
 			.read_body_and_default_model::<types::messages::Request>(policies, req, log)
@@ -1572,6 +1582,7 @@ impl AIProvider {
 				parts,
 				tokenize,
 				log,
+				catalog,
 				types::ChatRequest::Messages,
 			)
 			.await
@@ -1584,6 +1595,7 @@ impl AIProvider {
 		req: Request,
 		tokenize: bool,
 		log: &mut Option<&mut RequestLog>,
+		catalog: agent_llm::model_catalog::Catalog<'_>,
 	) -> Result<RequestResult, AIError> {
 		// The Gemini wire body carries neither model nor a stream flag; both come from the
 		// URI: models/{model}:generateContent vs models/{model}:streamGenerateContent.
@@ -1611,6 +1623,7 @@ impl AIProvider {
 				parts,
 				tokenize,
 				log,
+				catalog,
 				|req| types::ChatRequest::Gemini(req.inner),
 			)
 			.await
@@ -1677,6 +1690,7 @@ impl AIProvider {
 		req: Request,
 		tokenize: bool,
 		log: &mut Option<&mut RequestLog>,
+		catalog: agent_llm::model_catalog::Catalog<'_>,
 	) -> Result<RequestResult, AIError> {
 		let (mut parts, mut req) = self
 			.read_body_and_default_model::<types::responses::Request>(policies, req, log)
@@ -1698,6 +1712,7 @@ impl AIProvider {
 				parts,
 				tokenize,
 				log,
+				catalog,
 				types::ChatRequest::Responses,
 			)
 			.await
@@ -1991,6 +2006,7 @@ impl AIProvider {
 		mut parts: Parts,
 		tokenize: bool,
 		log: &mut Option<&mut RequestLog>,
+		catalog: agent_llm::model_catalog::Catalog<'_>,
 		chat_request: F,
 	) -> Result<RequestResult, AIError>
 	where
@@ -2002,7 +2018,8 @@ impl AIProvider {
 		} else {
 			None
 		};
-		let chat_translation = self.chat_translation(original_format, request_model.as_deref())?;
+		let chat_translation =
+			self.chat_translation(original_format, request_model.as_deref(), catalog)?;
 		let provider_format = chat_translation.provider_format();
 		let prepared = self
 			.prepare_request(
@@ -2142,7 +2159,7 @@ impl AIProvider {
 		req_snapshot: Option<Arc<RequestSnapshot>>,
 		log: AsyncLog<llm::LLMInfo>,
 		log_content: LogContentFields,
-		model_catalog: Option<&Arc<cost::ModelCatalog>>,
+		model_catalog: Option<&Arc<catalog::ModelCatalog>>,
 		resp: Response,
 	) -> Result<Response, AIError> {
 		// Non-success responses are plain JSON, not event-stream data.
@@ -2203,16 +2220,25 @@ impl AIProvider {
 		req_snapshot: Option<Arc<RequestSnapshot>>,
 		log: AsyncLog<llm::LLMInfo>,
 		log_content: LogContentFields,
-		model_catalog: Option<&cost::ModelCatalog>,
+		model_catalog: Option<&catalog::ModelCatalog>,
 		buffered: BufferedResponse,
 	) -> Result<Response, AIError> {
 		let BufferedResponse { mut parts, bytes } = buffered;
 
 		let (llm_resp, body) = if !parts.status.is_success() {
-			let body = self.process_error(&req, parts.status, &bytes)?;
+			let body = self.process_error(
+				&req,
+				parts.status,
+				&bytes,
+				model_catalog.map(|c| c.as_handle()),
+			)?;
 			(LLMResponse::default(), body)
 		} else {
-			let mut resp = self.translate_chat_or_detect_response(&req, &bytes)?;
+			let mut resp = self.translate_chat_or_detect_response(
+				&req,
+				&bytes,
+				model_catalog.map(|c| c.as_handle()),
+			)?;
 			let prompt_guard_headers =
 				response_prompt_guard_headers(&parts.headers, rate_limit.request_traceparent.as_ref());
 
@@ -2285,7 +2311,7 @@ impl AIProvider {
 		body: Body,
 		req: LLMRequest,
 		llm_resp: LLMResponse,
-		model_catalog: Option<&cost::ModelCatalog>,
+		model_catalog: Option<&catalog::ModelCatalog>,
 		log: &AsyncLog<llm::LLMInfo>,
 	) -> Response {
 		let llm_info = LLMInfo::new(req, llm_resp);
@@ -2303,7 +2329,7 @@ impl AIProvider {
 		&self,
 		req: LLMRequest,
 		buffered: BufferedResponse,
-		model_catalog: Option<&cost::ModelCatalog>,
+		model_catalog: Option<&catalog::ModelCatalog>,
 		log: &AsyncLog<llm::LLMInfo>,
 	) -> Result<Response, AIError> {
 		let BufferedResponse {
@@ -2348,7 +2374,7 @@ impl AIProvider {
 		&self,
 		req: LLMRequest,
 		buffered: BufferedResponse,
-		model_catalog: Option<&cost::ModelCatalog>,
+		model_catalog: Option<&catalog::ModelCatalog>,
 		log: &AsyncLog<llm::LLMInfo>,
 	) -> Result<Response, AIError> {
 		let BufferedResponse {
@@ -2356,7 +2382,12 @@ impl AIProvider {
 		} = buffered;
 		parts.headers.remove(header::CONTENT_LENGTH);
 		if !parts.status.is_success() {
-			let body = self.process_error(&req, parts.status, &bytes)?;
+			let body = self.process_error(
+				&req,
+				parts.status,
+				&bytes,
+				model_catalog.map(|c| c.as_handle()),
+			)?;
 			return Ok(Self::finalize_response(
 				parts,
 				body.into(),
@@ -2384,7 +2415,7 @@ impl AIProvider {
 		&self,
 		req: LLMRequest,
 		buffered: BufferedResponse,
-		model_catalog: Option<&cost::ModelCatalog>,
+		model_catalog: Option<&catalog::ModelCatalog>,
 		log: &AsyncLog<llm::LLMInfo>,
 	) -> Result<Response, AIError> {
 		let BufferedResponse {
@@ -2392,7 +2423,12 @@ impl AIProvider {
 		} = buffered;
 		parts.headers.remove(header::CONTENT_LENGTH);
 		if !parts.status.is_success() {
-			let body = self.process_error(&req, parts.status, &bytes)?;
+			let body = self.process_error(
+				&req,
+				parts.status,
+				&bytes,
+				model_catalog.map(|c| c.as_handle()),
+			)?;
 			return Ok(Self::finalize_response(
 				parts,
 				body.into(),
@@ -2417,7 +2453,7 @@ impl AIProvider {
 		&self,
 		req: LLMRequest,
 		buffered: BufferedResponse,
-		model_catalog: Option<&cost::ModelCatalog>,
+		model_catalog: Option<&catalog::ModelCatalog>,
 		log: &AsyncLog<llm::LLMInfo>,
 	) -> Result<Response, AIError> {
 		let BufferedResponse {
@@ -2425,7 +2461,12 @@ impl AIProvider {
 		} = buffered;
 		parts.headers.remove(header::CONTENT_LENGTH);
 		if !parts.status.is_success() {
-			let body = self.process_error(&req, parts.status, &bytes)?;
+			let body = self.process_error(
+				&req,
+				parts.status,
+				&bytes,
+				model_catalog.map(|c| c.as_handle()),
+			)?;
 			return Ok(Self::finalize_response(
 				parts,
 				body.into(),
@@ -2528,6 +2569,7 @@ impl AIProvider {
 		&self,
 		req: &LLMRequest,
 		bytes: &Bytes,
+		catalog: agent_llm::model_catalog::Catalog<'_>,
 	) -> Result<Box<dyn ResponseType>, AIError> {
 		if req.input_format == InputFormat::Detect {
 			return Ok(Box::new(
@@ -2536,7 +2578,7 @@ impl AIProvider {
 			));
 		}
 
-		let translation = self.chat_translation(req.input_format, Some(&req.request_model))?;
+		let translation = self.chat_translation(req.input_format, Some(&req.request_model), catalog)?;
 		translation.render_response(
 			bytes,
 			&ChatResponseContext {
@@ -2555,14 +2597,18 @@ impl AIProvider {
 		req_snapshot: Option<Arc<RequestSnapshot>>,
 		log: AsyncLog<llm::LLMInfo>,
 		log_content: LogContentFields,
-		model_catalog: Option<Arc<cost::ModelCatalog>>,
+		model_catalog: Option<Arc<catalog::ModelCatalog>>,
 		resp: Response,
 	) -> Result<Response, AIError> {
 		let model = req.request_model.clone();
 		let input_format = req.input_format;
 		let bedrock_tool_name_map = bedrock_tool_name_map(&req).cloned();
 		let chat_translation = if input_format.is_chat() {
-			Some(self.chat_translation(input_format, Some(&model))?)
+			Some(self.chat_translation(
+				input_format,
+				Some(&model),
+				model_catalog.as_deref().map(|c| c.as_handle()),
+			)?)
 		} else {
 			None
 		};
@@ -2803,9 +2849,11 @@ impl AIProvider {
 		req: &LLMRequest,
 		status: ::http::StatusCode,
 		bytes: &Bytes,
+		catalog: agent_llm::model_catalog::Catalog<'_>,
 	) -> Result<Bytes, AIError> {
 		if req.input_format.is_chat() {
-			let translation = self.chat_translation(req.input_format, Some(&req.request_model))?;
+			let translation =
+				self.chat_translation(req.input_format, Some(&req.request_model), catalog)?;
 			return translation.error(
 				bytes,
 				status,
@@ -2968,7 +3016,7 @@ pub struct AmendOnDrop {
 	log: AsyncLog<llm::LLMInfo>,
 	pol: Option<LLMResponsePolicies>,
 	req: Option<Arc<RequestSnapshot>>,
-	catalog: Option<Arc<cost::ModelCatalog>>,
+	catalog: Option<Arc<catalog::ModelCatalog>>,
 }
 
 impl AmendOnDrop {
@@ -2976,7 +3024,7 @@ impl AmendOnDrop {
 		log: AsyncLog<llm::LLMInfo>,
 		pol: LLMResponsePolicies,
 		req: Option<Arc<RequestSnapshot>>,
-		catalog: Option<Arc<cost::ModelCatalog>>,
+		catalog: Option<Arc<catalog::ModelCatalog>>,
 	) -> Self {
 		Self {
 			log,
