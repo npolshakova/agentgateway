@@ -198,8 +198,8 @@ async fn tls_cert_and_key_can_share_pem_bundle() {
 
 	let path = bundle.path().to_path_buf();
 	super::LocalTLSServerConfig {
-		cert: path.clone(),
-		key: path,
+		cert: Some(path.clone()),
+		key: Some(path),
 		..Default::default()
 	}
 	.into_server_tls_config_with_resources(
@@ -437,6 +437,149 @@ async fn test_config_parsing(test_name: &str) {
 #[tokio::test]
 async fn test_basic_config() {
 	test_config_parsing("basic").await;
+}
+
+#[tokio::test]
+async fn test_spiffe_tls_config_normalizes() {
+	// A SPIFFE-sourced HTTPS listener needs no cert/key files and should normalize without
+	// contacting the Workload API (the connection is established lazily at runtime). SPIFFE must be enabled
+	// (spiffe.endpoint) for a listener to reference it.
+	normalize_test_config(
+		r#"
+config:
+  spiffe:
+    endpoint: unix:///run/spire/agent.sock
+binds:
+- port: 3000
+  listeners:
+  - protocol: HTTPS
+    tls:
+      spiffe: {}
+    routes:
+    - backends:
+      - host: example.com:80
+"#,
+	)
+	.await
+	.expect("spiffe TLS listener should normalize");
+}
+
+// `spiffe` sources its own identity and negotiation profile, so combining it with cert/key/root,
+// tls.mode, insecure, or the cipher/kx profile knobs must be rejected rather than silently ignored.
+#[rstest::rstest]
+#[case::listener_cert_key(
+	r#"
+binds:
+- port: 3000
+  listeners:
+  - protocol: HTTPS
+    tls:
+      cert: examples/tls/certs/cert.pem
+      key: examples/tls/certs/key.pem
+      spiffe: {}
+    routes:
+    - backends:
+      - host: example.com:80
+"#,
+	"mutually exclusive"
+)]
+#[case::listener_mode(
+	r#"
+binds:
+- port: 3000
+  listeners:
+  - protocol: HTTPS
+    tls:
+      mode: dynamicCa
+      spiffe: {}
+    routes:
+    - backends:
+      - host: example.com:80
+"#,
+	"cannot be combined with tls.mode"
+)]
+#[case::listener_tls_profile(
+	r#"
+binds:
+- port: 3000
+  listeners:
+  - protocol: HTTPS
+    tls:
+      spiffe: {}
+      keyExchangeGroups:
+      - X25519
+    routes:
+    - backends:
+      - host: example.com:80
+"#,
+	"cipherSuites/minTLSVersion/maxTLSVersion/keyExchangeGroups"
+)]
+#[case::backend_insecure(
+	r#"
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        backendTLS:
+          spiffe: {}
+          insecure: true
+      backends:
+      - host: example.com:443
+"#,
+	"mutually exclusive"
+)]
+#[case::backend_key_exchange_groups(
+	r#"
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        backendTLS:
+          spiffe: {}
+          keyExchangeGroups:
+          - X25519
+      backends:
+      - host: example.com:443
+"#,
+	"keyExchangeGroups"
+)]
+#[tokio::test]
+async fn spiffe_rejected_incompatible_option(#[case] yaml: &str, #[case] expected_error: &str) {
+	let err = normalize_test_config(yaml)
+		.await
+		.expect_err("incompatible SPIFFE option combination must be rejected");
+	assert!(
+		err.to_string().contains(expected_error),
+		"unexpected error: {err}"
+	);
+}
+
+#[tokio::test]
+async fn test_spiffe_backend_tls_config_normalizes() {
+	// A SPIFFE-sourced upstream (backend) mTLS policy needs no cert/key files; the ClientConfig is
+	// built lazily from the SPIFFE Workload API at connection time. SPIFFE must be enabled (spiffe.endpoint).
+	normalize_test_config(
+		r#"
+config:
+  spiffe:
+    endpoint: unix:///run/spire/agent.sock
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        backendTLS:
+          spiffe: {}
+          subjectAltNames:
+          - spiffe://example.org/ns/test/sa/upstream
+      backends:
+      - host: example.com:443
+"#,
+	)
+	.await
+	.expect("spiffe backend TLS should normalize");
 }
 
 #[tokio::test]
@@ -796,19 +939,19 @@ llm:
 		"LLM request route should route through the LLMRouter backend"
 	);
 	assert!(
-		llm_route
-			.backends
-			.iter()
-			.any(|backend| matches!(&backend.target, RouteBackendTarget::Backend(name) if name.as_str() == "/llm:router")),
-		"LLM request route should target the LLMRouter backend"
-	);
+        llm_route
+            .backends
+            .iter()
+            .any(|backend| matches!(&backend.target, RouteBackendTarget::Backend(name) if name.as_str() == "/llm:router")),
+        "LLM request route should target the LLMRouter backend"
+    );
 	assert!(
-		normalized
-			.backends
-			.iter()
-			.any(|backend| matches!(&backend.backend, Backend::LLMRouter(name, _) if name.name.as_str() == "llm:router")),
-		"normalized config should contain the LLMRouter backend"
-	);
+        normalized
+            .backends
+            .iter()
+            .any(|backend| matches!(&backend.backend, Backend::LLMRouter(name, _) if name.name.as_str() == "llm:router")),
+        "normalized config should contain the LLMRouter backend"
+    );
 	assert!(
 		!routes
 			.iter()

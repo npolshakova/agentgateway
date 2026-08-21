@@ -1234,14 +1234,21 @@ enum LocalListenerProtocol {
 pub struct LocalTLSServerConfig {
 	/// Certificate source mode. Static mode uses cert/key as the leaf certificate; dynamic CA
 	/// mode uses cert/key as a CA for on-demand SNI leaf certificate issuance.
+	/// Unused when `spiffe` is set.
 	#[serde(default)]
 	pub mode: LocalTLSServerMode,
 	/// Path to the TLS certificate file (leaf certificate, or CA certificate in dynamic CA mode).
-	pub cert: PathBuf,
+	/// Required unless `spiffe` is set.
+	pub cert: Option<PathBuf>,
 	/// Path to the TLS private key file.
-	pub key: PathBuf,
-	/// Path to a root CA certificate file used to validate client certificates.
+	pub key: Option<PathBuf>,
+	/// Path to a root CA certificate file used to validate client certificates (mTLS).
+	/// Omit for one-way server TLS. Not used when `spiffe` is set.
 	pub root: Option<PathBuf>,
+	/// Source the serving identity from the SPIFFE Workload API.
+	/// Mutually exclusive with `cert`/`key`/`root`.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub spiffe: Option<LocalSpiffeConfig>,
 	/// Optional cipher suite allowlist (order is preserved).
 	#[cfg_attr(feature = "schema", schemars(with = "Option<Vec<String>>"))]
 	#[serde(default, skip_serializing_if = "Option::is_none")]
@@ -1275,6 +1282,9 @@ pub enum LocalTLSServerMode {
 	Static,
 	DynamicCa,
 }
+
+#[apply(schema_de!)]
+pub struct LocalSpiffeConfig {}
 
 #[apply(schema_de!)]
 pub struct LocalRouteName {
@@ -5448,12 +5458,47 @@ impl LocalTLSServerConfig {
 		dynamic_ca_cert_cache: crate::DynamicCaCertCacheConfig,
 		resources: &crate::resource_manager::ResourceFetcher,
 	) -> anyhow::Result<ServerTLSConfig> {
+		// SPIFFE sources its identity from the Workload API, so it carries no cert/key/root files
+		// and is selected by the `spiffe` field rather than `mode`.
+		if self.spiffe.is_some() {
+			if self.cert.is_some() || self.key.is_some() || self.root.is_some() {
+				anyhow::bail!("'spiffe' is mutually exclusive with 'cert'/'key'/'root'");
+			}
+			if self.mode != LocalTLSServerMode::Static {
+				anyhow::bail!(
+					"'spiffe' cannot be combined with tls.mode (SPIFFE sources its own identity)"
+				);
+			}
+			// SPIFFE-sourced TLS uses its own negotiation profile; these knobs are not threaded into
+			// the SPIFFE config builders, so reject them rather than silently ignoring them.
+			if self.cipher_suites.is_some()
+				|| self.min_tls_version.is_some()
+				|| self.max_tls_version.is_some()
+				|| self.key_exchange_groups.is_some()
+			{
+				anyhow::bail!(
+					"'spiffe' cannot be combined with tls cipherSuites/minTLSVersion/maxTLSVersion/keyExchangeGroups"
+				);
+			}
+			return Ok(ServerTLSConfig::spiffe(vec![
+				b"h2".to_vec(),
+				b"http/1.1".to_vec(),
+			]));
+		}
 		let cert_pem = resources
-			.fetch(crate::resource_manager::ResourceRef::File(self.cert))
+			.fetch(crate::resource_manager::ResourceRef::File(
+				self
+					.cert
+					.ok_or_else(|| anyhow::anyhow!("tls requires 'cert' (or 'spiffe')"))?,
+			))
 			.await?
 			.to_vec();
 		let key_pem = resources
-			.fetch(crate::resource_manager::ResourceRef::File(self.key))
+			.fetch(crate::resource_manager::ResourceRef::File(
+				self
+					.key
+					.ok_or_else(|| anyhow::anyhow!("tls requires 'key' (or 'spiffe')"))?,
+			))
 			.await?
 			.to_vec();
 		let root_pem = match self.root {

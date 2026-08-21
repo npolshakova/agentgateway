@@ -241,6 +241,12 @@ pub fn parse_config(
 	} else {
 		None
 	};
+
+	let spiffe = raw
+		.spiffe
+		.and_then(|cfg| cfg.endpoint)
+		.map(|endpoint| crate::control::spiffe::Config { endpoint });
+
 	let network = parse("NETWORK")?.or(raw.network).unwrap_or_default();
 
 	// Self-identity for locality-aware load balancing.
@@ -408,6 +414,7 @@ pub fn parse_config(
 		self_addr,
 		xds,
 		ca,
+		spiffe,
 		num_worker_threads: parse_worker_threads(raw.worker_threads)
 			.ctx("invalid WORKER_THREADS/config.workerThreads")?,
 		termination_min_deadline,
@@ -1749,5 +1756,29 @@ config:
 		unsafe {
 			env::remove_var("SESSION_KEY");
 		}
+	}
+
+	#[test]
+	fn spiffe_disabled_without_endpoint() {
+		let _env = lock_env();
+		let config = parse_config("{}".to_string(), None).expect("config should parse");
+		assert!(
+			config.spiffe.is_none(),
+			"SPIFFE must be disabled when no socket is configured"
+		);
+	}
+
+	#[test]
+	fn spiffe_enabled_from_raw_endpoint_field() {
+		let _env = lock_env();
+		let config = parse_config(
+			"config:\n  spiffe:\n    endpoint: unix:///run/spire/agent.sock\n".to_string(),
+			None,
+		)
+		.expect("config should parse");
+		let spiffe = config
+			.spiffe
+			.expect("spiffe.endpoint should enable the SPIFFE Workload API");
+		assert_eq!(spiffe.endpoint, "unix:///run/spire/agent.sock");
 	}
 }

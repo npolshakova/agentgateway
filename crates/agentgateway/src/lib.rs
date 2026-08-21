@@ -173,6 +173,9 @@ pub struct RawConfig {
 	xds_address: Option<String>,
 	/// Authentication token for communicating with the xDS control plane.
 	xds_auth_token: Option<String>,
+	/// Local SPIFFE Workload API configuration
+	/// When set, listeners and backends may source their TLS identity from SPIFFE.
+	spiffe: Option<RawSpiffeConfig>,
 	/// Kubernetes namespace for this gateway instance.
 	namespace: Option<String>,
 	/// Name of this gateway. Required when xDS is configured.
@@ -505,6 +508,12 @@ pub struct RawLoggingFields {
 	add: IndexMap<String, String>,
 }
 
+#[apply(schema_de!)]
+pub struct RawSpiffeConfig {
+	/// SPIFFE Workload API Endpoint (e.g. `unix:///run/spire/agent.sock`).
+	endpoint: Option<String>,
+}
+
 #[derive(Clone, Debug)]
 pub struct StringOrInt(String);
 
@@ -643,6 +652,8 @@ pub struct Config {
 	/// XDS address to use. If unset, XDS will not be used.
 	pub xds: XDSConfig,
 	pub ca: Option<caclient::Config>,
+	/// Connection to the local SPIFFE Workload API, enabling SPIFFE-sourced TLS on binds.
+	pub spiffe: Option<control::spiffe::Config>,
 
 	pub tracing: Option<trc::DeprecatedConfig>,
 	pub metrics: crate::telemetry::log::MetricsConfig,
@@ -813,6 +824,7 @@ pub struct ProxyInputs {
 	pub admin: Option<management::admin::AdminService>,
 	pub mcp_state: mcp::App,
 	pub ca: Option<Arc<CaClient>>,
+	pub spiffe: Option<Arc<control::spiffe::SpiffeClient>>,
 }
 
 impl ProxyInputs {
@@ -821,6 +833,7 @@ impl ProxyInputs {
 	/// This constructor is intended for use cases where the gateway is embedded
 	/// directly into another application, bypassing [`app::run`] which creates
 	/// its own admin servers, signal handlers, and XDS state management.
+	#[allow(clippy::too_many_arguments)]
 	pub fn new(
 		cfg: Arc<Config>,
 		stores: Stores,
@@ -829,6 +842,7 @@ impl ProxyInputs {
 		mcp_state: mcp::App,
 		model_catalog: Option<llm::catalog::ModelCatalog>,
 		ca: Option<Arc<CaClient>>,
+		spiffe: Option<Arc<control::spiffe::SpiffeClient>>,
 	) -> Self {
 		Self {
 			cfg,
@@ -839,6 +853,7 @@ impl ProxyInputs {
 			admin: None,
 			mcp_state,
 			ca,
+			spiffe,
 		}
 	}
 }
