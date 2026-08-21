@@ -6179,6 +6179,7 @@ async fn mcp_extauth_deny() {
 	);
 }
 
+#[allow(clippy::result_large_err)]
 async fn try_mcp_streamable_client(
 	s: SocketAddr,
 ) -> Result<RunningService<RoleClient, InitializeRequestParams>, rmcp::service::ClientInitializeError>
