@@ -42,6 +42,37 @@ test('core pages render with mocked gateway data', async ({ page }) => {
 	}
 });
 
+test('log detail renders the normalized conversation', async ({ page }) => {
+	await mockGateway(page);
+	await page.goto('/llm/logs?log=log-1');
+
+	await expect(page.locator('.log-call-preview')).toHaveText('Summarize the result.');
+	const turn = page.getByLabel('Tool result → Assistant');
+	await expect(turn).toBeVisible();
+	await turn.hover();
+	await expect(page.getByRole('tooltip')).toHaveText('Tool result → Assistant');
+	await page.locator('.log-conversation').getByText('Conversation').click();
+	await expect(page.locator('.log-markdown strong')).toHaveText('pong');
+	await expect(page.locator('.log-markdown a, .log-markdown img')).toHaveCount(0);
+	await expect(page.locator('.log-msg.system .log-markdown')).toContainText('docs [image: probe]');
+	await expect(page.locator('.log-tool-block.call')).toHaveCount(1);
+	await expect(page.locator('.log-tool-block.result')).toHaveCount(1);
+	await expect(page.locator('.log-tool-block.reasoning')).toHaveCount(2);
+	await expect(page.locator('.log-tool-block.reasoning').nth(0)).toContainText(
+		'Checking the source'
+	);
+	await expect(page.locator('.log-tool-block.reasoning').nth(1)).toContainText(
+		'Encrypted (4 bytes)'
+	);
+
+	await page.locator('.log-tool-block.call .log-tool-toggle').click();
+	await expect(page.locator('.log-tool-block.call .log-tool-text')).toHaveText(
+		'line one\nline two'
+	);
+	await page.locator('.log-tool-block.result .log-tool-toggle').click();
+	await expect(page.locator('.log-tool-block.result .json-block')).toContainText('"answer": "ok"');
+});
+
 test('log settings migrate prompt logging to the database LLM mode', async ({ page }) => {
 	const config = populatedConfig();
 	config.frontendPolicies = {
