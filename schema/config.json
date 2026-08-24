@@ -3037,7 +3037,7 @@
                   "type": "object",
                   "properties": {
                     "value": {
-                      "description": "Secret value to send to the backend.",
+                      "description": "Secret value to send to the backend. File references are watched, so\nrotating the file reloads it without a restart.",
                       "$ref": "#/$defs/FileOrInline"
                     },
                     "location": {
@@ -4363,7 +4363,7 @@
               "type": "object",
               "properties": {
                 "value": {
-                  "description": "Secret value to send to the backend.",
+                  "description": "Secret value to send to the backend. File references are watched, so\nrotating the file reloads it without a restart.",
                   "$ref": "#/$defs/FileOrInline"
                 },
                 "location": {

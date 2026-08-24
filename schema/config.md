@@ -257,7 +257,7 @@
 |`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -593,7 +593,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -867,7 +867,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -1141,7 +1141,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -1413,7 +1413,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -1722,7 +1722,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -1996,7 +1996,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -2268,7 +2268,7 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -2590,7 +2590,7 @@
 |`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -2821,7 +2821,7 @@
 |`binds[].listeners[].routes[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -3242,7 +3242,7 @@
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -3526,7 +3526,7 @@
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -3883,7 +3883,7 @@
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -4180,7 +4180,7 @@
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -4480,7 +4480,7 @@
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -4767,7 +4767,7 @@
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -5701,7 +5701,7 @@
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -6018,7 +6018,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -6437,7 +6437,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -6726,7 +6726,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -7035,7 +7035,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -7348,7 +7348,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -7622,7 +7622,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -7896,7 +7896,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -8168,7 +8168,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -8477,7 +8477,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -8751,7 +8751,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -9023,7 +9023,7 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -9370,7 +9370,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -9789,7 +9789,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -10078,7 +10078,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -10387,7 +10387,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -10700,7 +10700,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -10974,7 +10974,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -11248,7 +11248,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -11520,7 +11520,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -11829,7 +11829,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -12103,7 +12103,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -12375,7 +12375,7 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -12685,7 +12685,7 @@
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -13104,7 +13104,7 @@
 |`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -13393,7 +13393,7 @@
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -13702,7 +13702,7 @@
 |`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -14015,7 +14015,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -14289,7 +14289,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -14563,7 +14563,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -14835,7 +14835,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -15144,7 +15144,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -15418,7 +15418,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -15690,7 +15690,7 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -16039,7 +16039,7 @@
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -16356,7 +16356,7 @@
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -16653,7 +16653,7 @@
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -16953,7 +16953,7 @@
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -17240,7 +17240,7 @@
 |`binds[].listeners[].policies.extProc.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].policies.extProc.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].policies.extProc.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`binds[].listeners[].policies.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`binds[].listeners[].policies.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`binds[].listeners[].policies.extProc.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`binds[].listeners[].policies.extProc.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`binds[].listeners[].policies.extProc.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -17629,7 +17629,7 @@
 |`frontendPolicies.networkExtAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`frontendPolicies.networkExtAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`frontendPolicies.networkExtAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`frontendPolicies.networkExtAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`frontendPolicies.networkExtAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`frontendPolicies.networkExtAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`frontendPolicies.networkExtAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`frontendPolicies.networkExtAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -17939,7 +17939,7 @@
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`frontendPolicies.accessLog.otlp.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`frontendPolicies.accessLog.otlp.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -18228,7 +18228,7 @@
 |`frontendPolicies.logging.otlp.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`frontendPolicies.logging.otlp.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`frontendPolicies.logging.otlp.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`frontendPolicies.logging.otlp.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`frontendPolicies.logging.otlp.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`frontendPolicies.logging.otlp.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`frontendPolicies.logging.otlp.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`frontendPolicies.logging.otlp.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -18513,7 +18513,7 @@
 |`frontendPolicies.tracing.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`frontendPolicies.tracing.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`frontendPolicies.tracing.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`frontendPolicies.tracing.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`frontendPolicies.tracing.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`frontendPolicies.tracing.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`frontendPolicies.tracing.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`frontendPolicies.tracing.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -18885,7 +18885,7 @@
 |`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -19221,7 +19221,7 @@
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -19495,7 +19495,7 @@
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -19769,7 +19769,7 @@
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -20041,7 +20041,7 @@
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -20350,7 +20350,7 @@
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -20624,7 +20624,7 @@
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -20896,7 +20896,7 @@
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -21218,7 +21218,7 @@
 |`policies[].policy.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -21449,7 +21449,7 @@
 |`policies[].policy.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -21870,7 +21870,7 @@
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -22154,7 +22154,7 @@
 |`policies[].policy.remoteRateLimit.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.remoteRateLimit.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.remoteRateLimit.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.remoteRateLimit.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.remoteRateLimit.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.remoteRateLimit.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.remoteRateLimit.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.remoteRateLimit.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -22511,7 +22511,7 @@
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -22808,7 +22808,7 @@
 |`policies[].policy.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -23108,7 +23108,7 @@
 |`policies[].policy.extProc.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.extProc.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.extProc.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.extProc.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.extProc.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.extProc.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -23395,7 +23395,7 @@
 |`policies[].policy.extProc.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.extProc.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.extProc.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`policies[].policy.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`policies[].policy.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`policies[].policy.extProc.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`policies[].policy.extProc.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`policies[].policy.extProc.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -24327,7 +24327,7 @@
 |`backends[].mcp.targets[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].mcp.targets[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].mcp.targets[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].mcp.targets[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].mcp.targets[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].mcp.targets[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].mcp.targets[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].mcp.targets[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -24644,7 +24644,7 @@
 |`backends[].ai.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -25063,7 +25063,7 @@
 |`backends[].ai.policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -25352,7 +25352,7 @@
 |`backends[].ai.policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -25661,7 +25661,7 @@
 |`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -25974,7 +25974,7 @@
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -26248,7 +26248,7 @@
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -26522,7 +26522,7 @@
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -26794,7 +26794,7 @@
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -27103,7 +27103,7 @@
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -27377,7 +27377,7 @@
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -27649,7 +27649,7 @@
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -27996,7 +27996,7 @@
 |`backends[].ai.groups[].providers[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.groups[].providers[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.groups[].providers[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.groups[].providers[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.groups[].providers[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.groups[].providers[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -28415,7 +28415,7 @@
 |`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -28704,7 +28704,7 @@
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -29013,7 +29013,7 @@
 |`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -29326,7 +29326,7 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -29600,7 +29600,7 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -29874,7 +29874,7 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -30146,7 +30146,7 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -30455,7 +30455,7 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -30729,7 +30729,7 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -31001,7 +31001,7 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -31309,7 +31309,7 @@
 |`backends[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -31728,7 +31728,7 @@
 |`backends[].policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -32017,7 +32017,7 @@
 |`backends[].policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -32326,7 +32326,7 @@
 |`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -32639,7 +32639,7 @@
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -32913,7 +32913,7 @@
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -33187,7 +33187,7 @@
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -33459,7 +33459,7 @@
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -33768,7 +33768,7 @@
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -34042,7 +34042,7 @@
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -34314,7 +34314,7 @@
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -34705,7 +34705,7 @@
 |`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -35041,7 +35041,7 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -35315,7 +35315,7 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -35589,7 +35589,7 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -35861,7 +35861,7 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -36170,7 +36170,7 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -36444,7 +36444,7 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -36716,7 +36716,7 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -37038,7 +37038,7 @@
 |`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -37269,7 +37269,7 @@
 |`routeGroups[].routes[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -37690,7 +37690,7 @@
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -37974,7 +37974,7 @@
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -38331,7 +38331,7 @@
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -38628,7 +38628,7 @@
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -38928,7 +38928,7 @@
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -39215,7 +39215,7 @@
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].policies.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -40149,7 +40149,7 @@
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -40466,7 +40466,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -40885,7 +40885,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -41174,7 +41174,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -41483,7 +41483,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -41796,7 +41796,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -42070,7 +42070,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -42344,7 +42344,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -42616,7 +42616,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -42925,7 +42925,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -43199,7 +43199,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -43471,7 +43471,7 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -43818,7 +43818,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -44237,7 +44237,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -44526,7 +44526,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -44835,7 +44835,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -45148,7 +45148,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -45422,7 +45422,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -45696,7 +45696,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -45968,7 +45968,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -46277,7 +46277,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -46551,7 +46551,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -46823,7 +46823,7 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -47133,7 +47133,7 @@
 |`routeGroups[].routes[].backends[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -47552,7 +47552,7 @@
 |`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -47841,7 +47841,7 @@
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -48150,7 +48150,7 @@
 |`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -48463,7 +48463,7 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -48737,7 +48737,7 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -49011,7 +49011,7 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -49283,7 +49283,7 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -49592,7 +49592,7 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -49866,7 +49866,7 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -50138,7 +50138,7 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -50514,7 +50514,7 @@
 |`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -50811,7 +50811,7 @@
 |`gateways.*.listeners[].extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.listeners[].extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.listeners[].extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`gateways.*.listeners[].extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`gateways.*.listeners[].extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`gateways.*.listeners[].extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`gateways.*.listeners[].extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`gateways.*.listeners[].extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -51111,7 +51111,7 @@
 |`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -51398,7 +51398,7 @@
 |`gateways.*.listeners[].extProc.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.listeners[].extProc.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.listeners[].extProc.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`gateways.*.listeners[].extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`gateways.*.listeners[].extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`gateways.*.listeners[].extProc.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`gateways.*.listeners[].extProc.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`gateways.*.listeners[].extProc.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -51814,7 +51814,7 @@
 |`gateways.*.extAuthz.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.extAuthz.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.extAuthz.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`gateways.*.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`gateways.*.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`gateways.*.extAuthz.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`gateways.*.extAuthz.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`gateways.*.extAuthz.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -52111,7 +52111,7 @@
 |`gateways.*.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`gateways.*.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`gateways.*.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`gateways.*.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`gateways.*.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`gateways.*.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -52411,7 +52411,7 @@
 |`gateways.*.extProc.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.extProc.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.extProc.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`gateways.*.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`gateways.*.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`gateways.*.extProc.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`gateways.*.extProc.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`gateways.*.extProc.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -52698,7 +52698,7 @@
 |`gateways.*.extProc.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.extProc.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.extProc.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`gateways.*.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`gateways.*.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`gateways.*.extProc.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`gateways.*.extProc.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`gateways.*.extProc.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -53135,7 +53135,7 @@
 |`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -53471,7 +53471,7 @@
 |`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -53745,7 +53745,7 @@
 |`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -54019,7 +54019,7 @@
 |`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -54291,7 +54291,7 @@
 |`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -54600,7 +54600,7 @@
 |`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -54874,7 +54874,7 @@
 |`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -55146,7 +55146,7 @@
 |`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -55468,7 +55468,7 @@
 |`routes[].policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -55699,7 +55699,7 @@
 |`routes[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -56120,7 +56120,7 @@
 |`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -56404,7 +56404,7 @@
 |`routes[].policies.remoteRateLimit.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.remoteRateLimit.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.remoteRateLimit.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.remoteRateLimit.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.remoteRateLimit.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.remoteRateLimit.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.remoteRateLimit.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.remoteRateLimit.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -56761,7 +56761,7 @@
 |`routes[].policies.extAuthz.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.extAuthz.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.extAuthz.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.extAuthz.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.extAuthz.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.extAuthz.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -57058,7 +57058,7 @@
 |`routes[].policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -57358,7 +57358,7 @@
 |`routes[].policies.extProc.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.extProc.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.extProc.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.extProc.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.extProc.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.extProc.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -57645,7 +57645,7 @@
 |`routes[].policies.extProc.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.extProc.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.extProc.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].policies.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].policies.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].policies.extProc.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].policies.extProc.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].policies.extProc.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -58579,7 +58579,7 @@
 |`routes[].backends[].mcp.targets[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].mcp.targets[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].mcp.targets[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].mcp.targets[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].mcp.targets[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].mcp.targets[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].mcp.targets[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].mcp.targets[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -58896,7 +58896,7 @@
 |`routes[].backends[].ai.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -59315,7 +59315,7 @@
 |`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -59604,7 +59604,7 @@
 |`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -59913,7 +59913,7 @@
 |`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -60226,7 +60226,7 @@
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -60500,7 +60500,7 @@
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -60774,7 +60774,7 @@
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -61046,7 +61046,7 @@
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -61355,7 +61355,7 @@
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -61629,7 +61629,7 @@
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -61901,7 +61901,7 @@
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -62248,7 +62248,7 @@
 |`routes[].backends[].ai.groups[].providers[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -62667,7 +62667,7 @@
 |`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -62956,7 +62956,7 @@
 |`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -63265,7 +63265,7 @@
 |`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -63578,7 +63578,7 @@
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -63852,7 +63852,7 @@
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -64126,7 +64126,7 @@
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -64398,7 +64398,7 @@
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -64707,7 +64707,7 @@
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -64981,7 +64981,7 @@
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -65253,7 +65253,7 @@
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -65563,7 +65563,7 @@
 |`routes[].backends[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -65982,7 +65982,7 @@
 |`routes[].backends[].policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -66271,7 +66271,7 @@
 |`routes[].backends[].policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -66580,7 +66580,7 @@
 |`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -66893,7 +66893,7 @@
 |`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -67167,7 +67167,7 @@
 |`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -67441,7 +67441,7 @@
 |`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -67713,7 +67713,7 @@
 |`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -68022,7 +68022,7 @@
 |`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -68296,7 +68296,7 @@
 |`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -68568,7 +68568,7 @@
 |`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -68918,7 +68918,7 @@
 |`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -69224,7 +69224,7 @@
 |`llm.providers[].defaults.auth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.providers[].defaults.auth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.providers[].defaults.auth.key`|object|Send a configured secret value to the backend.|
-|`llm.providers[].defaults.auth.key.value`|object|Secret value to send to the backend.|
+|`llm.providers[].defaults.auth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.providers[].defaults.auth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.providers[].defaults.auth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.providers[].defaults.auth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -69640,7 +69640,7 @@
 |`llm.providers[].defaults.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.providers[].defaults.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.providers[].defaults.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.providers[].defaults.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.providers[].defaults.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.providers[].defaults.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.providers[].defaults.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.providers[].defaults.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -69945,7 +69945,7 @@
 |`llm.models[].auth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].auth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].auth.key`|object|Send a configured secret value to the backend.|
-|`llm.models[].auth.key.value`|object|Secret value to send to the backend.|
+|`llm.models[].auth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.models[].auth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.models[].auth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.models[].auth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -70361,7 +70361,7 @@
 |`llm.models[].backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.models[].backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.models[].backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.models[].backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.models[].backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.models[].backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -70647,7 +70647,7 @@
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -70921,7 +70921,7 @@
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -71195,7 +71195,7 @@
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -71467,7 +71467,7 @@
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -71776,7 +71776,7 @@
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -72050,7 +72050,7 @@
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -72322,7 +72322,7 @@
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -72688,7 +72688,7 @@
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.policies.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.policies.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -72985,7 +72985,7 @@
 |`llm.policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -73285,7 +73285,7 @@
 |`llm.policies.extProc.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.extProc.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.extProc.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.policies.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.policies.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.policies.extProc.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.policies.extProc.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.policies.extProc.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -73572,7 +73572,7 @@
 |`llm.policies.extProc.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.extProc.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.extProc.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.policies.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.policies.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.policies.extProc.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.policies.extProc.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.policies.extProc.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -73946,7 +73946,7 @@
 |`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -74220,7 +74220,7 @@
 |`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -74494,7 +74494,7 @@
 |`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -74766,7 +74766,7 @@
 |`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -75075,7 +75075,7 @@
 |`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -75349,7 +75349,7 @@
 |`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -75621,7 +75621,7 @@
 |`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -75917,7 +75917,7 @@
 |`llm.policies.remoteRateLimit.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.remoteRateLimit.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.remoteRateLimit.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`llm.policies.remoteRateLimit.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`llm.policies.remoteRateLimit.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`llm.policies.remoteRateLimit.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`llm.policies.remoteRateLimit.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`llm.policies.remoteRateLimit.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -76229,7 +76229,7 @@
 |`mcp.targets[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.targets[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.targets[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.targets[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.targets[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.targets[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.targets[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.targets[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -76568,7 +76568,7 @@
 |`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -76904,7 +76904,7 @@
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -77178,7 +77178,7 @@
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -77452,7 +77452,7 @@
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -77724,7 +77724,7 @@
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -78033,7 +78033,7 @@
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -78307,7 +78307,7 @@
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -78579,7 +78579,7 @@
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -78901,7 +78901,7 @@
 |`mcp.policies.backendTunnel.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.backendTunnel.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.backendTunnel.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.backendTunnel.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.backendTunnel.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.backendTunnel.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.backendTunnel.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -79132,7 +79132,7 @@
 |`mcp.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -79553,7 +79553,7 @@
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -79837,7 +79837,7 @@
 |`mcp.policies.remoteRateLimit.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.remoteRateLimit.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.remoteRateLimit.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.remoteRateLimit.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.remoteRateLimit.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.remoteRateLimit.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.remoteRateLimit.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.remoteRateLimit.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -80194,7 +80194,7 @@
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -80491,7 +80491,7 @@
 |`mcp.policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -80791,7 +80791,7 @@
 |`mcp.policies.extProc.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.extProc.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.extProc.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.extProc.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.extProc.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.extProc.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.extProc.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -81078,7 +81078,7 @@
 |`mcp.policies.extProc.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.extProc.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.extProc.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`mcp.policies.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`mcp.policies.extProc.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`mcp.policies.extProc.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`mcp.policies.extProc.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`mcp.policies.extProc.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -82035,7 +82035,7 @@
 |`ui.policies.extAuthz.conditional[].policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`ui.policies.extAuthz.conditional[].policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`ui.policies.extAuthz.conditional[].policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`ui.policies.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`ui.policies.extAuthz.conditional[].policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`ui.policies.extAuthz.conditional[].policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`ui.policies.extAuthz.conditional[].policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`ui.policies.extAuthz.conditional[].policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
@@ -82332,7 +82332,7 @@
 |`ui.policies.extAuthz.policies.backendAuth.passthrough.location.cookie.name`|string|Cookie name containing the credential.|
 |`ui.policies.extAuthz.policies.backendAuth.passthrough.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`ui.policies.extAuthz.policies.backendAuth.key`|object|Send a configured secret value to the backend.|
-|`ui.policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend.|
+|`ui.policies.extAuthz.policies.backendAuth.key.value`|object|Secret value to send to the backend. File references are watched, so<br>rotating the file reloads it without a restart.|
 |`ui.policies.extAuthz.policies.backendAuth.key.value.file`|string|Path to a file on disk to load the value from.|
 |`ui.policies.extAuthz.policies.backendAuth.key.location`|object|Where to place the secret in the backend request.|
 |`ui.policies.extAuthz.policies.backendAuth.key.location.header`|object|Read the credential from an HTTP header.|
