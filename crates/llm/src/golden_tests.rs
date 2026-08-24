@@ -137,6 +137,7 @@ mod requests {
 
 	const COMPLETION_REQUESTS: &[(&str, &[&str])] = &[
 		("basic", &[ANTHROPIC, BEDROCK, VERTEX_GEMINI]),
+		("prompt-cache-breakpoint", &[ANTHROPIC, BEDROCK]),
 		("full", &[ANTHROPIC, BEDROCK]),
 		("tool-call", &[ANTHROPIC, BEDROCK, VERTEX_GEMINI]),
 		("parallel-tool-call", &[BEDROCK, VERTEX_GEMINI]),
@@ -170,7 +171,8 @@ mod requests {
 			"structured-output",
 			&[ANTHROPIC, COMPLETIONS, BEDROCK, VERTEX],
 		),
-		("cache_control", &[COMPLETIONS]),
+		("cache_control", &[ANTHROPIC, COMPLETIONS, BEDROCK]),
+		("cache_control_responses", &[RESPONSES]),
 		("gpt_adaptive_thinking_with_tools", &[COMPLETIONS]),
 		("reasoning_replay", &[BEDROCK]),
 		("tool_history_without_tools", &[BEDROCK]),
@@ -183,7 +185,7 @@ mod requests {
 		("parallel-tool-call", &[BEDROCK, GEMINI]),
 		("structured-output", &[BEDROCK]),
 		("input-media", &[BEDROCK]),
-		("cache_control", &[GEMINI]),
+		("cache_control", &[BEDROCK, GEMINI]),
 	];
 	const COUNT_TOKENS_REQUESTS: &[(&str, &[&str])] = &[
 		("basic", &[ANTHROPIC, BEDROCK, VERTEX]),
