@@ -3770,6 +3770,7 @@
 |`binds[].listeners[].routes[].policies.jwtAuth.location.cookie`|object|Read the credential from a request cookie.|
 |`binds[].listeners[].routes[].policies.jwtAuth.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.jwtAuth.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
+|`binds[].listeners[].routes[].policies.jwtAuth.preserveToken`|boolean|Keep a successfully validated JWT in its original location.|
 |`binds[].listeners[].routes[].policies.jwtAuth.providers`|[]object|Trusted issuers and their signing keys.|
 |`binds[].listeners[].routes[].policies.jwtAuth.providers[].issuer`|string|Expected token issuer. The JWT `iss` claim is required and must match.|
 |`binds[].listeners[].routes[].policies.jwtAuth.providers[].audiences`|[]string|Accepted token audiences. A non-empty list requires a matching JWT `aud` claim.|
@@ -16283,6 +16284,7 @@
 |`binds[].listeners[].policies.jwtAuth.location.cookie`|object|Read the credential from a request cookie.|
 |`binds[].listeners[].policies.jwtAuth.location.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].policies.jwtAuth.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
+|`binds[].listeners[].policies.jwtAuth.preserveToken`|boolean|Keep a successfully validated JWT in its original location.|
 |`binds[].listeners[].policies.jwtAuth.providers`|[]object|Trusted issuers and their signing keys.|
 |`binds[].listeners[].policies.jwtAuth.providers[].issuer`|string|Expected token issuer. The JWT `iss` claim is required and must match.|
 |`binds[].listeners[].policies.jwtAuth.providers[].audiences`|[]string|Accepted token audiences. A non-empty list requires a matching JWT `aud` claim.|
@@ -22398,6 +22400,7 @@
 |`policies[].policy.jwtAuth.location.cookie`|object|Read the credential from a request cookie.|
 |`policies[].policy.jwtAuth.location.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.jwtAuth.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
+|`policies[].policy.jwtAuth.preserveToken`|boolean|Keep a successfully validated JWT in its original location.|
 |`policies[].policy.jwtAuth.providers`|[]object|Trusted issuers and their signing keys.|
 |`policies[].policy.jwtAuth.providers[].issuer`|string|Expected token issuer. The JWT `iss` claim is required and must match.|
 |`policies[].policy.jwtAuth.providers[].audiences`|[]string|Accepted token audiences. A non-empty list requires a matching JWT `aud` claim.|
@@ -38218,6 +38221,7 @@
 |`routeGroups[].routes[].policies.jwtAuth.location.cookie`|object|Read the credential from a request cookie.|
 |`routeGroups[].routes[].policies.jwtAuth.location.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.jwtAuth.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
+|`routeGroups[].routes[].policies.jwtAuth.preserveToken`|boolean|Keep a successfully validated JWT in its original location.|
 |`routeGroups[].routes[].policies.jwtAuth.providers`|[]object|Trusted issuers and their signing keys.|
 |`routeGroups[].routes[].policies.jwtAuth.providers[].issuer`|string|Expected token issuer. The JWT `iss` claim is required and must match.|
 |`routeGroups[].routes[].policies.jwtAuth.providers[].audiences`|[]string|Accepted token audiences. A non-empty list requires a matching JWT `aud` claim.|
@@ -50441,6 +50445,7 @@
 |`gateways.*.listeners[].jwtAuth.location.cookie`|object|Read the credential from a request cookie.|
 |`gateways.*.listeners[].jwtAuth.location.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.listeners[].jwtAuth.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
+|`gateways.*.listeners[].jwtAuth.preserveToken`|boolean|Keep a successfully validated JWT in its original location.|
 |`gateways.*.listeners[].jwtAuth.providers`|[]object|Trusted issuers and their signing keys.|
 |`gateways.*.listeners[].jwtAuth.providers[].issuer`|string|Expected token issuer. The JWT `iss` claim is required and must match.|
 |`gateways.*.listeners[].jwtAuth.providers[].audiences`|[]string|Accepted token audiences. A non-empty list requires a matching JWT `aud` claim.|
@@ -51741,6 +51746,7 @@
 |`gateways.*.jwtAuth.location.cookie`|object|Read the credential from a request cookie.|
 |`gateways.*.jwtAuth.location.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.jwtAuth.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
+|`gateways.*.jwtAuth.preserveToken`|boolean|Keep a successfully validated JWT in its original location.|
 |`gateways.*.jwtAuth.providers`|[]object|Trusted issuers and their signing keys.|
 |`gateways.*.jwtAuth.providers[].issuer`|string|Expected token issuer. The JWT `iss` claim is required and must match.|
 |`gateways.*.jwtAuth.providers[].audiences`|[]string|Accepted token audiences. A non-empty list requires a matching JWT `aud` claim.|
@@ -56648,6 +56654,7 @@
 |`routes[].policies.jwtAuth.location.cookie`|object|Read the credential from a request cookie.|
 |`routes[].policies.jwtAuth.location.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.jwtAuth.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
+|`routes[].policies.jwtAuth.preserveToken`|boolean|Keep a successfully validated JWT in its original location.|
 |`routes[].policies.jwtAuth.providers`|[]object|Trusted issuers and their signing keys.|
 |`routes[].policies.jwtAuth.providers[].issuer`|string|Expected token issuer. The JWT `iss` claim is required and must match.|
 |`routes[].policies.jwtAuth.providers[].audiences`|[]string|Accepted token audiences. A non-empty list requires a matching JWT `aud` claim.|
@@ -72615,6 +72622,7 @@
 |`llm.policies.jwtAuth.location.cookie`|object|Read the credential from a request cookie.|
 |`llm.policies.jwtAuth.location.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.jwtAuth.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
+|`llm.policies.jwtAuth.preserveToken`|boolean|Keep a successfully validated JWT in its original location.|
 |`llm.policies.jwtAuth.providers`|[]object|Trusted issuers and their signing keys.|
 |`llm.policies.jwtAuth.providers[].issuer`|string|Expected token issuer. The JWT `iss` claim is required and must match.|
 |`llm.policies.jwtAuth.providers[].audiences`|[]string|Accepted token audiences. A non-empty list requires a matching JWT `aud` claim.|
@@ -80081,6 +80089,7 @@
 |`mcp.policies.jwtAuth.location.cookie`|object|Read the credential from a request cookie.|
 |`mcp.policies.jwtAuth.location.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.jwtAuth.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
+|`mcp.policies.jwtAuth.preserveToken`|boolean|Keep a successfully validated JWT in its original location.|
 |`mcp.policies.jwtAuth.providers`|[]object|Trusted issuers and their signing keys.|
 |`mcp.policies.jwtAuth.providers[].issuer`|string|Expected token issuer. The JWT `iss` claim is required and must match.|
 |`mcp.policies.jwtAuth.providers[].audiences`|[]string|Accepted token audiences. A non-empty list requires a matching JWT `aud` claim.|
@@ -81962,6 +81971,7 @@
 |`ui.policies.jwtAuth.location.cookie`|object|Read the credential from a request cookie.|
 |`ui.policies.jwtAuth.location.cookie.name`|string|Cookie name containing the credential.|
 |`ui.policies.jwtAuth.location.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
+|`ui.policies.jwtAuth.preserveToken`|boolean|Keep a successfully validated JWT in its original location.|
 |`ui.policies.jwtAuth.providers`|[]object|Trusted issuers and their signing keys.|
 |`ui.policies.jwtAuth.providers[].issuer`|string|Expected token issuer. The JWT `iss` claim is required and must match.|
 |`ui.policies.jwtAuth.providers[].audiences`|[]string|Accepted token audiences. A non-empty list requires a matching JWT `aud` claim.|

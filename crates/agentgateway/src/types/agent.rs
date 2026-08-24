@@ -3077,6 +3077,7 @@ impl LocalMcpAuthentication {
 		Ok(http::jwt::LocalJwtConfig::Single {
 			mode: self.mode.into(),
 			location: self.authorization_location.clone(),
+			preserve_token: false,
 			issuer: self.issuer.clone(),
 			audiences: Some(self.audiences.clone()),
 			jwks,
