@@ -3000,6 +3000,7 @@ fn traffic_policy_from_proto(
 						http::apikey::APIKeyPolicy {
 							metadata: meta,
 							allowed_models: Default::default(),
+							budgets: None,
 						},
 					))
 				})
@@ -3877,6 +3878,7 @@ fn traffic_policy_kind_name(policy: &TrafficPolicy) -> &'static str {
 		TrafficPolicy::Oidc(_) => "oidc",
 		TrafficPolicy::BasicAuth(_) => "basicAuth",
 		TrafficPolicy::APIKey(_) => "apiKey",
+		TrafficPolicy::Budget(_) => "budget",
 		TrafficPolicy::Transformation(_) => "transformation",
 		TrafficPolicy::Csrf(_) => "csrf",
 		TrafficPolicy::RequestHeaderModifier(_) => "requestHeaderModifier",
