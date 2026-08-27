@@ -1039,6 +1039,7 @@ mod tests {
 			ca: None,
 			spiffe: None,
 			mcp_state: crate::mcp::App::new(stores, encoder),
+			admission: Default::default(),
 		})
 	}
 

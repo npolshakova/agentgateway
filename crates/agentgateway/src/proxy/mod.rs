@@ -1,3 +1,4 @@
+pub mod admission;
 pub mod dtrace;
 mod gateway;
 pub mod httpproxy;
@@ -100,6 +101,7 @@ impl ProxyError {
 			| ProxyError::RemoteRateLimitExceeded { .. }
 			| ProxyError::BudgetExceeded(_) => ProxyResponseReason::RateLimit,
 			ProxyError::GuardrailRejected { .. } => ProxyResponseReason::Guardrail,
+			ProxyError::RequestLimitExceeded => ProxyResponseReason::Overload,
 		}
 	}
 }
@@ -146,6 +148,8 @@ pub enum ProxyResponseReason {
 	ExtProc,
 	/// Rate limit exceeded
 	RateLimit,
+	/// Rejected because the frontend is overloaded
+	Overload,
 	/// An LLM guardrail rejected the request
 	Guardrail,
 	/// MCP
@@ -255,6 +259,8 @@ pub enum ProxyError {
 	BudgetExceeded(#[from] http::budget::BudgetExceeded),
 	#[error("rate limit failed")]
 	RateLimitFailed,
+	#[error("request limit exceeded")]
+	RequestLimitExceeded,
 	#[error("request rejected by {guardrail} guardrail")]
 	GuardrailRejected {
 		guardrail: &'static str,
@@ -429,6 +435,7 @@ impl ProxyError {
 			ProxyError::Http(_) => StatusCode::SERVICE_UNAVAILABLE,
 			ProxyError::Body(_) => StatusCode::SERVICE_UNAVAILABLE,
 			ProxyError::ProcessingString(_) => StatusCode::SERVICE_UNAVAILABLE,
+			ProxyError::RequestLimitExceeded => StatusCode::SERVICE_UNAVAILABLE,
 			ProxyError::SubstrateIngressFailed(status, _) => status,
 			ProxyError::RateLimitExceeded { .. } => StatusCode::TOO_MANY_REQUESTS,
 			ProxyError::RemoteRateLimitExceeded {
