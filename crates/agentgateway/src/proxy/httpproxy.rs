@@ -866,8 +866,7 @@ impl HTTPProxy {
 		.snapshot_on_err(log, &mut req)?;
 		dtrace::snapshot!(Request, "gateway policies", &req);
 
-		Self::detect_misdirected(log, &bind, &req, &selected_listener)
-			.snapshot_on_err(log, &mut req)?;
+		Self::detect_misdirected(&bind, &req, &selected_listener).snapshot_on_err(log, &mut req)?;
 
 		let selected_route_chain =
 			select_route_chain(&inputs, self.target_address, &selected_listener, &req)
@@ -1201,16 +1200,6 @@ impl HTTPProxy {
 		response_policies: &mut ResponsePolicies,
 		req: &mut Request,
 	) -> Result<Response, ProxyResponse> {
-		// A Substrate CONNECT first resolves its actor to the worker's atunnel
-		// CONNECT listener. The raw downstream stream is then CONNECTed through
-		// atunnel to the actor port, rather than directly to the worker address.
-		let substrate_connect_authority = Box::pin(handle_substrate_backend_selection(
-			req,
-			&selected_backend.backend.backend,
-			SubstrateBackendTarget::Connect,
-		))
-		.await?
-		.map(|state| state.connect_authority());
 		let backend_call = build_connect_backend_call(
 			self.inputs.as_ref(),
 			&selected_backend.backend.backend,
@@ -1262,23 +1251,6 @@ impl HTTPProxy {
 				},
 			)
 			.await?;
-		let upstream = if let Some(authority) = substrate_connect_authority {
-			match crate::client::connect_tunnel::handshake_atunnel(
-				upstream,
-				&authority,
-				Arc::new(self.inputs.cfg.hbone.h2.clone()),
-			)
-			.await
-			{
-				Ok(upstream) => upstream,
-				Err(error) if crate::client::connect_tunnel::is_stale_assignment_error(&error) => {
-					return Err(ProxyError::StaleAssignment.into());
-				},
-				Err(error) => return Err(ProxyError::Processing(error).into()),
-			}
-		} else {
-			upstream
-		};
 		let mut resp = ::http::Response::builder()
 			.status(StatusCode::OK)
 			.body(http::Body::empty())
@@ -1387,13 +1359,14 @@ impl HTTPProxy {
 	}
 
 	fn detect_misdirected(
-		log: &RequestLog,
 		bind: &BindSnapshot,
 		req: &Request,
 		selected_listener: &Listener,
 	) -> Result<(), ProxyError> {
-		if log.tls_info.is_none() {
-			// Only applicable for HTTPS
+		if !matches!(
+			selected_listener.protocol,
+			ListenerProtocol::HTTPS(_) | ListenerProtocol::TLS(_)
+		) {
 			return Ok(());
 		}
 		// From the spec:
@@ -2074,11 +2047,37 @@ fn resolve_tunnel_backend_call(
 		crate::proxy::tcpproxy::get_backend_policies(inputs, &backend, &tunnel.policies, None);
 	if let Backend::Dynamic(_, expr) = &backend.backend {
 		let executor = crate::cel::Executor::new_request(req);
-		let target =
-			resolve_dynamic_backend_target(None, &executor, expr, || target_from_request(req))?;
+		let target = resolve_dynamic_backend_target(
+			req.extensions().get::<DynamicBackendOverride>(),
+			&executor,
+			expr,
+			|| target_from_request(req),
+		)?;
 		return Ok(BackendCall::new(target, policies));
 	}
 	TCPProxy::build_backend_call(&mut None, None, inputs, &backend.backend, policies, None)
+}
+
+fn configure_tunnel_backend_call(
+	inputs: &ProxyInputs,
+	req: &mut Request,
+	backend_call: &mut BackendCall,
+) -> Result<(), ProxyError> {
+	let Some(tunnel) = backend_call.backend_policies.tunnel.clone() else {
+		return Ok(());
+	};
+	if let Some(state) = req
+		.extensions()
+		.get::<http::substrate::SubstrateRequestState>()
+		&& req.extensions().get::<DynamicBackendOverride>().is_some()
+	{
+		backend_call.target =
+			Target::try_from(state.connect_authority().as_str()).map_err(|error| {
+				ProxyError::ProcessingString(format!("invalid Substrate CONNECT authority: {error}"))
+			})?;
+	}
+	backend_call.set_tunnel_proxy(resolve_tunnel_backend_call(inputs, &tunnel, req)?);
+	Ok(())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -2291,12 +2290,7 @@ async fn make_backend_call(
 		},
 		_ => (backend, base_policies),
 	};
-	Box::pin(handle_substrate_backend_selection(
-		&mut req,
-		backend,
-		SubstrateBackendTarget::Ingress,
-	))
-	.await?;
+	Box::pin(handle_substrate_backend_selection(&mut req, backend)).await?;
 
 	log.add(|l| {
 		l.backend_info = Some(backend.backend_info());
@@ -2538,9 +2532,7 @@ async fn make_backend_call(
 			|| target_from_request(&req),
 		)?;
 	}
-	if let Some(tunnel) = backend_call.backend_policies.tunnel.clone() {
-		backend_call.set_tunnel_proxy(resolve_tunnel_backend_call(&inputs, &tunnel, &req)?);
-	}
+	configure_tunnel_backend_call(&inputs, &mut req, &mut backend_call)?;
 
 	log.add(|l| {
 		l.endpoint = Some(backend_call.target.clone());
@@ -3002,17 +2994,10 @@ async fn make_backend_call(
 	Ok(resp)
 }
 
-#[derive(Clone, Copy)]
-enum SubstrateBackendTarget {
-	Ingress,
-	Connect,
-}
-
 /// Resolves a Substrate actor assignment into an in-process dynamic backend result.
 async fn handle_substrate_backend_selection(
 	req: &mut Request,
 	backend: &Backend,
-	target: SubstrateBackendTarget,
 ) -> Result<Option<http::substrate::SubstrateRequestState>, ProxyResponse> {
 	if let Some(state) = req
 		.extensions()
@@ -3027,11 +3012,10 @@ async fn handle_substrate_backend_selection(
 				.into(),
 			);
 		}
-		let target = match target {
-			SubstrateBackendTarget::Ingress => Box::pin(state.resolve_target()).await?,
-			SubstrateBackendTarget::Connect => state.resolve_connect_target().await?,
-		};
-		req.extensions_mut().insert(DynamicBackendOverride(target));
+		let resolved_target = Box::pin(state.resolve_target()).await?;
+		req
+			.extensions_mut()
+			.insert(DynamicBackendOverride(resolved_target));
 		Ok(Some(state))
 	} else if req.extensions().get::<DynamicBackendOverride>().is_some()
 		&& !matches!(backend, Backend::Dynamic(_, _))
