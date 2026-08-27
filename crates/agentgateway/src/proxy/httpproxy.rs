@@ -936,8 +936,15 @@ impl HTTPProxy {
 			&mut req,
 			response_policies,
 		)
-		.await
-		.snapshot_on_err(log, &mut req)?;
+		.await;
+		let route_retry = mcp::maybe_convert_mcp_error(
+			route_retry,
+			self.inputs.as_ref(),
+			selected_route_chain.backend.as_ref(),
+			&mut req,
+		)
+		.await;
+		let route_retry = route_retry.snapshot_on_err(log, &mut req)?;
 		dtrace::snapshot!(Request, "route policies", &req);
 		// With no explicit retry policy, Substrate only retries stale actor assignments.
 		let substrate_default_retry = !explicit_route_retry
@@ -1531,7 +1538,10 @@ impl HTTPProxy {
 	}
 }
 
-fn resolve_backend(b: RouteBackendReference, pi: &ProxyInputs) -> Result<RouteBackend, ProxyError> {
+pub(crate) fn resolve_backend(
+	b: RouteBackendReference,
+	pi: &ProxyInputs,
+) -> Result<RouteBackend, ProxyError> {
 	let backend_ref = b
 		.target
 		.as_backend_reference()
