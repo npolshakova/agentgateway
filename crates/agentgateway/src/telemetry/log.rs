@@ -1218,6 +1218,10 @@ pub struct RequestLog {
 	pub response_bytes: u64,
 }
 
+fn request_log_level(error: Option<&str>) -> &'static str {
+	if error.is_some() { "error" } else { "info" }
+}
+
 impl Drop for DropOnLog {
 	fn drop(&mut self) {
 		let status = self
@@ -1402,7 +1406,13 @@ impl Drop for DropOnLog {
 					.inc();
 			}
 
-			let maybe_enable_log = agent_core::telemetry::enabled("request", &Level::INFO);
+			let level = request_log_level(log.error.as_deref());
+			let level_filter = if level == "error" {
+				Level::ERROR
+			} else {
+				Level::INFO
+			};
+			let maybe_enable_log = agent_core::telemetry::enabled("request", &level_filter);
 			let otlp_log_enabled = log.otel_logger.is_some();
 			// For now we only enable this log for LLM requests to keep cost/performance appropriate.
 			let log_store_enabled = log_store::enabled()
@@ -1839,7 +1849,7 @@ impl Drop for DropOnLog {
 					let eval = v.as_ref().map(json_value_to_value_bag);
 					otlp_kv.push((k, eval));
 				}
-				otel.emit("info", "request", &otlp_kv);
+				otel.emit(level, "request", &otlp_kv);
 			}
 
 			if maybe_enable_log || log_store_enabled {
@@ -1865,7 +1875,7 @@ impl Drop for DropOnLog {
 				}
 
 				if maybe_enable_log {
-					agent_core::telemetry::log("info", "request", &kv);
+					agent_core::telemetry::log(level, "request", &kv);
 				}
 
 				if log_store_enabled {
