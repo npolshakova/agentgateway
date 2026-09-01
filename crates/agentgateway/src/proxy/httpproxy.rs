@@ -218,10 +218,6 @@ async fn apply_request_policies(
 		.apply_without_response("authorization", c, l, req, rp.headers())
 		.await?;
 	pol
-		.substrate_egress
-		.apply_without_response("substrate egress", c, l, req, rp.headers())
-		.await?;
-	pol
 		.substrate_ingress
 		.apply_without_response("substrate ingress", c, l, req, rp.headers())
 		.await?;
@@ -927,7 +923,7 @@ impl HTTPProxy {
 			service: selected_route_chain
 				.routes
 				.last()
-				.and_then(|r| r.service_key.as_ref()),
+				.and_then(|route| route.service_key.as_ref()),
 			routes: selected_route_chain
 				.routes
 				.iter()
@@ -1050,7 +1046,10 @@ impl HTTPProxy {
 		} else {
 			retries.as_ref().map(|r| r.attempts.get() + 1).unwrap_or(1)
 		};
-		let retry_backoff = retries.as_ref().and_then(|r| r.backoff);
+		let retry_backoff = retries
+			.as_ref()
+			.and_then(|r| r.backoff)
+			.or_else(|| substrate_default_retry.then_some(std::time::Duration::from_millis(100)));
 		let request_timeout = response_policies
 			.timeout
 			.as_ref()
