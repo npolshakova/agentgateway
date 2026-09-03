@@ -952,6 +952,11 @@ pub mod typed {
 		ResponseTextDeltaEvent, ResponseTextDoneEvent, ResponseTextParam, ResponseUsage, Role, Status,
 		TextResponseFormatConfiguration, Tool, ToolChoiceFunction, ToolChoiceOptions, ToolChoiceParam,
 	};
+	pub use async_openai::types::responses::{
+		ReasoningItem, ResponseReasoningSummaryPartAddedEvent, ResponseReasoningSummaryPartDoneEvent,
+		ResponseReasoningSummaryTextDeltaEvent, ResponseReasoningSummaryTextDoneEvent, SummaryPart,
+		SummaryTextContent,
+	};
 	use serde::{Deserialize, Serialize};
 
 	/// Event types for streaming responses from the Responses API (minimal strict subset).
@@ -977,6 +982,18 @@ pub mod typed {
 		/// Emitted when text content is finalized.
 		#[serde(rename = "response.output_text.done")]
 		ResponseOutputTextDone(openai_responses::ResponseTextDoneEvent),
+		/// Emitted when a reasoning summary part is added.
+		#[serde(rename = "response.reasoning_summary_part.added")]
+		ResponseReasoningSummaryPartAdded(openai_responses::ResponseReasoningSummaryPartAddedEvent),
+		/// Emitted when there is an additional reasoning summary text delta.
+		#[serde(rename = "response.reasoning_summary_text.delta")]
+		ResponseReasoningSummaryTextDelta(openai_responses::ResponseReasoningSummaryTextDeltaEvent),
+		/// Emitted when reasoning summary text is finalized.
+		#[serde(rename = "response.reasoning_summary_text.done")]
+		ResponseReasoningSummaryTextDone(openai_responses::ResponseReasoningSummaryTextDoneEvent),
+		/// Emitted when a reasoning summary part is done.
+		#[serde(rename = "response.reasoning_summary_part.done")]
+		ResponseReasoningSummaryPartDone(openai_responses::ResponseReasoningSummaryPartDoneEvent),
 		/// Emitted when there is a partial refusal text.
 		#[serde(rename = "response.refusal.delta")]
 		ResponseRefusalDelta(openai_responses::ResponseRefusalDeltaEvent),

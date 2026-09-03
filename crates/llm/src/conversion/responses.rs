@@ -1228,6 +1228,16 @@ pub mod from_messages {
 						record_response_metadata(&mut state, &log, &created.response);
 						ensure_message_start(&mut state, &mut events, &log);
 					},
+					// Reasoning summaries have no Messages-side block here (same as the
+					// buffered `ReasoningText` content above): dropped, not an error.
+					responses::ResponseStreamEvent::ResponseReasoningSummaryPartAdded(_)
+					| responses::ResponseStreamEvent::ResponseReasoningSummaryTextDelta(_)
+					| responses::ResponseStreamEvent::ResponseReasoningSummaryTextDone(_)
+					| responses::ResponseStreamEvent::ResponseReasoningSummaryPartDone(_) => {
+						tracing::debug!(
+							"Skipping Responses reasoning summary stream event during messages translation"
+						);
+					},
 					responses::ResponseStreamEvent::ResponseOutputItemAdded(added) => {
 						ensure_message_start(&mut state, &mut events, &log);
 						if let responses::OutputItem::FunctionCall(call) = added.item {
